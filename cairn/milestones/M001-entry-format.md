@@ -28,7 +28,7 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 
 ## Acceptance criteria
 
-- [ ] AC1: `pnpm check` checks each directory directly under the `plugins/` directory it is given by these rules:
+- [x] AC1: `pnpm check` checks each directory directly under the `plugins/` directory it is given by these rules:
       both `meta.json` and `index.json` exist; `meta.json` is valid against the registry's
       `shared/schemas/meta.schema.json` at the zotero-plugin-registry commit pinned in the code; `index.json` is
       valid against `schemas/index.v1.schema.json`, which requires each override's `reason` with `minLength: 1`
@@ -37,16 +37,16 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
       test per rule runs the check on a fixture tree whose one bad entry breaks only that rule, and asserts a
       non-zero exit and output naming that entry's directory and that rule; the whitespace rule has two such
       tests, with reasons `" "` and `" \t\n"`.
-- [ ] AC2: A Vitest test runs `pnpm check` on a fixture tree of at least two valid entries and asserts exit 0. A
+- [x] AC2: A Vitest test runs `pnpm check` on a fixture tree of at least two valid entries and asserts exit 0. A
       second test plants in `meta.json` a field the registry schema does not define and asserts the failure names
       the registry-schema rule. A third and fourth run it on an empty directory and on a missing path, and assert
       exit 0 with zero entries checked.
 - [ ] AC3: `.github/workflows/ci.yml` runs on `push` and `pull_request`, installs with `pnpm install
       --frozen-lockfile`, and runs `pnpm test` and `pnpm check`. The run for the latest push to the milestone
       branch at review time is green (`gh run list --branch <branch>`).
-- [ ] AC4: `README.md` describes the two entry files. Each `index.json` field it names is a property of
+- [x] AC4: `README.md` describes the two entry files. Each `index.json` field it names is a property of
       `schemas/index.v1.schema.json`, checked by reading both files.
-- [ ] AC5: `CHANGELOG.md` exists with an entry for the entry format and `pnpm check`, and `pnpm test` and
+- [x] AC5: `CHANGELOG.md` exists with an entry for the entry format and `pnpm check`, and `pnpm test` and
       `pnpm check` both pass on the branch.
 
 ## Coverage
@@ -98,3 +98,10 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 ## Decisions
 
 ## Review
+
+- 2026-10-24: route (d), no PR for the branch; branch level with origin/main at 392cf9c; Copilot round off (no header line).
+- AC1: fresh run after `rm -rf .cache` (schema downloaded at pinned commit a06373e, `REGISTRY_COMMIT` in src/check/registry-schema.ts): `pnpm test` 10/10 passed, one test per rule — files-present, registry-schema, index-schema, id-matches-directory, reason-not-blank (two, `" "` and `" \t\n"`); each asserts exit 1 and only `first-plugin@example.org: <rule>` lines; schema has `reason.minLength` 1 and `field` enum name, description, homepage, strict_min_version, strict_max_version.
+- AC2: same run — valid tree (2 entries) exit 0; planted `downloads` field fails with `registry-schema` and the "does not define" message; empty directory and missing path exit 0 with "checked 0 entries".
+- AC4: node script over README.md's `index.json` section: fields named schemaVersion, overrides, field, version, value, reason; none missing from `schemas/index.v1.schema.json` properties.
+- AC5: CHANGELOG.md has an `## Unreleased` entry for the entry format and `pnpm check`; `tsc --noEmit` clean, `pnpm test` 10 passed, `pnpm check` exit 0 (0 entries).
+- AC3: pending — the branch is first pushed at step 8, and that push's CI run is the evidence; ticked only after it reads green, before the merge.
