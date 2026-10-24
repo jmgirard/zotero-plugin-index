@@ -70,7 +70,7 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
       read, not copied into this repo.
 - [x] T3: Write the fixture trees under `test/fixtures/` and the Vitest tests for AC1 and AC2, tests first.
 - [x] T4: Add `.github/workflows/ci.yml` (pnpm/action-setup, Node LTS, frozen lockfile, test, check).
-- [ ] T5: Write the README entry-format section and the `CHANGELOG.md` entry.
+- [x] T5: Write the README entry-format section and the `CHANGELOG.md` entry.
 
 ## Work log
 
@@ -91,6 +91,7 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - 2026-10-24: T2 done: rules `files-present`, `registry-schema`, `index-schema`, `id-matches-directory`, `reason-not-blank`; override `field` limited to name, description, homepage, strict_min_version, strict_max_version, plus an optional `version` the override applies to; registry schema cached in gitignored `.cache/`; Ajv given the registry's `markdownDescription` keyword.
 - 2026-10-24: T3 done: committed valid tree `test/fixtures/check/valid` (2 entries); each bad case is a temp copy of it with one change, built in the test, in place of one committed tree per case; 10 tests pass; a planted defect (the whitespace rule matching only spaces) turned the `" \t\n"` test red, then was reverted.
 - 2026-10-24: T4 done: `.github/workflows/ci.yml` with checkout v7, pnpm/action-setup v6 (reads `packageManager`), setup-node v7 on Node 24, frozen install, `pnpm test`, `pnpm check`; no local YAML or actionlint tool, so the first run is the check; the branch is not pushed at implement, because the rulebook pushes it at review, and AC3's evidence comes from that run.
+- 2026-10-24: T5 done: `README.md` (entry files, every `index.json` field, `pnpm check` and `pnpm test`) and `CHANGELOG.md` with an `## Unreleased` entry; claims written against `src/check/` and `schemas/index.v1.schema.json` read this session.
 
 ## Decisions
 
