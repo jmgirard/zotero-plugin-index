@@ -17,9 +17,9 @@ test command; the other slots stand as-is until a richer profile is authored.
 
 ## verify
 The command(s) `/milestone-implement` and `/hotfix` run to check a task before
-ticking it off. Generic default: **the repo's own test command** — declare it
-here (e.g. `make test`, `npm test`, `pytest`). If the repo has none, state
-"no automated verify" and rely on the acceptance-criteria evidence.
+ticking it off: `pnpm test` (type check, then Vitest) and `pnpm check` (the
+entry checker over `plugins/`). pnpm is not installed on the maintainer's
+machine, so run it as `npx -y pnpm@12.15.0`, the version `package.json` pins.
 
 ## consistency-gate
 Toolchain checks `/milestone-review` runs *in addition to* the universal
@@ -61,7 +61,5 @@ greenfield flow for a generic repo; a richer profile adds its own on top.
 
 ## changelog
 The repo's changelog file, read by `/hotfix`, the release-walk, and the
-consistency-gate — **declare it here** (e.g. `CHANGELOG.md`), or "none" if the
-repo keeps no changelog: `/hotfix` then skips the changelog entry and the
-release-walk skips consolidation, deriving the version bump from git
-history.
+consistency-gate: `CHANGELOG.md`, with new entries under its `## Unreleased`
+heading.

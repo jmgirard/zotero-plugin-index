@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-24 (scaffolded by cairn-init)_
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M001 | Define the plugin entry format and checker | planned | — | high | milestones/M001-entry-format.md |
+| M001 | Define the plugin entry format and checker | in-progress | — | high | milestones/M001-entry-format.md |
 | M002 | Read upstream plugin facts and draft entries | planned | M001 | high | milestones/M002-upstream-reader.md |
 | M003 | Build the published plugin data | planned | M002 | high | milestones/M003-published-data.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent

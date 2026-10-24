@@ -1,0 +1,23 @@
+{
+  "name": "zotero-plugin-index",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A community index of Zotero 7+ plugins",
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "check": "node src/check/cli.ts plugins",
+    "test": "tsc --noEmit && vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  },
+  "dependencies": {
+    "ajv": "8.20.0"
+  }
+}

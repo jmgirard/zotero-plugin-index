@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/jmgirard/zotero-plugin-index/schemas/index.v1.schema.json",
+  "title": "zotero-plugin-index entry fields",
+  "description": "Fields of plugins/<id>/index.json: the data the index keeps beside the registry meta.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion"],
+  "properties": {
+    "schemaVersion": {
+      "description": "Version of this schema.",
+      "const": 1
+    },
+    "overrides": {
+      "description": "Corrections to upstream facts that the plugin author cannot or will not fix upstream.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "value", "reason"],
+        "properties": {
+          "field": {
+            "description": "The upstream fact this override corrects.",
+            "enum": ["name", "description", "homepage", "strict_min_version", "strict_max_version"]
+          },
+          "version": {
+            "description": "The plugin version the override applies to. Absent means every version.",
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "description": "The corrected value.",
+            "type": "string"
+          },
+          "reason": {
+            "description": "Why the upstream value is wrong.",
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

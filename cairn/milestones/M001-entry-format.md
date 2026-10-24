@@ -1,13 +1,13 @@
 # M001: Define the plugin entry format and checker
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the entry files are the format contributors and the bot write
-- **Branch/PR:** —
+- **Branch/PR:** m001-entry-format
 
 ## Goal
 
@@ -59,16 +59,16 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 
 ## Tasks
 
-- [ ] T1: Scaffold the project: `package.json` with a `packageManager` pnpm pin, a committed `pnpm-lock.yaml`,
+- [x] T1: Scaffold the project: `package.json` with a `packageManager` pnpm pin, a committed `pnpm-lock.yaml`,
       `tsconfig.json`, Vitest config, `.gitignore` entries for `node_modules/` and `dist/`. Done when the `verify`
       slot of `cairn/PROFILE.md` names `pnpm test` and `pnpm check` and the `changelog` slot names `CHANGELOG.md`.
       pnpm is not installed locally, so run it as `npx pnpm@<pin>`.
-- [ ] T2: Write `schemas/index.v1.schema.json` and the checker in `src/check/`. Pin the schema from
+- [x] T2: Write `schemas/index.v1.schema.json` and the checker in `src/check/`. Pin the schema from
       zotero-plugin-dev/zotero-plugin-registry by commit SHA `a06373e072f01d83f3b5f6e304b20824ee878460`
       (fetched 2026-10-24; the repo is archived), download it once into a gitignored
       cache, and fail with a named error when it cannot be read. The registry repo has no license, so the schema is
       read, not copied into this repo.
-- [ ] T3: Write the fixture trees under `test/fixtures/` and the Vitest tests for AC1 and AC2, tests first.
+- [x] T3: Write the fixture trees under `test/fixtures/` and the Vitest tests for AC1 and AC2, tests first.
 - [ ] T4: Add `.github/workflows/ci.yml` (pnpm/action-setup, Node LTS, frozen lockfile, test, check).
 - [ ] T5: Write the README entry-format section and the `CHANGELOG.md` entry.
 
@@ -85,6 +85,11 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - 2026-10-24: split: the data pipeline is three milestones, M001 (format and checker), M002 (upstream reader, depends on M001), M003 (published data, depends on M002); site, discovery bot, and user reports become candidate rows.
 - 2026-10-24: plan checkpoint: M001 to M003 committed before the criteria audit returned; the audit's dispositions land in the next plan commit, and implement does not start before it.
 - 2026-10-24: criteria audit (full mode, fresh Opus reader): 7 findings, all fixed — AC1 adds a both-files rule, puts `minLength: 1` in the schema and the whitespace rule in code with two probes, limits override `field` to upstream-fact keys; AC2 adds empty and missing `plugins/` cases; AC3 names the latest push at review time; the PROFILE `verify` clause moved from AC5 to T1 (instrument); T1 adds the lockfile; the Out item says M003 shows overrides beside upstream facts.
+- 2026-10-24: started implement on branch m001-entry-format; status in-progress.
+- 2026-10-24: question set (implement stop): may the plan add @types/node, which the plan's set did not name — yes (D-003).
+- 2026-10-24: T1 done: pnpm 12.15.0, TypeScript 7.0.2, Vitest 5.0.5, @types/node 24.19.2, Ajv 8.20.0; `pnpm test` runs `tsc --noEmit` then Vitest; scripts run TypeScript through Node's built-in type stripping, so no tsx; no `license` field, since the repo has no license yet.
+- 2026-10-24: T2 done: rules `files-present`, `registry-schema`, `index-schema`, `id-matches-directory`, `reason-not-blank`; override `field` limited to name, description, homepage, strict_min_version, strict_max_version, plus an optional `version` the override applies to; registry schema cached in gitignored `.cache/`; Ajv given the registry's `markdownDescription` keyword.
+- 2026-10-24: T3 done: committed valid tree `test/fixtures/check/valid` (2 entries); each bad case is a temp copy of it with one change, built in the test, in place of one committed tree per case; 10 tests pass; a planted defect (the whitespace rule matching only spaces) turned the `" \t\n"` test red, then was reverted.
 
 ## Decisions
 
