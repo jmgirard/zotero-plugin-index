@@ -1,6 +1,6 @@
 # M001: Define the plugin entry format and checker
 
-- **Status:** review
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
@@ -94,6 +94,7 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - 2026-10-24: T5 done: `README.md` (entry files, every `index.json` field, `pnpm check` and `pnpm test`) and `CHANGELOG.md` with an `## Unreleased` entry; claims written against `src/check/` and `schemas/index.v1.schema.json` read this session.
 - 2026-10-24: claim audit: 41 claims read, 1 corrected — test/check.test.ts (the `describe` label named `pnpm check`, but the tests run `node src/check/cli.ts <root>`); also reworded the cache comment in src/check/registry-schema.ts ("download it again" on a first run).
 - 2026-10-24: all tasks done, `pnpm test` (10 passed) and `pnpm check` clean; status review.
+- 2026-10-24: review return 1: AC2 fails as written, because the tests spawn `node src/check/cli.ts` and never run `pnpm check`, and the `check` script hard-codes `plugins`; fix: make `pnpm check [dir]` take a directory and have the tests run it. Same return carries the fix-now findings: diff-bug #1 and #3 (hash-pin the registry schema), #2 (per-entry read errors as findings), #4 (`process.exitCode`), #7 (tests for schema-unavailable, invalid JSON, missing meta.json), #9 (`value` minLength 1), #14 (CI `timeout-minutes`, fetch timeout).
 
 ## Decisions
 
@@ -112,3 +113,18 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - ripple #1: PROFILE.md release-walk still offers the "none" changelog branches and an undefined "dev heading" — fix now (names `CHANGELOG.md` and its `## Unreleased` heading).
 - ripple #2: PROFILE.md intro says a repo replaces the `verify` placeholder, which the diff already did — fix now (states the repo's filled slots).
 - ripple #3: PROFILE.md title and generic defaults read as stale with a package.json present — reject (false: package.json is not a profile marker in cairn's inference list, so generic is the active profile).
+- diff-bug #1: the cached registry schema is trusted with no content check, so a cache holding `{}` passes any meta.json with exit 0 — fix now (pin a SHA-256 of the schema file in code; check both the cached and the downloaded copy; mismatch gives the named error).
+- diff-bug #2: a broken symlink or a `meta.json` directory under `plugins/` crashes the run with a stack trace and names no entry — fix now (report the read error as a finding on that entry).
+- diff-bug #3: a cached file that is not a usable schema throws a raw Ajv error in place of the named error — fix now (covered by the #1 hash check).
+- diff-bug #4: `exit()` right after `console.log` can cut piped output on macOS, losing lines and the summary — fix now (set `process.exitCode`).
+- diff-bug #5: a stray file such as `plugins/foo@x.json` is skipped and the run exits 0 — follow-up (candidate row "Catch stray and unportable entry files").
+- diff-bug #6: directory names are not checked for portability (`:`, case collisions, `/` in an id) — follow-up (same row).
+- diff-bug #7: the schema-unavailable path, the invalid-JSON branch, and a missing `meta.json` have no tests — fix now (one test each).
+- diff-bug #8: `engines` allows early Node 24 releases that may print a type-stripping warning and fail the clean-stderr test — reject (edge: a Node 24 release before the current 24.x, outside CI's and common use; the effect is a test failure, an error).
+- diff-bug #9: an override `value` can be `""`, which would blank a fact in M003 — fix now (`minLength: 1` on `value`).
+- diff-bug #10: the blank-reason rule passes a zero-width space, and a UTF-8 BOM gives a confusing "not valid JSON" message — follow-up (same row; the AC1 rule is whitespace, so a stricter rule is new scope).
+- diff-bug #11: AC1 and AC2 say the tests run `pnpm check`, but they spawn `node src/check/cli.ts`, and the `check` script hard-codes `plugins` — floor return (AC2 fails as written; see the review return line).
+- diff-bug #12: the schema `$id` is not a resolvable URL for the public API — follow-up (absorbed into the candidate row "Publish the site and data on Pages").
+- diff-bug #13: `vitest.config.ts` is outside the type check — reject (style: a config file with one call, no behavior).
+- diff-bug #14: CI runs twice for same-repo PRs, has no `timeout-minutes`, and the schema fetch has no timeout — the double run is rejected (planned change: AC3 needs the push trigger, and the PR needs `pull_request`); the timeouts are fix now (`timeout-minutes: 10`, a 30-second fetch timeout).
+- diff-bug (c): `test.each` over two whitespace reasons and the `updateUrl`-required test — reject (planned change: AC1 requires both probes and one test per rule).
