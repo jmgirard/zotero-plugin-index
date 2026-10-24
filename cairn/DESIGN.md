@@ -5,28 +5,77 @@ _Architecture as it **is**, not as it will be. Future work lives in
 
 ## Purpose & Scope
 
-> Seeded by `/cairn-init` on 2026-10-24 from the project description given at
-> init. The repo has no source yet. Refine with `/design-interview`.
+> Elicited by `/design-interview` Phase 1 on 2026-10-24, run on Opus 5.5.
+> Design Principles come from Phase 2.
 
 zotero-plugin-index is a community index of Zotero plugins for Zotero 7 and
-later, kept in a public GitHub repository. It exists because Zotero publishes
-no plugin list: its support page says an official directory is planned.
+later. It answers one question for Zotero users first: does this plugin work
+on my version of Zotero? Zotero publishes no plugin list. Its support page
+says that an official directory is planned.
 
-The intended design is data-first. Each plugin has a hand-written `meta.json`
-that points to the plugin's `update.json`. A scheduled GitHub Action reads
-those files and generates each plugin's versions, its declared Zotero
-compatibility range (`strict_min_version` / `strict_max_version`), its last
-release date, and whether its repository is archived. An English-first static
-site is one view of that data.
+Audience: Zotero users who look for plugins. Plugin authors benefit, but the
+index does not depend on their participation.
 
-Under consideration, not decided: compatibility reports from users through a
-GitHub issue form, and a CI smoke test that loads each plugin in a headless
-Zotero. The data layout aims to stay compatible with
-`zotero-plugin-dev/zotero-plugin-registry`, so the two can merge later.
-
-Distribution: public repository with tagged releases (`v<version>`) for the
-data format and tooling. The site can deploy from the default branch between
+Distribution: a public repository with tagged releases (`v<version>`) for the
+data format and the tooling. The site deploys from the default branch between
 tags.
+
+## Contract boundary
+
+The index lists plugins and links to the releases of each author. It does not
+host, mirror, or re-serve plugin files (XPI files). It does not review plugin
+code, and it does not endorse plugins.
+
+Each plugin page shows facts that a reader can check. These facts are source
+availability, repository age, last release, release count, open issues, and
+the host of the `update.json` file. Each page says that the index does not
+vet the plugins it lists.
+
+The index runs on GitHub only: GitHub Actions, GitHub Pages, and GitHub
+issues. It has no server, no database, and no paid service. Thus every
+contributor needs a GitHub account.
+
+The generated JSON data is a public API at a stable URL, with a schema
+version. A breaking change gets a new schema version. The old version stays
+available for a transition period.
+
+Out of scope: install buttons, mirrors for regions that cannot reach GitHub,
+user accounts, and a combined compatibility verdict.
+
+## Data sources and contribution
+
+Four sources feed each plugin entry. The index keeps the sources apart and
+shows each one separately.
+
+1. Discovery. A scheduled bot searches GitHub for repositories with the topic
+   `zotero-plugin` or `zotero-addon`. In total, 400 and 109 repositories carry
+   these topics (observed 2026-10-24). The bot opens a pull request for each
+   new candidate. A person can also paste one repository URL into an issue
+   form, and the bot drafts the entry. The maintainer approves each pull
+   request.
+2. Upstream facts. The bot reads the `manifest.json`, the `update.json`, the
+   latest release, and the repository metadata of each plugin. These files
+   are the source of truth for the name, the description, the versions, and
+   the declared compatibility (`strict_min_version`, `strict_max_version`).
+3. Overrides. An override in the index corrects a fact that the author cannot
+   or will not fix upstream. Each override states its reason.
+4. User reports. Each plugin page has a "Works" link and a "Broken" link. Each
+   link opens a GitHub issue form with the plugin and its version filled in.
+   The reporter adds the Zotero version and submits the form. A bot adds the
+   report to the data and closes the issue.
+
+Inclusion bar: a public repository, a Zotero 7+ manifest, and at least one
+release with a readable `update.json`. The bot checks all three. The
+maintainer removes only spam and forks. Inclusion is not a judgment of
+quality. The index does not list plugins for Zotero 5 or 6.
+
+If the declared compatibility and the user reports disagree, the page shows
+both. For example, "Declares 7.0 to 8.*" appears beside "Reports on 8.x:
+2 works, 3 broken".
+
+An author can open an issue to be delisted or to correct a fact, and the
+index honors both requests. An author cannot remove user reports. The
+exception is a report that is abuse.
 
 ## Function Families
 
@@ -36,11 +85,34 @@ _None yet: the repo has no source._
 
 - Numeric results are not held to the two-independent-sources check of the
   validation doctrine. Chosen at init, 2026-10-24.
+- The bot, the data schema, and the static site use TypeScript. Plugin
+  authors write TypeScript, and zotero-plugin-registry uses it.
+- Each `meta.json` stays a valid entry for zotero-plugin-registry. Fields
+  that the index adds use names that the registry schema does not use.
 
 ## Design Principles
 
-_None yet. `/design-interview` elicits them. Inviolable (IP<n>) block first,
-then Guiding (GP<n>); numbers are never reused._
+_None yet. Phase 2 of `/design-interview` sets them. The Inviolable (IP<n>)
+block comes first, then the Guiding (GP<n>) block. Numbers are never
+reused._
+
+### Banked candidates (Phase 1 ledger, removed at Phase 2 write-out)
+
+- Contributors never type a fact that the bot can read. Source: answers on
+  adding plugins and on corrections.
+- The index never hosts or re-serves plugin code. Source: scope answer.
+- Everything runs on GitHub, with no server. Source: infrastructure answer.
+- Each page answers "does it work on my Zotero?" first. Source: audience.
+- One compatibility report costs one click and one typed field. Source:
+  reports answer.
+- Each entry stays a valid zotero-plugin-registry `meta.json`. Source: the
+  registry answer.
+- Each source shows separately, with no combined verdict. Source: conflicts.
+- The index states facts and does not endorse. Source: trust answer.
+- The pipeline runs unattended when the maintainer is away. Source: warts.
+- Upstream files are the source of truth, and each override has a reason.
+  Source: corrections answer.
+- The published data is a versioned public API. Source: data API answer.
 
 ## Architecture
 
@@ -48,4 +120,12 @@ _None yet: the repo has no source._
 
 ## Known issues
 
-_None._
+- Plugin metadata is inconsistent. Some plugins lack an `update.json` or have
+  a wrong one, use version strings that are not semver, declare ranges that
+  are too loose or too strict, or have no releases. One bad plugin must not
+  stop the run for all others. Expected at design time, 2026-10-24.
+- GitHub API rate limits apply to a daily job that reads hundreds of
+  repositories. Topic search also misses plugins without a topic. Expected at
+  design time, 2026-10-24.
+- One person maintains the index. Approvals and disputes wait for that
+  person. Expected at design time, 2026-10-24.

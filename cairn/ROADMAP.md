@@ -11,6 +11,7 @@ _Last hygiene check: 2026-10-24 (scaffolded by cairn-init)_
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
 
 ## Candidates
+- [parked] Test plugins load in headless Zotero: a CI job installs each listed plugin into a headless Zotero and records whether it loads, shown as its own source beside declared ranges and reports; promote when the data pipeline and user reports ship — added 2026-10-24 — cairn/DESIGN.md Data sources
 <!-- unnumbered ideas; one line each, ordered high → normal → low → parked:
      - [high] short title: detail — added YYYY-MM-DD — links
      - short title: detail — added YYYY-MM-DD — links
