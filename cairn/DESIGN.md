@@ -87,8 +87,9 @@ _None yet: the repo has no source._
   validation doctrine. Chosen at init, 2026-10-24.
 - The bot, the data schema, and the static site use TypeScript. Plugin
   authors write TypeScript, and zotero-plugin-registry uses it.
-- Each `meta.json` stays a valid entry for zotero-plugin-registry. Fields
-  that the index adds use names that the registry schema does not use.
+- Each `meta.json` stays a valid entry for zotero-plugin-registry. The
+  registry schema rejects fields it does not define, so the fields that the
+  index adds go in a sibling `index.json` (D-002; corrected M001).
 
 ## Design Principles
 
