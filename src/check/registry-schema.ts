@@ -16,7 +16,7 @@ export async function loadRegistrySchema(cacheDir: string): Promise<object> {
   try {
     return JSON.parse(await readFile(cachePath, "utf8"));
   } catch {
-    // Not cached yet, or the cached copy is unreadable: download it again.
+    // Not cached yet, or the cached copy is unreadable: download it.
   }
   let text: string;
   try {

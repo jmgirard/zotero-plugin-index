@@ -53,7 +53,7 @@ function expectOnlyRule(root: string, rule: string) {
   return result;
 }
 
-describe("pnpm check", () => {
+describe("check CLI (node src/check/cli.ts <root>)", () => {
   test("passes a tree of valid entries", () => {
     const result = runCheck(VALID);
     expect(result.stderr).toBe("");
