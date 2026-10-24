@@ -1,0 +1,10 @@
+# References index
+
+This file lists each committed page in `cairn/references/`, one line per
+page. A source note (`<citekey>.md`) covers one primary source. A synthesis
+note covers an analysis across several sources. This index does not list the
+gitignored source shelf (`sources/`).
+
+Write each entry as a bullet line in the form `- page.md: what it covers`.
+Do not use table rows. The references check in `cairn_validate` reads only
+bullet lines.
