@@ -32,14 +32,17 @@ record carries the failure.
       `dist/v1/plugins.json`, the file is valid against `schemas/plugins.v1.schema.json`, and its record ids equal
       the set of entry directory names in the fixture tree. A Vitest test asserts all three.
 - [ ] AC2: When the fixture tree holds one entry whose upstream read fails, `pnpm build` exits 0, writes a record
-      for every entry, and the failing entry's record carries the reader's failure name. A Vitest test asserts it.
+      for every entry, and the failing entry's record carries the reader's failure name. A second fixture whose
+      fetch throws an unexpected error gives the same result with the failure name `unexpected-error`. A Vitest
+      test asserts each case.
 - [ ] AC3: For a fixture entry with an override, the record's overrides block holds the override's field, value,
       and reason, and its upstream block holds the upstream value unchanged. A Vitest test asserts both values.
 - [ ] AC4: `.github/workflows/build.yml` declares a `schedule` trigger that runs once a day and a
       `workflow_dispatch` trigger, runs `pnpm build` with the workflow's `GITHUB_TOKEN`, and uploads `dist/` with
       `actions/upload-artifact`, checked by reading the file.
 - [ ] AC5: `pnpm build` run locally against GitHub over the committed `plugins/` tree, with a token set, exits 0
-      and writes a file valid against `schemas/plugins.v1.schema.json`.
+      and writes a file valid against `schemas/plugins.v1.schema.json` in which at least five records carry
+      upstream facts and no failure name.
 - [ ] AC6: `CHANGELOG.md` has an entry for `pnpm build` and the data file, the README names the file's path and
       schema version, and `pnpm test` and `pnpm check` pass on the branch.
 
@@ -70,6 +73,7 @@ record carries the failure.
 - 2026-10-24: idea vet: found no concern beyond the M001 registry-schema one, which the question set settled (D-002).
 - 2026-10-24: lessons used: none.
 - 2026-10-24: question set: may the plan add GitHub Actions workflows — yes, including a daily scheduled build kept as a workflow artifact.
+- 2026-10-24: criteria audit (full mode, fresh Opus reader): 3 findings, all fixed — AC2 adds an unexpected-throw fixture; AC5 requires at least five records with facts and no failure name; the override `field` limit to upstream-fact keys went into the M001 schema rule, and the M001 Out item now says M003 shows overrides beside upstream facts.
 - 2026-10-24: plan gate chose keeping `dist/` as a workflow artifact over publishing it to GitHub Pages now because the question set put publishing at a later site milestone; falsified by a consumer that needs the stable URL before a site exists.
 
 ## Decisions
