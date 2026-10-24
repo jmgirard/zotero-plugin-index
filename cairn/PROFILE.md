@@ -12,8 +12,8 @@
 
 The language-agnostic default: cairn's core with no toolchain-specific gates.
 Selected by `cairn-init` when no `DESCRIPTION` (or other recognized toolchain
-marker) is present. A repo replaces the placeholder in `verify` with its own
-test command; the other slots stand as-is until a richer profile is authored.
+marker) is present. This repo names its own commands in the `verify` and
+`changelog` slots. The other slots keep the generic defaults.
 
 ## verify
 The command(s) `/milestone-implement` and `/hotfix` run to check a task before
@@ -37,10 +37,10 @@ for a numeric result the change adds or alters.
 ## release-walk
 The release procedure `/cairn-release` follows. Generic default: a minimal
 language-agnostic walk — no package-registry submission; the tag is the release:
-- Decide the version bump (patch/minor/major) from the declared changelog
-  (`## changelog` slot; "none" → derive the bump from git history).
-- Consolidate the declared changelog: retitle the dev heading to the version,
-  group entries, prune noise ("none" → skip this step).
+- Decide the version bump (patch, minor, or major) from `CHANGELOG.md`, the
+  file the `## changelog` slot names.
+- Consolidate `CHANGELOG.md`: retitle its `## Unreleased` heading to the
+  version, group the entries, and remove noise.
 - Bump the repo's version marker and commit the release prep to the default
   branch (docs/metadata only).
 - Tag `v<version>` and push the tag at the user's approval — no registry step.

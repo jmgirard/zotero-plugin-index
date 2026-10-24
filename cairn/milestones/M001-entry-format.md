@@ -105,3 +105,10 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - AC4: node script over README.md's `index.json` section: fields named schemaVersion, overrides, field, version, value, reason; none missing from `schemas/index.v1.schema.json` properties.
 - AC5: CHANGELOG.md has an `## Unreleased` entry for the entry format and `pnpm check`; `tsc --noEmit` clean, `pnpm test` 10 passed, `pnpm check` exit 0 (0 entries).
 - AC3: pending — the branch is first pushed at step 8, and that push's CI run is the evidence; ticked only after it reads green, before the merge.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- prior-review: no prior-review evidence (archive empty, PR comment probe returned none).
+- blame-history #1: D-001 names fflate but package.json lacks it — reject (planned change: M002 adds fflate with the XPI reader, and D-001 names the toolchain, not a timing).
+- blame-history #2: PROFILE.md title still reads "generic" with repo-specific slots — reject (false: the repo is still on the generic profile, whose template says to fill the `verify` slot).
+- ripple #1: PROFILE.md release-walk still offers the "none" changelog branches and an undefined "dev heading" — fix now (names `CHANGELOG.md` and its `## Unreleased` heading).
+- ripple #2: PROFILE.md intro says a repo replaces the `verify` placeholder, which the diff already did — fix now (states the repo's filled slots).
+- ripple #3: PROFILE.md title and generic defaults read as stale with a package.json present — reject (false: package.json is not a profile marker in cairn's inference list, so generic is the active profile).
