@@ -27,26 +27,26 @@ candidate row. Repos outside GitHub → not in this scope; DESIGN.md says the in
 
 ## Acceptance criteria
 
-- [ ] AC1: The reader takes its fetch function as a parameter. For a recorded-response fixture of a plugin that
+- [x] AC1: The reader takes its fetch function as a parameter. For a recorded-response fixture of a plugin that
       meets the bar, it returns the plugin id, name, version, `strict_min_version`, `strict_max_version`,
       `update.json` URL and host, latest release date, release count, repo creation date, and open issue count. A
       Vitest test asserts each value against the fixture, and a second asserts that with `GITHUB_TOKEN` set each
       GitHub API request carries an `Authorization` header.
-- [ ] AC2: The reader returns a named failure, and does not throw, for each of these causes, one Vitest test per
+- [x] AC2: The reader returns a named failure, and does not throw, for each of these causes, one Vitest test per
       cause asserting which failure it returns: a GitHub API request returns an HTTP error (probes 404 and 403);
       the repo is a fork; the repo has no release; no release has a `.xpi` asset; the XPI holds no
       `manifest.json`; the manifest has no `applications.zotero.id`; the manifest's `strict_max_version` has a
       major version below 7 (probes `6.*` and `6.999`); the `update.json` request returns an HTTP error; the
       `update.json` body is not valid JSON; it has no entry for the manifest's id. A further test asserts that
       `strict_max_version` values `7.0` and `*`, and an absent one, pass.
-- [ ] AC3: The reader returns the manifest `version` unchanged. A Vitest test with a fixture version of
+- [x] AC3: The reader returns the manifest `version` unchanged. A Vitest test with a fixture version of
       `v2.0-beta` asserts the returned string equals it.
-- [ ] AC4: `pnpm add-plugin <url> [--out <dir>]` writes to `<dir>`, `plugins/` by default. On a passing fixture
+- [x] AC4: `pnpm add-plugin <url> [--out <dir>]` writes to `<dir>`, `plugins/` by default. On a passing fixture
       it writes a `meta.json` and an `index.json` that pass `pnpm check`, and on a failing fixture it writes no
       file and prints the failure name. One Vitest test for each, writing to a temporary directory.
-- [ ] AC5: `plugins/` holds at least five entries, each with a `meta.json` `repoUrl` on github.com, and
+- [x] AC5: `plugins/` holds at least five entries, each with a `meta.json` `repoUrl` on github.com, and
       `pnpm check` passes on the committed tree.
-- [ ] AC6: `CHANGELOG.md` has an entry for `pnpm add-plugin`, the README names the command and its one argument,
+- [x] AC6: `CHANGELOG.md` has an entry for `pnpm add-plugin`, the README names the command and its one argument,
       and `pnpm test` and `pnpm check` pass on the branch.
 
 ## Coverage
@@ -94,7 +94,19 @@ candidate row. Repos outside GitHub → not in this scope; DESIGN.md says the in
 - 2026-10-25: T6: README gains "Setup" (install moved out of "Checking entries") and "Adding a plugin"; CHANGELOG gains the `pnpm add-plugin` entry and the 14 entries; DESIGN.md Function Families and Architecture name `src/upstream/` and `src/add-plugin/`. Candidate row "Read stable releases before prereleases" added: 1 of the 14 (zotmoov) has a prerelease as its newest XPI release.
 - 2026-10-25: claim audit: 95 claims read, 5 corrected — README.md, test/fixtures/upstream/better-notes.json, src/add-plugin/add-plugin.ts, src/upstream/reader.ts; the re-read found all 5 true. Also added a guard so a release whose `assets` is not a list counts as having no `.xpi` instead of throwing.
 - 2026-10-25: all tasks done; `pnpm test` 60 passed, `pnpm check` 14 entries, 0 problems; status review.
+- 2026-10-25: review: the AC6 tick landed before its evidence line because the evidence edit missed its anchor; the evidence line was added in the same step and every tick now has its line.
 
 ## Decisions
 
 ## Review
+
+Evidence at 5c5e4b9, 2026-10-25. `pnpm test`: tsc clean, 60 passed (4 files); `pnpm check`: 14 entries, 0 problems.
+
+- AC1: `readUpstream(repoUrl, fetch)` takes fetch as its second parameter (src/upstream/reader.ts). "returns the facts of a plugin that meets the bar" passed, asserting id, name, version, strictMinVersion, strictMaxVersion, updateUrl, updateHost, latestReleaseDate, releaseCount, repoCreatedAt, openIssues as literals; "sends GITHUB_TOKEN with each GitHub API request and with no other request" passed (3 API requests carry `Bearer test-token`, the XPI and update.json requests carry none).
+- AC2: one passing test per cause, each asserting `{ok: false, failure}` from a resolved promise: repo 404 and releases 403 → github-http-error; fork → fork; no release → no-release; no `.xpi` → no-xpi-release; no manifest.json → no-manifest; no applications.zotero.id → no-zotero-id; `6.*` and `6.999` → max-version-below-7; update.json 404 → update-json-http-error; body `<html>` → update-json-invalid; no entry for the id → update-json-missing-id. "passes a strict_max_version of" `"7.0"`, `"*"`, and undefined passed.
+- AC3: "returns the manifest version unchanged" passed with fixture version `v2.0-beta`, asserting the returned string equals it.
+- AC4: "writes an entry that passes pnpm check, under a --out relative to where pnpm runs" passed (temp dir; `pnpm check` on it: 1 entry, exit 0); "writes no file and prints the failure name when the repo fails the bar" passed (fork fixture; stderr starts `fork: `, out dir absent). Default dir: `pnpm add-plugin` on the fixture with no `--out` printed `entry-exists: plugins/Knowledge4Zotero@windingwind.com already exists`, so it targets `plugins/`; tree left clean.
+- AC5: `plugins/` holds 14 entries; a node read of each `meta.json` found every `repoUrl` host is `github.com`; `pnpm check`: 14 entries, 0 problems.
+- AC6: CHANGELOG.md:10 has the `pnpm add-plugin <github-url>` entry under Unreleased; README.md:49 shows `pnpm add-plugin https://github.com/<owner>/<repo>` under "Adding a plugin"; `pnpm test` 60 passed and `pnpm check` 0 problems on the branch.
+- Gate: `cairn_validate.py` all checks passed (exit 0); no DESIGN.md principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
