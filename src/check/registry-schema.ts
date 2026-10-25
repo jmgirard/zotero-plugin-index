@@ -44,7 +44,11 @@ export async function loadRegistrySchema(cacheDir: string): Promise<object> {
       `the registry schema at ${REGISTRY_SCHEMA_URL} does not match its pinned SHA-256`,
     );
   }
-  await mkdir(cacheDir, { recursive: true });
-  await writeFile(cachePath, text);
+  try {
+    await mkdir(cacheDir, { recursive: true });
+    await writeFile(cachePath, text);
+  } catch {
+    // The download is good, so a cache that cannot be written only costs a later download.
+  }
   return JSON.parse(text);
 }

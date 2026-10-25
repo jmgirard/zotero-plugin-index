@@ -155,3 +155,15 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - blame-history #5: `runCheck` needs `npm_execpath`, so running Vitest directly throws — reject (planned change: review return 1 had the tests run `pnpm check`, and the error says to use `pnpm test`).
 - blame-history #6: D-001 names fflate, which package.json lacks — reject (planned change, as in pass 1: M002 adds it).
 - blame-history #7: CI runs twice for same-repo PRs — reject (planned change, as in pass 1).
+- diff-bug #1: a relative `pnpm check <dir>` resolves against the package root, so `pnpm check .` in a subdirectory checks the repo root — fix now (resolve against `INIT_CWD`; regression test runs `pnpm check .` from the fixture directory; a planted revert turned it red).
+- diff-bug #2: a failed cache write after a good download crashes with a raw error — fix now (the write failure is ignored; test with a cache path that is a file).
+- diff-bug #3: a root that is not a directory, such as `pnpm check README.md`, crashes with ENOTDIR — reject (edge: a file given as the entries directory, outside documented use; the effect is an error).
+- diff-bug #4: the cache path depends on the process directory when `node src/check/cli.ts` runs from elsewhere — fix now (the cache is `.cache/` at the package root, found from the module path).
+- diff-bug #5: dot-directories such as `plugins/.idea/` are checked as entries and fail — fix now (names starting with `.` are skipped; regression test).
+- diff-bug #6: two overrides for the same field and version pass, and M003 would have to pick one — follow-up (added to candidate row "Catch stray and unportable entry files").
+- diff-bug #7: `spawnSync` has no timeout, and the 30 s fetch timeout exceeds the 20 s test timeout — fix now (spawn timeout 50 s, test timeout 60 s).
+- diff-bug #8: no test covers the offline cache path, the `field` enum, or an empty `reason` — fix now (a cache-only test with fetch stubbed to fail, and index-schema tests for a field outside the enum, an empty value, and an empty reason, each a README-documented limit).
+- diff-bug #9: DESIGN.md Function Families and Architecture are stale — reject (false at the head: fixed in 3908bcc after the reviewer's base 494eaab).
+- diff-bug #10: a UTF-8 BOM gives an unclear message — reject (already settled as follow-up in pass 1).
+- diff-bug (c) #1: the meta.json and index.json missing-file cases run one branch — fix now (kept the meta.json case only).
+- diff-bug (c) #2: the `updateUrl`-required test checks Ajv's `required`, while the `downloads` and invalid-JSON tests already cover the registry-schema rule — fix now (removed; this reverses the pass-1 reject, because the rule now has two other tests).

@@ -33,10 +33,12 @@ function editJson(path: string, change: (value: Record<string, unknown>) => void
 }
 
 // pnpm sets npm_execpath to its own binary when it runs `pnpm test`.
-function runCheck(root: string) {
+function runCheck(root: string, cwd?: string) {
   const pnpm = process.env.npm_execpath;
   if (!pnpm) throw new Error("run the tests with `pnpm test`, so they can call `pnpm check`");
-  const result = spawnSync(pnpm, ["--silent", "check", root], { encoding: "utf8" });
+  // Drop the outer run's INIT_CWD, so pnpm sets it from cwd as it does for a user.
+  const { INIT_CWD: _outer, ...env } = process.env;
+  const result = spawnSync(pnpm, ["--silent", "check", root], { encoding: "utf8", cwd, env, timeout: 50_000 });
   const findings = result.stdout
     .split("\n")
     .filter((line) => line.includes(": "))
@@ -73,9 +75,23 @@ describe("pnpm check <root>", () => {
     expect(result.stdout).toContain("checked 0 entries");
   });
 
-  test.each(["meta.json", "index.json"])("files-present: an entry without %s", (file) => {
-    const result = expectOnlyRule(treeWith((dir) => rmSync(join(dir, file))), "files-present");
-    expect(result.stdout).toContain(`missing ${file}`);
+  test("resolves a relative <dir> against the directory pnpm was run from", () => {
+    const result = runCheck(".", VALID);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("checked 2 entries");
+  });
+
+  test("skips dot-directories such as .idea", () => {
+    const root = treeWith(() => {});
+    mkdirSync(join(root, ".idea"));
+    const result = runCheck(root);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("checked 2 entries");
+  });
+
+  test("files-present: an entry without meta.json", () => {
+    const result = expectOnlyRule(treeWith((dir) => rmSync(join(dir, "meta.json"))), "files-present");
+    expect(result.stdout).toContain("missing meta.json");
   });
 
   test("files-present: a meta.json that cannot be read", () => {
@@ -93,11 +109,6 @@ describe("pnpm check <root>", () => {
     expect(result.stdout).toContain("meta.json is not valid JSON");
   });
 
-  test("registry-schema: meta.json without the required updateUrl", () => {
-    const root = treeWith((dir) => editJson(join(dir, "meta.json"), (meta) => delete meta.updateUrl));
-    expectOnlyRule(root, "registry-schema");
-  });
-
   test("registry-schema: meta.json with a field the registry does not define", () => {
     const root = treeWith((dir) => editJson(join(dir, "meta.json"), (meta) => (meta.downloads = 5)));
     const result = expectOnlyRule(root, "registry-schema");
@@ -107,6 +118,17 @@ describe("pnpm check <root>", () => {
   test("index-schema: index.json with an unknown schema version", () => {
     const root = treeWith((dir) => editJson(join(dir, "index.json"), (index) => (index.schemaVersion = 2)));
     expectOnlyRule(root, "index-schema");
+  });
+
+  // The README documents each of these limits on an override.
+  test.each([
+    ["a field outside the listed facts", { field: "version_name", value: "x", reason: "r" }, "/overrides/0/field"],
+    ["an empty value", { field: "name", value: "", reason: "r" }, "/overrides/0/value"],
+    ["an empty reason", { field: "name", value: "x", reason: "" }, "/overrides/0/reason"],
+  ])("index-schema: an override with %s", (_name, override, path) => {
+    const root = treeWith((dir) => editJson(join(dir, "index.json"), (index) => (index.overrides = [override])));
+    const result = expectOnlyRule(root, "index-schema");
+    expect(result.stdout).toContain(path);
   });
 
   test("id-matches-directory: meta.json id differs from the directory", () => {

@@ -61,6 +61,8 @@ async function listEntries(root: string): Promise<ListedEntry[]> {
   }
   const entries: ListedEntry[] = [];
   for (const name of names.sort()) {
+    // Editor and system folders such as .idea are not entries.
+    if (name.startsWith(".")) continue;
     try {
       if ((await stat(join(root, name))).isDirectory()) entries.push({ name });
     } catch (error) {
