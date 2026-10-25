@@ -32,7 +32,7 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
 
 ## Acceptance criteria
 
-- [ ] AC1: The count check refuses a zip that claims too many entries. If the entry count times 46 is more than the
+- [x] AC1: The count check refuses a zip that claims too many entries. If the entry count times 46 is more than the
       XPI's length in bytes, `readUpstream` returns the failure `xpi-unreadable`. Its message contains
       `claims <count> entries`, with the count in plain digits. The count is the one `unzipSync` loops over. It starts
       as the 2-byte count in the end record that `unzipSync` finds, and a 2-byte count of 0 gives 0. Otherwise, if the
@@ -41,7 +41,7 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
       of that record's total-entry field. Vitest cases cover two XPIs. One is a 98-byte zip64 XPI that claims
       4,294,967,295 entries. The other is a 22-byte XPI whose end record claims 65,535 entries. Each case asserts the
       failure name and the count in the message.
-- [ ] AC2: The reader's count agrees with fflate on a named Vitest table. For each zip in the table, the reader's count
+- [x] AC2: The reader's count agrees with fflate on a named Vitest table. For each zip in the table, the reader's count
       equals the number of `filter` calls of `unzipSync` on that zip, counted with a filter that returns false. Each
       table zip is one that `unzipSync` reads without throwing. The table holds at least these zips: a two-file zip
       from fflate's `zipSync`; an end record with a comment; a comment that holds a decoy end record with a larger
@@ -49,12 +49,12 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
       within the bound; a zip64 locator whose record offset points outside the file; a locator offset with its high 32
       bits set; a 2-byte count of 0 with a zip64 record that claims 4,294,967,295 entries; and a zip64 record whose
       count field runs past the end of the file.
-- [ ] AC3: A zip whose count times 46 equals its length is not refused by the count check. A Vitest case reads a
+- [x] AC3: A zip whose count times 46 equals its length is not refused by the count check. A Vitest case reads a
       138-byte zip64 XPI that claims 3 entries, and a second case reads a plain end record at the bound. In each, the
       directory offset points at zero bytes, and the read gets `no-manifest`. A zip with no end record keeps its
       current failure, `xpi-unreadable` with fflate's message. The review records one live `pnpm build` over the 14
       entries in `plugins/`. It shows no failure whose message contains `claims` or `more than one`.
-- [ ] AC4: The reader refuses a zip that repeats a file it unzips. Among the entries that `unzipSync` passes to the
+- [x] AC4: The reader refuses a zip that repeats a file it unzips. Among the entries that `unzipSync` passes to the
       filter, the filter returns true at most once in each unzip. At a second entry whose decoded name equals the file
       being read, `readUpstream` returns `xpi-unreadable`, and its message contains `more than one <name>`. This holds
       for `manifest.json` and for the default locale's `_locales/<locale>/messages.json`. Vitest cases cover three
@@ -62,11 +62,11 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
       `manifest.json` and two entries named `_locales/en/messages.json`, and asserts
       `more than one _locales/en/messages.json`. One holds 2,000 entries named `manifest.json`, each pointing at a
       1,033-byte deflate stream that inflates to 1 MiB. It gets the same failure in under 1 s.
-- [ ] AC5: Three files state both rules. They are README's list of reader limits, the CHANGELOG's Unreleased section,
+- [x] AC5: Three files state both rules. They are README's list of reader limits, the CHANGELOG's Unreleased section,
       and DESIGN.md's `src/upstream/` bullet. Each says this: if an XPI's zip claims more entries than its length can
       hold, at 46 bytes for each entry, the read fails with `xpi-unreadable`. Each also says that a zip with more than
       one entry named `manifest.json`, or named the default locale's `messages.json`, fails with `xpi-unreadable`.
-- [ ] AC6: The profile's `verify` slot is clean: `pnpm test` and `pnpm check` pass.
+- [x] AC6: The profile's `verify` slot is clean: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -123,3 +123,14 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
 ## Decisions
 
 ## Review
+
+Pass 1, 2026-10-25, on branch `m005-zip-entry-limits` at b96628f; `origin/main` d92d62f is the branch base, so no sync was needed.
+
+- AC1: `vitest -t entries` (verbose) passed both "fails with xpi-unreadable when … claims more entries than the zip can hold" cases: the 98-byte zip64 XPI (4,294,967,295) in 4 ms and the 22-byte end record (65,535) in 1 ms, each asserting `xpi-unreadable` and `claims <count> entries`. Before the fix (T1), the zip64 case ran past 180 s.
+- AC2: the 9-row "counts the entries that unzipSync loops over in …" table passed, each row asserting the filter-call count and `zipEntryCount` against a stated count. The rows are the two-file zip, a comment, a decoy end record in the comment, a signature in the last 21 bytes, a zip64 count within the bound, a locator offset outside the file, a locator offset with high bits set, a 2-byte count of 0 beside a zip64 2^32 - 1, and a zip64 count field past the end. T3's planted defects turned 3 rows red.
+- AC3: both "reads past the count check when … claims as many entries as the zip can hold" cases passed: a 138-byte zip64 XPI with 3 entries and a 46-byte end record with 1 entry, directory offset 0 over zero bytes, each getting `no-manifest`. A direct `readUpstream` read of the "not a zip" XPI returned `xpi-unreadable` with "the XPI of v3.3.3 is not a readable zip: invalid zip data", fflate's message as before; the "not a zip" and "exactly 50 MiB" cases also passed. A live `pnpm build` with `GITHUB_TOKEN` over the 14 entries in `plugins/` wrote 14 records, 0 with a failed upstream read, and `grep -c -E 'claims|more than one' dist/v1/plugins.json` printed 0.
+- AC4: three cases passed. Two `manifest.json` entries with `other.txt` between them, and a valid manifest with two `_locales/en/messages.json` entries, each got `xpi-unreadable` with "more than one manifest.json" and "more than one _locales/en/messages.json". 2,000 `manifest.json` entries, each pointing at one level-9 deflate stream of 1 MiB, got the same failure in 29 ms against a 1 s bound; before the fix (T4) it took 4,510 ms. In `unzipOne`, the filter returns true only while `found` is false.
+- AC5: README.md:74-78 (two limit bullets), CHANGELOG.md:32-37 (the Unreleased entry; "two or more entries" for the duplicate rule), and cairn/DESIGN.md:148-154 (the `src/upstream/` bullet) each state the 46-bytes-per-entry rule and the duplicate `manifest.json` / default-locale `messages.json` rule, both failing with `xpi-unreadable`.
+- AC6: `pnpm test` (type check, then Vitest) passed 5 files, 217 tests; `pnpm check` checked 14 entries, 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed. No DESIGN.md principle changed, so `cairn_impact` was skipped. The generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
