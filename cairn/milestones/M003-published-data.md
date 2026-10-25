@@ -1,6 +1,6 @@
 # M003: Build the published plugin data
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** M002
 - **Driving RR:** —
@@ -85,6 +85,8 @@ record carries the failure.
 - 2026-10-25: T3 done: .github/workflows/build.yml runs daily at 06:17 UTC and on workflow_dispatch, `pnpm build` with `secrets.GITHUB_TOKEN`, then actions/upload-artifact@v7 (newest release, read 2026-10-25) uploads `dist/` as `plugins-data`; YAML parsed with Ruby.
 - 2026-10-25: T4 done: `pnpm build` live with the gh token over plugins/ exited 0, "wrote 14 records to dist/v1/plugins.json, 0 with a failed upstream read"; Ajv found the file valid; 14 records carry upstream facts and no failure (generatedAt 2026-10-25T19:03:51.410Z).
 - 2026-10-25: T5 done: README "Building the data" section (path, schemaVersion 1, failure block, exit codes, workflow artifact) and a CHANGELOG Unreleased entry; DESIGN.md Function Families and Architecture name src/build/ and build.yml; pnpm test 84 passed, pnpm check clean.
+- 2026-10-25: claim audit: 80 claims read, 5 corrected — schemas/plugins.v1.schema.json (3), src/build/build.ts, test/build.test.ts; also a stale comment in test/support/preload-fixture.ts; the same reader re-read all 6 as true.
+- 2026-10-25: status review; pnpm test 84 passed, pnpm check 14 entries clean.
 
 ## Decisions
 

@@ -35,8 +35,8 @@ const validateIndex = ajv.compile(indexSchema);
 const validatePlugins = ajv.compile(pluginsSchema);
 
 // Reads every entry under root, then reads each plugin upstream, one at a time. A failed
-// upstream read goes into that entry's record. An entry that cannot be read stops the
-// build before any upstream read, since its record would have no repo to read.
+// upstream read goes into that entry's record. An entry that cannot be read, or whose
+// meta.json or index.json is invalid, stops the build before any upstream read.
 export async function buildData(root: string, fetch: Fetch, now = new Date()): Promise<BuildResult> {
   const listed = await listEntries(root);
   if (listed.length === 0) return { ok: false, problems: [`there are no entries in ${root}`] };

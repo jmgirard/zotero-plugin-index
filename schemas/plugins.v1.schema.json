@@ -30,7 +30,7 @@
       "oneOf": [{ "required": ["upstream"] }, { "required": ["failure"] }],
       "properties": {
         "id": {
-          "description": "The entry directory name under plugins/, which equals the plugin id in its meta.json.",
+          "description": "The entry directory name. pnpm check requires it to equal the id in the entry's meta.json; the build does not check it.",
           "type": "string",
           "minLength": 1
         },
@@ -40,7 +40,7 @@
           "minLength": 1
         },
         "upstream": {
-          "description": "The facts read from the plugin's GitHub repo, release XPI, and update.json. Present when the read succeeds.",
+          "description": "The facts read from the plugin's GitHub repo, its releases, and its release XPI, after a check that its update.json lists the plugin id. Present when the read succeeds.",
           "$ref": "#/definitions/upstream"
         },
         "failure": {
@@ -101,7 +101,7 @@
       "required": ["field", "value", "reason"],
       "properties": {
         "field": {
-          "description": "The manifest key this override corrects. strict_min_version and strict_max_version correct the upstream strictMinVersion and strictMaxVersion.",
+          "description": "The upstream fact this override corrects: name, description, homepage (homepage_url in the manifest), or strict_min_version and strict_max_version, which correct the upstream strictMinVersion and strictMaxVersion.",
           "enum": ["name", "description", "homepage", "strict_min_version", "strict_max_version"]
         },
         "version": {

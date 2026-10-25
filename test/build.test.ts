@@ -70,7 +70,7 @@ describe("pnpm build over the fixture tree", () => {
     result = pnpmBuild([TREE, "--out", out], writeFixture(responses()));
   });
 
-  test("writes dist/v1/plugins.json, valid against its schema, with one record per entry", () => {
+  test("writes v1/plugins.json under --out, valid against its schema, with one record per entry", () => {
     expect(result.stderr).toBe("");
     expect(result.status).toBe(0);
     const output = readOutput(out);
