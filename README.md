@@ -63,6 +63,23 @@ failure name for reading a plugin. The `WriteResult` type in
 `src/add-plugin/add-plugin.ts` adds `entry-exists`, `unsafe-id`, and
 `write-failed`.
 
+The command limits what it downloads from the plugin's release and update
+host:
+
+- An XPI larger than 50 MiB fails with `xpi-too-large`.
+- A `manifest.json`, or the `messages.json` of the default locale, whose
+  size in the zip, unzipped or compressed, is more than 1 MiB fails with
+  `manifest-too-large`.
+- An `update.json` larger than 1 MiB fails with `update-json-too-large`.
+
+Before the command requests the XPI, the `update.json`, or a redirect target,
+it checks the host. The read fails with `host-refused` for `localhost` and
+for names that end in `.localhost`. It also fails for a host that is, or
+resolves to, an address in a blocked range. The blocked ranges include the
+loopback, private, link-local, shared, multicast, documentation, benchmark,
+6to4, and NAT64 ranges. `src/upstream/host-guard.ts` lists them. The command
+follows at most 5 redirects for these two files.
+
 GitHub limits the number of API requests per hour. If the `GITHUB_TOKEN`
 environment variable is set, the command sends it with each GitHub API
 request, which gives a higher limit.

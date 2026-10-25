@@ -84,9 +84,10 @@ exception is a report that is abuse.
 - Entry checks (`src/check/`): `pnpm check [dir]` checks each entry
   directory under `plugins/`, or under `dir`, and prints one line for each
   problem. Added M001.
-- Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch)` returns
-  the facts of one GitHub repo, or one named inclusion-bar failure. Added
-  M002.
+- Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch, {
+  lookup })` returns the facts of one GitHub repo, or one named
+  inclusion-bar failure. The optional `lookup` resolves download hosts for
+  the host check (M004). Added M002.
 - Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
   <dir>]` writes a new entry from the reader's facts. Added M002.
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
@@ -140,6 +141,11 @@ reused._
   XPI with fflate, and reads the `update.json` that the manifest names. The
   caller passes the fetch function, so the tests answer from recorded
   responses in `test/fixtures/upstream/` and `test/fixtures/build/`.
+  The reader caps the XPI at 50 MiB, each unzipped file at 1 MiB, and the
+  `update.json` at 1 MiB. `src/upstream/host-guard.ts` refuses a download
+  host in a loopback, private, or reserved range, by its literal address or
+  by each address that DNS returns. The reader follows download redirects
+  itself, at most 5, and checks each one (M004).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request.
 - `src/build/` reads the entries, runs the upstream reader on each plugin in
@@ -160,5 +166,12 @@ reused._
   repositories. Topic search also misses plugins without a topic. Expected at
   design time, 2026-10-24. The reader sends `GITHUB_TOKEN` when it is set,
   which raises the limit (M002).
+- The host check looks up a download host before the request, and fetch
+  looks it up again when it connects. A DNS server that answers differently
+  the second time (DNS rebinding) can still reach a private address. The
+  plugin author picks the `update.json` host, and from that file the reader
+  publishes only whether it lists the plugin id. The XPI comes from GitHub's
+  download URL. Recorded at M004, 2026-10-25. The candidate "Check addresses
+  when the reader connects" holds the fix.
 - One person maintains the index. Approvals and disputes wait for that
   person. Expected at design time, 2026-10-24.

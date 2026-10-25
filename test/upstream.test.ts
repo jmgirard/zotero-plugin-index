@@ -1,4 +1,6 @@
+import { strToU8, unzipSync, zipSync } from "fflate";
 import { afterEach, describe, expect, test, vi } from "vitest";
+import type { Lookup } from "../src/upstream/host-guard.ts";
 import { readUpstream } from "../src/upstream/reader.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 
@@ -20,12 +22,19 @@ function manifest(responses: Responses): Json {
   return responses[XPI].xpi!["manifest.json"] as Json;
 }
 
+const publicLookup: Lookup = async () => ["140.82.112.3"];
+
 // Reads the recorded plugin after `edit` changes its responses.
-async function read(edit?: (responses: Responses) => void, repoUrl = REPO_URL) {
+async function read(edit?: (responses: Responses) => void, repoUrl = REPO_URL, lookup = publicLookup) {
   const { responses } = loadFixture(FIXTURE);
   edit?.(responses);
   const { fetch, requests } = fixtureFetch(responses);
-  return { result: await readUpstream(repoUrl, fetch), requests };
+  return { result: await readUpstream(repoUrl, fetch, { lookup }), requests };
+}
+
+// Reads the recorded plugin with its update_url set to `url`.
+function readUpdateUrl(url: string, lookup = publicLookup) {
+  return read((r) => (manifest(r).applications.zotero.update_url = url), REPO_URL, lookup);
 }
 
 describe("readUpstream", () => {
@@ -136,6 +145,7 @@ describe("readUpstream", () => {
     ["the releases request returns 403", (r) => (r[RELEASES].status = 403), "github-http-error", "HTTP 403"],
     ["a GitHub request cannot connect", (r) => (r[RELEASES_PAGE_2] = { error: "fetch failed" }), "request-failed", "fetch failed"],
     ["a body read is cut off", (r) => (r[UPDATE] = { bodyError: "terminated" }), "request-failed", "terminated"],
+    ["the XPI body read is cut off", (r) => (r[XPI] = { bodyError: "terminated" }), "request-failed", "terminated"],
     ["the repo body is not JSON", (r) => (r[REPO] = { text: "<html>" }), "request-failed", "not JSON"],
     ["the repo body is not an object", (r) => (r[REPO] = { json: null }), "request-failed", "not an object"],
     ["the releases body is not a list", (r) => (r[RELEASES] = { json: {} }), "request-failed", "not a list"],
@@ -219,6 +229,247 @@ describe("readUpstream", () => {
   ])("fails when %s", async (_name, edit, failure, detail) => {
     const { result } = await read(edit);
     expect(result).toEqual({ ok: false, failure, message: expect.stringContaining(detail) });
+  });
+
+  test("fails with xpi-too-large and stops reading an XPI past 50 MiB", async () => {
+    const { result, requests } = await read((r) => (r[XPI] = { chunks: { size: 1_048_576, count: 60 } }));
+    expect(result).toEqual({ ok: false, failure: "xpi-too-large", message: expect.stringContaining(XPI) });
+    expect(requests.find((q) => q.url === XPI)!.bytesEnqueued).toBeLessThanOrEqual(52_428_800 + 1_048_576);
+  });
+
+  test("reads the whole of an XPI of exactly 50 MiB", async () => {
+    const { result, requests } = await read((r) => (r[XPI] = { chunks: { size: 1_048_576, count: 50 } }));
+    // Zero bytes are not a zip, so the read gets past the cap and fails on the unzip.
+    expect(result).toEqual({ ok: false, failure: "xpi-unreadable", message: expect.stringContaining("zip") });
+    expect(requests.find((q) => q.url === XPI)!.bytesEnqueued).toBe(52_428_800);
+  });
+
+  test("fails with update-json-too-large and stops reading an update.json past 1 MiB", async () => {
+    const { result, requests } = await read((r) => (r[UPDATE] = { chunks: { size: 65_536, count: 20 } }));
+    expect(result).toEqual({ ok: false, failure: "update-json-too-large", message: expect.stringContaining(UPDATE) });
+    expect(requests.find((q) => q.url === UPDATE)!.bytesEnqueued).toBeLessThanOrEqual(1_048_576 + 65_536);
+  });
+
+  // Spaces after the JSON keep it valid, so only the size can fail the read.
+  const OVER_1_MIB = " ".repeat(1_048_577);
+
+  test("fails with manifest-too-large when manifest.json unzips to more than 1 MiB", async () => {
+    const { result } = await read((r) => (r[XPI].xpi!["manifest.json"] = JSON.stringify(manifest(r)) + OVER_1_MIB));
+    expect(result).toEqual({ ok: false, failure: "manifest-too-large", message: expect.stringContaining("manifest.json") });
+  });
+
+  test("fails with manifest-too-large when the default locale's messages.json unzips to more than 1 MiB", async () => {
+    const { result } = await read((r) => {
+      manifest(r).default_locale = "en";
+      r[XPI].xpi!["_locales/en/messages.json"] = JSON.stringify({ name: { message: "Notes" } }) + OVER_1_MIB;
+    });
+    expect(result).toEqual({
+      ok: false,
+      failure: "manifest-too-large",
+      message: expect.stringContaining("_locales/en/messages.json"),
+    });
+  });
+
+  test("does not fail on an over-1 MiB messages.json of a locale that is not the default", async () => {
+    const { result } = await read((r) => {
+      manifest(r).default_locale = "en";
+      r[XPI].xpi!["_locales/de/messages.json"] = JSON.stringify({ name: { message: "Notizen" } }) + OVER_1_MIB;
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  // Sets the uncompressed size of the zip's one file in its central directory, whose
+  // header starts with 0x02014b50 and holds that size at offset 24.
+  function understate(zip: Uint8Array, size: number): Uint8Array {
+    const view = new DataView(zip.buffer, zip.byteOffset);
+    const header = zip.findLastIndex((_, i) => i + 4 <= zip.length && view.getUint32(i, true) === 0x02014b50);
+    view.setUint32(header + 24, size, true);
+    return zip;
+  }
+
+  test("fflate returns no more bytes of a deflated file than the size the central directory declares", () => {
+    const zip = understate(zipSync({ "manifest.json": new Uint8Array(100_000).fill(32) }), 10);
+    expect(unzipSync(zip)["manifest.json"].length).toBe(10);
+  });
+
+  test("fails with manifest-too-large on a stored manifest.json over 1 MiB whose declared size is small", async () => {
+    const { result } = await read((r) => {
+      const json = strToU8(JSON.stringify(manifest(r)) + OVER_1_MIB);
+      const zip = understate(zipSync({ "manifest.json": [json, { level: 0 }] }), 1000);
+      r[XPI] = { base64: Buffer.from(zip).toString("base64") };
+    });
+    expect(result).toEqual({ ok: false, failure: "manifest-too-large", message: expect.stringContaining("manifest.json") });
+  });
+
+  // The first and last address of each blocked range, then mapped and loopback names.
+  test.each([
+    "0.0.0.0", "0.255.255.255", "10.0.0.0", "10.255.255.255", "100.64.0.0", "100.127.255.255",
+    "127.0.0.0", "127.255.255.255", "169.254.0.0", "169.254.255.255", "172.16.0.0", "172.31.255.255",
+    "192.0.0.0", "192.0.0.255", "192.0.2.0", "192.0.2.255", "192.168.0.0", "192.168.255.255",
+    "198.18.0.0", "198.19.255.255", "198.51.100.0", "198.51.100.255", "203.0.113.0", "203.0.113.255",
+    "224.0.0.0", "239.255.255.255", "240.0.0.0", "255.255.255.255",
+    "[::]", "[::ffff:ffff]", "[fc00::]", "[fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]",
+    "[fe80::]", "[febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff]", "[ff00::]", "[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]",
+    "[64:ff9b::]", "[64:ff9b::ffff:ffff]", "[2002::]", "[2002:ffff:ffff:ffff:ffff:ffff:ffff:ffff]",
+    "[2001:db8::]", "[2001:db8:ffff:ffff:ffff:ffff:ffff:ffff]",
+    "[::ffff:127.0.0.1]", "[::ffff:10.0.0.1]", "localhost", "foo.localhost.", "LOCALHOST.",
+  ])("refuses an update_url on %s with no request to it", async (host) => {
+    const { result, requests } = await readUpdateUrl(`http://${host}/update.json`);
+    expect(result).toEqual({ ok: false, failure: "host-refused", message: expect.stringContaining("does not request") });
+    expect(requests.at(-1)!.url).toBe(XPI);
+  });
+
+  // The address just outside each range edge that lies outside every range, then a public mapped address.
+  test.each([
+    "1.0.0.0", "9.255.255.255", "11.0.0.0", "100.63.255.255", "100.128.0.0", "126.255.255.255", "128.0.0.0",
+    "169.253.255.255", "169.255.0.0", "172.15.255.255", "172.32.0.0", "191.255.255.255", "192.0.1.0",
+    "192.0.1.255", "192.0.3.0", "192.167.255.255", "192.169.0.0", "198.17.255.255", "198.20.0.0",
+    "198.51.99.255", "198.51.101.0", "203.0.112.255", "203.0.114.0", "223.255.255.255",
+    "[::1:0:0]", "[fbff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]", "[fe00::]", "[fe7f:ffff:ffff:ffff:ffff:ffff:ffff:ffff]",
+    "[fec0::]", "[feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]", "[64:ff9a:ffff:ffff:ffff:ffff:ffff:ffff]",
+    "[64:ff9b::1:0:0]", "[2001:ffff:ffff:ffff:ffff:ffff:ffff:ffff]", "[2003::]",
+    "[2001:db7:ffff:ffff:ffff:ffff:ffff:ffff]", "[2001:db9::]", "[::ffff:8.8.8.8]",
+  ])("requests an update_url on %s", async (host) => {
+    const url = new URL(`http://${host}/update.json`).href;
+    const { result, requests } = await readUpdateUrl(url);
+    expect(result).toEqual({ ok: false, failure: "update-json-http-error", message: expect.stringContaining(url) });
+    expect(requests.at(-1)!.url).toBe(url);
+  });
+
+  const NAMES: Record<string, string[]> = {
+    "github.com": ["140.82.112.3"],
+    "mixed.example": ["8.8.8.8", "fd00::1"],
+    "public.example": ["8.8.8.8", "2606:4700::1111"],
+    "empty.example": [],
+  };
+  const namedLookup: Lookup = async (host) => NAMES[host] ?? Promise.reject(new Error(`ENOTFOUND ${host}`));
+
+  test("refuses a name that resolves to one public and one blocked address", async () => {
+    const { result, requests } = await readUpdateUrl("http://mixed.example/update.json", namedLookup);
+    expect(result).toEqual({ ok: false, failure: "host-refused", message: expect.stringContaining("fd00::1") });
+    expect(requests.at(-1)!.url).toBe(XPI);
+  });
+
+  test("refuses a name whose lookup answer is not an address", async () => {
+    const lookup: Lookup = async (host) => (host === "odd.example" ? ["127.0.0.1 "] : publicLookup(host));
+    const { result, requests } = await readUpdateUrl("http://odd.example/update.json", lookup);
+    expect(result).toEqual({ ok: false, failure: "host-refused", message: expect.stringContaining('"127.0.0.1 "') });
+    expect(requests.at(-1)!.url).toBe(XPI);
+  });
+
+  test("looks up a name with its trailing dot, as fetch will", async () => {
+    const asked: string[] = [];
+    await readUpdateUrl("http://public.example./update.json", async (host) => (asked.push(host), ["8.8.8.8"]));
+    expect(asked).toContain("public.example.");
+  });
+
+  test("fails with request-failed and no request when the XPI URL is not http or https", async () => {
+    const { result, requests } = await read((r) => {
+      (r[RELEASES].json as Json[])[0].assets[0].browser_download_url = "file:///etc/passwd";
+    });
+    expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining("file:///etc/passwd") });
+    expect(requests.map((q) => q.url)).not.toContain("file:///etc/passwd");
+  });
+
+  test("requests a name that resolves only to public addresses", async () => {
+    const { requests } = await readUpdateUrl("http://public.example/update.json", namedLookup);
+    expect(requests.at(-1)!.url).toBe("http://public.example/update.json");
+  });
+
+  test.each([
+    ["fails", "missing.example", "ENOTFOUND missing.example"],
+    ["returns no address", "empty.example", "no address"],
+  ])("fails with request-failed and no request when the lookup %s", async (_name, host, detail) => {
+    const { result, requests } = await readUpdateUrl(`http://${host}/update.json`, namedLookup);
+    expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining(detail) });
+    expect(requests.at(-1)!.url).toBe(XPI);
+  });
+
+  test("fails with request-failed when the lookup gives no answer within 60 s", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      const pending = readUpdateUrl("http://hung.example/update.json", (host) =>
+        host === "hung.example" ? new Promise(() => {}) : publicLookup(host),
+      );
+      let settled = false;
+      void pending.then(() => (settled = true));
+      // The read reaches the lookup only after real I/O, so the clock moves until it settles.
+      for (let i = 0; i < 100 && !settled; i++) {
+        await new Promise((resolve) => setImmediate(resolve));
+        await vi.advanceTimersByTimeAsync(10_000);
+      }
+      const { result, requests } = await pending;
+      expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining("no answer after 60000 ms") });
+      expect(requests.at(-1)!.url).toBe(XPI);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  test("checks the XPI host as well", async () => {
+    const { result, requests } = await read(undefined, REPO_URL, async () => ["127.0.0.1"]);
+    expect(result).toEqual({ ok: false, failure: "host-refused", message: expect.stringContaining(XPI) });
+    expect(requests.map((r) => r.url)).not.toContain(XPI);
+  });
+
+  test("asks fetch not to follow redirects for the XPI and update.json, and only for those", async () => {
+    const { requests } = await read();
+    expect(requests.map((r) => [r.url, r.redirect])).toEqual([
+      [REPO, undefined],
+      [RELEASES, undefined],
+      [RELEASES_PAGE_2, undefined],
+      [XPI, "manual"],
+      [UPDATE, "manual"],
+    ]);
+  });
+
+  // Each hop of `chain` redirects to the next with `status`; the last hop is the recorded update.json.
+  function redirectChain(r: Responses, chain: string[], status = 302) {
+    manifest(r).applications.zotero.update_url = chain[0];
+    chain.forEach((url, i) => (r[url] = { status, headers: { location: chain[i + 1] ?? UPDATE } }));
+  }
+  const hops = (n: number) => Array.from({ length: n }, (_, i) => `https://hop.example/${i}`);
+
+  test.each([
+    ["an address", "http://127.0.0.1/update.json"],
+    ["a protocol-relative Location", "//127.0.0.1/x"],
+  ])("refuses a redirect to %s with no request to it", async (_name, location) => {
+    const { result, requests } = await read((r) => {
+      manifest(r).applications.zotero.update_url = "https://hop.example/0";
+      r["https://hop.example/0"] = { status: 302, headers: { location } };
+    });
+    expect(result).toEqual({ ok: false, failure: "host-refused", message: expect.stringContaining("127.0.0.1") });
+    expect(requests.at(-1)!.url).toBe("https://hop.example/0");
+  });
+
+  test("fails with request-failed after more than 5 redirects", async () => {
+    const { result, requests } = await read((r) => redirectChain(r, hops(6)));
+    expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining("more than 5 redirects") });
+    expect(requests.at(-1)!.url).toBe("https://hop.example/5");
+  });
+
+  test("follows 5 redirects with relative Locations to the update.json", async () => {
+    const { result } = await read((r) => {
+      redirectChain(r, hops(5));
+      for (let i = 0; i < 4; i++) r[`https://hop.example/${i}`].headers = { location: `/${i + 1}` };
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  test.each([301, 302, 303, 307, 308])("follows a %i redirect", async (status) => {
+    const { result } = await read((r) => redirectChain(r, hops(1), status));
+    expect(result.ok).toBe(true);
+  });
+
+  test.each<[string, Record<string, string> | undefined, string]>([
+    ["no Location", undefined, "no usable Location"],
+    ["a file: Location", { location: "file:///etc/passwd" }, "not an http or https URL"],
+  ])("fails with request-failed on a redirect with %s", async (_name, headers, detail) => {
+    const { result } = await read((r) => {
+      manifest(r).applications.zotero.update_url = "https://hop.example/0";
+      r["https://hop.example/0"] = { status: 302, headers };
+    });
+    expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining(detail) });
   });
 
   test.each(["https://gitlab.com/windingwind/zotero-better-notes", "https://github.com/windingwind", "not a url"])(

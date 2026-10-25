@@ -1,5 +1,6 @@
 import process from "node:process";
 import { strFromU8, unzipSync } from "fflate";
+import { type Lookup, refusal, systemLookup } from "./host-guard.ts";
 
 export type Fetch = (url: string, init?: RequestInit) => Promise<Response>;
 
@@ -34,19 +35,28 @@ export type Failure =
   | "no-release"
   | "no-xpi-release"
   | "xpi-unreadable"
+  | "xpi-too-large"
   | "no-manifest"
+  | "manifest-too-large"
   | "manifest-invalid"
   | "no-zotero-id"
   | "max-version-below-7"
   | "no-update-url"
   | "update-json-http-error"
   | "update-json-invalid"
-  | "update-json-missing-id";
+  | "update-json-too-large"
+  | "update-json-missing-id"
+  | "host-refused";
 
 export type UpstreamResult = { ok: true; facts: UpstreamFacts } | { ok: false; failure: Failure; message: string };
 
 const API = "https://api.github.com";
 const FETCH_TIMEOUT_MS = 60_000;
+// The largest XPI among the listed plugins was 5.5 MB (observed 2026-10-25).
+export const XPI_MAX_BYTES = 50 * 1024 * 1024;
+export const UPDATE_JSON_MAX_BYTES = 1024 * 1024;
+// Each file the reader unzips: manifest.json and the default locale's messages.json.
+export const UNZIPPED_MAX_BYTES = 1024 * 1024;
 
 class ReadFailure extends Error {
   readonly failure: Failure;
@@ -62,17 +72,22 @@ function fail(failure: Failure, message: string): never {
 
 // Reads one GitHub repo. It never throws for a problem with the plugin: each one
 // comes back as a named failure, so a caller that reads many plugins can go on
-// past a bad one.
-export async function readUpstream(repoUrl: string, fetch: Fetch): Promise<UpstreamResult> {
+// past a bad one. `lookup` resolves the hosts of the XPI and update.json URLs for
+// the host check.
+export async function readUpstream(
+  repoUrl: string,
+  fetch: Fetch,
+  { lookup = systemLookup }: { lookup?: Lookup } = {},
+): Promise<UpstreamResult> {
   try {
-    return { ok: true, facts: await read(repoUrl, fetch) };
+    return { ok: true, facts: await read(repoUrl, fetch, downloader(fetch, lookup)) };
   } catch (error) {
     if (error instanceof ReadFailure) return { ok: false, failure: error.failure, message: error.message };
     throw error;
   }
 }
 
-async function read(repoUrl: string, fetch: Fetch): Promise<UpstreamFacts> {
+async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<UpstreamFacts> {
   const { owner, repo } = parseRepoUrl(repoUrl);
   const github = githubClient(fetch);
 
@@ -97,7 +112,7 @@ async function read(repoUrl: string, fetch: Fetch): Promise<UpstreamFacts> {
   if (withXpi.length === 0) fail("no-xpi-release", `no release of ${meta.full_name} has an .xpi asset`);
   const { release, xpi } = withXpi[0];
 
-  const { manifest, messages } = await readManifest(fetch, xpi!.browser_download_url, release.tag_name);
+  const { manifest, messages } = await readManifest(download, xpi!.browser_download_url, release.tag_name);
   const zotero = manifest.applications?.zotero;
   const id = stringOrUndefined(zotero?.id);
   if (!id) fail("no-zotero-id", `the manifest of ${release.tag_name} has no applications.zotero.id`);
@@ -109,7 +124,7 @@ async function read(repoUrl: string, fetch: Fetch): Promise<UpstreamFacts> {
   if (!updateUrl) fail("no-update-url", `the manifest of ${release.tag_name} has no applications.zotero.update_url`);
   const updateHost = httpHost(updateUrl);
   if (!updateHost) fail("no-update-url", `update_url ${updateUrl} is not an http or https URL`);
-  await checkUpdateJson(fetch, updateUrl, id);
+  await checkUpdateJson(download, updateUrl, id);
 
   return {
     id,
@@ -248,23 +263,79 @@ async function readText(response: Response, url: string): Promise<string> {
   }
 }
 
+// Reads the body until it ends or passes `max` bytes. Past `max` it cancels the body,
+// so it reads at most `max` bytes plus the chunk that crosses it.
+async function readCapped(response: Response, url: string, max: number, tooLarge: () => never): Promise<Uint8Array> {
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    const reader = response.body?.getReader();
+    for (let chunk = await reader?.read(); chunk && !chunk.done; chunk = await reader!.read()) {
+      total += chunk.value.byteLength;
+      if (total > max) {
+        await reader!.cancel().catch(() => {});
+        tooLarge();
+      }
+      chunks.push(chunk.value);
+    }
+  } catch (error) {
+    if (error instanceof ReadFailure) throw error;
+    fail("request-failed", `GET ${url} failed while reading the body: ${(error as Error).message}`);
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+}
+
+// Requests a plugin file that is not on the GitHub API: the XPI or the update.json.
+type Download = (url: string) => Promise<Response>;
+
+const REDIRECTS = [301, 302, 303, 307, 308];
+const MAX_REDIRECTS = 5;
+
+// Follows redirects itself, at most MAX_REDIRECTS, and checks the host of each URL
+// before it requests it.
+function downloader(fetch: Fetch, lookup: Lookup): Download {
+  return async (url) => {
+    if (!URL.canParse(url) || !["http:", "https:"].includes(new URL(url).protocol)) {
+      fail("request-failed", `${url} is not an http or https URL`);
+    }
+    let current = new URL(url);
+    for (let redirects = 0; ; redirects++) {
+      const refused = await refusal(current, lookup);
+      if (refused) fail(refused.failure, refused.message);
+      const response = await request(fetch, current.href, { redirect: "manual" });
+      if (!REDIRECTS.includes(response.status)) return response;
+      await response.body?.cancel().catch(() => {});
+      if (redirects === MAX_REDIRECTS) fail("request-failed", `GET ${url} took more than ${MAX_REDIRECTS} redirects`);
+      const location = response.headers.get("location");
+      if (location === null || !URL.canParse(location, current)) {
+        fail("request-failed", `GET ${current.href} returned HTTP ${response.status} with no usable Location`);
+      }
+      const next = new URL(location, current);
+      if (!["http:", "https:"].includes(next.protocol)) {
+        fail("request-failed", `GET ${current.href} redirects to ${next.href}, which is not an http or https URL`);
+      }
+      current = next;
+    }
+  };
+}
+
 async function readManifest(
-  fetch: Fetch,
+  download: Download,
   url: string,
   tag: string,
 ): Promise<{ manifest: ManifestJson; messages: Messages }> {
-  const response = await request(fetch, url);
+  const response = await download(url);
   if (!response.ok) fail("xpi-unreadable", `the XPI of ${tag} at ${url} returned HTTP ${response.status}`);
-  let files: Record<string, Uint8Array>;
-  try {
-    const zip = new Uint8Array(await response.arrayBuffer());
-    files = unzipSync(zip, {
-      filter: (file) => file.name === "manifest.json" || /^_locales\/[^/]+\/messages\.json$/.test(file.name),
-    });
-  } catch (error) {
-    fail("xpi-unreadable", `the XPI of ${tag} is not a readable zip: ${(error as Error).message}`);
-  }
-  const bytes = files["manifest.json"];
+  const zip = await readCapped(response, url, XPI_MAX_BYTES, () =>
+    fail("xpi-too-large", `the XPI of ${tag} at ${url} is larger than ${XPI_MAX_BYTES} bytes`),
+  );
+  const bytes = unzipOne(zip, "manifest.json", tag);
   if (!bytes) fail("no-manifest", `the XPI of ${tag} holds no manifest.json`);
   let manifest: unknown;
   try {
@@ -276,21 +347,46 @@ async function readManifest(
     fail("manifest-invalid", `the manifest.json of ${tag} is not a JSON object`);
   }
   const locale = stringOrUndefined((manifest as ManifestJson).default_locale);
-  const messagesBytes = locale ? files[`_locales/${locale}/messages.json`] : undefined;
+  const messagesBytes = locale ? unzipOne(zip, `_locales/${locale}/messages.json`, tag) : undefined;
   let messages: unknown;
   try {
     messages = messagesBytes && JSON.parse(strFromU8(messagesBytes));
   } catch {
-    // Unreadable messages leave the placeholders unresolved.
+    // A messages.json that is not JSON leaves the placeholders unresolved.
   }
   const isObject = typeof messages === "object" && messages !== null;
   return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {} };
 }
 
-async function checkUpdateJson(fetch: Fetch, url: string, id: string): Promise<void> {
-  const response = await request(fetch, url);
+// Unzips the one file `name`, or returns undefined when the zip lacks it. fflate 0.8.3
+// inflates a deflated file into a buffer of the size the central directory declares and
+// drops output past it, but it decodes the whole stream; it returns a stored file at its
+// compressed size (observed 2026-10-25). Refusing a declared or compressed size over the
+// cap bounds the file to UNZIPPED_MAX_BYTES and the decoding to that much input.
+function unzipOne(zip: Uint8Array, name: string, tag: string): Uint8Array | undefined {
+  try {
+    return unzipSync(zip, {
+      filter: (file) => {
+        if (file.name !== name) return false;
+        if (file.originalSize > UNZIPPED_MAX_BYTES || file.size > UNZIPPED_MAX_BYTES) {
+          fail("manifest-too-large", `${name} in the XPI of ${tag} is larger than ${UNZIPPED_MAX_BYTES} bytes`);
+        }
+        return true;
+      },
+    })[name];
+  } catch (error) {
+    if (error instanceof ReadFailure) throw error;
+    fail("xpi-unreadable", `the XPI of ${tag} is not a readable zip: ${(error as Error).message}`);
+  }
+}
+
+async function checkUpdateJson(download: Download, url: string, id: string): Promise<void> {
+  const response = await download(url);
   if (!response.ok) fail("update-json-http-error", `the update.json at ${url} returned HTTP ${response.status}`);
-  const text = await readText(response, url);
+  const bytes = await readCapped(response, url, UPDATE_JSON_MAX_BYTES, () =>
+    fail("update-json-too-large", `the update.json at ${url} is larger than ${UPDATE_JSON_MAX_BYTES} bytes`),
+  );
+  const text = new TextDecoder().decode(bytes);
   let body: unknown;
   try {
     body = JSON.parse(text);
