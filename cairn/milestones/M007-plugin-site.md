@@ -140,6 +140,8 @@ page and one plugin page and logs the result in this file's work log.
 - 2026-10-25: claim audit: 78 claims read, 3 corrected — site/src/pages/plugins/[id]/index.astro, site/src/data.ts, site/src/layouts/Base.astro; two loose wordings also fixed (src/site/version.ts, README.md, CHANGELOG.md); the same reader re-read them true and proposed the final CHANGELOG wording, taken; 310 tests pass, `pnpm check` clean.
 - 2026-10-25: status review; review return 1 worked (T9-T11), handed to /milestone-review.
 - 2026-10-25: step-7 approval: m007-plugin-site approved for merge
+- 2026-10-25: merged: PR #7 squash-merged as 13cf9b8 at 2026-10-25T23:16:54Z after 2 of 2 checks passed; the PR-URL, CI-wait, and conversation-read commits stayed local on the deleted branch.
+- 2026-10-25: live check: the user approved a manual `build.yml` run; run 40244171547 on main passed build and deploy; the home page answered 200 with 14 plugin rows, `plugins/Knowledge4Zotero%40windingwind.com/` answered 200 with "Better Notes for Zotero", "Zotero 8.0-beta.21 to 10.99.99", and the not-vetted sentence; `v1/plugins.json` answered 200 with 14 records, 0 failures.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
