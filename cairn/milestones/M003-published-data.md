@@ -48,8 +48,8 @@ record carries the failure.
 
 ## Coverage
 
-- AC1 → T1, T2
-- AC2 → T1, T2
+- AC1 → T1, T2, T6
+- AC2 → T1, T2, T6
 - AC3 → T1, T2
 - AC4 → T3
 - AC5 → T4
@@ -65,6 +65,8 @@ record carries the failure.
       `actions/upload-artifact` for `dist/`).
 - [x] T4: Run `pnpm build` locally with a token over the committed entries; record the result in the work log.
 - [x] T5: README and `CHANGELOG.md` entries.
+- [x] T6: (review return 1) Make the fixture build test write the default `dist/v1/plugins.json`, putting back a file
+      already there, and make the failing-entry test assert a record for every entry.
 
 ## Work log
 
@@ -90,6 +92,7 @@ record carries the failure.
 - 2026-10-25: review return 1: AC1 — the fixture test runs `pnpm build --out <temp>`, so no Vitest test asserts the file at `dist/v1/plugins.json` (the README's default path is untested too); AC2 first case — the exit-0 and failure-name test does not itself assert a record for every entry.
 - 2026-10-25: amendment routed: AC2 — a fetch that throws gives `request-failed`, because the reader catches every fetch rejection, so "a fixture whose fetch throws" cannot give `unexpected-error`; the case needs an error the reader does not name.
 - 2026-10-25: status in-progress for review return 1 and the AC2 amendment.
+- 2026-10-25: T6 added (minor amendment) and done: the fixture run writes the default dist/ and puts back an existing dist/v1/plugins.json (same SHA-1 before and after); the failing-entry test asserts the record id set; pnpm test 84 passed, pnpm check clean.
 
 ## Decisions
 

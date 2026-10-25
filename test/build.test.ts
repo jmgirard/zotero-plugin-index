@@ -63,14 +63,22 @@ function record(output: Output, id: string) {
 }
 
 describe("pnpm build over the fixture tree", () => {
-  let out: string;
+  // This run writes the default dist/, so a file already there is put back afterward.
+  const out = join(ROOT, "dist");
+  const file = join(out, "v1", "plugins.json");
+  const hadDist = existsSync(out);
+  const saved = existsSync(file) ? readFileSync(file) : undefined;
   let result: ReturnType<typeof pnpmBuild>;
   beforeAll(() => {
-    out = tempDir();
-    result = pnpmBuild([TREE, "--out", out], writeFixture(responses()));
+    result = pnpmBuild([TREE], writeFixture(responses()));
+  });
+  afterAll(() => {
+    if (saved) writeFileSync(file, saved);
+    else if (hadDist) rmSync(file, { force: true });
+    else rmSync(out, { recursive: true, force: true });
   });
 
-  test("writes v1/plugins.json under --out, valid against its schema, with one record per entry", () => {
+  test("writes dist/v1/plugins.json by default, valid against its schema, with one record per entry", () => {
     expect(result.stderr).toBe("");
     expect(result.status).toBe(0);
     const output = readOutput(out);
@@ -81,9 +89,10 @@ describe("pnpm build over the fixture tree", () => {
     expect(output.plugins.map((plugin) => plugin.id).sort()).toEqual(entries.sort());
   });
 
-  test("exits 0 and gives the failing entry the reader's failure name", () => {
+  test("exits 0, writes every record, and gives the failing entry the reader's failure name", () => {
     expect(result.status).toBe(0);
     const output = readOutput(out);
+    expect(output.plugins.map((plugin) => plugin.id).sort()).toEqual(readdirSync(TREE).sort());
     expect(record(output, FORKED)).toEqual({
       id: FORKED,
       repoUrl: "https://github.com/example/forked-plugin",
