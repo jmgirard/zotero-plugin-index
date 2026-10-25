@@ -1,13 +1,13 @@
 # M008: Find new plugin repos by topic search
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** internal — a data-generation command that only the maintainer and the M009 workflow run
-- **Branch/PR:** —
+- **Branch/PR:** m008-topic-discovery
 
 ## Goal
 
@@ -67,7 +67,7 @@ grows → candidate row "Warn when the daily build degrades".
 
 ## Tasks
 
-- [ ] T1: Record search fixtures under `test/fixtures/discover/`: two pages for `topic:zotero-plugin` (Link
+- [x] T1: Record search fixtures under `test/fixtures/discover/`: two pages for `topic:zotero-plugin` (Link
       header), one for `topic:zotero-addon`, one repo in both, and repos that reach each outcome of AC5,
       reusing the recorded upstream responses where they fit.
 - [ ] T2: Write failing tests in `test/discover.test.ts` for AC1–AC5, passing `{ lookup }` stubs and a fixture
@@ -96,6 +96,9 @@ grows → candidate row "Warn when the daily build degrades".
 - 2026-10-25: plan gate kept the CLI in this milestone, with no README or CHANGELOG text until M009, so review can run it live and read-only.
 - 2026-10-25: criteria audit (reduced mode, fresh Opus reader, run after the question set because the set chose the work) returned 4 findings, all fixed: AC2 narrowed to the planted case-only and skip-set repos; AC5 names `writeEntry`'s failure names in general, with four planted outcomes; AC3 records no transient failure (`github-http-error`, `request-failed`), so one rate-limited run cannot hide repos for 30 days; T3 notes that search pages are objects, not lists, and how `incomplete_results` is handled.
 - 2026-10-25: lessons used: 2026-10-25 (M001) pnpm through npx and `pnpm test`; 2026-10-25 (M001) INIT_CWD for relative paths; 2026-10-25 (M002) `--dir` for pnpm from a temp dir; 2026-10-25 (M002) the fixture preload; 2026-10-25 (M004) the `lookup` stub; 2026-10-25 (M003) Vitest `hookTimeout`.
+
+- 2026-10-25: implement started on m008-topic-discovery, cut from main at 7234459.
+- 2026-10-25: T1 done: `test/fixtures/discover/search.json` holds the search pages (two for `topic:zotero-plugin`, one for `topic:zotero-addon`, example/both under both), and `test/support/plugin-repo.ts` builds each repo's reader responses, since writing the XPI and update.json responses by hand for every test repo would repeat them.
 
 ## Decisions
 
