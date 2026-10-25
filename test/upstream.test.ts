@@ -88,10 +88,39 @@ describe("readUpstream", () => {
     expect(result.ok && [result.facts.name, result.facts.description]).toEqual(["Notes", "English"]);
   });
 
-  test("leaves out a placeholder that no messages.json resolves", async () => {
-    const { result } = await read((r) => (manifest(r).name = "__MSG_name__"));
+  test.each<[string, Record<string, unknown>]>([
+    ["no messages.json", {}],
+    ["an unreadable messages.json", { "_locales/en/messages.json": "{" }],
+  ])("leaves out a placeholder when the XPI has %s", async (_name, files) => {
+    const { result } = await read((r) => {
+      Object.assign(manifest(r), { default_locale: "en", name: "__MSG_name__" });
+      Object.assign(r[XPI].xpi!, files);
+    });
     expect(result.ok).toBe(true);
     expect(result.ok && result.facts.name).toBeUndefined();
+  });
+
+  test("reads the newest published release with an .xpi, whatever the list order", async () => {
+    const { result } = await read((r) => {
+      const [stable, beta] = r[RELEASES].json as Json[];
+      const draft = {
+        tag_name: "v9.0.0",
+        draft: true,
+        published_at: "2026-10-01T00:00:00Z",
+        assets: [{ name: "draft.xpi", browser_download_url: "https://example.org/draft.xpi" }],
+      };
+      r[RELEASES].json = [draft, beta, stable];
+    });
+    expect(result.ok && [result.facts.version, result.facts.releaseCount]).toEqual(["3.3.3", 2]);
+  });
+
+  test("skips a release that is not an object and assets that are not a list", async () => {
+    const { result } = await read((r) => {
+      const releases = r[RELEASES].json as Json[];
+      releases[1].assets = "not a list";
+      releases.unshift(null as unknown as Json);
+    });
+    expect(result.ok && [result.facts.version, result.facts.releaseCount]).toEqual(["3.3.3", 1]);
   });
 
   test.each(["7.0", "*", undefined])("passes a strict_max_version of %j", async (max) => {
@@ -106,6 +135,23 @@ describe("readUpstream", () => {
     ["the repo request returns 404", (r) => (r[REPO].status = 404), "github-http-error", "HTTP 404"],
     ["the releases request returns 403", (r) => (r[RELEASES].status = 403), "github-http-error", "HTTP 403"],
     ["a GitHub request cannot connect", (r) => (r[RELEASES_PAGE_2] = { error: "fetch failed" }), "request-failed", "fetch failed"],
+    ["a body read is cut off", (r) => (r[UPDATE] = { bodyError: "terminated" }), "request-failed", "terminated"],
+    ["the repo body is not JSON", (r) => (r[REPO] = { text: "<html>" }), "request-failed", "not JSON"],
+    ["the repo body is not an object", (r) => (r[REPO] = { json: null }), "request-failed", "not an object"],
+    ["the releases body is not a list", (r) => (r[RELEASES] = { json: {} }), "request-failed", "not a list"],
+    [
+      "the next page is on another host",
+      (r) => (r[RELEASES].headers = { link: '<https://evil.example/releases>; rel="next"' }),
+      "request-failed",
+      "https://evil.example/releases",
+    ],
+    [
+      "the next page points back to a page read before",
+      (r) => (r[RELEASES_PAGE_2].headers = { link: `<${RELEASES_PAGE_2}>; rel="next"` }),
+      "request-failed",
+      "read before",
+    ],
+    ["the repo is private", (r) => (r[REPO].json as Json).private = true, "private", "private"],
     ["the repo is a fork", (r) => (r[REPO].json as Json).fork = true, "fork", "fork"],
     ["the repo has no release", (r) => (r[RELEASES] = { json: [] }), "no-release", "no release"],
     [
@@ -118,6 +164,7 @@ describe("readUpstream", () => {
     ["the XPI is not a zip", (r) => (r[XPI] = { text: "not a zip" }), "xpi-unreadable", "v3.3.3"],
     ["the XPI holds no manifest.json", (r) => (r[XPI] = { xpi: { "bootstrap.js": "" } }), "no-manifest", "v3.3.3"],
     ["manifest.json is not valid JSON", (r) => (r[XPI] = { xpi: { "manifest.json": "{" } }), "manifest-invalid", "JSON"],
+    ["manifest.json is not an object", (r) => (r[XPI] = { xpi: { "manifest.json": "5" } }), "manifest-invalid", "object"],
     ["the manifest has no version", (r) => delete manifest(r).version, "manifest-invalid", "version"],
     [
       "the manifest has no applications.zotero.id",
@@ -136,6 +183,18 @@ describe("readUpstream", () => {
       (r) => (manifest(r).applications.zotero.strict_max_version = "6.999"),
       "max-version-below-7",
       "6.999",
+    ],
+    [
+      "strict_max_version is a number",
+      (r) => (manifest(r).applications.zotero.strict_max_version = 6),
+      "manifest-invalid",
+      "strict_max_version 6",
+    ],
+    [
+      "strict_max_version does not start with a digit",
+      (r) => (manifest(r).applications.zotero.strict_max_version = "abc"),
+      "manifest-invalid",
+      '"abc"',
     ],
     [
       "the manifest has no update_url",

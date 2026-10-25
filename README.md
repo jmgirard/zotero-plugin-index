@@ -60,7 +60,8 @@ of these files, the command writes no file. It prints the name of the failure
 and a message, then exits with status 1. Two failure names are `fork` and
 `no-xpi-release`. The `Failure` type in `src/upstream/reader.ts` lists each
 failure name for reading a plugin. The `WriteResult` type in
-`src/add-plugin/add-plugin.ts` adds `entry-exists` and `unsafe-id`.
+`src/add-plugin/add-plugin.ts` adds `entry-exists`, `unsafe-id`, and
+`write-failed`.
 
 GitHub limits the number of API requests per hour. If the `GITHUB_TOKEN`
 environment variable is set, the command sends it with each GitHub API

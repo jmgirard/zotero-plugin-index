@@ -29,6 +29,7 @@ export type Failure =
   | "not-github-repo"
   | "github-http-error"
   | "request-failed"
+  | "private"
   | "fork"
   | "no-release"
   | "no-xpi-release"
@@ -60,7 +61,8 @@ function fail(failure: Failure, message: string): never {
 }
 
 // Reads one GitHub repo. It never throws for a problem with the plugin: each one
-// comes back as a named failure, so one bad plugin cannot stop a run over many.
+// comes back as a named failure, so a caller that reads many plugins can go on
+// past a bad one.
 export async function readUpstream(repoUrl: string, fetch: Fetch): Promise<UpstreamResult> {
   try {
     return { ok: true, facts: await read(repoUrl, fetch) };
@@ -74,11 +76,16 @@ async function read(repoUrl: string, fetch: Fetch): Promise<UpstreamFacts> {
   const { owner, repo } = parseRepoUrl(repoUrl);
   const github = githubClient(fetch);
 
-  const meta = (await github.json(`${API}/repos/${owner}/${repo}`)) as RepoJson;
+  const metaUrl = `${API}/repos/${owner}/${repo}`;
+  const meta = (await github.json(metaUrl)) as RepoJson;
+  if (typeof meta !== "object" || meta === null || Array.isArray(meta)) {
+    fail("request-failed", `GET ${metaUrl} returned a body that is not an object`);
+  }
+  if (meta.private) fail("private", `${meta.full_name} is a private repo`);
   if (meta.fork) fail("fork", `${meta.full_name} is a fork`);
 
   const releases = (await github.pages(`${API}/repos/${owner}/${repo}/releases?per_page=100`)) as ReleaseJson[];
-  const published = releases.filter((release) => !release.draft);
+  const published = releases.filter((release) => typeof release === "object" && release !== null && !release.draft);
   if (published.length === 0) fail("no-release", `${meta.full_name} has no release`);
   const withXpi = published
     .map((release) => ({
@@ -96,10 +103,7 @@ async function read(repoUrl: string, fetch: Fetch): Promise<UpstreamFacts> {
   if (!id) fail("no-zotero-id", `the manifest of ${release.tag_name} has no applications.zotero.id`);
   const version = stringOrUndefined(manifest.version);
   if (!version) fail("manifest-invalid", `the manifest of ${release.tag_name} has no version`);
-  const strictMaxVersion = stringOrUndefined(zotero?.strict_max_version);
-  if (strictMaxVersion !== undefined && Number.parseInt(strictMaxVersion, 10) < 7) {
-    fail("max-version-below-7", `strict_max_version ${strictMaxVersion} is below Zotero 7`);
-  }
+  const strictMaxVersion = checkMaxVersion(zotero?.strict_max_version);
 
   const updateUrl = stringOrUndefined(zotero?.update_url);
   if (!updateUrl) fail("no-update-url", `the manifest of ${release.tag_name} has no applications.zotero.update_url`);
@@ -128,6 +132,7 @@ async function read(repoUrl: string, fetch: Fetch): Promise<UpstreamFacts> {
 interface RepoJson {
   full_name: string;
   html_url: string;
+  private: boolean;
   fork: boolean;
   created_at: string;
   open_issues_count: number;
@@ -162,6 +167,16 @@ function localized(value: unknown, messages: Messages): string | undefined {
   return stringOrUndefined(entry?.[1]?.message);
 }
 
+// A version starts with a digit, or is "*" for any version. An absent one passes.
+function checkMaxVersion(value: unknown): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string" || !/^(\*|\d)/.test(value)) {
+    fail("manifest-invalid", `strict_max_version ${JSON.stringify(value)} is not a version`);
+  }
+  if (Number.parseInt(value, 10) < 7) fail("max-version-below-7", `strict_max_version ${value} is below Zotero 7`);
+  return value;
+}
+
 function parseRepoUrl(url: string): { owner: string; repo: string } {
   let parsed: URL | undefined;
   try {
@@ -188,8 +203,9 @@ function githubClient(fetch: Fetch) {
   async function get(url: string): Promise<{ body: unknown; link: string | null }> {
     const response = await request(fetch, url, { headers });
     if (!response.ok) fail("github-http-error", `GET ${url} returned HTTP ${response.status}`);
+    const text = await readText(response, url);
     try {
-      return { body: await response.json(), link: response.headers.get("link") };
+      return { body: JSON.parse(text), link: response.headers.get("link") };
     } catch (error) {
       fail("request-failed", `GET ${url} returned a body that is not JSON: ${(error as Error).message}`);
     }
@@ -197,10 +213,15 @@ function githubClient(fetch: Fetch) {
 
   return {
     json: async (url: string): Promise<unknown> => (await get(url)).body,
-    // Follows the Link header's rel="next" and joins the pages' arrays.
+    // Follows the Link header's rel="next" and joins the pages' arrays. The token
+    // goes only to the API host, and a page seen before ends the read.
     async pages(url: string): Promise<unknown[]> {
       const items: unknown[] = [];
+      const seen = new Set<string>();
       for (let next: string | undefined = url; next; ) {
+        if (!URL.canParse(next) || new URL(next).origin !== API) fail("request-failed", `the next page ${next} is not on ${API}`);
+        if (seen.has(next)) fail("request-failed", `the next page ${next} was read before`);
+        seen.add(next);
         const { body, link } = await get(next);
         if (!Array.isArray(body)) fail("request-failed", `GET ${next} returned a body that is not a list`);
         items.push(...body);
@@ -216,6 +237,14 @@ async function request(fetch: Fetch, url: string, init: RequestInit = {}): Promi
     return await fetch(url, { ...init, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
   } catch (error) {
     fail("request-failed", `GET ${url} failed: ${(error as Error).message}`);
+  }
+}
+
+async function readText(response: Response, url: string): Promise<string> {
+  try {
+    return await response.text();
+  } catch (error) {
+    fail("request-failed", `GET ${url} failed while reading the body: ${(error as Error).message}`);
   }
 }
 
@@ -261,9 +290,10 @@ async function readManifest(
 async function checkUpdateJson(fetch: Fetch, url: string, id: string): Promise<void> {
   const response = await request(fetch, url);
   if (!response.ok) fail("update-json-http-error", `the update.json at ${url} returned HTTP ${response.status}`);
+  const text = await readText(response, url);
   let body: unknown;
   try {
-    body = JSON.parse(await response.text());
+    body = JSON.parse(text);
   } catch {
     fail("update-json-invalid", `the update.json at ${url} is not valid JSON`);
   }

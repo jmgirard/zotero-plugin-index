@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { strToU8, zipSync } from "fflate";
 
 // One recorded response. `xpi` maps file names in the zip to their contents; an object
-// is written as JSON. `error` makes the request reject, as a network failure does.
+// is written as JSON. `error` makes the request reject, as a network failure does, and
+// `bodyError` makes reading the body reject, as a connection reset does.
 export interface Recorded {
   status?: number;
   headers?: Record<string, string>;
@@ -10,6 +11,7 @@ export interface Recorded {
   text?: string;
   xpi?: Record<string, unknown>;
   error?: string;
+  bodyError?: string;
 }
 
 export type Responses = Record<string, Recorded>;
@@ -44,6 +46,8 @@ export function fixtureFetch(responses: Responses) {
 }
 
 function body(recorded: Recorded): BodyInit | null {
+  const { bodyError } = recorded;
+  if (bodyError) return new ReadableStream({ start: (controller) => controller.error(new TypeError(bodyError)) });
   if (recorded.xpi) {
     const files = Object.entries(recorded.xpi).map(([name, content]) => [
       name,

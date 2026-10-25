@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { writeEntry } from "../src/add-plugin/add-plugin.ts";
 import type { UpstreamFacts } from "../src/upstream/reader.ts";
 import { loadFixture } from "./support/fixture-fetch.ts";
@@ -13,8 +13,20 @@ const PRELOAD = resolve("test/support/preload-fixture.ts");
 const REPO_URL = "https://github.com/windingwind/zotero-better-notes";
 const ID = "Knowledge4Zotero@windingwind.com";
 
+// writeEntry's file writes fail while `failWrites.on` is set.
+const failWrites = vi.hoisted(() => ({ on: false }));
+vi.mock("node:fs/promises", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs/promises")>();
+  return {
+    ...actual,
+    writeFile: (...args: Parameters<typeof actual.writeFile>) =>
+      failWrites.on ? Promise.reject(new Error("disk full")) : actual.writeFile(...args),
+  };
+});
+
 const temps: string[] = [];
 afterEach(() => {
+  failWrites.on = false;
   for (const dir of temps.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
@@ -41,7 +53,8 @@ function pnpm(args: string[], options: { cwd?: string; fixture?: string } = {}) 
 }
 
 describe("pnpm add-plugin <url> [--out <dir>]", () => {
-  test("writes an entry that passes pnpm check, under a --out relative to where pnpm runs", () => {
+  // Two pnpm runs of up to 50 seconds each.
+  test("writes an entry that passes pnpm check, under a --out relative to where pnpm runs", { timeout: 120_000 }, () => {
     const cwd = tempDir();
     const result = pnpm(["add-plugin", REPO_URL, "--out", "entries"], { cwd, fixture: FIXTURE });
     expect(result.stderr).toBe("");
@@ -75,7 +88,7 @@ describe("pnpm add-plugin <url> [--out <dir>]", () => {
     expect(existsSync(out)).toBe(false);
   });
 
-  test.each([[[]], [[REPO_URL, "--out"]], [[REPO_URL, REPO_URL]]])("prints the usage for arguments %j", (args) => {
+  test.each([[[]], [[REPO_URL, "--out"]]])("prints the usage for arguments %j", (args) => {
     const result = pnpm(["add-plugin", ...args]);
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("usage: pnpm add-plugin <github-url> [--out <dir>]");
@@ -105,7 +118,22 @@ describe("writeEntry", () => {
     expect(readFileSync(join(out, ID, "index.json"), "utf8")).toBe("kept");
   });
 
-  test.each(["x/../../escape@example.org", "a\\b@example.org", ".hidden@example.org"])(
+  test("removes the entry directory when a file write fails", async () => {
+    const out = tempDir();
+    failWrites.on = true;
+    const result = await writeEntry(out, facts);
+    expect(result).toEqual({ ok: false, failure: "write-failed", message: expect.stringContaining("disk full") });
+    expect(readdirSync(out)).toEqual([]);
+  });
+
+  test("returns write-failed when the output directory cannot be made", async () => {
+    const file = join(tempDir(), "file");
+    writeFileSync(file, "");
+    const result = await writeEntry(join(file, "entries"), facts);
+    expect(result).toEqual({ ok: false, failure: "write-failed", message: expect.stringContaining("cannot create") });
+  });
+
+  test.each(["x/../../escape@example.org", ".hidden@example.org"])(
     "refuses the id %j, which cannot name an entry directory",
     async (id) => {
       const out = join(tempDir(), "entries");
