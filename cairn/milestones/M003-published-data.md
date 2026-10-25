@@ -1,6 +1,6 @@
 # M003: Build the published plugin data
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** M002
 - **Driving RR:** —
@@ -96,6 +96,8 @@ record carries the failure.
 - 2026-10-25: re-audit: AC2 (full) — 8 findings: proposed wording widened to every unnamed error and was false for some (fixed: one fixture whose reader throws an `Error`); misplaced modifier (fixed); injected entry read last (test now plants it on the first entry read; a planted stop-after-error defect turned it red); non-Error branch untested (declined, outside AC2); instrument-only reachability (already logged); schema-invalid facts stop the build (candidate row "Keep bad facts from failing the build"); README lacked unexpected-error (fixed).
 - 2026-10-25: re-audit: AC2 (full) — second reader on the fixed wording: it holds the old promise, no widening; 4 low findings answered without a wording change (throwing-entry position, since requiring it would widen; "the reader throws" where readUpstream passes the error on; "a second fixture" for one changed response; README covers non-Error throws, untested).
 - 2026-10-25: amendment return: AC2 — "A second fixture, in which the reader throws an `Error` instead of returning a failure name for one entry, gives the same result with the failure name `unexpected-error` for that entry."
+- 2026-10-25: claim audit: 9 claims read, 0 corrected — README.md, test/build.test.ts (lines added since 667a5ab, return 1).
+- 2026-10-25: status review; pnpm test 84 passed, pnpm check 14 entries clean.
 
 ## Decisions
 
