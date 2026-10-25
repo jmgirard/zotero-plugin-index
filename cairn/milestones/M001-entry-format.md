@@ -137,3 +137,9 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - diff-bug #13: `vitest.config.ts` is outside the type check — reject (style: a config file with one call, no behavior).
 - diff-bug #14: CI runs twice for same-repo PRs, has no `timeout-minutes`, and the schema fetch has no timeout — the double run is rejected (planned change: AC3 needs the push trigger, and the PR needs `pull_request`); the timeouts are fix now (`timeout-minutes: 10`, a 30-second fetch timeout).
 - diff-bug (c): `test.each` over two whitespace reasons and the `updateUrl`-required test — reject (planned change: AC1 requires both probes and one test per rule).
+- 2026-10-25, pass 2 (after review return 1): route (d); branch level with origin/main at 392cf9c; no PR.
+- AC1 (pass 2): fresh run after `rm -rf .cache` at f601708: `pnpm test` 15/15; the check tests now spawn `pnpm --silent check <root>`; one test per rule still passes (files-present for missing meta.json, missing index.json, and unreadable meta.json; registry-schema; index-schema; id-matches-directory; reason-not-blank `" "` and `" \t\n"`), each asserting exit 1 and only that rule on `first-plugin@example.org`.
+- AC2 (pass 2): same run — `pnpm check` on the valid tree exits 0 with 2 entries; the planted `downloads` field fails with `registry-schema`; an empty directory and a missing path exit 0 with 0 entries.
+- AC4 (pass 2): README `index.json` fields schemaVersion, overrides, field, version, value, reason; none missing from the schema's properties.
+- AC5 (pass 2): CHANGELOG.md entry present; `tsc --noEmit` clean, `pnpm test` 15 passed, `pnpm check` exit 0; `cairn_validate` all checks passed.
+- AC3 (pass 2): still pending the step-8 push's CI run.
