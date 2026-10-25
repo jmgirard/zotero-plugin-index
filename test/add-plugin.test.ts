@@ -38,7 +38,7 @@ function tempDir(): string {
 
 // pnpm sets npm_execpath to its own binary when it runs `pnpm test`. --dir finds this
 // package from any cwd, and pnpm still sets INIT_CWD to the cwd. The preload makes the
-// command answer its requests from `fixture` instead of the network.
+// command answer its requests and host lookups from `fixture` instead of the network.
 function pnpm(args: string[], options: { cwd?: string; fixture?: string } = {}) {
   const pnpmPath = process.env.npm_execpath;
   if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");

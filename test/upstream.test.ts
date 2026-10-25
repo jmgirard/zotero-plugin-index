@@ -145,6 +145,7 @@ describe("readUpstream", () => {
     ["the releases request returns 403", (r) => (r[RELEASES].status = 403), "github-http-error", "HTTP 403"],
     ["a GitHub request cannot connect", (r) => (r[RELEASES_PAGE_2] = { error: "fetch failed" }), "request-failed", "fetch failed"],
     ["a body read is cut off", (r) => (r[UPDATE] = { bodyError: "terminated" }), "request-failed", "terminated"],
+    ["the XPI body read is cut off", (r) => (r[XPI] = { bodyError: "terminated" }), "request-failed", "terminated"],
     ["the repo body is not JSON", (r) => (r[REPO] = { text: "<html>" }), "request-failed", "not JSON"],
     ["the repo body is not an object", (r) => (r[REPO] = { json: null }), "request-failed", "not an object"],
     ["the releases body is not a list", (r) => (r[RELEASES] = { json: {} }), "request-failed", "not a list"],
@@ -349,6 +350,27 @@ describe("readUpstream", () => {
     expect(requests.at(-1)!.url).toBe(XPI);
   });
 
+  test("refuses a name whose lookup answer is not an address", async () => {
+    const lookup: Lookup = async (host) => (host === "odd.example" ? ["127.0.0.1 "] : publicLookup(host));
+    const { result, requests } = await readUpdateUrl("http://odd.example/update.json", lookup);
+    expect(result).toEqual({ ok: false, failure: "host-refused", message: expect.stringContaining('"127.0.0.1 "') });
+    expect(requests.at(-1)!.url).toBe(XPI);
+  });
+
+  test("looks up a name with its trailing dot, as fetch will", async () => {
+    const asked: string[] = [];
+    await readUpdateUrl("http://public.example./update.json", async (host) => (asked.push(host), ["8.8.8.8"]));
+    expect(asked).toContain("public.example.");
+  });
+
+  test("fails with request-failed and no request when the XPI URL is not http or https", async () => {
+    const { result, requests } = await read((r) => {
+      (r[RELEASES].json as Json[])[0].assets[0].browser_download_url = "file:///etc/passwd";
+    });
+    expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining("file:///etc/passwd") });
+    expect(requests.map((q) => q.url)).not.toContain("file:///etc/passwd");
+  });
+
   test("requests a name that resolves only to public addresses", async () => {
     const { requests } = await readUpdateUrl("http://public.example/update.json", namedLookup);
     expect(requests.at(-1)!.url).toBe("http://public.example/update.json");
@@ -361,6 +383,27 @@ describe("readUpstream", () => {
     const { result, requests } = await readUpdateUrl(`http://${host}/update.json`, namedLookup);
     expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining(detail) });
     expect(requests.at(-1)!.url).toBe(XPI);
+  });
+
+  test("fails with request-failed when the lookup gives no answer within 60 s", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      const pending = readUpdateUrl("http://hung.example/update.json", (host) =>
+        host === "hung.example" ? new Promise(() => {}) : publicLookup(host),
+      );
+      let settled = false;
+      void pending.then(() => (settled = true));
+      // The read reaches the lookup only after real I/O, so the clock moves until it settles.
+      for (let i = 0; i < 100 && !settled; i++) {
+        await new Promise((resolve) => setImmediate(resolve));
+        await vi.advanceTimersByTimeAsync(10_000);
+      }
+      const { result, requests } = await pending;
+      expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining("no answer after 60000 ms") });
+      expect(requests.at(-1)!.url).toBe(XPI);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   test("checks the XPI host as well", async () => {

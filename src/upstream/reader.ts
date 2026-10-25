@@ -301,7 +301,9 @@ const MAX_REDIRECTS = 5;
 // before it requests it.
 function downloader(fetch: Fetch, lookup: Lookup): Download {
   return async (url) => {
-    if (!URL.canParse(url)) fail("request-failed", `${url} is not a URL`);
+    if (!URL.canParse(url) || !["http:", "https:"].includes(new URL(url).protocol)) {
+      fail("request-failed", `${url} is not an http or https URL`);
+    }
     let current = new URL(url);
     for (let redirects = 0; ; redirects++) {
       const refused = await refusal(current, lookup);
@@ -350,7 +352,7 @@ async function readManifest(
   try {
     messages = messagesBytes && JSON.parse(strFromU8(messagesBytes));
   } catch {
-    // Unreadable messages leave the placeholders unresolved.
+    // A messages.json that is not JSON leaves the placeholders unresolved.
   }
   const isObject = typeof messages === "object" && messages !== null;
   return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {} };

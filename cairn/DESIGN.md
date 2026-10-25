@@ -84,9 +84,10 @@ exception is a report that is abuse.
 - Entry checks (`src/check/`): `pnpm check [dir]` checks each entry
   directory under `plugins/`, or under `dir`, and prints one line for each
   problem. Added M001.
-- Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch)` returns
-  the facts of one GitHub repo, or one named inclusion-bar failure. Added
-  M002.
+- Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch, {
+  lookup })` returns the facts of one GitHub repo, or one named
+  inclusion-bar failure. The optional `lookup` resolves download hosts for
+  the host check (M004). Added M002.
 - Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
   <dir>]` writes a new entry from the reader's facts. Added M002.
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
@@ -168,8 +169,9 @@ reused._
 - The host check looks up a download host before the request, and fetch
   looks it up again when it connects. A DNS server that answers differently
   the second time (DNS rebinding) can still reach a private address. The
-  reader publishes no response body, only whether `update.json` lists the
-  plugin id. Recorded at M004, 2026-10-25. The candidate "Check addresses
+  plugin author picks the `update.json` host, and from that file the reader
+  publishes only whether it lists the plugin id. The XPI comes from GitHub's
+  download URL. Recorded at M004, 2026-10-25. The candidate "Check addresses
   when the reader connects" holds the fix.
 - One person maintains the index. Approvals and disputes wait for that
   person. Expected at design time, 2026-10-24.

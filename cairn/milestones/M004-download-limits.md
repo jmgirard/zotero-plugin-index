@@ -142,3 +142,29 @@ Pass 1, 2026-10-25, branch m004-download-limits at 00b70a7, main 41e4e81 (not mo
 - AC6: live `pnpm build --out <scratch>` with `GITHUB_TOKEN`, 2026-10-25: "wrote 14 records … 0 with a failed upstream read"; the file's records hold no `failure`, so none of the four names and no redirect-limit message.
 - AC7: `pnpm test` 196 passed (tsc clean); `pnpm check` "checked 14 entries in plugins, 0 problems". `git diff main...HEAD -- CHANGELOG.md` adds one Unreleased entry naming `xpi-too-large`, `update-json-too-large`, `manifest-too-large`, `host-refused`, 50 MiB XPI, 1 MiB update.json, 1 MiB for manifest.json or messages.json, and at most 5 redirects.
 - Gate: `cairn_validate.py` all checks passed (exit 0); no principle changed, so no `cairn_impact`; the generic profile's consistency-gate names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: a zip whose end record or zip64 end record claims up to 2^32−1 entries makes fflate's `unzipSync` loop for minutes with no timeout — follow-up, row "Refuse zips that claim too many entries" (fflate did this on main; the diff did not add it)
+- diff-bug #2: the DNS lookup had no timeout — fix now: 60 s `withTimeout` in host-guard.ts, fake-timer test
+- diff-bug #3: a lookup answer that is not an address counted as public — fix now: refused as `host-refused`, test with `"127.0.0.1 "`
+- diff-bug #4: the lookup got the name with its trailing dot removed, which a resolver with search domains can answer differently from fetch's dotted name — fix now: the lookup gets the dotted name; test
+- diff-bug #5: a cut-off XPI body changed from `xpi-unreadable` to `request-failed` with no test or changelog line — fix now: test row and a CHANGELOG sentence
+- diff-bug #6: the first XPI URL's scheme was not checked; a `file:` URL passed with an injected lookup — fix now: `request-failed` before any request; test
+- diff-bug #7: SIIT, local NAT64, discard, Teredo, and 192.88.99.0/24 ranges are not blocked — follow-up, row "Block more IPv6 ranges in the host check"
+- diff-bug #8: `localhost..` passes the name rule — reject, edge: a doubled trailing dot is outside documented and common use, and the system resolver gives ENOTFOUND, so production returns `request-failed` with no request
+- diff-bug #9: DESIGN.md's `readUpstream` signature was stale — fix now (same as ripple #2)
+- diff-bug #10: DESIGN.md's Known issues entry said the reader publishes no response body, but manifest fields are published — fix now: reworded to name the update.json host and what is published from it
+- diff-bug #11: a non-Error lookup rejection gave "failed: undefined" — fix now: `String(error)` fallback
+- diff-bug (c): rows that share a code path (two mapped addresses, `LOCALHOST.`, five redirect statuses, protocol-relative redirect) — reject, planned change: AC4 and AC5 name each probe. Comments that restate code — reject, false: they state how the literal lists were chosen and what the magic number and offset mean, which the code does not show
+- blame-history #1: the comment "Unreadable messages leave the placeholders unresolved" reads as covering an oversized file — fix now: reworded to "a messages.json that is not JSON"
+- blame-history #2: milestone choices sit in the work log, not DECISIONS.md — reject, false: the rulebook puts milestone-local decisions in the milestone file; none is cross-cutting
+- blame-history #3: cut-off XPI body and 3xx-without-Location name changes undocumented — fix now (with diff-bug #5)
+- blame-history #4: no CLI-level failing fixture for `host-refused` — reject, false: the preload stubs both fetch and the lookup, so a CLI test cannot pass on the live network, and a CLI `host-refused` case would repeat the reader-level path
+- blame-history #5: `updateHost` is the declared host, not the one that served the file after redirects — reject, false: the contract names the `update_url` host, and the diff did not change it
+- prior-review #1: the DNS lookup is not bounded by the 60 s request timeout — fix now (with diff-bug #2)
+- prior-review #2: cut-off XPI body name change untested and undocumented — fix now (with diff-bug #5)
+- prior-review #3: DESIGN.md signature stale — fix now (with ripple #2)
+- ripple #1: test/build.test.ts calls `buildData` in-process, so its host check did real DNS and the test needed the network — fix now: the file stubs `dns.promises.lookup`; a planted rejecting stub turned the facts-invalid test red
+- ripple #2: DESIGN.md Function Families gave `readUpstream(repoUrl, fetch)` — fix now: names the optional `{ lookup }`
+- ripple #3: the ROADMAP candidate "Limit what the reader downloads" is still listed — reject, planned change: post-merge hygiene graduates the row
+- ripple #4: the CLI test comments said the preload answers only requests — fix now: they name host lookups too
+- Fix-now verify: `pnpm test` 201 passed, `pnpm check` clean.

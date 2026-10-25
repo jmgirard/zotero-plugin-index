@@ -44,23 +44,40 @@ export type Refusal = { failure: "host-refused" | "request-failed"; message: str
 // IPv6 brackets and one trailing dot removed. A name is refused when any address
 // the lookup returns is in a listed range. fetch looks the name up again when it
 // connects, and that answer can differ from this one.
+// The lookup gets the name as fetch will, trailing dot kept, since a resolver can treat
+// `name` and `name.` differently. An answer that is not an address counts as blocked.
 export async function refusal(url: URL, lookup: Lookup): Promise<Refusal | undefined> {
-  const host = url.hostname.replace(/^\[(.*)\]$/, "$1").replace(/\.$/, "");
+  const name = url.hostname.replace(/^\[(.*)\]$/, "$1");
+  const host = name.replace(/\.$/, "");
   if (net.isIP(host)) {
     return isBlocked(host) ? refused(url, `${host} is not a public address`) : undefined;
   }
   if (host === "localhost" || host.endsWith(".localhost")) return refused(url, `${host} is a loopback name`);
   let addresses: string[];
   try {
-    addresses = await lookup(host);
+    addresses = await withTimeout(lookup(name), LOOKUP_TIMEOUT_MS);
   } catch (error) {
-    return { failure: "request-failed", message: `the lookup of ${host} for ${url.href} failed: ${(error as Error).message}` };
+    const reason = error instanceof Error ? error.message : String(error);
+    return { failure: "request-failed", message: `the lookup of ${name} for ${url.href} failed: ${reason}` };
   }
   if (addresses.length === 0) {
-    return { failure: "request-failed", message: `the lookup of ${host} for ${url.href} returned no address` };
+    return { failure: "request-failed", message: `the lookup of ${name} for ${url.href} returned no address` };
   }
-  const blocked = addresses.find(isBlocked);
-  return blocked ? refused(url, `${host} resolves to ${blocked}, which is not a public address`) : undefined;
+  const blocked = addresses.find((address) => !net.isIP(address.replace(/%.*$/, "")) || isBlocked(address));
+  return blocked !== undefined
+    ? refused(url, `${name} resolves to ${JSON.stringify(blocked)}, which is not a public address`)
+    : undefined;
+}
+
+// The same limit as each request's, so a hung resolver cannot stall a read.
+const LOOKUP_TIMEOUT_MS = 60_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const expired = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`no answer after ${ms} ms`)), ms);
+  });
+  return Promise.race([promise, expired]).finally(() => clearTimeout(timer));
 }
 
 function refused(url: URL, reason: string): Refusal {

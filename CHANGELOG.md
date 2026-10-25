@@ -27,3 +27,5 @@
   with `host-refused`. So does a download from a host that is, or resolves
   to, an address in a blocked range, such as a loopback or private range.
   The reader follows at most 5 redirects for the XPI and the `update.json`.
+  A cut-off XPI download, and a redirect with no `Location`, now fail with
+  `request-failed`.

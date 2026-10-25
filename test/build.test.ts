@@ -3,7 +3,8 @@ import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, 
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { Ajv } from "ajv";
-import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import dns from "node:dns";
+import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json" };
 import { buildData, checkOutput, writeData } from "../src/build/build.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
@@ -14,6 +15,10 @@ const PRELOAD = resolve(ROOT, "test/support/preload-fixture.ts");
 const BETTER_NOTES = "Knowledge4Zotero@windingwind.com";
 const SECOND = "second-plugin@example.org";
 const FORKED = "forked-plugin@example.org";
+
+// buildData runs the reader's host check in this process, so each host resolves to one
+// public address without DNS, as the preload does for the spawned commands.
+vi.spyOn(dns.promises, "lookup").mockResolvedValue([{ address: "140.82.112.3", family: 4 }] as never);
 
 const temps: string[] = [];
 afterAll(() => {
@@ -41,7 +46,7 @@ function writeFixture(recorded: Responses): string {
 }
 
 // pnpm sets npm_execpath to its own binary when it runs `pnpm test`. The preload makes
-// the command answer its requests from `fixture` instead of the network.
+// the command answer its requests and host lookups from `fixture` instead of the network.
 function pnpmBuild(args: string[], fixture?: string) {
   const pnpmPath = process.env.npm_execpath;
   if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");
