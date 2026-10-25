@@ -3,7 +3,7 @@
      The one size check that can fail is cairn_validate's <150 over the plan-owned body. -->
 # M005: Refuse zips that claim too many entries
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
@@ -117,6 +117,8 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
 - 2026-10-25: T4 done. Before the fix, both two-copy zips read as `ok: true`, and the 2,000-entry zip took 4,510 ms to fail with `manifest-invalid`. The `unzipOne` filter now fails at the second match with "holds more than one <name>". `pnpm test` 217 passed, `pnpm check` 0 problems.
 - 2026-10-25: T5 done. README's limit list, the CHANGELOG's Unreleased section, and DESIGN.md's `src/upstream/` bullet state both rules. The CHANGELOG's "more than 3 minutes" is the T1 run that passed 180 s before it was stopped.
 - 2026-10-25: T6 done. `pnpm test` 217 passed, `pnpm check` 0 problems.
+- 2026-10-25: claim audit: 39 claims read, 2 corrected — src/upstream/reader.ts (the count bounds fflate's loop, which can stop sooner by throwing), README.md (the lead-in now covers what the reader unzips). The reader re-read both and found them true. The CHANGELOG's "more than 3 minutes" stays, because it is the observed lower bound.
+- 2026-10-25: implement done; status review. `pnpm test` 217 passed, `pnpm check` 0 problems.
 
 ## Decisions
 

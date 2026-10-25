@@ -365,7 +365,7 @@ async function readManifest(
 // The smallest central-directory header: its fixed part, with no name, extra field, or comment.
 const CENTRAL_HEADER_MIN_BYTES = 46;
 
-// Returns the entry count that fflate 0.8.3's unzipSync loops over, or undefined when it
+// Returns the entry count that bounds fflate 0.8.3's unzipSync loop, or undefined when it
 // finds no end record. It copies how unzipSync finds the end record and the zip64 end
 // record (node_modules/fflate/esm/index.mjs:2670), and like fflate reads bytes past the
 // end of the zip as 0. unzipSync calls the filter once for each entry, so a 98-byte zip64

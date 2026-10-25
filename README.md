@@ -64,7 +64,7 @@ failure name for reading a plugin. The `WriteResult` type in
 `write-failed`.
 
 The command limits what it downloads from the plugin's release and update
-host:
+host, and what it unzips from the XPI:
 
 - An XPI larger than 50 MiB fails with `xpi-too-large`.
 - A `manifest.json`, or the `messages.json` of the default locale, whose
