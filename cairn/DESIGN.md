@@ -96,6 +96,12 @@ exception is a report that is abuse.
   the host check (M004). Added M002.
 - Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
   <dir>]` writes a new entry from the reader's facts. Added M002.
+- Discovery (`src/discover/`): `pnpm discover [--out <dir>] [--state
+  <file>] [--limit <n>] [--budget <n>]` searches the `zotero-plugin` and
+  `zotero-addon` topics, reads each repo that no entry names, and writes
+  the entries of up to `limit` repos (5 by default) that pass the inclusion
+  bar. It prints a JSON report of what it wrote, refused, and skipped.
+  Added M008.
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
@@ -164,6 +170,17 @@ reused._
   `messages.json`, the read also fails with `xpi-unreadable`. fflate loops
   over the claimed count and unzips each matching entry, so without these
   checks either zip holds the build's CPU (M005).
+- `src/discover/` pages through GitHub's repository search for each topic
+  with the reader's GitHub client, which `src/upstream/reader.ts` exports.
+  It joins the two result lists by lowercase owner/repo and reads the newest
+  pushed repos first, at most `budget` (100 by default) per run. It leaves
+  out each repo whose owner/repo, ignoring case, an entry's `repoUrl` names,
+  and it refuses a plugin id that an entry directory already has. A state
+  file, `.cache/discovery-state.json` by default, keeps each refused repo's
+  `pushed_at` and failure. A later run reads that repo again only when its
+  `pushed_at` changed or the record is 30 days old. A `github-http-error`,
+  `request-failed`, or `write-failed` result is not kept. A failed search
+  ends the run before any read and leaves the state file as it was (M008).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request.
 - `src/build/` reads the entries, runs the upstream reader on each plugin in

@@ -80,7 +80,7 @@ grows → candidate row "Warn when the daily build degrades".
 - [x] T5: Implement `src/discover/cli.ts` and the `discover` script in `package.json`, with a CLI test for AC6
       and AC7 that runs pnpm with `--dir` and the fixture preload; the state file defaults to
       `.cache/discovery-state.json`.
-- [ ] T6: Add `src/discover/` to DESIGN.md's Function Families and Architecture; run one live, read-only
+- [x] T6: Add `src/discover/` to DESIGN.md's Function Families and Architecture; run one live, read-only
       `pnpm discover --out <tmp> --state <tmp> --limit 3 --budget 20` and log its counts; run the verify slot.
 
 ## Work log
@@ -103,6 +103,7 @@ grows → candidate row "Warn when the daily build degrades".
 - 2026-10-25: T3 and T4 done in one commit, since both live in `src/discover/discover.ts`: `reader.ts` now exports `githubClient` (with its `get`) and `ReadFailure`; discovery checks a new id against the index's entry names itself (`entry-exists`), because `--out` can point away from `plugins/` where `writeEntry` would see the clash; `write-failed` joins the unrecorded failures, since it is a local problem; the 7 discover tests pass.
 - 2026-10-25: planted-defect probes, each restored after: recording transient failures, dropping the topic dedupe, dropping the budget, and a case-sensitive search-side key each turned the matching test red; a case-sensitive index-side key stayed green, since the fixture's index URL is already lowercase and the search side carries the case difference.
 - 2026-10-25: T5 done: `pnpm discover` (`src/discover/cli.ts`) defaults to `--limit 5`, `--budget 100`, `plugins/` as both index and output, and `.cache/discovery-state.json`; it writes the state through a temporary file and treats a state file that is not a JSON object as empty with a warning. The CLI tests cover AC6 and AC7; replacing INIT_CWD with the package root turned the AC7 test red. `pnpm test` passed 319 tests.
+- 2026-10-25: T6 done: DESIGN.md's Function Families and Architecture describe `src/discover/`. Live read-only run (`--limit 3 --budget 20`, gh token, output in the session scratchpad) exited 0: 4 repos read, 3 entries written (aidenlx/zotlit, irism6/alphapulse, justanotherjurastudent/zotero_flexannotate), 1 refused with `no-release` and kept in the state file, no warnings. `pnpm test` and `pnpm check` pass.
 
 ## Decisions
 
