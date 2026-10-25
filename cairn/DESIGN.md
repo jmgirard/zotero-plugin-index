@@ -140,6 +140,11 @@ reused._
   XPI with fflate, and reads the `update.json` that the manifest names. The
   caller passes the fetch function, so the tests answer from recorded
   responses in `test/fixtures/upstream/` and `test/fixtures/build/`.
+  The reader caps the XPI at 50 MiB, each unzipped file at 1 MiB, and the
+  `update.json` at 1 MiB. `src/upstream/host-guard.ts` refuses a download
+  host in a loopback, private, or reserved range, by its literal address or
+  by each address that DNS returns. The reader follows download redirects
+  itself, at most 5, and checks each one (M004).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request.
 - `src/build/` reads the entries, runs the upstream reader on each plugin in
@@ -160,5 +165,11 @@ reused._
   repositories. Topic search also misses plugins without a topic. Expected at
   design time, 2026-10-24. The reader sends `GITHUB_TOKEN` when it is set,
   which raises the limit (M002).
+- The host check looks up a download host before the request, and fetch
+  looks it up again when it connects. A DNS server that answers differently
+  the second time (DNS rebinding) can still reach a private address. The
+  reader publishes no response body, only whether `update.json` lists the
+  plugin id. Recorded at M004, 2026-10-25. The candidate "Check addresses
+  when the reader connects" holds the fix.
 - One person maintains the index. Approvals and disputes wait for that
   person. Expected at design time, 2026-10-24.

@@ -19,3 +19,10 @@
   the read of a plugin fails, its record carries the failure name, and the
   build goes on. A workflow runs the build once a day and keeps `dist/` as a
   workflow artifact.
+- The upstream reader limits what it downloads. An XPI over 50 MiB fails
+  with `xpi-too-large`, and an `update.json` over 1 MiB fails with
+  `update-json-too-large`. A `manifest.json` or default-locale
+  `messages.json` that unzips to more than 1 MiB fails with
+  `manifest-too-large`. A download host that is, or resolves to, a loopback,
+  private, or reserved address fails with `host-refused`. The reader follows
+  at most 5 redirects for the XPI and the `update.json`.

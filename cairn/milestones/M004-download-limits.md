@@ -98,7 +98,7 @@ text for these limits.
       hop with T3's check, handles the five statuses and `Location` forms, and stops after 5 hops. `request()` for
       GitHub API calls keeps the default. `fixture-fetch.ts` records `init.redirect`, and a test asserts `"manual"` on
       both downloads. Tests per AC5.
-- [ ] T5: Docs and live run. A README paragraph after the `pnpm add-plugin` failure text on the limits and the host
+- [x] T5: Docs and live run. A README paragraph after the `pnpm add-plugin` failure text on the limits and the host
       check. A DESIGN.md Architecture line, and a Known issues entry on the DNS rebinding gap. The CHANGELOG entry per
       AC7. Run a live `pnpm build` once and read its failures (AC6).
 
@@ -123,6 +123,7 @@ text for these limits.
 - 2026-10-25: T2 done: `unzipOne` unzips `manifest.json`, then the default locale's `messages.json`, refusing a declared size over `UNZIPPED_MAX_BYTES`; a test pins fflate's stop at the declared size; a planted missing cap turned both size tests red. pnpm test 94 passed, pnpm check clean.
 - 2026-10-25: T3 done: `src/upstream/host-guard.ts` `refusal()` with its own IPv4/IPv6 parse to bits (no `net.BlockList`); `readUpstream(url, fetch, { lookup })` routes the XPI and update.json through a `downloader` that checks first; an unparseable XPI URL is `request-failed`. The preload replaces `dns.promises.lookup` (confirmed: an `.invalid` name resolved to the stub). Plants (no bracket strip, no mapped unwrap, no trailing-dot strip) turned 16, 2, and 2 probes red. pnpm test 183 passed, pnpm check clean.
 - 2026-10-25: T4 done: `downloader` sends `redirect: "manual"`, follows 301/302/303/307/308 against the current URL, checks each hop, and stops after 5 (`request-failed`, "more than 5 redirects"); GitHub API requests unchanged. Plants (first hop only checked, limit 6) turned 2 and 1 tests red. A live read of zotero-better-notes returned 3.3.3 through the GitHub release redirect. pnpm test 195 passed, pnpm check clean.
+- 2026-10-25: T5 done: README limits paragraph after the add-plugin failure text, CHANGELOG Unreleased entry, DESIGN.md Architecture line and a Known issues entry on DNS rebinding. Live `pnpm build` with a token: 14 records, 0 failed reads. pnpm test 195 passed, pnpm check clean.
 
 ## Decisions
 
