@@ -199,3 +199,15 @@ Review pass 1 (2026-10-25, head 0fe7ea2):
 - ripple #8: Function Families entry — fix now (as diff-bug #11)
 - ripple #9: PROFILE verify slot does not name `pnpm site` — reject, false: `pnpm test` runs test/site.test.ts, which spawns `pnpm site`
 - ripple #10: README "publishes its data file" and "the data from the last good build stays" — reject, false: both still describe the data correctly
+- fixed: every fix-now finding of pass 1 landed in b20534b (diff-bug #1-#3) and 632092b (the rest), audited in b30f4f7 and 92dd550
+
+Evidence pass 2 (2026-10-25, head 92dd550, main 772aef2 unmoved, after review return 1):
+
+- AC1: `vitest run test/version.test.ts`: 40 table cases (each member against its group's first, each group against the next) and the three `8.0.1` cases pass; the node comparison again finds the test's `ORDERED` equal to the note's 20 groups, 27 versions, so every quoted example is in the table.
+- AC2: same run, `rangeResult` block passes: each result, equality at each bound (max 8.0.1 against 8.0.1), missing bounds, failure, an applying and a non-applying override, both kinds on one field in either order.
+- AC3: `vitest run test/site.test.ts`: page set, byte-identical data, link prefix, and the failure tests pass; by hand at 92dd550: exit 0, `shasum -c` OK for the 3 data files, the 5 HTML files at raw-id paths, 0 internal links outside `/zotero-plugin-index/`.
+- AC4: same run, the five plugin-page tests pass (order, range "Zotero 7.0 to 8.*", facts, override rows with Used yes/no, failure page with no range).
+- AC5: built-in browser on the 92dd550 fixture build under `/zotero-plugin-index/`: storage cleared, the GUID page showed "Zotero 9.0 to 9.*" and no result; 8.0.1 typed on the home page gave no-range, inside, above, below, equal to Node's `rangeResult` at 92dd550; the Old Plugin link opened with the field prefilled and "Zotero 8.0.1 is newer than the declared maximum." (`above`).
+- AC6: `build.yml` steps: build 5, site 6 with no `if:`, Pages upload 8; README "The site" section with the field; one CHANGELOG `## Unreleased` entry added.
+- AC7: `pnpm test` 8 files, 310 passed; `pnpm check` 14 entries, 0 problems.
+- Gate: `cairn_validate.py` all checks passed; advisory WARN sizing: 11 tasks (>10), from the return's T9-T11, not a gate failure; no principle changed; generic profile adds no checks.
