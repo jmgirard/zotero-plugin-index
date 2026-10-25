@@ -26,10 +26,11 @@ The index lists plugins and links to the releases of each author. It does not
 host, mirror, or re-serve plugin files (XPI files). It does not review plugin
 code, and it does not endorse plugins.
 
-Each plugin page shows facts that a reader can check. These facts are source
-availability, repository age, last release, release count, open issues, and
-the host of the `update.json` file. Each page says that the index does not
-vet the plugins it lists.
+Each plugin page shows facts that a reader can check. These facts are the
+declared range of Zotero versions, source availability, repository age, last
+release, release count, open issues, and the host of the `update.json` file.
+The page also shows each override beside the upstream value it corrects
+(M007). Each page says that the index does not vet the plugins it lists.
 
 The index runs on GitHub only: GitHub Actions, GitHub Pages, and GitHub
 issues. It has no server, no database, and no paid service. Thus every
@@ -98,6 +99,10 @@ exception is a report that is abuse.
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
   It exits 1 when more than half of the records carry a failure. Added M003;
   schemas and exit rule M006.
+- Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
+  home page and one page per record into `dist/`, or `<dir>`, from the data
+  file there. `src/site/version.ts` holds `compareVersions`, `rangeResult`,
+  and `zoteroVersion`, which the pages' script also uses. Added M007.
 
 ## Conventions
 
@@ -162,8 +167,8 @@ reused._
 - `src/build/` reads the entries, runs the upstream reader on each plugin in
   turn, and checks each record and then the whole output against
   `schemas/plugins.v1.schema.json` before it writes the file.
-  `.github/workflows/build.yml` runs `pnpm check`, then the build, daily and
-  on manual dispatch, and keeps `dist/` as a workflow artifact (M003). The
+  `.github/workflows/build.yml` runs `pnpm check`, then the build, then
+  `pnpm site` (M007), daily and on manual dispatch, and keeps `dist/` as a workflow artifact (M003). The
   build also copies both schemas to `dist/schemas/`, and it exits 1 after it
   writes the file when more than half of the records carry a failure. The
   workflow then uploads `dist/` as the Pages artifact, and a deploy job that
@@ -178,7 +183,9 @@ reused._
   the pages' one script both import it. The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
   Astro's `import.meta.env.BASE_URL`. `build.yml` runs `pnpm site` after the
-  build, so a failed site build also deploys nothing (M007).
+  build, so a failed site build also deploys nothing. `tsconfig.json` includes
+  `site/`, so `pnpm test` type-checks its `.ts` files; the `.astro` templates
+  are compiled by Astro without a type check (M007).
 
 ## Known issues
 

@@ -6,11 +6,17 @@ import { build } from "astro";
 const SITE_ROOT = resolve(import.meta.dirname, "../../site");
 // pnpm build writes these into the same directory, so the site never replaces them.
 const DATA_ENTRIES = new Set(["v1", "schemas"]);
+const ENV_KEYS = ["ZPI_SITE_DATA", "ASTRO_TELEMETRY_DISABLED"] as const;
 
 // Builds the site from <outDir>/v1/plugins.json into <outDir>. Astro empties the
 // directory it builds into, so it builds into a temporary directory, and then each page
-// is copied into outDir beside the data and the schemas.
-export async function buildSite(outDir: string): Promise<{ ok: true; pages: number } | { ok: false; message: string }> {
+// is copied into outDir beside the data and the schemas. The pages read the data path
+// from the environment, so run one build at a time in a process. siteRoot is the Astro
+// project, which tests replace.
+export async function buildSite(
+  outDir: string,
+  siteRoot = SITE_ROOT,
+): Promise<{ ok: true; pages: number } | { ok: false; message: string }> {
   const dataPath = join(outDir, "v1", "plugins.json");
   try {
     JSON.parse(await readFile(dataPath, "utf8"));
@@ -19,11 +25,12 @@ export async function buildSite(outDir: string): Promise<{ ok: true; pages: numb
   }
 
   const staging = await mkdtemp(join(tmpdir(), "zpi-site-"));
+  const saved = ENV_KEYS.map((key) => [key, process.env[key]] as const);
   try {
     // The pages read the data file from this variable. Astro's telemetry stays off.
     process.env.ZPI_SITE_DATA = dataPath;
     process.env.ASTRO_TELEMETRY_DISABLED = "1";
-    await build({ root: SITE_ROOT, outDir: staging, logLevel: "warn" });
+    await build({ root: siteRoot, outDir: staging, logLevel: "warn" });
 
     const entries = await readdir(staging);
     const clash = entries.find((name) => DATA_ENTRIES.has(name));
@@ -38,6 +45,10 @@ export async function buildSite(outDir: string): Promise<{ ok: true; pages: numb
   } catch (error) {
     return { ok: false, message: (error as Error).message };
   } finally {
+    for (const [key, value] of saved) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
     await rm(staging, { recursive: true, force: true });
   }
 }

@@ -21,8 +21,19 @@ function pnpmSite(args: string[]) {
   const pnpmPath = process.env.npm_execpath;
   if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");
   const { INIT_CWD: _outer, ...env } = process.env;
-  return spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "site", ...args], { encoding: "utf8", env, timeout: 110_000 });
+  return spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "site", ...args], { encoding: "utf8", env, timeout: 50_000 });
 }
+
+// An out directory holding data, for the failure cases.
+function outWith(data: string): string {
+  const dir = mkdtempSync(join(tmpdir(), "zpi-site-fail-"));
+  temps.push(dir);
+  mkdirSync(join(dir, "v1"));
+  writeFileSync(join(dir, "v1/plugins.json"), data);
+  return dir;
+}
+
+const temps: string[] = [];
 
 function htmlFiles(dir: string): string[] {
   return (readdirSync(dir, { recursive: true }) as string[]).filter((path) => path.endsWith(".html"));
@@ -42,6 +53,7 @@ beforeAll(() => {
 
 afterAll(() => {
   if (out) rmSync(out, { recursive: true, force: true });
+  for (const dir of temps.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
 describe("pnpm site", () => {
@@ -126,7 +138,7 @@ describe("the plugin page", () => {
     const rows = [...page("first-plugin@example.org").matchAll(/<tr data-override="[^"]*">(.*?)<\/tr>/g)].map((row) =>
       [...row[1]!.matchAll(/<td>(.*?)<\/td>/g)].map((cell) => cell[1]!.replace(/<[^>]+>/g, "")),
     );
-    // Field, upstream value, override value, version, applies, reason.
+    // Field, upstream value, override value, version, used, reason.
     expect(rows).toEqual([
       ["strict_max_version", "7.*", "8.*", "every version", "yes", "The author confirmed that the plugin works on Zotero 8."],
       ["strict_min_version", "7.0", "8.5", "0.9.0", "no", "Version 0.9.0 needs an API that Zotero 8.5 added."],
@@ -140,7 +152,49 @@ describe("the plugin page", () => {
     );
     expect(html).not.toContain('data-fact="declared-range"');
     expect(html).not.toMatch(/\sdata-result-for="/);
+    expect(html).toContain("<h1>broken-plugin@example.org</h1>");
   });
+});
+
+describe("the home page", () => {
+  test("names the failure of a record that was not read", () => {
+    const row = /<tr data-plugin="broken-plugin@example\.org">(.*?)<\/tr>/.exec(readFileSync(join(out, "index.html"), "utf8"));
+    expect(row?.[1]).toContain("<td>Not read: no-xpi-release</td>");
+  });
+});
+
+describe("pnpm site failures", () => {
+  test("rejects an extra argument with the usage line", () => {
+    const usage = pnpmSite(["extra"]);
+    expect(usage.status).toBe(1);
+    expect(usage.stderr).toContain("usage: pnpm site [--out <dir>]");
+  }, 60_000);
+
+  test("reports an Astro build failure and writes no page", () => {
+    const dir = outWith("{}");
+    const failed = pnpmSite(["--out", dir]);
+    expect(failed.status).toBe(1);
+    expect(failed.stderr).toContain(`site-failed: ${join(dir, "v1", "plugins.json")} has no plugins list`);
+    expect(readdirSync(dir)).toEqual(["v1"]);
+  }, 60_000);
+
+  test("refuses a site build that writes v1/ and leaves the data as it was", () => {
+    const dir = outWith(readFileSync(FIXTURE, "utf8"));
+    const clashRoot = resolve(ROOT, "test/fixtures/site-clash");
+    const script = `import { buildSite } from ${JSON.stringify(resolve(ROOT, "src/site/site.ts"))};
+      console.log(JSON.stringify(await buildSite(process.argv[1], process.argv[2])));`;
+    const run = spawnSync(process.execPath, ["--input-type=module", "-e", script, dir, clashRoot], {
+      cwd: ROOT,
+      encoding: "utf8",
+      timeout: 50_000,
+    });
+    expect(JSON.parse(run.stdout.trim().split("\n").at(-1)!)).toEqual({
+      ok: false,
+      message: "the site build wrote v1, which holds the data",
+    });
+    expect(readdirSync(dir)).toEqual(["v1"]);
+    expect(readFileSync(join(dir, "v1/plugins.json"), "utf8")).toBe(readFileSync(FIXTURE, "utf8"));
+  }, 60_000);
 });
 
 describe("pnpm site with no data file", () => {

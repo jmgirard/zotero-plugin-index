@@ -104,7 +104,7 @@ page and one plugin page and logs the result in this file's work log.
 - [x] T8: Run the `verify` slot.
 - [x] T9: Review return 1: the version field reads the first run that starts with a digit, so pasted About Zotero
       text such as "Version 7.0.11 (64-bit)" compares as 7.0.11; tests first.
-- [ ] T10: The fix-now findings of review pass 1 (Review section): field refresh on Back and across tabs, typed
+- [x] T10: The fix-now findings of review pass 1 (Review section): field refresh on Back and across tabs, typed
       text kept, a "Used" column from the override `appliedValue` picks, env restored, `.astro/` ignored, `site/`
       type-checked, non-http repo URLs unlinked, the untested branches and error paths tested, the comparator table
       cut to adjacent groups, DESIGN.md and README fixes, the spawn timeout at 50 s.
@@ -135,6 +135,7 @@ page and one plugin page and logs the result in this file's work log.
 - 2026-10-25: review return 1: diff-bug #1, the version field takes pasted About Zotero text such as "Version 7.0.11 (64-bit)" as version 0 and reports "older than the declared minimum"; the fix-now findings of review pass 1 (Review section) go back with it.
 - 2026-10-25: minor amendment: T9 (the return), T10 (fix-now findings), T11 (verify) added; Coverage AC5 → T6, T9 and AC7 → T8, T11.
 - 2026-10-25: T9 done: `zoteroVersion` in `src/site/version.ts` takes the first run that starts with a digit and stops at a space, comma, or parenthesis; the six new tests failed first (no export), then pass (645 total); the browser script stores what was typed and compares the version read from it; it also keeps text typed before the script ran and re-reads storage on a Back restore (`pageshow` persisted) and on a `storage` event (diff-bug #2, #3).
+- 2026-10-25: T10 done: `usedOverride` in version.ts picks the override that sets a field, and `appliedValue` and the page's renamed "Used" column both read it; `buildSite` takes a `siteRoot` for tests and restores its two env vars; `.gitignore` covers `.astro/` at any depth; tsconfig includes `site/` (a planted type error in `site/src/base.ts` failed tsc); a non-http `repoUrl` shows as text; `loadData` names a file with no `plugins` list; new tests cover the usage error, that Astro failure, the clash branch (`test/fixtures/site-clash`), `rangeText`'s four forms, `displayName`, `overrideUsed`, `safeHref`, the home "Not read" cell, and the failure page heading; the comparator table now checks each member against its group's first and adjacent groups (310 tests in 8 files); README drops the telemetry sentence, explains pasting, rewraps; DESIGN.md gains the Function Families entry, the declared range in the Contract boundary list, and `pnpm site` in the build.yml bullet; built-in browser: pasting "Version 7.0.11 (64-bit)" gave no-range, inside, inside, below; first-plugin's Used column read yes, no; changing to 9.5 there and pressing Back showed 9.5 and above, above, inside on the home page.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

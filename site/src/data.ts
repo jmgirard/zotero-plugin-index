@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import type { Override, PluginRecord, PluginsFile } from "../../src/build/build.ts";
-import { appliedValue, declaredRange } from "../../src/site/version.ts";
+import { appliedValue, declaredRange, usedOverride } from "../../src/site/version.ts";
 import { BASE } from "./base.ts";
 
 export { BASE };
@@ -10,7 +10,9 @@ export type { Override, PluginRecord };
 export function loadData(): PluginsFile {
   const path = process.env.ZPI_SITE_DATA;
   if (!path) throw new Error("ZPI_SITE_DATA is not set; build the site with pnpm site");
-  return JSON.parse(readFileSync(path, "utf8")) as PluginsFile;
+  const data = JSON.parse(readFileSync(path, "utf8")) as PluginsFile;
+  if (!Array.isArray(data?.plugins)) throw new Error(`${path} has no plugins list`);
+  return data;
 }
 
 export function pluginHref(id: string): string {
@@ -44,8 +46,14 @@ export function upstreamValue(record: PluginRecord, field: string): string | und
   return fields[field];
 }
 
-export function overrideApplies(record: PluginRecord, override: Override): boolean {
-  return record.upstream !== undefined && (override.version === undefined || override.version === record.upstream.version);
+// Whether this override is the one that sets its field on the page.
+export function overrideUsed(record: PluginRecord, override: Override): boolean {
+  return usedOverride(record, override.field) === override;
+}
+
+// Only an http or https URL becomes a link; repoUrl in meta.json is any string.
+export function safeHref(url: string): string | undefined {
+  return /^https?:\/\//i.test(url) ? url : undefined;
 }
 
 // The fields the browser script needs to compute a record's range result.

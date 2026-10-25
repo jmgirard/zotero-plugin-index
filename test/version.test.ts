@@ -1,5 +1,12 @@
 import { describe, expect, test } from "vitest";
-import { appliedValue, compareVersions, rangeResult, type RangeRecord, zoteroVersion } from "../src/site/version.ts";
+import {
+  appliedValue,
+  compareVersions,
+  rangeResult,
+  type RangeRecord,
+  usedOverride,
+  zoteroVersion,
+} from "../src/site/version.ts";
 
 // MDN, "Legacy Version Formats", section "Examples" (cairn/references/mozilla-toolkit-version.md).
 // Each group is equal within itself and older than every later group.
@@ -27,9 +34,10 @@ const ORDERED = [
 ];
 
 describe("compareVersions", () => {
-  const equal = ORDERED.flatMap((group) => group.flatMap((a) => group.map((b) => [a, b])));
-  const older = ORDERED.flatMap((group, i) =>
-    ORDERED.slice(i + 1).flatMap((later) => group.flatMap((a) => later.map((b) => [a, b]))),
+  // Each member against its group's first, and each group's members against the next group's.
+  const equal = ORDERED.flatMap((group) => group.slice(1).map((b) => [group[0]!, b]));
+  const older = ORDERED.slice(0, -1).flatMap((group, i) =>
+    group.flatMap((a) => ORDERED[i + 1]!.map((b) => [a, b])),
   );
 
   test.each(equal)("%s equals %s", (a, b) => {
@@ -93,7 +101,7 @@ describe("rangeResult", () => {
   });
 
   test("a version equal to the maximum is inside", () => {
-    expect(rangeResult("8.0.*", ranged)).toBe("inside");
+    expect(rangeResult("8.0.1", record({ strictMinVersion: "7.0", strictMaxVersion: "8.0.1" }))).toBe("inside");
   });
 
   test("a missing minimum sets no lower bound", () => {
@@ -143,6 +151,13 @@ describe("rangeResult", () => {
     expect(rangeResult("8.0.1", { ...both, overrides: [...both.overrides].reverse() })).toBe("inside");
   });
 
+  test("an override can supply a bound the upstream facts lack", () => {
+    const added = record({}, [{ field: "strict_min_version", value: "7.0" }]);
+    expect(rangeResult("6.0", added)).toBe("below");
+  });
+});
+
+describe("appliedValue", () => {
   test("no override applies to a record that was not read", () => {
     const failed: RangeRecord = {
       failure: { name: "no-xpi-release", message: "no release" },
@@ -151,8 +166,16 @@ describe("rangeResult", () => {
     expect(appliedValue(failed, "name", undefined)).toBeUndefined();
   });
 
-  test("an override can supply a bound the upstream facts lack", () => {
-    const added = record({}, [{ field: "strict_min_version", value: "7.0" }]);
-    expect(rangeResult("6.0", added)).toBe("below");
+  test("a name override replaces the upstream name", () => {
+    const named = record({}, [{ field: "name", value: "Corrected Name" }]);
+    expect(appliedValue(named, "name", "Upstream Name")).toBe("Corrected Name");
+  });
+});
+
+describe("usedOverride", () => {
+  test("picks the override for the upstream version over one with no version", () => {
+    const versioned = { field: "strict_max_version", version: "2.0.0", value: "8.*" };
+    const both = record({}, [{ field: "strict_max_version", value: "7.5" }, versioned]);
+    expect(usedOverride(both, "strict_max_version")).toBe(versioned);
   });
 });

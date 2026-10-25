@@ -13,12 +13,15 @@ range first, then facts about the repository and its releases, then the
 overrides of the index for that plugin.
 
 To compare your Zotero version with each declared range, enter it in the
-"Your Zotero version" field at the top of any page. Your browser keeps the
-value in its local storage, so the other pages show it too. Each plugin then
-shows whether your version is inside its declared range, older than its
-minimum, or newer than its maximum. The declared range uses the overrides
-that apply to the plugin version that the index read. The site does not say
-whether a plugin works. It shows only what the plugin declares.
+"Your Zotero version" field at the top of any page. You can also paste the
+version line from About Zotero, such as "Version 7.0.11 (64-bit)". The site
+reads the version from the first part of the text that starts with a digit.
+Your browser keeps the value in its local storage, so the other pages show it
+too. Each plugin then shows whether your version is inside its declared
+range, older than its minimum, or newer than its maximum. The declared range
+uses the overrides that apply to the plugin version that the index read. The
+site does not test plugins. It compares your version with what each plugin
+declares.
 
 ## Using the data
 
@@ -192,12 +195,12 @@ The command reads `dist/v1/plugins.json`. It writes the home page,
 It does not change the data file or the schemas. It replaces the `index.html`
 and `plugins/` of an earlier run, so a page for a plugin that the data no
 longer lists goes away. Links between the pages, and to the data file, start
-with `/zotero-plugin-index/`, the path of the site on GitHub Pages. The command turns off the telemetry of
-Astro, the site builder.
+with `/zotero-plugin-index/`, the path of the site on GitHub Pages.
 
 To read the data from another directory and write the pages there, add
 `--out <dir>`. The command then reads `<dir>/v1/plugins.json`. If it cannot
-read or parse the data file, it writes no page and exits with status 1.
+read or parse the data file, or the file has no `plugins` list, it writes no
+page and exits with status 1.
 
 ## The daily workflow
 

@@ -4,9 +4,10 @@ import {
   day,
   displayName,
   loadData,
-  overrideApplies,
+  overrideUsed,
   rangeFields,
   rangeText,
+  safeHref,
   upstreamValue,
   type PluginRecord,
 } from "../../../data.ts";
@@ -17,6 +18,8 @@ export function getStaticPaths() {
 
 const { record } = Astro.props as { record: PluginRecord };
 const { upstream, failure, overrides } = record;
+const repoUrl = upstream?.repoUrl ?? record.repoUrl;
+const repoHref = safeHref(repoUrl);
 ---
 
 <Base title={`${displayName(record)}: Zotero plugin index`}>
@@ -44,7 +47,7 @@ const { upstream, failure, overrides } = record;
   <h2>Facts</h2>
   <dl>
     <dt>Repository</dt>
-    <dd data-fact="repository"><a href={upstream?.repoUrl ?? record.repoUrl}>{upstream?.repoUrl ?? record.repoUrl}</a></dd>
+    <dd data-fact="repository">{repoHref ? <a href={repoHref}>{repoUrl}</a> : repoUrl}</dd>
     {
       upstream && (
         <>
@@ -72,7 +75,7 @@ const { upstream, failure, overrides } = record;
         <h2>Overrides</h2>
         <p>
           The index corrects these upstream facts.
-          {upstream && " The declared range above uses the overrides that apply."}
+          {upstream && ' An override marked "yes" under Used sets its field on this page, and the declared range above uses it.'}
         </p>
         <table>
           <thead>
@@ -81,7 +84,7 @@ const { upstream, failure, overrides } = record;
               <th>Upstream value</th>
               <th>Override value</th>
               <th>For version</th>
-              <th>Applies</th>
+              <th>Used</th>
               <th>Reason</th>
             </tr>
           </thead>
@@ -92,7 +95,7 @@ const { upstream, failure, overrides } = record;
                 <td>{upstreamValue(record, override.field) ?? "none"}</td>
                 <td>{override.value}</td>
                 <td>{override.version ?? "every version"}</td>
-                <td>{overrideApplies(record, override) ? "yes" : "no"}</td>
+                <td>{overrideUsed(record, override) ? "yes" : "no"}</td>
                 <td>{override.reason}</td>
               </tr>
             ))}
