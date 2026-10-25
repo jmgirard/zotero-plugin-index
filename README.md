@@ -84,6 +84,36 @@ The first run downloads the registry schema into `.cache/`, so that run needs
 a network connection. The command refuses a downloaded or cached schema whose
 SHA-256 differs from the hash pinned in `src/check/registry-schema.ts`.
 
+## Building the data
+
+To build the data file, run:
+
+```bash
+pnpm build
+```
+
+The command reads each entry under `plugins/`, then reads each plugin from
+GitHub in the same way as `pnpm add-plugin`. It writes one file,
+`dist/v1/plugins.json`. The file has a `schemaVersion` of `1`, a
+`generatedAt` time, and one record for each entry. Each record keeps the
+upstream facts in an `upstream` block and the overrides of the entry, with
+their reasons, in an `overrides` block. The schema for the file is
+[`schemas/plugins.v1.schema.json`](schemas/plugins.v1.schema.json).
+
+If the read of a plugin fails, its record has no `upstream` block. The
+record has a `failure` block with the failure name and a message. The command still writes the file and exits with status 0. If the
+command cannot read an entry, it writes no file and exits with status 1.
+
+To read the entries in another directory, give its path: `pnpm build <dir>`.
+To write the file under another directory, add `--out <dir>`. As with
+`pnpm add-plugin`, set `GITHUB_TOKEN` to get a higher GitHub API limit.
+
+The `Build data` workflow runs `pnpm build` once a day, and you can also
+start it by hand. It keeps `dist/` as a workflow artifact named
+`plugins-data`.
+
+## Running the tests
+
 To run the tests, run:
 
 ```bash

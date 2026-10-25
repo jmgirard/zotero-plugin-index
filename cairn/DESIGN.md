@@ -89,6 +89,9 @@ exception is a report that is abuse.
   M002.
 - Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
   <dir>]` writes a new entry from the reader's facts. Added M002.
+- Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
+  `dist/v1/plugins.json`, one record per entry, with a failed upstream read
+  kept in that entry's record. Added M003.
 
 ## Conventions
 
@@ -139,6 +142,10 @@ reused._
   responses in `test/fixtures/upstream/`.
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request.
+- `src/build/` reads the entries, runs the upstream reader on each plugin in
+  turn, and checks its output against `schemas/plugins.v1.schema.json`
+  before it writes the file. `.github/workflows/build.yml` runs it daily and
+  on manual dispatch, and keeps `dist/` as a workflow artifact (M003).
 
 ## Known issues
 
