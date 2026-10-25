@@ -36,6 +36,7 @@ export type Failure =
   | "xpi-unreadable"
   | "xpi-too-large"
   | "no-manifest"
+  | "manifest-too-large"
   | "manifest-invalid"
   | "no-zotero-id"
   | "max-version-below-7"
@@ -52,6 +53,8 @@ const FETCH_TIMEOUT_MS = 60_000;
 // The largest XPI among the listed plugins was 5.5 MB (observed 2026-10-25).
 export const XPI_MAX_BYTES = 50 * 1024 * 1024;
 export const UPDATE_JSON_MAX_BYTES = 1024 * 1024;
+// Each file the reader unzips: manifest.json and the default locale's messages.json.
+export const UNZIPPED_MAX_BYTES = 1024 * 1024;
 
 class ReadFailure extends Error {
   readonly failure: Failure;
@@ -291,15 +294,7 @@ async function readManifest(
   const zip = await readCapped(response, url, XPI_MAX_BYTES, () =>
     fail("xpi-too-large", `the XPI of ${tag} at ${url} is larger than ${XPI_MAX_BYTES} bytes`),
   );
-  let files: Record<string, Uint8Array>;
-  try {
-    files = unzipSync(zip, {
-      filter: (file) => file.name === "manifest.json" || /^_locales\/[^/]+\/messages\.json$/.test(file.name),
-    });
-  } catch (error) {
-    fail("xpi-unreadable", `the XPI of ${tag} is not a readable zip: ${(error as Error).message}`);
-  }
-  const bytes = files["manifest.json"];
+  const bytes = unzipOne(zip, "manifest.json", tag);
   if (!bytes) fail("no-manifest", `the XPI of ${tag} holds no manifest.json`);
   let manifest: unknown;
   try {
@@ -311,7 +306,7 @@ async function readManifest(
     fail("manifest-invalid", `the manifest.json of ${tag} is not a JSON object`);
   }
   const locale = stringOrUndefined((manifest as ManifestJson).default_locale);
-  const messagesBytes = locale ? files[`_locales/${locale}/messages.json`] : undefined;
+  const messagesBytes = locale ? unzipOne(zip, `_locales/${locale}/messages.json`, tag) : undefined;
   let messages: unknown;
   try {
     messages = messagesBytes && JSON.parse(strFromU8(messagesBytes));
@@ -320,6 +315,27 @@ async function readManifest(
   }
   const isObject = typeof messages === "object" && messages !== null;
   return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {} };
+}
+
+// Unzips the one file `name`, or returns undefined when the zip lacks it. fflate sizes
+// the output from the zip's central directory and stops inflating at that size
+// (observed with fflate 0.8.3, 2026-10-25), so refusing a large declared size bounds
+// the memory the file takes.
+function unzipOne(zip: Uint8Array, name: string, tag: string): Uint8Array | undefined {
+  try {
+    return unzipSync(zip, {
+      filter: (file) => {
+        if (file.name !== name) return false;
+        if (file.originalSize > UNZIPPED_MAX_BYTES) {
+          fail("manifest-too-large", `${name} in the XPI of ${tag} is larger than ${UNZIPPED_MAX_BYTES} bytes`);
+        }
+        return true;
+      },
+    })[name];
+  } catch (error) {
+    if (error instanceof ReadFailure) throw error;
+    fail("xpi-unreadable", `the XPI of ${tag} is not a readable zip: ${(error as Error).message}`);
+  }
 }
 
 async function checkUpdateJson(fetch: Fetch, url: string, id: string): Promise<void> {

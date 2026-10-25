@@ -1,3 +1,4 @@
+import { unzipSync, zipSync } from "fflate";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { readUpstream } from "../src/upstream/reader.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
@@ -238,6 +239,43 @@ describe("readUpstream", () => {
     const { result, requests } = await read((r) => (r[UPDATE] = { chunks: { size: 65_536, count: 20 } }));
     expect(result).toEqual({ ok: false, failure: "update-json-too-large", message: expect.stringContaining(UPDATE) });
     expect(requests.find((q) => q.url === UPDATE)!.bytesEnqueued).toBeLessThanOrEqual(1_048_576 + 65_536);
+  });
+
+  // Spaces after the JSON keep it valid, so only the size can fail the read.
+  const OVER_1_MIB = " ".repeat(1_048_577);
+
+  test("fails with manifest-too-large when manifest.json unzips to more than 1 MiB", async () => {
+    const { result } = await read((r) => (r[XPI].xpi!["manifest.json"] = JSON.stringify(manifest(r)) + OVER_1_MIB));
+    expect(result).toEqual({ ok: false, failure: "manifest-too-large", message: expect.stringContaining("manifest.json") });
+  });
+
+  test("fails with manifest-too-large when the default locale's messages.json unzips to more than 1 MiB", async () => {
+    const { result } = await read((r) => {
+      manifest(r).default_locale = "en";
+      r[XPI].xpi!["_locales/en/messages.json"] = JSON.stringify({ name: { message: "Notes" } }) + OVER_1_MIB;
+    });
+    expect(result).toEqual({
+      ok: false,
+      failure: "manifest-too-large",
+      message: expect.stringContaining("_locales/en/messages.json"),
+    });
+  });
+
+  test("does not unzip the messages.json of a locale that is not the default", async () => {
+    const { result } = await read((r) => {
+      manifest(r).default_locale = "en";
+      r[XPI].xpi!["_locales/de/messages.json"] = JSON.stringify({ name: { message: "Notizen" } }) + OVER_1_MIB;
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  test("fflate inflates a file no further than the size the central directory declares", () => {
+    const zip = zipSync({ "manifest.json": new Uint8Array(100_000).fill(32) });
+    const view = new DataView(zip.buffer, zip.byteOffset);
+    // The central directory header starts with 0x02014b50; its uncompressed size is at offset 24.
+    const header = zip.findLastIndex((_, i) => i + 4 <= zip.length && view.getUint32(i, true) === 0x02014b50);
+    view.setUint32(header + 24, 10, true);
+    expect(unzipSync(zip)["manifest.json"].length).toBe(10);
   });
 
   test.each(["https://gitlab.com/windingwind/zotero-better-notes", "https://github.com/windingwind", "not a url"])(
