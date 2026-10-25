@@ -391,10 +391,15 @@ export function zipEntryCount(zip: Uint8Array): number | undefined {
 // compressed size (observed 2026-10-25). Refusing a declared or compressed size over the
 // cap bounds the file to UNZIPPED_MAX_BYTES and the decoding to that much input.
 function unzipOne(zip: Uint8Array, name: string, tag: string): Uint8Array | undefined {
+  // unzipSync unzips each entry the filter accepts, so a zip that repeats `name` would
+  // inflate up to UNZIPPED_MAX_BYTES once for each copy.
+  let found = false;
   try {
     return unzipSync(zip, {
       filter: (file) => {
         if (file.name !== name) return false;
+        if (found) fail("xpi-unreadable", `the XPI of ${tag} holds more than one ${name}`);
+        found = true;
         if (file.originalSize > UNZIPPED_MAX_BYTES || file.size > UNZIPPED_MAX_BYTES) {
           fail("manifest-too-large", `${name} in the XPI of ${tag} is larger than ${UNZIPPED_MAX_BYTES} bytes`);
         }
