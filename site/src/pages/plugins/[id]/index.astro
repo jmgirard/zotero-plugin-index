@@ -64,7 +64,9 @@ const repoHref = safeHref(repoUrl);
           <dt>Host of update.json</dt>
           <dd data-fact="update-host">{upstream.updateHost}</dd>
           <dt>Releases</dt>
-          <dd data-fact="releases"><a href={`${upstream.repoUrl}/releases`}>{`${upstream.repoUrl}/releases`}</a></dd>
+          <dd data-fact="releases">
+            {repoHref ? <a href={`${repoHref}/releases`}>{`${repoUrl}/releases`}</a> : `${repoUrl}/releases`}
+          </dd>
         </>
       )
     }

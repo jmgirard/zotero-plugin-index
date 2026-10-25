@@ -6,9 +6,10 @@ it does not review or endorse plugins.
 
 ## The site
 
-The index has a website at <https://jmgirard.github.io/zotero-plugin-index/>.
+The website <https://jmgirard.github.io/zotero-plugin-index/> shows the index.
 The home page lists every plugin with the range of Zotero versions that the
-plugin declares. Each plugin has its own page. The page shows the declared
+plugin declares. If the last build failed to read a plugin, its row shows the
+failure. Each plugin has its own page. The page shows the declared
 range first, then facts about the repository and its releases, then the
 overrides of the index for that plugin. If the last build failed to read a
 plugin, its page shows the failure in place of the declared range.
@@ -35,8 +36,8 @@ The index publishes its data file on GitHub Pages:
   <https://jmgirard.github.io/zotero-plugin-index/schemas/index.v1.schema.json>
 
 A daily build updates the data. If more than half of the records carry a
-failure, the build deploys nothing, and the data from the last good build
-stays in place. "Building the data" below describes the file. A breaking
+failure, the build deploys nothing. If the site build fails, the build also
+deploys nothing. The data from the last good build then stays in place. "Building the data" below describes the file. A breaking
 change to the file gets a new schema version under a new path, such as `v2/`.
 
 ## Plugin entries

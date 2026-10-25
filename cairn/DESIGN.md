@@ -65,18 +65,20 @@ shows each one separately.
    the declared compatibility (`strict_min_version`, `strict_max_version`).
 3. Overrides. An override in the index corrects a fact that the author cannot
    or will not fix upstream. Each override states its reason.
-4. User reports. Each plugin page has a "Works" link and a "Broken" link. Each
-   link opens a GitHub issue form with the plugin and its version filled in.
-   The reporter adds the Zotero version and submits the form. A bot adds the
-   report to the data and closes the issue.
+4. User reports (not built yet; the candidate "Collect works and broken user
+   reports" holds them, corrected M007). Each plugin page is to have a
+   "Works" link and a "Broken" link. Each link opens a GitHub issue form with
+   the plugin and its version filled in. The reporter adds the Zotero version
+   and submits the form. A bot adds the report to the data and closes the
+   issue.
 
 Inclusion bar: a public repository, a Zotero 7+ manifest, and at least one
 release with a readable `update.json`. The bot checks all three, and it
 refuses forks (corrected M002). The maintainer removes spam. Inclusion is not a judgment of
 quality. The index does not list plugins for Zotero 5 or 6.
 
-If the declared compatibility and the user reports disagree, the page shows
-both. For example, "Declares 7.0 to 8.*" appears beside "Reports on 8.x:
+Once user reports exist, a page whose declared compatibility and user reports
+disagree shows both (corrected M007). For example, "Declares 7.0 to 8.*" appears beside "Reports on 8.x:
 2 works, 3 broken".
 
 An author can open an issue to be delisted or to correct a fact, and the
@@ -101,8 +103,8 @@ exception is a report that is abuse.
   schemas and exit rule M006.
 - Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
   home page and one page per record into `dist/`, or `<dir>`, from the data
-  file there. `src/site/version.ts` holds `compareVersions`, `rangeResult`,
-  and `zoteroVersion`, which the pages' script also uses. Added M007.
+  file there. `src/site/version.ts` holds the version and range functions
+  that the templates and the pages' script use. Added M007.
 
 ## Conventions
 
@@ -168,8 +170,8 @@ reused._
   turn, and checks each record and then the whole output against
   `schemas/plugins.v1.schema.json` before it writes the file.
   `.github/workflows/build.yml` runs `pnpm check`, then the build, then
-  `pnpm site` (M007), daily and on manual dispatch, and keeps `dist/` as a workflow artifact (M003). The
-  build also copies both schemas to `dist/schemas/`, and it exits 1 after it
+  `pnpm site` (M007), daily and on manual dispatch, and keeps `dist/` as a
+  workflow artifact (M003). The build also copies both schemas to `dist/schemas/`, and it exits 1 after it
   writes the file when more than half of the records carry a failure. The
   workflow then uploads `dist/` as the Pages artifact, and a deploy job that
   needs the build job publishes it. A failed build deploys nothing, and the
@@ -179,8 +181,8 @@ reused._
   Astro empties its output directory, and copies the pages into `<out>` beside
   the data. `src/site/version.ts` orders versions by Mozilla's legacy version
   format (`cairn/references/mozilla-toolkit-version.md`) and places a Zotero
-  version in a record's declared range, with overrides applied. The tests and
-  the pages' one script both import it. The templates take the Pages path
+  version in a record's declared range, with overrides applied. The tests, the
+  templates (through `site/src/data.ts`), and the pages' one script import it. The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
   Astro's `import.meta.env.BASE_URL`. `build.yml` runs `pnpm site` after the
   build, so a failed site build also deploys nothing. `tsconfig.json` includes

@@ -211,3 +211,47 @@ Evidence pass 2 (2026-10-25, head 92dd550, main 772aef2 unmoved, after review re
 - AC6: `build.yml` steps: build 5, site 6 with no `if:`, Pages upload 8; README "The site" section with the field; one CHANGELOG `## Unreleased` entry added.
 - AC7: `pnpm test` 8 files, 310 passed; `pnpm check` 14 entries, 0 problems.
 - Gate: `cairn_validate.py` all checks passed; advisory WARN sizing: 11 tasks (>10), from the return's T9-T11, not a gate failure; no principle changed; generic profile adds no checks.
+
+Review pass 2 (2026-10-25, head a2d5c77):
+
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the Releases link builds its `href` from `upstream.repoUrl` without `safeHref`, so a `javascript:` URL would run — fix now
+- diff-bug #2: an entry id with `%` or a space fails the whole Astro build (NoMatchingStaticPathFound), which also stops the data deploy — follow-up, absorbed into the row "Catch stray and unportable entry files"
+- diff-bug #3: two overlapping `buildSite` calls in one process would clobber each other's env — reject, false: no caller makes two calls in one process (the CLI calls once; tests spawn a process per build), and the comment states one build at a time
+- diff-bug #4: Astro sets `NODE_ENV` when unset, and `buildSite` does not restore it — fix now
+- diff-bug #5: with storage blocked, a Back restore calls `refresh()`, which empties the field typed on that page — fix now
+- diff-bug #6: the storage key "zotero-version" is shared with every other project site on jmgirard.github.io — fix now (key "zotero-plugin-index:zotero-version")
+- diff-bug #7: no test checks that a home link opens the raw-id directory — fix now
+- diff-bug #8: the browser path has no automated test; dropping `version` from `rangeFields` would pass every test — fix now (round-trip test of `rangeFields` against `rangeResult`; the script itself stays checked in the browser per AC5)
+- diff-bug #9: untested branches: `ZPI_SITE_DATA` unset, and `--out` with no value — fix now
+- diff-bug #10: CHANGELOG.md:49 and DESIGN.md:171 break the 80-column wrap — fix now
+- diff-bug #11: DESIGN.md says only the tests and the script import `version.ts`, and lists 3 of its 6 exports — fix now
+- diff-bug #12: the Used column can say "yes" for description and homepage overrides the page does not display — reject, false: the sentence above the table, corrected in the claim audit, says "yes" means the override applies to the version the index read and that the range uses only the bound overrides
+- diff-bug #13: every page render re-reads and re-parses the data file — fix now (parsed once per path)
+- diff-bug #14: `rangeFields` puts every override with its reason into each result slot — fix now (bound overrides only, without reasons)
+- diff-bug #15: a `mkdtemp` failure in `buildSite` is outside its `try`, so the CLI ends on an unhandled rejection — fix now
+- diff-bug #16: duplicated tests: `displayName`'s name override repeats `appliedValue`'s, and `overrideUsed` repeats `usedOverride` — fix now (the `appliedValue` name test and the `usedOverride` test removed)
+- diff-bug #17: `zoteroVersion` inputs and two `rangeResult` tests run paths already covered — fix now (removed "  8.0.1 ", "v7.0.11", "between the bounds", "supply a bound")
+- diff-bug #18: each "older" pair also asserts the reverse — reject, false: the reverse assertion is the check of the positive sign AC1 names
+- diff-bug #19: two test comments restate the code — fix now (removed)
+- diff-bug #20: two `pnpm site` runs at once share `<cwd>/.astro/` — reject, edge: concurrent builds from one checkout fall outside documented and common use, and the effect is a build error
+- diff-bug #21: `zoteroVersion` keeps a trailing ";" or "/", and reads "7,0,11" as 7 — fix now for ";" and "/"; the comma-separated form is not a version form Zotero shows, so it stays
+- blame-history #1: a failed `pnpm site` now blocks the data deploy — reject, planned change (AC6)
+- blame-history #2: the per-visitor result reads close to the out-of-scope combined verdict — reject, planned change (plan idea vet)
+- blame-history #3: pnpm-lock.yaml changes vitest's vite peer resolution — reject, false: `pnpm install --frozen-lockfile` passed in T3 and `pnpm test` passes
+- blame-history #4: DESIGN.md:171 and CHANGELOG.md wrap — fix now (as diff-bug #10)
+- blame-history #5: ROADMAP row "Publish the site and data on Pages" still open — reject, planned change: step 9 hygiene graduates it
+- blame-history #6: `astro` under `dependencies` — reject, false: same pattern as `ajv` and `fflate`, logged in T3
+- prior-review #1: non-atomic replace of `dist/`, and the `!cancelled()` artifact upload then keeps a partial `dist/` — reject, edge: a copy failure (disk error) outside documented and common use, effect an error and exit 1 with no deploy; CI's `dist/` holds no earlier pages to lose
+- prior-review #2: README says the home page lists each plugin with its range, though failed rows show "Not read" — fix now
+- prior-review #3: the vitest.config.ts timeout comment omits the site tests — fix now
+- prior-review #4: `cli.ts` resolves the default `dist` against the cwd, not `import.meta.dirname` — reject, false: pnpm runs scripts from the package root, the same as `src/build/cli.ts`
+- prior-review #5 (outside its lens): a failed row's result reads "There is no declared range to compare with Zotero X" — reject, false: the message is accurate for that row
+- ripple #1: DESIGN.md:68 describes Works and Broken links on each page as present — fix now (marked not built, pointing at the candidate)
+- ripple #2: DESIGN.md:78-80 says the page shows declared range and user reports side by side — fix now (same)
+- ripple #3: README "Using the data" omits the failed-site case from what stops the deploy — fix now
+- ripple #4: CHANGELOG `## Unreleased` names only the more-than-half case as stopping the deploy — fix now (the site entry states the `pnpm site` case)
+- ripple #5: DESIGN.md:111 "the static site use TypeScript" — reject, false: the `.astro` templates and the script are TypeScript
+- ripple #6: ROADMAP row still says "started M007" — reject, planned change (hygiene)
+- ripple #7: `src/build/cli.ts` deploy comment — reject, false: still true for `pnpm build`
+- ripple #8: README says `pnpm build` writes one file — reject, false: still true for `pnpm build`

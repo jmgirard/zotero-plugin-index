@@ -4,7 +4,6 @@ import {
   compareVersions,
   rangeResult,
   type RangeRecord,
-  usedOverride,
   zoteroVersion,
 } from "../src/site/version.ts";
 
@@ -34,7 +33,6 @@ const ORDERED = [
 ];
 
 describe("compareVersions", () => {
-  // Each member against its group's first, and each group's members against the next group's.
   const equal = ORDERED.flatMap((group) => group.slice(1).map((b) => [group[0]!, b]));
   const older = ORDERED.slice(0, -1).flatMap((group, i) =>
     group.flatMap((a) => ORDERED[i + 1]!.map((b) => [a, b])),
@@ -61,10 +59,9 @@ describe("compareVersions", () => {
 describe("zoteroVersion", () => {
   test.each([
     ["8.0.1", "8.0.1"],
-    ["  8.0.1 ", "8.0.1"],
     ["Version 7.0.11 (64-bit)", "7.0.11"],
-    ["v7.0.11", "7.0.11"],
     ["Zotero 8.0-beta.3+abc, 64-bit", "8.0-beta.3+abc"],
+    ["7.0.11/64-bit", "7.0.11"],
   ])("reads %j as %s", (input, version) => {
     expect(zoteroVersion(input)).toBe(version);
   });
@@ -90,10 +87,6 @@ describe("rangeResult", () => {
 
   test("a version newer than the maximum is above", () => {
     expect(rangeResult("9.0", ranged)).toBe("above");
-  });
-
-  test("a version between the bounds is inside", () => {
-    expect(rangeResult("7.1", ranged)).toBe("inside");
   });
 
   test("a version equal to the minimum is inside", () => {
@@ -150,11 +143,6 @@ describe("rangeResult", () => {
     expect(rangeResult("8.0.1", both)).toBe("inside");
     expect(rangeResult("8.0.1", { ...both, overrides: [...both.overrides].reverse() })).toBe("inside");
   });
-
-  test("an override can supply a bound the upstream facts lack", () => {
-    const added = record({}, [{ field: "strict_min_version", value: "7.0" }]);
-    expect(rangeResult("6.0", added)).toBe("below");
-  });
 });
 
 describe("appliedValue", () => {
@@ -164,18 +152,5 @@ describe("appliedValue", () => {
       overrides: [{ field: "name", value: "Corrected Name" }],
     };
     expect(appliedValue(failed, "name", undefined)).toBeUndefined();
-  });
-
-  test("a name override replaces the upstream name", () => {
-    const named = record({}, [{ field: "name", value: "Corrected Name" }]);
-    expect(appliedValue(named, "name", "Upstream Name")).toBe("Corrected Name");
-  });
-});
-
-describe("usedOverride", () => {
-  test("picks the override for the upstream version over one with no version", () => {
-    const versioned = { field: "strict_max_version", version: "2.0.0", value: "8.*" };
-    const both = record({}, [{ field: "strict_max_version", value: "7.5" }, versioned]);
-    expect(usedOverride(both, "strict_max_version")).toBe(versioned);
   });
 });

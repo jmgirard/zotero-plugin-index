@@ -95,7 +95,6 @@ describe("pnpm site", () => {
   });
 });
 
-// The text of the element whose data-fact attribute is name, with tags removed.
 function fact(html: string, name: string): string | undefined {
   const match = new RegExp(`data-fact="${name}"[^>]*>(.*?)</(?:p|dd)>`).exec(html);
   return match?.[1]!.replace(/<[^>]+>/g, "");
@@ -157,6 +156,15 @@ describe("the plugin page", () => {
 });
 
 describe("the home page", () => {
+  test("links each plugin to the directory of its raw id", () => {
+    const html = readFileSync(join(out, "index.html"), "utf8");
+    const linked = [...html.matchAll(/href="\/zotero-plugin-index\/plugins\/([^/"]+)\/"/g)].map((m) =>
+      decodeURIComponent(m[1]!),
+    );
+    expect(linked.sort()).toEqual([...ids].sort());
+    for (const id of linked) expect(existsSync(join(out, "plugins", id, "index.html")), id).toBe(true);
+  });
+
   test("names the failure of a record that was not read", () => {
     const row = /<tr data-plugin="broken-plugin@example\.org">(.*?)<\/tr>/.exec(readFileSync(join(out, "index.html"), "utf8"));
     expect(row?.[1]).toContain("<td>Not read: no-xpi-release</td>");
@@ -164,8 +172,8 @@ describe("the home page", () => {
 });
 
 describe("pnpm site failures", () => {
-  test("rejects an extra argument with the usage line", () => {
-    const usage = pnpmSite(["extra"]);
+  test.each([[["extra"]], [["--out"]]])("rejects %j with the usage line", (args) => {
+    const usage = pnpmSite(args);
     expect(usage.status).toBe(1);
     expect(usage.stderr).toContain("usage: pnpm site [--out <dir>]");
   }, 60_000);

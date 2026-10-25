@@ -6,12 +6,17 @@ import { BASE } from "./base.ts";
 export { BASE };
 export type { Override, PluginRecord };
 
-// pnpm site sets ZPI_SITE_DATA to the data file it builds the pages from.
+let loaded: { path: string; data: PluginsFile } | undefined;
+
+// pnpm site sets ZPI_SITE_DATA to the data file it builds the pages from. Every page
+// calls this, so the file is parsed once per path.
 export function loadData(): PluginsFile {
   const path = process.env.ZPI_SITE_DATA;
   if (!path) throw new Error("ZPI_SITE_DATA is not set; build the site with pnpm site");
+  if (loaded?.path === path) return loaded.data;
   const data = JSON.parse(readFileSync(path, "utf8")) as PluginsFile;
   if (!Array.isArray(data?.plugins)) throw new Error(`${path} has no plugins list`);
+  loaded = { path, data };
   return data;
 }
 
@@ -57,7 +62,8 @@ export function safeHref(url: string): string | undefined {
   return /^https?:\/\//i.test(url) ? url : undefined;
 }
 
-// The fields the browser script needs to compute a record's range result.
+// The fields the browser script needs to compute a record's range result: the upstream
+// version and bounds, the failure, and the overrides of the two bounds.
 export function rangeFields(record: PluginRecord): string {
   const { upstream, failure, overrides } = record;
   return JSON.stringify({
@@ -66,8 +72,10 @@ export function rangeFields(record: PluginRecord): string {
       strictMinVersion: upstream.strictMinVersion,
       strictMaxVersion: upstream.strictMaxVersion,
     },
-    failure,
-    overrides,
+    failure: failure && { name: failure.name },
+    overrides: overrides
+      .filter((o) => o.field === "strict_min_version" || o.field === "strict_max_version")
+      .map(({ field, version, value }) => ({ field, version, value })),
   });
 }
 

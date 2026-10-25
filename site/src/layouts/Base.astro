@@ -72,7 +72,8 @@ const { generatedAt } = loadData();
       import { rangeResult, type RangeRecord, type RangeResult, zoteroVersion } from "../../../src/site/version.ts";
 
       // The visitor's browser keeps the field's text under this key, so every page shows it.
-      const KEY = "zotero-version";
+      // Other project sites share the jmgirard.github.io storage, so the key names the index.
+      const KEY = "zotero-plugin-index:zotero-version";
       const MESSAGES: Record<RangeResult, (version: string) => string> = {
         inside: (version) => `Zotero ${version} is inside the declared range.`,
         below: (version) => `Zotero ${version} is older than the declared minimum.`,
@@ -81,12 +82,12 @@ const { generatedAt } = loadData();
       };
 
       // Storage can be blocked, for example when the browser blocks site data; the field then
-      // still works on the page it was typed on.
-      function stored(): string {
+      // still works on the page it was typed on. Undefined means storage cannot be read.
+      function stored(): string | undefined {
         try {
           return localStorage.getItem(KEY) ?? "";
         } catch {
-          return "";
+          return undefined;
         }
       }
 
@@ -113,7 +114,9 @@ const { generatedAt } = loadData();
       const field = document.querySelector<HTMLInputElement>("#zotero-version")!;
       // The field keeps what the visitor typed; the results use the version read from it.
       function refresh(): void {
-        field.value = stored();
+        const value = stored();
+        if (value === undefined) return;
+        field.value = value;
         show(zoteroVersion(field.value));
       }
 

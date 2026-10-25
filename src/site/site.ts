@@ -6,7 +6,8 @@ import { build } from "astro";
 const SITE_ROOT = resolve(import.meta.dirname, "../../site");
 // pnpm build writes these into the same directory, so the site never replaces them.
 const DATA_ENTRIES = new Set(["v1", "schemas"]);
-const ENV_KEYS = ["ZPI_SITE_DATA", "ASTRO_TELEMETRY_DISABLED"] as const;
+// Astro sets NODE_ENV when it is unset, so it is restored with the two this file sets.
+const ENV_KEYS = ["ZPI_SITE_DATA", "ASTRO_TELEMETRY_DISABLED", "NODE_ENV"] as const;
 
 // Builds the site from <outDir>/v1/plugins.json into <outDir>. Astro empties the
 // directory it builds into, so it builds into a temporary directory, and then each page
@@ -24,9 +25,10 @@ export async function buildSite(
     return { ok: false, message: `cannot read ${dataPath}: ${(error as Error).message}` };
   }
 
-  const staging = await mkdtemp(join(tmpdir(), "zpi-site-"));
   const saved = ENV_KEYS.map((key) => [key, process.env[key]] as const);
+  let staging: string | undefined;
   try {
+    staging = await mkdtemp(join(tmpdir(), "zpi-site-"));
     // The pages read the data file from this variable. Astro's telemetry stays off.
     process.env.ZPI_SITE_DATA = dataPath;
     process.env.ASTRO_TELEMETRY_DISABLED = "1";
@@ -49,6 +51,6 @@ export async function buildSite(
       if (value === undefined) delete process.env[key];
       else process.env[key] = value;
     }
-    await rm(staging, { recursive: true, force: true });
+    if (staging) await rm(staging, { recursive: true, force: true });
   }
 }
