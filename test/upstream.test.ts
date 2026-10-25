@@ -301,6 +301,47 @@ describe("readUpstream", () => {
     expect(result).toEqual({ ok: false, failure: "manifest-too-large", message: expect.stringContaining("manifest.json") });
   });
 
+  // A zip of `length` bytes that is zero bytes up to its end record, whose entry count
+  // is `count` and whose directory starts at offset 0. With `zip64Count`, a zip64 end
+  // record and its locator come before the end record and give that count instead.
+  function endRecords(length: number, count: number, zip64Count?: number): Uint8Array {
+    const zip = new Uint8Array(length);
+    const view = new DataView(zip.buffer);
+    const end = length - 22;
+    view.setUint32(end, 0x06054b50, true);
+    view.setUint16(end + 8, count, true);
+    view.setUint16(end + 10, count, true);
+    if (zip64Count !== undefined) {
+      const record = end - 76;
+      view.setUint32(record, 0x06064b50, true);
+      view.setBigUint64(record + 32, BigInt(zip64Count), true);
+      view.setUint32(end - 20, 0x07064b50, true);
+      view.setBigUint64(end - 12, BigInt(record), true);
+    }
+    return zip;
+  }
+
+  function readZip(zip: Uint8Array) {
+    return read((r) => (r[XPI] = { base64: Buffer.from(zip).toString("base64") }));
+  }
+
+  test.each([
+    ["a zip64 end record", endRecords(98, 0xffff, 4_294_967_295), 4_294_967_295],
+    ["an end record", endRecords(22, 65_535), 65_535],
+  ])("fails with xpi-unreadable when %s claims more entries than the zip can hold", async (_name, zip, count) => {
+    const { result } = await readZip(zip);
+    expect(result).toEqual({ ok: false, failure: "xpi-unreadable", message: expect.stringContaining(`claims ${count} entries`) });
+  }, 10_000);
+
+  // 46 bytes for each entry is the smallest central directory the count allows.
+  test.each([
+    ["a zip64 end record", endRecords(138, 0xffff, 3)],
+    ["an end record", endRecords(46, 1)],
+  ])("reads past the count check when %s claims as many entries as the zip can hold", async (_name, zip) => {
+    const { result } = await readZip(zip);
+    expect(result).toEqual({ ok: false, failure: "no-manifest", message: expect.stringContaining("manifest.json") });
+  });
+
   // The first and last address of each blocked range, then mapped and loopback names.
   test.each([
     "0.0.0.0", "0.255.255.255", "10.0.0.0", "10.255.255.255", "100.64.0.0", "100.127.255.255",

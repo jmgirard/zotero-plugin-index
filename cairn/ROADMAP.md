@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-25 (M004 done and archived; 1 row graduated, 2 rows
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M005 | Refuse zips that claim too many entries | planned | — | high | milestones/M005-zip-entry-limits.md |
+| M005 | Refuse zips that claim too many entries | in-progress | — | high | milestones/M005-zip-entry-limits.md |
 | M004 | Limit what the reader downloads | done | — | high | milestones/archive/M004-download-limits.md |
 | M003 | Build the published plugin data | done | M002 | high | milestones/archive/M003-published-data.md |
 | M002 | Read upstream plugin facts and draft entries | done | M001 | high | milestones/archive/M002-upstream-reader.md |

@@ -3,14 +3,14 @@
      The one size check that can fail is cairn_validate's <150 over the plan-owned body. -->
 # M005: Refuse zips that claim too many entries
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the reader's failures appear in the published `plugins.json` and in `pnpm add-plugin` output
-- **Branch/PR:** —
+- **Branch/PR:** m005-zip-entry-limits
 
 ## Goal
 
@@ -79,10 +79,10 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
 
 ## Tasks
 
-- [ ] T1: In `test/upstream.test.ts`, write the AC1 and AC3 cases. Serve crafted bytes with the `{ base64 }`
+- [x] T1: In `test/upstream.test.ts`, write the AC1 and AC3 cases. Serve crafted bytes with the `{ base64 }`
       response. A small helper builds the end record, the zip64 locator, and the zip64 end record. On the default
       branch, the AC1 zip64 case times out, because fflate loops about 4.3e9 times at about 62 ns for each entry.
-- [ ] T2: In `src/upstream/reader.ts`, add an exported count reader that copies the backward search of `unzipSync`
+- [x] T2: In `src/upstream/reader.ts`, add an exported count reader that copies the backward search of `unzipSync`
       (node_modules/fflate/esm/index.mjs:2670) and its zip64 checks. It reads bytes past the buffer as 0, as fflate's
       `b4` does, and never throws. If it finds no end record, the check passes, and fflate reports the error as now.
       `readManifest` calls it once, before the first `unzipOne`. The message reads
@@ -111,6 +111,8 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
 - 2026-10-25: plan gate chose a count read before the unzip over running the unzip in a worker with a timeout, because a worker adds a thread and a time limit that the candidate "Warn when the daily build degrades" owns; falsified by a zip within the bound that still holds the CPU.
 - 2026-10-25: plan gate chose copying fflate's record search over an own central-directory reader that replaces `unzipSync`, because it keeps the tested unzip path; falsified by an AC2 case whose count the copy cannot match.
 - 2026-10-25: plan gate chose refusing duplicates over reading the first copy, the user's choice; falsified by a listed plugin's XPI that repeats `manifest.json`.
+- 2026-10-25: T1 done. The AC1 and AC3 cases are in `test/upstream.test.ts`. Before the fix, the zip64 case ran past 180 s and past its 10 s timeout, because fflate's loop is synchronous, and the 65,535-entry case got `no-manifest`. A first helper also set the zip64 entries-on-this-disk field, which made fflate stop with "invalid zip data"; the helper now sets only the total-entry field that fflate reads.
+- 2026-10-25: T2 done. `zipEntryCount` in `src/upstream/reader.ts` copies fflate's record search; `readManifest` refuses before the first unzip. Name chosen: `zipEntryCount`, beside `CENTRAL_HEADER_MIN_BYTES = 46`. `pnpm test` 205 passed, `pnpm check` 0 problems.
 
 ## Decisions
 
