@@ -3,7 +3,8 @@ import { strFromU8, unzipSync } from "fflate";
 
 export type Fetch = (url: string, init?: RequestInit) => Promise<Response>;
 
-// The facts the index reads from one plugin's repo, release XPI, and update.json.
+// The facts the index reads from one plugin's repo and release XPI, after it checks
+// that the plugin's update.json lists the plugin id.
 export interface UpstreamFacts {
   id: string;
   name?: string;
@@ -80,7 +81,10 @@ async function read(repoUrl: string, fetch: Fetch): Promise<UpstreamFacts> {
   const published = releases.filter((release) => !release.draft);
   if (published.length === 0) fail("no-release", `${meta.full_name} has no release`);
   const withXpi = published
-    .map((release) => ({ release, xpi: release.assets.find((asset) => /\.xpi$/i.test(asset.name)) }))
+    .map((release) => ({
+      release,
+      xpi: (Array.isArray(release.assets) ? release.assets : []).find((asset) => /\.xpi$/i.test(asset?.name)),
+    }))
     .filter((item) => item.xpi !== undefined)
     .sort((a, b) => Date.parse(b.release.published_at) - Date.parse(a.release.published_at));
   if (withXpi.length === 0) fail("no-xpi-release", `no release of ${meta.full_name} has an .xpi asset`);

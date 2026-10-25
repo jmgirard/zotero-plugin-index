@@ -1,5 +1,5 @@
 {
-  "source": "Recorded from windingwind/zotero-better-notes on 2026-10-25. Each body keeps only the fields the reader reads, the release list keeps three of its 378 releases on two pages, and the XPI holds only the manifest.json of release v3.3.3.",
+  "source": "Recorded from windingwind/zotero-better-notes on 2026-10-25. The repo body is trimmed to five fields and each release to five. The release list keeps three of its 378 releases, split over two pages, and the page-1 link header was rewritten to point at that second page. The XPI holds only the manifest.json of release v3.3.3.",
   "repoUrl": "https://github.com/windingwind/zotero-better-notes",
   "responses": {
     "https://api.github.com/repos/windingwind/zotero-better-notes": {

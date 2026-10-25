@@ -17,7 +17,7 @@ export function entryFiles(facts: UpstreamFacts) {
   return { meta, index: { schemaVersion: 1 } };
 }
 
-// Writes plugins/<id>/ under `outDir`. It never replaces an existing entry, whose
+// Writes the entry directory `<outDir>/<id>/`. It never replaces an existing entry, whose
 // index.json may hold overrides.
 export async function writeEntry(outDir: string, facts: UpstreamFacts): Promise<WriteResult> {
   // The id comes from the plugin's manifest and names a directory, so it must not

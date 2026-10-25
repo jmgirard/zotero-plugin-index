@@ -1,6 +1,6 @@
 # M002: Read upstream plugin facts and draft entries
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** M001
 - **Driving RR:** —
@@ -92,6 +92,8 @@ candidate row. Repos outside GitHub → not in this scope; DESIGN.md says the in
 - 2026-10-25: T5: ran `pnpm add-plugin` on 15 top `zotero-plugin` repos by stars; 14 passed and are committed, argenos/zotero-mdnotes failed `no-manifest` (a Zotero 6 plugin). `pnpm check`: 14 entries, 0 problems.
 - 2026-10-25: T5: syt2/zotero-addons drafted with name `__MSG_name__`; decided the reader resolves `__MSG_<key>__` in name and description from the XPI's `_locales/<default_locale>/messages.json` and leaves out a placeholder it cannot resolve; 2 tests; entry redrafted.
 - 2026-10-25: T6: README gains "Setup" (install moved out of "Checking entries") and "Adding a plugin"; CHANGELOG gains the `pnpm add-plugin` entry and the 14 entries; DESIGN.md Function Families and Architecture name `src/upstream/` and `src/add-plugin/`. Candidate row "Read stable releases before prereleases" added: 1 of the 14 (zotmoov) has a prerelease as its newest XPI release.
+- 2026-10-25: claim audit: 95 claims read, 5 corrected — README.md, test/fixtures/upstream/better-notes.json, src/add-plugin/add-plugin.ts, src/upstream/reader.ts; the re-read found all 5 true. Also added a guard so a release whose `assets` is not a list counts as having no `.xpi` instead of throwing.
+- 2026-10-25: all tasks done; `pnpm test` 60 passed, `pnpm check` 14 entries, 0 problems; status review.
 
 ## Decisions
 
