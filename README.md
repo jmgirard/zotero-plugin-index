@@ -4,6 +4,27 @@ A community index of plugins for Zotero 7 and later. The index lists plugins
 and links to the releases of each author. It does not host plugin files, and
 it does not review or endorse plugins.
 
+## The site
+
+The website <https://jmgirard.github.io/zotero-plugin-index/> shows the index.
+The home page lists every plugin with the range of Zotero versions that the
+plugin declares. If the last build failed to read a plugin, its row shows the
+failure. Each plugin has its own page. The page shows the declared
+range first, then facts about the repository and its releases, then the
+overrides of the index for that plugin. If the last build failed to read a
+plugin, its page shows the failure in place of the declared range.
+
+To compare your Zotero version with each declared range, enter it in the
+"Your Zotero version" field at the top of any page. You can also paste the
+version line from About Zotero, such as "Version 7.0.11 (64-bit)". The site
+reads the version from the first part of the text that starts with a digit.
+Your browser keeps the value in its local storage, so the other pages show it
+too. Each plugin then shows whether your version is inside its declared
+range, older than its minimum, or newer than its maximum. The declared range
+uses the overrides that apply to the plugin version that the index read. The
+site does not test plugins. It compares your version with what each plugin
+declares.
+
 ## Using the data
 
 The index publishes its data file on GitHub Pages:
@@ -15,8 +36,8 @@ The index publishes its data file on GitHub Pages:
   <https://jmgirard.github.io/zotero-plugin-index/schemas/index.v1.schema.json>
 
 A daily build updates the data. If more than half of the records carry a
-failure, the build deploys nothing, and the data from the last good build
-stays in place. "Building the data" below describes the file. A breaking
+failure, the build deploys nothing. If the site build fails, the build also
+deploys nothing. The data from the last good build then stays in place. "Building the data" below describes the file. A breaking
 change to the file gets a new schema version under a new path, such as `v2/`.
 
 ## Plugin entries
@@ -163,11 +184,34 @@ To read the entries in another directory, give its path: `pnpm build <dir>`.
 To write the file under another directory, add `--out <dir>`. As with
 `pnpm add-plugin`, set `GITHUB_TOKEN` to get a higher GitHub API limit.
 
-The `Build data` workflow runs `pnpm check` and then `pnpm build` once a day,
-and you can also start it by hand. It keeps `dist/` as a workflow artifact named
-`plugins-data`. If the build succeeds, the workflow deploys `dist/` to GitHub
-Pages. If `pnpm build` exits with status 1, the workflow deploys nothing, and
-the data from the last good build stays published. The repository's
+## Building the site
+
+To build the site, first run `pnpm build`, then run:
+
+```bash
+pnpm site
+```
+
+The command reads `dist/v1/plugins.json`. It writes the home page,
+`dist/index.html`, and one page for each record, `dist/plugins/<id>/index.html`.
+It does not change the data file or the schemas. It replaces the `index.html`
+and `plugins/` of an earlier run, so a page for a plugin that the data no
+longer lists goes away. Links between the pages, and to the data file, start
+with `/zotero-plugin-index/`, the path of the site on GitHub Pages.
+
+To read the data from another directory and write the pages there, add
+`--out <dir>`. The command then reads `<dir>/v1/plugins.json`. If it cannot
+read or parse the data file, or the file has no `plugins` list, it writes no
+page and exits with status 1.
+
+## The daily workflow
+
+The `Build data` workflow runs `pnpm check`, `pnpm build`, and then
+`pnpm site` once a day, and you can also start it by hand. It keeps `dist/` as
+a workflow artifact named `plugins-data`. If all three commands succeed, the
+workflow deploys `dist/` to GitHub Pages. If `pnpm build` or `pnpm site` exits
+with status 1, the workflow deploys nothing, and the site and data from the
+last good build stay published. The repository's
 `github-pages` environment, set in its GitHub settings, lets only runs on the
 `main` branch deploy.
 

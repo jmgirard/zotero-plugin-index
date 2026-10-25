@@ -1,0 +1,143 @@
+---
+import { BASE } from "../base.ts";
+import { day, loadData } from "../data.ts";
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+const { generatedAt } = loadData();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <style is:global>
+      body {
+        font-family: system-ui, sans-serif;
+        line-height: 1.5;
+        max-width: 50rem;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+      header {
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 0.5rem;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 0.25rem 0.5rem;
+        border-bottom: 1px solid #eee;
+        vertical-align: top;
+      }
+      dt {
+        font-weight: bold;
+      }
+      .hint {
+        font-size: 0.875rem;
+        color: #555;
+        margin: 0.25rem 0 0;
+      }
+      footer {
+        border-top: 1px solid #ccc;
+        margin-top: 2rem;
+        font-size: 0.875rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p><a href={BASE}>Zotero plugin index</a></p>
+      <label for="zotero-version">Your Zotero version</label>
+      <input id="zotero-version" type="text" placeholder="for example 8.0.1" autocomplete="off" spellcheck="false" />
+      <p class="hint">In Zotero, open Help → About Zotero. On macOS, open Zotero → About Zotero.</p>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <p data-fact="not-vetted">This index does not vet the plugins it lists.</p>
+      <p>The build read each plugin's repository and releases on {day(generatedAt)}.</p>
+      <p>Data file: <a href={`${BASE}v1/plugins.json`}>v1/plugins.json</a></p>
+    </footer>
+    <script>
+      import { rangeResult, type RangeRecord, type RangeResult, zoteroVersion } from "../../../src/site/version.ts";
+
+      // The visitor's browser keeps the field's text under this key, so every page shows it.
+      // Other project sites share the jmgirard.github.io storage, so the key names the index.
+      const KEY = "zotero-plugin-index:zotero-version";
+      const MESSAGES: Record<RangeResult, (version: string) => string> = {
+        inside: (version) => `Zotero ${version} is inside the declared range.`,
+        below: (version) => `Zotero ${version} is older than the declared minimum.`,
+        above: (version) => `Zotero ${version} is newer than the declared maximum.`,
+        "no-range": (version) => `There is no declared range to compare with Zotero ${version}.`,
+      };
+
+      // Storage can be blocked, for example when the browser blocks site data; the field then
+      // still works on the page it was typed on. Undefined means storage cannot be read.
+      function stored(): string | undefined {
+        try {
+          return localStorage.getItem(KEY) ?? "";
+        } catch {
+          return undefined;
+        }
+      }
+
+      function store(version: string): void {
+        try {
+          if (version) localStorage.setItem(KEY, version);
+          else localStorage.removeItem(KEY);
+        } catch {}
+      }
+
+      function show(version: string): void {
+        for (const slot of document.querySelectorAll<HTMLElement>("[data-result-for]")) {
+          if (!version) {
+            slot.textContent = "";
+            delete slot.dataset.result;
+            continue;
+          }
+          const result = rangeResult(version, JSON.parse(slot.dataset.resultFor!) as RangeRecord);
+          slot.dataset.result = result;
+          slot.textContent = MESSAGES[result](version);
+        }
+      }
+
+      const field = document.querySelector<HTMLInputElement>("#zotero-version")!;
+      // The field keeps what the visitor typed; the results use the version read from it.
+      function refresh(): void {
+        const value = stored();
+        if (value === undefined) return;
+        field.value = value;
+        show(zoteroVersion(field.value));
+      }
+
+      // Text typed before this script ran is kept and stored.
+      if (field.value) {
+        store(field.value.trim());
+        show(zoteroVersion(field.value));
+      } else {
+        refresh();
+      }
+      field.addEventListener("input", () => {
+        store(field.value.trim());
+        show(zoteroVersion(field.value));
+      });
+      // A page restored by Back, or a change made in another tab, reads the stored value again.
+      window.addEventListener("pageshow", (event) => {
+        if (event.persisted) refresh();
+      });
+      window.addEventListener("storage", (event) => {
+        if (event.key === KEY || event.key === null) refresh();
+      });
+    </script>
+  </body>
+</html>

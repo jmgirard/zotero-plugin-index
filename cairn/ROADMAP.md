@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-25 (M006 done and archived, live URLs checked; 2 ro
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M007 | Build the plugin site | planned | M006 | high | milestones/M007-plugin-site.md |
+| M007 | Build the plugin site | review | M006 | high | milestones/M007-plugin-site.md |
 | M006 | Publish the data on Pages | done | — | high | milestones/archive/M006-data-on-pages.md |
 | M005 | Refuse zips that claim too many entries | done | — | high | milestones/archive/M005-zip-entry-limits.md |
 | M004 | Limit what the reader downloads | done | — | high | milestones/archive/M004-download-limits.md |
@@ -17,7 +17,7 @@ _Last hygiene check: 2026-10-25 (M006 done and archived, live URLs checked; 2 ro
 ## Candidates
 - Publish the site and data on Pages: a static TypeScript site on GitHub Pages, one page per plugin answering "does it work on my Zotero?" first (M001 review); narrowed 2026-10-25 by M006, which published the data file and the schemas at stable URLs with `$id` set to them — added 2026-10-24 — cairn/DESIGN.md Contract boundary, M003, M006 — started M007
 - Find new plugins by GitHub topic search: a scheduled bot searches the `zotero-plugin` and `zotero-addon` topics and opens one pull request per new candidate, plus an issue form that takes one repo URL — added 2026-10-24 — cairn/DESIGN.md Data sources, M002
-- Catch stray and unportable entry files: `pnpm check` skips a stray file under `plugins/` with exit 0, accepts directory names that break on Windows or collide by case, passes an override reason of only zero-width characters, passes two overrides for the same field and version, and reports a UTF-8 BOM as "not valid JSON" (M001 review); `pnpm add-plugin` also writes an id that differs only by case from an existing entry or is a reserved Windows name such as CON (M002 review) — added 2026-10-24 — M001, M002
+- Catch stray and unportable entry files: `pnpm check` skips a stray file under `plugins/` with exit 0, accepts directory names that break on Windows or collide by case, passes an override reason of only zero-width characters, passes two overrides for the same field and version, and reports a UTF-8 BOM as "not valid JSON" (M001 review); `pnpm add-plugin` also writes an id that differs only by case from an existing entry or is a reserved Windows name such as CON (M002 review); an entry id with `%` or a space fails the whole `pnpm site` build with NoMatchingStaticPathFound, which also stops the data deploy (M007 review) — added 2026-10-24 — M001, M002, M007
 - Collect works and broken user reports: "Works" and "Broken" links open a prefilled issue form, and a bot adds the report to the data and closes the issue — added 2026-10-24 — cairn/DESIGN.md Data sources
 - Read stable releases before prereleases: the reader takes the manifest from the newest release with an `.xpi`, prereleases included, so wileyyugioh/zotmoov reads as prerelease 1.2.34 (observed 2026-10-25); prefer the newest stable release with an `.xpi` when one exists — added 2026-10-25 — M002
 - Warn when the daily build degrades: `pnpm build` prints no failure summary, still exits 0 and deploys when rate limits turn up to half of the reads into `github-http-error`, and a few hung hosts can push the job past its 30-minute limit so no artifact is kept; add a failure summary, a warning on partial failure, and a time budget per plugin (M003 review); narrowed 2026-10-25 by M006, which exits 1 when more than half of the records fail — added 2026-10-25 — M003, M006
