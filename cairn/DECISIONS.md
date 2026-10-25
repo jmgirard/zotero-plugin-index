@@ -28,3 +28,13 @@ up registry validity.
 dependency, so `tsc --noEmit` can type-check code that imports Node's
 built-in modules. D-001 did not name it. The user approved it at a chip over
 running the code with no type check.
+
+### D-004: Build the plugin site with Astro
+
+2026-10-25, M007 plan. The static site uses the `astro` package, pinned at an
+exact version when M007 adds it. Astro writes plain HTML from TypeScript
+templates and sends no browser framework by default, so each page reads
+without JavaScript and the version check stays one small script. The user
+chose a framework at the plan question set over a TypeScript script that
+writes HTML with no new package, which gives templates and routing. Any
+further package, such as `@astrojs/check`, takes its own approval.
