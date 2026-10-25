@@ -7,7 +7,8 @@ import { join } from "node:path";
 export const REGISTRY_COMMIT = "a06373e072f01d83f3b5f6e304b20824ee878460";
 export const REGISTRY_SCHEMA_URL =
   `https://raw.githubusercontent.com/zotero-plugin-dev/zotero-plugin-registry/${REGISTRY_COMMIT}/shared/schemas/meta.schema.json`;
-// SHA-256 of the file at REGISTRY_COMMIT, so a changed cache or download is refused.
+// SHA-256 of the file at REGISTRY_COMMIT. A changed cache is downloaded again, and a
+// changed download is refused.
 export const REGISTRY_SCHEMA_SHA256 = "6decb4ca95d8a1d948da7a45babe81a45e5b6f97cd97640be0688bbc99d5d551";
 
 const FETCH_TIMEOUT_MS = 30_000;
@@ -26,7 +27,7 @@ export async function loadRegistrySchema(cacheDir: string): Promise<object> {
     const cached = await readFile(cachePath, "utf8");
     if (sha256(cached) === REGISTRY_SCHEMA_SHA256) return JSON.parse(cached);
   } catch {
-    // Not cached, or the cache cannot be read: download it.
+    // Not cached, unreadable, or changed: download it.
   }
   let text: string;
   try {

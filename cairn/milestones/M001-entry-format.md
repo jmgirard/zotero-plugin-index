@@ -143,3 +143,15 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - AC4 (pass 2): README `index.json` fields schemaVersion, overrides, field, version, value, reason; none missing from the schema's properties.
 - AC5 (pass 2): CHANGELOG.md entry present; `tsc --noEmit` clean, `pnpm test` 15 passed, `pnpm check` exit 0; `cairn_validate` all checks passed.
 - AC3 (pass 2): still pending the step-8 push's CI run.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- prior-review (pass 2): no prior-review evidence.
+- ripple #1: DESIGN.md Function Families says "None yet: the repo has no source" — fix now (names the entry checks).
+- ripple #2: DESIGN.md Architecture says the same — fix now (describes the project, entry layout, checker, and CI).
+- ripple #3: DESIGN.md says the data schema uses TypeScript, but `schemas/index.v1.schema.json` is JSON Schema — reject (planned change: M001 Scope chose a JSON Schema file checked with Ajv, D-001; the convention covers the code).
+- blame-history #1: a cached schema with a wrong hash is replaced by a new download, but the comment says a changed cache "is refused" and the test name says the same — fix now (comment and test name now say a changed cache is downloaded again and a changed download is refused; the earlier planted defect showed the test fails when the cache is used unchecked).
+- blame-history #2: the cache comment omits the hash-mismatch case — fix now (now "Not cached, unreadable, or changed").
+- blame-history #3: a non-ENOENT `readdir` error on the root, such as a root that is a file, crashes with a stack trace — reject (edge: a root path that is a file, outside documented use; the effect is an error).
+- blame-history #4: stray non-directory files are skipped — reject (already settled as follow-up, candidate row "Catch stray and unportable entry files").
+- blame-history #5: `runCheck` needs `npm_execpath`, so running Vitest directly throws — reject (planned change: review return 1 had the tests run `pnpm check`, and the error says to use `pnpm test`).
+- blame-history #6: D-001 names fflate, which package.json lacks — reject (planned change, as in pass 1: M002 adds it).
+- blame-history #7: CI runs twice for same-repo PRs — reject (planned change, as in pass 1).

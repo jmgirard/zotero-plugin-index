@@ -25,7 +25,7 @@ describe("loadRegistrySchema", () => {
     );
   });
 
-  test("refuses a cached copy and a download that differ from the pinned file", async () => {
+  test("skips a changed cache and refuses a changed download", async () => {
     vi.stubGlobal("fetch", async () => new Response("{}", { status: 200 }));
     const load = loadRegistrySchema(cacheDir("{}"));
     await expect(load).rejects.toBeInstanceOf(RegistrySchemaUnavailable);
