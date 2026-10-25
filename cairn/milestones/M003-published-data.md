@@ -28,22 +28,22 @@ record carries the failure.
 
 ## Acceptance criteria
 
-- [ ] AC1: On a fixture tree of entries with recorded upstream responses, `pnpm build` writes
+- [x] AC1: On a fixture tree of entries with recorded upstream responses, `pnpm build` writes
       `dist/v1/plugins.json`, the file is valid against `schemas/plugins.v1.schema.json`, and its record ids equal
       the set of entry directory names in the fixture tree. A Vitest test asserts all three.
-- [ ] AC2: When the fixture tree holds one entry whose upstream read fails, `pnpm build` exits 0, writes a record
+- [x] AC2: When the fixture tree holds one entry whose upstream read fails, `pnpm build` exits 0, writes a record
       for every entry, and the failing entry's record carries the reader's failure name. A second fixture, in which
       the reader throws an `Error` instead of returning a failure name for one entry, gives the same result with
       the failure name `unexpected-error` for that entry. A Vitest test asserts each case.
-- [ ] AC3: For a fixture entry with an override, the record's overrides block holds the override's field, value,
+- [x] AC3: For a fixture entry with an override, the record's overrides block holds the override's field, value,
       and reason, and its upstream block holds the upstream value unchanged. A Vitest test asserts both values.
-- [ ] AC4: `.github/workflows/build.yml` declares a `schedule` trigger that runs once a day and a
+- [x] AC4: `.github/workflows/build.yml` declares a `schedule` trigger that runs once a day and a
       `workflow_dispatch` trigger, runs `pnpm build` with the workflow's `GITHUB_TOKEN`, and uploads `dist/` with
       `actions/upload-artifact`, checked by reading the file.
-- [ ] AC5: `pnpm build` run locally against GitHub over the committed `plugins/` tree, with a token set, exits 0
+- [x] AC5: `pnpm build` run locally against GitHub over the committed `plugins/` tree, with a token set, exits 0
       and writes a file valid against `schemas/plugins.v1.schema.json` in which at least five records carry
       upstream facts and no failure name.
-- [ ] AC6: `CHANGELOG.md` has an entry for `pnpm build` and the data file, the README names the file's path and
+- [x] AC6: `CHANGELOG.md` has an entry for `pnpm build` and the data file, the README names the file's path and
       schema version, and `pnpm test` and `pnpm check` pass on the branch.
 
 ## Coverage
@@ -102,3 +102,13 @@ record carries the failure.
 ## Decisions
 
 ## Review
+
+Pass 2, 2026-10-25, head c302885 (origin/main 32bef16 is an ancestor; no sync needed).
+
+- AC1: `vitest run test/build.test.ts` — "writes dist/v1/plugins.json by default, valid against its schema, with one record per entry" passed; it runs `pnpm build <tree>` with no `--out`, reads `dist/v1/plugins.json`, validates it with Ajv against the schema, and compares the record ids to `readdirSync` of the 3-entry tree.
+- AC2: same run — "exits 0, writes every record, and gives the failing entry the reader's failure name" passed (status 0, all 3 ids, `forked-plugin` failure `fork`); "names an error the reader does not expect unexpected-error and goes on" passed (status 0, all 3 ids, Knowledge4Zotero failure `{unexpected-error, planted reader error}`, the two entries read after it carry upstream facts and `fork`).
+- AC3: same run — "keeps an override apart from the upstream value it corrects" passed: overrides equal `[{strict_max_version, 9.*, reason}]` and `upstream.strictMaxVersion` is the recorded `10.99.99`.
+- AC4: read .github/workflows/build.yml — `schedule` cron `17 6 * * *` (once a day), `workflow_dispatch`, step `run: pnpm build` with `GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}`, then `actions/upload-artifact@v7` with `path: dist/`.
+- AC5: live `pnpm build --out <scratch>` with the gh token over plugins/ exited 0 ("wrote 14 records … 0 with a failed upstream read"); Ajv: valid; 14 records carry upstream facts and no failure (at least 5 required).
+- AC6: CHANGELOG.md:16 Unreleased entry for `pnpm build` and `dist/v1/plugins.json`; README.md:97 names `dist/v1/plugins.json` and `schemaVersion` `1`; `pnpm test` 84 passed (5 files); `pnpm check` 14 entries, 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed; no principle changed (cairn_impact skipped); the generic profile names no toolchain checks.
