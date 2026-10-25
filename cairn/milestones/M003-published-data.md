@@ -98,6 +98,8 @@ record carries the failure.
 - 2026-10-25: amendment return: AC2 — "A second fixture, in which the reader throws an `Error` instead of returning a failure name for one entry, gives the same result with the failure name `unexpected-error` for that entry."
 - 2026-10-25: claim audit: 9 claims read, 0 corrected — README.md, test/build.test.ts (lines added since 667a5ab, return 1).
 - 2026-10-25: status review; pnpm test 84 passed, pnpm check 14 entries clean.
+- 2026-10-25: review pass 2: 50 findings settled (25 fix now in e79cdb2, 12 follow-up, 13 reject); no return-floor finding.
+- 2026-10-25: step-7 approval: m003-published-data approved for merge
 
 ## Decisions
 
