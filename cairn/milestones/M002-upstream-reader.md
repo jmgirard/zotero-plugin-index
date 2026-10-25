@@ -95,6 +95,7 @@ candidate row. Repos outside GitHub → not in this scope; DESIGN.md says the in
 - 2026-10-25: claim audit: 95 claims read, 5 corrected — README.md, test/fixtures/upstream/better-notes.json, src/add-plugin/add-plugin.ts, src/upstream/reader.ts; the re-read found all 5 true. Also added a guard so a release whose `assets` is not a list counts as having no `.xpi` instead of throwing.
 - 2026-10-25: all tasks done; `pnpm test` 60 passed, `pnpm check` 14 entries, 0 problems; status review.
 - 2026-10-25: review: the AC6 tick landed before its evidence line because the evidence edit missed its anchor; the evidence line was added in the same step and every tick now has its line.
+- 2026-10-25: step-7 approval: m002-upstream-reader approved for merge
 
 ## Decisions
 
