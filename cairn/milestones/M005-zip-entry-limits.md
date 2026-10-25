@@ -91,9 +91,9 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
       result with the `filter` call count of `unzipSync`.
 - [x] T4: Write the AC4 cases first. A helper copies a central-directory entry N times and raises the counts. Then
       change the `unzipOne` filter (src/upstream/reader.ts:366) to fail at the second entry that matches `name`.
-- [ ] T5: Add both rules to README's limit list (README.md:66), the CHANGELOG's Unreleased section, and DESIGN.md's
+- [x] T5: Add both rules to README's limit list (README.md:66), the CHANGELOG's Unreleased section, and DESIGN.md's
       `src/upstream/` bullet.
-- [ ] T6: Run `pnpm test` and `pnpm check` (run pnpm as `npx -y pnpm@12.15.0`).
+- [x] T6: Run `pnpm test` and `pnpm check` (run pnpm as `npx -y pnpm@12.15.0`).
 
 ## Work log
 
@@ -115,6 +115,8 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
 - 2026-10-25: T2 done. `zipEntryCount` in `src/upstream/reader.ts` copies fflate's record search; `readManifest` refuses before the first unzip. Name chosen: `zipEntryCount`, beside `CENTRAL_HEADER_MIN_BYTES = 46`. `pnpm test` 205 passed, `pnpm check` 0 problems.
 - 2026-10-25: T3 done. The AC2 table has 9 zips and states each count apart from both readers. Planted defects, each run then reverted: a scan from the last 4 bytes, no count-0 rule, and an 8-byte locator offset turned the last-21-bytes, count-0, and high-bits rows red, 3 of 9.
 - 2026-10-25: T4 done. Before the fix, both two-copy zips read as `ok: true`, and the 2,000-entry zip took 4,510 ms to fail with `manifest-invalid`. The `unzipOne` filter now fails at the second match with "holds more than one <name>". `pnpm test` 217 passed, `pnpm check` 0 problems.
+- 2026-10-25: T5 done. README's limit list, the CHANGELOG's Unreleased section, and DESIGN.md's `src/upstream/` bullet state both rules. The CHANGELOG's "more than 3 minutes" is the T1 run that passed 180 s before it was stopped.
+- 2026-10-25: T6 done. `pnpm test` 217 passed, `pnpm check` 0 problems.
 
 ## Decisions
 

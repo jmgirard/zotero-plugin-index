@@ -71,6 +71,11 @@ host:
   size in the zip, unzipped or compressed, is more than 1 MiB fails with
   `manifest-too-large`.
 - An `update.json` larger than 1 MiB fails with `update-json-too-large`.
+- An XPI whose zip claims more entries than its length can hold, at 46
+  bytes for each entry, fails with `xpi-unreadable`.
+- An XPI whose zip has more than one entry named `manifest.json`, or more
+  than one entry named the `messages.json` of the default locale, fails
+  with `xpi-unreadable`.
 
 Before the command requests the XPI, the `update.json`, or a redirect target,
 it checks the host. The read fails with `host-refused` for `localhost` and

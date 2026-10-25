@@ -145,7 +145,13 @@ reused._
   `update.json` at 1 MiB. `src/upstream/host-guard.ts` refuses a download
   host in a loopback, private, or reserved range, by its literal address or
   by each address that DNS returns. The reader follows download redirects
-  itself, at most 5, and checks each one (M004).
+  itself, at most 5, and checks each one (M004). If an XPI's zip claims
+  more entries than its length can hold, at 46 bytes for each entry, the
+  read fails with `xpi-unreadable`. If the zip has more than one entry named
+  `manifest.json`, or more than one named the default locale's
+  `messages.json`, the read also fails with `xpi-unreadable`. fflate loops
+  over the claimed count and unzips each matching entry, so without these
+  checks either zip holds the build's CPU (M005).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request.
 - `src/build/` reads the entries, runs the upstream reader on each plugin in

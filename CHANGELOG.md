@@ -29,3 +29,9 @@
   The reader follows at most 5 redirects for the XPI and the `update.json`.
   A cut-off XPI download, and a redirect with no `Location`, now fail with
   `request-failed`.
+- If an XPI's zip claims more entries than its length can hold, at 46 bytes
+  for each entry, the read fails with `xpi-unreadable`. The read also fails with
+  `xpi-unreadable` for a zip with two or more entries named `manifest.json`.
+  The same holds for the default-locale `messages.json`.
+  Before, a 98-byte XPI that claimed 4,294,967,295 entries held the reader
+  for more than 3 minutes.
