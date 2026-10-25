@@ -154,9 +154,10 @@ The command writes no file and exits with status 1 in these cases:
 - It finds no entries, or it cannot read the entry directory.
 - An entry is not valid, for example a `meta.json` with no `repoUrl`.
 - The file it built is not valid against the schema.
-- It cannot write the file.
+- It cannot write the schema copies or the data file.
 
-A file from an earlier run then stays in place.
+A data file from an earlier run then stays in place. In the last case, the
+schema copies can already be in `dist/schemas/`.
 
 To read the entries in another directory, give its path: `pnpm build <dir>`.
 To write the file under another directory, add `--out <dir>`. As with

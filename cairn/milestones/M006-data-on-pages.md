@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M006: Publish the data on Pages
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** high   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -82,7 +82,7 @@ workflow, fetches the data and schema URLs, and logs the result in this file's w
       once on the milestone branch to make sure that the build job passes and uploads the artifact; the deploy
       job stops at the environment's branch rule there.
 - [x] T4: README "Using the data" section, CHANGELOG entry, DESIGN.md Contract boundary and Architecture lines.
-- [ ] T5: Run the `verify` slot (`npx -y pnpm@12.15.0 test`, then `check`).
+- [x] T5: Run the `verify` slot (`npx -y pnpm@12.15.0 test`, then `check`).
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -103,6 +103,8 @@ workflow, fetches the data and schema URLs, and logs the result in this file's w
 - 2026-10-25: T2 done — `writeData` copies both schemas to `<out>/schemas/` before it writes the data file (a failed copy is `write-failed`); the CLI prints `<n> of <m> records carry a failure, more than half` to stderr and exits 1 after the write. The planted-error test is the 2-of-3 tree (now exit 1); a new 2-of-4 test adds an entry whose repo has no recorded response. Both failed on main for the named reasons (exit 0 seen; schema copy ENOENT); `pnpm test` 218 passed.
 - 2026-10-25: T3 done — `build.yml` uses `actions/upload-pages-artifact@v5` (last build step) and `actions/deploy-pages@v5` (latest releases, read with gh api); `plugins-data` now uploads `if: !cancelled()` so a failed build's data stays readable; workflow concurrency group `pages`. Pages turned on (build_type workflow, https://jmgirard.github.io/zotero-plugin-index/); the `github-pages` environment allows branch `main` only. Branch dispatch run 40237546151: build passed (14 records, 0 failures, artifacts plugins-data and github-pages), deploy rejected by the environment rule as expected.
 - 2026-10-25: T4 done — README gains "Using the data" (the three URLs, the deploy rule) and updates "Building the data" (exit 1 over half, schema copies, Pages deploy from main); one CHANGELOG entry; DESIGN.md Contract boundary names the URLs and Architecture the deploy.
+- 2026-10-25: T5 done — `pnpm test` 218 passed; `pnpm check` 14 entries, 0 problems.
+- 2026-10-25: claim audit: 26 claims read, 0 corrected — build.yml, CHANGELOG.md, README.md, src/build/build.ts, src/build/cli.ts, test/build.test.ts; the reader also flagged the unchanged README "writes no file … cannot write the file" case, made stale by the schema copies, now reworded.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
