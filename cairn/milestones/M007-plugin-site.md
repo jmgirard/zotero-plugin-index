@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M007: Build the plugin site
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** high   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M006   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — Zotero users read the site to choose plugins   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m007-plugin-site   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -87,7 +87,7 @@ page and one plugin page and logs the result in this file's work log.
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
 
-- [ ] T1: Read Mozilla's Toolkit version format page and write `cairn/references/mozilla-toolkit-version.md`
+- [x] T1: Read Mozilla's Toolkit version format page and write `cairn/references/mozilla-toolkit-version.md`
       (source note template, its ordered examples quoted verbatim, provenance) with its `INDEX.md` line.
 - [ ] T2: Tests first, then `compareVersions` and `rangeResult` in `src/site/version.ts`, in plain TypeScript
       that both Vitest and the Astro browser script import.
@@ -115,6 +115,7 @@ page and one plugin page and logs the result in this file's work log.
 - 2026-10-25: collision: candidate "Publish the site and data on Pages" is taken by M006 and this milestone; its started token names M006.
 - 2026-10-25: criteria audit (full mode, fresh Opus reader): 7 findings on M007, all taken — AC3 gets `--out`, a staging build (Astro may empty its outDir), a hand-made site fixture with a GUID id, raw-id directories, and a `/zotero-plugin-index/` link-prefix check; AC2 states equality and which override wins; AC1 states the three signs and quotes the source's examples; AC4 fixes document order and probes an override that does not apply; AC5 names its data and the served path; no finding on AC6, AC7.
 - 2026-10-25: lessons used: 2026-10-25 (M001) pnpm via npx; 2026-10-25 (M001) INIT_CWD for relative paths; 2026-10-25 (M003) beforeAll hookTimeout.
+- 2026-10-25: T1 done: the Toolkit version format now lives on MDN's "Legacy Version Formats" page; the note quotes its rules and its 12-line example chain; the simple-english hook flags the note's `— observed` stamp, kept because cairn's staleness check reads that form.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

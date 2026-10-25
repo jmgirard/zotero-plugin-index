@@ -8,3 +8,5 @@ gitignored source shelf (`sources/`).
 Write each entry as a bullet line in the form `- page.md: what it covers`.
 Do not use table rows. The references check in `cairn_validate` reads only
 bullet lines.
+
+- mozilla-toolkit-version.md: how Zotero and Firefox order version strings (MDN's legacy version format)

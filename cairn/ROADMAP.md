@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-25 (M006 done and archived, live URLs checked; 2 ro
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M007 | Build the plugin site | planned | M006 | high | milestones/M007-plugin-site.md |
+| M007 | Build the plugin site | in-progress | M006 | high | milestones/M007-plugin-site.md |
 | M006 | Publish the data on Pages | done | — | high | milestones/archive/M006-data-on-pages.md |
 | M005 | Refuse zips that claim too many entries | done | — | high | milestones/archive/M005-zip-entry-limits.md |
 | M004 | Limit what the reader downloads | done | — | high | milestones/archive/M004-download-limits.md |
