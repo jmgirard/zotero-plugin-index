@@ -37,25 +37,25 @@ page and one plugin page and logs the result in this file's work log.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: `compareVersions(a, b)` in `src/site/version.ts` returns a negative number, 0, or a positive number
+- [x] AC1: `compareVersions(a, b)` in `src/site/version.ts` returns a negative number, 0, or a positive number
       as `a` is older than, equal to, or newer than `b` by Mozilla's Toolkit version format. A Vitest table holds
       every ordered example that `cairn/references/mozilla-toolkit-version.md` quotes verbatim from that format's
       page, and these three against `8.0.1`: `11.*.*` is newer, `8.0-beta.21` is older, `10.99.99` is newer.
-- [ ] AC2: `rangeResult(zotero, record)` in `src/site/version.ts` returns `below`, `above`, `inside`, or
+- [x] AC2: `rangeResult(zotero, record)` in `src/site/version.ts` returns `below`, `above`, `inside`, or
       `no-range`. A `strict_min_version` or `strict_max_version` override applies when it has no `version` or its
       `version` equals the upstream `version`; an applying override replaces the upstream value, and when two
       apply to one field, the one with the matching `version` wins. `zotero` equal to the minimum or the maximum
       gives `inside`. A missing minimum or maximum sets no bound on that side, and a record with neither, or with
       a `failure`, gives `no-range`. Tests cover each result, equality at each bound, an override that applies,
       one that does not, and both kinds on one field.
-- [ ] AC3: `test/fixtures/site/plugins.json` is valid against the v1 schema and holds a `name@domain` id, a
+- [x] AC3: `test/fixtures/site/plugins.json` is valid against the v1 schema and holds a `name@domain` id, a
       GUID-form `{…}` id, and a record with a `failure`. With it copied to `<out>/v1/plugins.json` and the schemas
       to `<out>/schemas/`, `pnpm site --out <out>` writes `<out>/index.html` and one
       `<out>/plugins/<id>/index.html` for each record, `<id>` being the raw id, and no other plugin page; the data
       and schema files are byte-identical before and after; and every `href` and `src` in the built HTML that
       points inside the site starts with `/zotero-plugin-index/`. A test in `test/site.test.ts` checks each
       clause over all built HTML files.
-- [ ] AC4: In the built HTML of a fixture record with upstream facts, in document order, the declared range and
+- [x] AC4: In the built HTML of a fixture record with upstream facts, in document order, the declared range and
       the Zotero version field come before the repository link and every other fact this criterion lists. The page
       shows the repository link, the repository creation date, the latest release date, the release count, the
       open issue count, the `update.json` host, a link to the repository's releases page, every override with its
@@ -63,15 +63,15 @@ page and one plugin page and logs the result in this file's work log.
       index does not vet the plugins it lists." The page of the fixture record with a `failure` shows the failure
       name and message and no declared range. Tests in `test/site.test.ts` read both pages, with one override that
       applies and one that does not.
-- [ ] AC5: In a browser on the site built from the site fixture and served under `/zotero-plugin-index/`, with no
+- [x] AC5: In a browser on the site built from the site fixture and served under `/zotero-plugin-index/`, with no
       stored version, a plugin page shows the declared range and no result. After the visitor enters `8.0.1` on
       the home page, each listed plugin shows its `rangeResult` for `8.0.1`, and a plugin page opened next shows
       the same result for `8.0.1` without a new entry. Shown at review in the built-in browser, against
       `rangeResult` for the same records.
-- [ ] AC6: `.github/workflows/build.yml` runs `pnpm site` after `pnpm build` and before the Pages upload step,
+- [x] AC6: `.github/workflows/build.yml` runs `pnpm site` after `pnpm build` and before the Pages upload step,
       with no `if:` condition. README describes the site and its version field, and CHANGELOG's `## Unreleased`
       gains one entry for the site.
-- [ ] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
+- [x] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate -->
@@ -131,3 +131,14 @@ page and one plugin page and logs the result in this file's work log.
 
 ## Review
 <!-- owner: review · exclusive. -->
+
+Evidence (2026-10-25, branch head c06eea1, main 772aef2 unmoved):
+
+- AC1: `vitest run test/version.test.ts`: 390 table cases pass (each pair equal within a group, older and newer across groups), plus `11.*.*`, `8.0-beta.21`, `10.99.99` against `8.0.1` with signs +1, -1, +1; a node script parsed the note's verbatim Examples block into 20 groups (27 versions) and found it equal to the test's `ORDERED` array.
+- AC2: same run, `rangeResult` block, 15 tests pass: below, above, inside; equal to the minimum and equal to the maximum give inside; missing minimum and missing maximum set no bound; neither bound and a `failure` give no-range; an unversioned override and one naming the upstream version replace the upstream value; one naming another version does not apply; with both kinds on `strict_max_version`, the versioned one wins in either order; no override applies to a failed record.
+- AC3: `vitest run test/site.test.ts`: fixture valid against the v1 schema with a `name@domain` id, a GUID id, and a `failure` record; `pnpm site --out` exits 0; `<out>/plugins/` holds exactly the 4 raw ids, each with only `index.html` (a seeded stale page is gone); data and both schemas byte-identical; every non-scheme `href`/`src` in all 5 HTML files starts with `/zotero-plugin-index/`. By hand, a separate fixture build: exit 0, `shasum -c` OK for the 3 data files, 5 HTML files at the raw-id paths, and the 14 internal links (home, 4 encoded plugin links, data file) all under `/zotero-plugin-index/`.
+- AC4: same run, "the plugin page" block, 5 tests pass on first-plugin: `data-fact="declared-range"` and `id="zotero-version"` both come before each of the 7 fact markers, the override rows, and the not-vetted sentence; range reads "Zotero 7.0 to 8.*"; repository and releases links, created 2023-03-14, latest release 2026-09-30, 27 releases, 12 open issues, host example.org, and "This index does not vet the plugins it lists." present; override rows read exactly field, upstream value, value, version ("every version" or 0.9.0), applies (yes/no), reason, for one override that applies and one that does not; broken-plugin shows "no-xpi-release" with its message and no declared-range element and no result slot.
+- AC5: built-in browser, fixture built at c06eea1 and served by `python3 -m http.server` under `/zotero-plugin-index/`: with `localStorage` cleared, old-plugin's page showed "Zotero 6.999 to 7.0.*" and an empty result with no `data-result`; typing 8.0.1 into the home field stored "8.0.1" and gave broken no-range, first inside, old above, GUID below, equal to Node's `rangeResult("8.0.1", …)` on the same fixture records (no-range, inside, above, below, re-run at c06eea1); the First Plugin link then opened a page with the field prefilled and "Zotero 8.0.1 is inside the declared range." (`data-result="inside"`).
+- AC6: ruby YAML read of `build.yml`: `pnpm build` is step 5, `pnpm site` step 6 with no `if:`, `upload-pages-artifact` step 8; README "The site" section (line 7) describes the site and the "Your Zotero version" field and its local storage; the branch adds exactly one top-level entry under CHANGELOG `## Unreleased`, the website entry.
+- AC7: `pnpm test` (tsc, then Vitest): 7 files, 639 tests passed; `pnpm check`: 14 entries, 0 problems.
+- Gate: `cairn_validate.py` exit 0, all checks passed; no DESIGN.md principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
