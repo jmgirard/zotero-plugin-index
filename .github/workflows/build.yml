@@ -8,6 +8,11 @@ on:
 permissions:
   contents: read
 
+# One deploy at a time; a run that starts while another deploys waits for it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,11 +26,31 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      # Exits 1 when more than half of the records carry a failure. The steps below
+      # without an `if:` are then skipped, so nothing is deployed.
       - run: pnpm build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Kept after a failed build too, so the failures can be read.
       - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
         with:
           name: plugins-data
           path: dist/
           if-no-files-found: error
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
