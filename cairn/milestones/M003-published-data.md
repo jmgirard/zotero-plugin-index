@@ -63,7 +63,7 @@ record carries the failure.
       blocks apart, validate the output against its schema before writing.
 - [x] T3: Add `.github/workflows/build.yml` (daily `schedule`, `workflow_dispatch`, `pnpm build`,
       `actions/upload-artifact` for `dist/`).
-- [ ] T4: Run `pnpm build` locally with a token over the committed entries; record the result in the work log.
+- [x] T4: Run `pnpm build` locally with a token over the committed entries; record the result in the work log.
 - [ ] T5: README and `CHANGELOG.md` entries.
 
 ## Work log
@@ -83,6 +83,7 @@ record carries the failure.
 - 2026-10-25: choice: the unexpected-error fixture answers with an object that throws on any read (`unexpected` in test/support/fixture-fetch.ts), since the reader turns every fetch rejection into `request-failed`.
 - 2026-10-25: T1, T2 done: schemas/plugins.v1.schema.json, fixture tree test/fixtures/build/, test/build.test.ts (11 tests), src/build/; a planted no-catch defect turned 4 build tests red; pnpm test 84 passed, pnpm check 14 entries clean.
 - 2026-10-25: T3 done: .github/workflows/build.yml runs daily at 06:17 UTC and on workflow_dispatch, `pnpm build` with `secrets.GITHUB_TOKEN`, then actions/upload-artifact@v7 (newest release, read 2026-10-25) uploads `dist/` as `plugins-data`; YAML parsed with Ruby.
+- 2026-10-25: T4 done: `pnpm build` live with the gh token over plugins/ exited 0, "wrote 14 records to dist/v1/plugins.json, 0 with a failed upstream read"; Ajv found the file valid; 14 records carry upstream facts and no failure (generatedAt 2026-10-25T19:03:51.410Z).
 
 ## Decisions
 
