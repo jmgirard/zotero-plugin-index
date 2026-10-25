@@ -33,13 +33,39 @@ only registry fields. Its `id` must equal the directory name.
 The schema for `index.json` is
 [`schemas/index.v1.schema.json`](schemas/index.v1.schema.json).
 
-## Checking entries
+## Setup
 
 The project uses Node 24 or later and pnpm. To install the dependencies, run:
 
 ```bash
 pnpm install
 ```
+
+## Adding a plugin
+
+To draft an entry from the GitHub repository of a plugin, run:
+
+```bash
+pnpm add-plugin https://github.com/<owner>/<repo>
+```
+
+The command reads the repository, its releases, the `manifest.json` in the
+newest release that has an `.xpi` file, and the `update.json` that the
+manifest names. Then it writes `plugins/<id>/meta.json` and
+`plugins/<id>/index.json`. To write the entry in another directory, add
+`--out <dir>`. The command does not replace an entry that already exists.
+
+If the plugin does not meet the inclusion bar, or the command cannot read one
+of these files, the command writes no file. It prints the name of the failure
+and a message, then exits with status 1. Two failure names are `fork` and
+`no-xpi-release`. The `Failure` type in `src/upstream/reader.ts` lists each
+failure name.
+
+GitHub limits the number of API requests per hour. If the `GITHUB_TOKEN`
+environment variable is set, the command sends it with each GitHub API
+request, which gives a higher limit.
+
+## Checking entries
 
 To check every entry under `plugins/`, run:
 

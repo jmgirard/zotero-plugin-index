@@ -70,7 +70,7 @@ candidate row. Repos outside GitHub → not in this scope; DESIGN.md says the in
 - [x] T4: Write `pnpm add-plugin` and its two tests; it fills `meta.json` from upstream facts only.
 - [x] T5: Run `pnpm add-plugin` on at least five real plugin repos with the `zotero-plugin` topic and commit the
       entries that pass the bar.
-- [ ] T6: README and `CHANGELOG.md` entries.
+- [x] T6: README and `CHANGELOG.md` entries.
 
 ## Work log
 
@@ -91,6 +91,7 @@ candidate row. Repos outside GitHub → not in this scope; DESIGN.md says the in
 - 2026-10-25: T4: `src/add-plugin/` writes `meta.json` (id, name, description, homepage, repoUrl, updateUrl, all from the manifest and repo) and `index.json` (`schemaVersion: 1`); decided it refuses an existing entry (entry-exists) and an id with a slash, backslash, or leading dot (unsafe-id); failures print `<name>: <message>` to stderr, exit 1. The CLI tests load `test/support/preload-fixture.ts` through NODE_OPTIONS and run pnpm with `--dir`; 9 tests.
 - 2026-10-25: T5: ran `pnpm add-plugin` on 15 top `zotero-plugin` repos by stars; 14 passed and are committed, argenos/zotero-mdnotes failed `no-manifest` (a Zotero 6 plugin). `pnpm check`: 14 entries, 0 problems.
 - 2026-10-25: T5: syt2/zotero-addons drafted with name `__MSG_name__`; decided the reader resolves `__MSG_<key>__` in name and description from the XPI's `_locales/<default_locale>/messages.json` and leaves out a placeholder it cannot resolve; 2 tests; entry redrafted.
+- 2026-10-25: T6: README gains "Setup" (install moved out of "Checking entries") and "Adding a plugin"; CHANGELOG gains the `pnpm add-plugin` entry and the 14 entries; DESIGN.md Function Families and Architecture name `src/upstream/` and `src/add-plugin/`. Candidate row "Read stable releases before prereleases" added: 1 of the 14 (zotmoov) has a prerelease as its newest XPI release.
 
 ## Decisions
 

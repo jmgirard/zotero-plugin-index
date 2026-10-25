@@ -82,6 +82,11 @@ exception is a report that is abuse.
 - Entry checks (`src/check/`): `pnpm check [dir]` checks each entry
   directory under `plugins/`, or under `dir`, and prints one line for each
   problem. Added M001.
+- Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch)` returns
+  the facts of one GitHub repo, or one named inclusion-bar failure. Added
+  M002.
+- Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
+  <dir>]` writes a new entry from the reader's facts. Added M002.
 
 ## Conventions
 
@@ -126,6 +131,10 @@ reused._
 - `src/check/` holds the checker. It reads the registry schema from
   zotero-plugin-registry at a pinned commit, checks the file against a pinned
   SHA-256, and caches it in the gitignored `.cache/`.
+- `src/upstream/` reads the GitHub API with plain fetch, unzips the release
+  XPI with fflate, and reads the `update.json` that the manifest names. The
+  caller passes the fetch function, so the tests answer from recorded
+  responses in `test/fixtures/upstream/`.
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request.
 
