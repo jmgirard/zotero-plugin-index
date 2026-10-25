@@ -10,7 +10,8 @@ The index has a website at <https://jmgirard.github.io/zotero-plugin-index/>.
 The home page lists every plugin with the range of Zotero versions that the
 plugin declares. Each plugin has its own page. The page shows the declared
 range first, then facts about the repository and its releases, then the
-overrides of the index for that plugin.
+overrides of the index for that plugin. If the last build failed to read a
+plugin, its page shows the failure in place of the declared range.
 
 To compare your Zotero version with each declared range, enter it in the
 "Your Zotero version" field at the top of any page. You can also paste the

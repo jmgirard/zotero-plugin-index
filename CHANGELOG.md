@@ -44,8 +44,8 @@
   build then deploys nothing.
 - The daily build publishes a website at
   `https://jmgirard.github.io/zotero-plugin-index/`. The home page lists every
-  plugin, and each plugin has a page that shows its declared range of Zotero
-  versions first. A visitor enters their Zotero version once. Each page then
-  shows whether that version is inside the declared range, older than its
-  minimum, or newer than its maximum. `pnpm site` builds the pages into
-  `dist/` beside the data.
+  plugin. Each plugin has a page that shows its declared range of Zotero
+  versions first, or the failure if the build could not read the plugin. A
+  visitor enters their Zotero version once. Each page then shows whether that
+  version is inside the declared range, older than its minimum, or newer than
+  its maximum. `pnpm site` builds the pages into `dist/` beside the data.

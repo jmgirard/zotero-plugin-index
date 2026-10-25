@@ -46,7 +46,8 @@ export function upstreamValue(record: PluginRecord, field: string): string | und
   return fields[field];
 }
 
-// Whether this override is the one that sets its field on the page.
+// Whether this override is the one that applies to its field, for the version the index
+// read (see usedOverride).
 export function overrideUsed(record: PluginRecord, override: Override): boolean {
   return usedOverride(record, override.field) === override;
 }

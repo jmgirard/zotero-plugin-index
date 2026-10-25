@@ -71,7 +71,7 @@ const { generatedAt } = loadData();
     <script>
       import { rangeResult, type RangeRecord, type RangeResult, zoteroVersion } from "../../../src/site/version.ts";
 
-      // The visitor's browser keeps the version under this key, so every page shows it.
+      // The visitor's browser keeps the field's text under this key, so every page shows it.
       const KEY = "zotero-version";
       const MESSAGES: Record<RangeResult, (version: string) => string> = {
         inside: (version) => `Zotero ${version} is inside the declared range.`,

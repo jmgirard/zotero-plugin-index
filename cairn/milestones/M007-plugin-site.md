@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M007: Build the plugin site
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** high   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M006   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -137,6 +137,8 @@ page and one plugin page and logs the result in this file's work log.
 - 2026-10-25: T9 done: `zoteroVersion` in `src/site/version.ts` takes the first run that starts with a digit and stops at a space, comma, or parenthesis; the six new tests failed first (no export), then pass (645 total); the browser script stores what was typed and compares the version read from it; it also keeps text typed before the script ran and re-reads storage on a Back restore (`pageshow` persisted) and on a `storage` event (diff-bug #2, #3).
 - 2026-10-25: T10 done: `usedOverride` in version.ts picks the override that sets a field, and `appliedValue` and the page's renamed "Used" column both read it; `buildSite` takes a `siteRoot` for tests and restores its two env vars; `.gitignore` covers `.astro/` at any depth; tsconfig includes `site/` (a planted type error in `site/src/base.ts` failed tsc); a non-http `repoUrl` shows as text; `loadData` names a file with no `plugins` list; new tests cover the usage error, that Astro failure, the clash branch (`test/fixtures/site-clash`), `rangeText`'s four forms, `displayName`, `overrideUsed`, `safeHref`, the home "Not read" cell, and the failure page heading; the comparator table now checks each member against its group's first and adjacent groups (310 tests in 8 files); README drops the telemetry sentence, explains pasting, rewraps; DESIGN.md gains the Function Families entry, the declared range in the Contract boundary list, and `pnpm site` in the build.yml bullet; built-in browser: pasting "Version 7.0.11 (64-bit)" gave no-range, inside, inside, below; first-plugin's Used column read yes, no; changing to 9.5 there and pressing Back showed 9.5 and above, above, inside on the home page.
 - 2026-10-25: T11 done: `pnpm test` 310 passed in 8 files, `pnpm check` 14 entries with 0 problems, both after the last T10 edit.
+- 2026-10-25: claim audit: 78 claims read, 3 corrected — site/src/pages/plugins/[id]/index.astro, site/src/data.ts, site/src/layouts/Base.astro; two loose wordings also fixed (src/site/version.ts, README.md, CHANGELOG.md); the same reader re-read them true and proposed the final CHANGELOG wording, taken; 310 tests pass, `pnpm check` clean.
+- 2026-10-25: status review; review return 1 worked (T9-T11), handed to /milestone-review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
