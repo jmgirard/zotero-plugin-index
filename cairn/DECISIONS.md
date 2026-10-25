@@ -21,3 +21,10 @@ reasons. The registry schema sets `additionalProperties: false`, so a field
 the index adds to `meta.json` makes the entry invalid there. The user chose
 the sibling file over one file with the index's own schema, which would give
 up registry validity.
+
+### D-003: Add @types/node to the D-001 toolchain
+
+2026-10-24, M001 implement. The project adds `@types/node` as a dev
+dependency, so `tsc --noEmit` can type-check code that imports Node's
+built-in modules. D-001 did not name it. The user approved it at a chip over
+running the code with no type check.

@@ -1,0 +1,4 @@
+{
+  "id": "second-plugin@example.org",
+  "updateUrl": "https://example.org/second-plugin/update.json"
+}

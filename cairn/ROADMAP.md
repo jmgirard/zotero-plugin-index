@@ -7,15 +7,16 @@ _Last hygiene check: 2026-10-24 (scaffolded by cairn-init)_
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M001 | Define the plugin entry format and checker | planned | — | high | milestones/M001-entry-format.md |
+| M001 | Define the plugin entry format and checker | review | — | high | milestones/M001-entry-format.md |
 | M002 | Read upstream plugin facts and draft entries | planned | M001 | high | milestones/M002-upstream-reader.md |
 | M003 | Build the published plugin data | planned | M002 | high | milestones/M003-published-data.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
 
 ## Candidates
-- Publish the site and data on Pages: a static TypeScript site on GitHub Pages, one page per plugin answering "does it work on my Zotero?" first, with the M003 data file at a stable versioned URL — added 2026-10-24 — cairn/DESIGN.md Contract boundary, M003
+- Publish the site and data on Pages: a static TypeScript site on GitHub Pages, one page per plugin answering "does it work on my Zotero?" first, with the M003 data file at a stable versioned URL, and the schemas' `$id` set to their published URLs (M001 review) — added 2026-10-24 — cairn/DESIGN.md Contract boundary, M003
 - Find new plugins by GitHub topic search: a scheduled bot searches the `zotero-plugin` and `zotero-addon` topics and opens one pull request per new candidate, plus an issue form that takes one repo URL — added 2026-10-24 — cairn/DESIGN.md Data sources, M002
+- Catch stray and unportable entry files: `pnpm check` skips a stray file under `plugins/` with exit 0, accepts directory names that break on Windows or collide by case, passes an override reason of only zero-width characters, passes two overrides for the same field and version, and reports a UTF-8 BOM as "not valid JSON" (M001 review) — added 2026-10-24 — M001
 - Collect works and broken user reports: "Works" and "Broken" links open a prefilled issue form, and a bot adds the report to the data and closes the issue — added 2026-10-24 — cairn/DESIGN.md Data sources
 - [parked] Test plugins load in headless Zotero: a CI job installs each listed plugin into a headless Zotero and records whether it loads, shown as its own source beside declared ranges and reports; promote when the data pipeline and user reports ship — added 2026-10-24 — cairn/DESIGN.md Data sources
 <!-- unnumbered ideas; one line each, ordered high → normal → low → parked:

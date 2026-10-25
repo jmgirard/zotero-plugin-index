@@ -79,7 +79,9 @@ exception is a report that is abuse.
 
 ## Function Families
 
-_None yet: the repo has no source._
+- Entry checks (`src/check/`): `pnpm check [dir]` checks each entry
+  directory under `plugins/`, or under `dir`, and prints one line for each
+  problem. Added M001.
 
 ## Conventions
 
@@ -117,7 +119,15 @@ reused._
 
 ## Architecture
 
-_None yet: the repo has no source._
+- A pnpm project in TypeScript. Node runs the `.ts` files through its
+  built-in type stripping, and `pnpm test` runs `tsc --noEmit`, then Vitest.
+- Entries live in `plugins/<id>/` as `meta.json` and `index.json` (D-002).
+  `schemas/index.v1.schema.json` is the `index.json` schema.
+- `src/check/` holds the checker. It reads the registry schema from
+  zotero-plugin-registry at a pinned commit, checks the file against a pinned
+  SHA-256, and caches it in the gitignored `.cache/`.
+- `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
+  and pull request.
 
 ## Known issues
 

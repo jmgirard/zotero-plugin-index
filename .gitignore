@@ -2,3 +2,6 @@
 cairn/references/sources/
 cairn/.merge-approved
 cairn/.merge-approved.pending
+node_modules/
+dist/
+.cache/

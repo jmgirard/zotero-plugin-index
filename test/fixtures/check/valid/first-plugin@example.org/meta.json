@@ -1,0 +1,8 @@
+{
+  "id": "first-plugin@example.org",
+  "name": "First Plugin",
+  "description": "A fixture plugin.",
+  "homepage": "https://github.com/example/first-plugin",
+  "repoUrl": "https://github.com/example/first-plugin",
+  "updateUrl": "https://github.com/example/first-plugin/releases/latest/download/update.json"
+}

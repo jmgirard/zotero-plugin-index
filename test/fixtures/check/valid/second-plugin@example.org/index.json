@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "strict_max_version",
+      "version": "1.2.0",
+      "value": "7.*",
+      "reason": "Version 1.2.0 fails to load on Zotero 8, and the author has not replied to the bug report."
+    }
+  ]
+}

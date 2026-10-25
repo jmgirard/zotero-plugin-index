@@ -12,14 +12,14 @@
 
 The language-agnostic default: cairn's core with no toolchain-specific gates.
 Selected by `cairn-init` when no `DESCRIPTION` (or other recognized toolchain
-marker) is present. A repo replaces the placeholder in `verify` with its own
-test command; the other slots stand as-is until a richer profile is authored.
+marker) is present. This repo names its own commands in the `verify` and
+`changelog` slots. The other slots keep the generic defaults.
 
 ## verify
 The command(s) `/milestone-implement` and `/hotfix` run to check a task before
-ticking it off. Generic default: **the repo's own test command** — declare it
-here (e.g. `make test`, `npm test`, `pytest`). If the repo has none, state
-"no automated verify" and rely on the acceptance-criteria evidence.
+ticking it off: `pnpm test` (type check, then Vitest) and `pnpm check` (the
+entry checker over `plugins/`). pnpm is not installed on the maintainer's
+machine, so run it as `npx -y pnpm@12.15.0`, the version `package.json` pins.
 
 ## consistency-gate
 Toolchain checks `/milestone-review` runs *in addition to* the universal
@@ -37,10 +37,10 @@ for a numeric result the change adds or alters.
 ## release-walk
 The release procedure `/cairn-release` follows. Generic default: a minimal
 language-agnostic walk — no package-registry submission; the tag is the release:
-- Decide the version bump (patch/minor/major) from the declared changelog
-  (`## changelog` slot; "none" → derive the bump from git history).
-- Consolidate the declared changelog: retitle the dev heading to the version,
-  group entries, prune noise ("none" → skip this step).
+- Decide the version bump (patch, minor, or major) from `CHANGELOG.md`, the
+  file the `## changelog` slot names.
+- Consolidate `CHANGELOG.md`: retitle its `## Unreleased` heading to the
+  version, group the entries, and remove noise.
 - Bump the repo's version marker and commit the release prep to the default
   branch (docs/metadata only).
 - Tag `v<version>` and push the tag at the user's approval — no registry step.
@@ -61,7 +61,5 @@ greenfield flow for a generic repo; a richer profile adds its own on top.
 
 ## changelog
 The repo's changelog file, read by `/hotfix`, the release-walk, and the
-consistency-gate — **declare it here** (e.g. `CHANGELOG.md`), or "none" if the
-repo keeps no changelog: `/hotfix` then skips the changelog entry and the
-release-walk skips consolidation, deriving the version bump from git
-history.
+consistency-gate: `CHANGELOG.md`, with new entries under its `## Unreleased`
+heading.
