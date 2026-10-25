@@ -7,6 +7,9 @@ _Last hygiene check: 2026-10-25 (M007 done and archived, live site checked; 1 ro
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
+| M008 | Find new plugin repos by topic search | planned | — | high | milestones/M008-topic-discovery.md |
+| M009 | Open a pull request for each new plugin | planned | M008 | high | milestones/M009-discovery-pull-requests.md |
+| M010 | Take one repo URL from an issue form | planned | M009 | normal | milestones/M010-add-plugin-issue-form.md |
 | M007 | Build the plugin site | done | M006 | high | milestones/archive/M007-plugin-site.md |
 | M006 | Publish the data on Pages | done | — | high | milestones/archive/M006-data-on-pages.md |
 | M005 | Refuse zips that claim too many entries | done | — | high | milestones/archive/M005-zip-entry-limits.md |
@@ -14,7 +17,7 @@ _Last hygiene check: 2026-10-25 (M007 done and archived, live site checked; 1 ro
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
 
 ## Candidates
-- Find new plugins by GitHub topic search: a scheduled bot searches the `zotero-plugin` and `zotero-addon` topics and opens one pull request per new candidate, plus an issue form that takes one repo URL — added 2026-10-24 — cairn/DESIGN.md Data sources, M002
+- Find new plugins by GitHub topic search: a scheduled bot searches the `zotero-plugin` and `zotero-addon` topics and opens one pull request per new candidate, plus an issue form that takes one repo URL — added 2026-10-24 — cairn/DESIGN.md Data sources, M002 — started M008
 - Catch stray and unportable entry files: `pnpm check` skips a stray file under `plugins/` with exit 0, accepts directory names that break on Windows or collide by case, passes an override reason of only zero-width characters, passes two overrides for the same field and version, and reports a UTF-8 BOM as "not valid JSON" (M001 review); `pnpm add-plugin` also writes an id that differs only by case from an existing entry or is a reserved Windows name such as CON (M002 review); an entry id with `%` or a space fails the whole `pnpm site` build with NoMatchingStaticPathFound, which also stops the data deploy (M007 review) — added 2026-10-24 — M001, M002, M007
 - Collect works and broken user reports: "Works" and "Broken" links open a prefilled issue form, and a bot adds the report to the data and closes the issue — added 2026-10-24 — cairn/DESIGN.md Data sources
 - Read stable releases before prereleases: the reader takes the manifest from the newest release with an `.xpi`, prereleases included, so wileyyugioh/zotmoov reads as prerelease 1.2.34 (observed 2026-10-25); prefer the newest stable release with an `.xpi` when one exists — added 2026-10-25 — M002
