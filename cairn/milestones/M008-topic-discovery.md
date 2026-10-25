@@ -30,28 +30,28 @@ grows → candidate row "Warn when the daily build degrades".
 
 ## Acceptance criteria
 
-- [ ] AC1: Given recorded search responses with two pages for `topic:zotero-plugin` and one page for
+- [x] AC1: Given recorded search responses with two pages for `topic:zotero-plugin` and one page for
       `topic:zotero-addon`, one repo appearing under both topics, `discover` reads each distinct repo in
       those responses exactly once; `test/discover.test.ts` asserts the list of repo URLs passed to the reader.
-- [ ] AC2: The fixture repo whose search `html_url` differs from an entry's `repoUrl` only in letter case,
+- [x] AC2: The fixture repo whose search `html_url` differs from an entry's `repoUrl` only in letter case,
       and the fixture repo that the caller's skip set names, are not read, and the report lists each as
       skipped with its reason (in the index, or in the skip set); a test asserts both cases.
-- [ ] AC3: After a read that fails with a reader failure other than `github-http-error` or `request-failed`,
+- [x] AC3: After a read that fails with a reader failure other than `github-http-error` or `request-failed`,
       the state file holds that repo's `pushed_at` and failure name. A test runs `discover` three more times
       on that state: with the same `pushed_at` the repo is not read, with a changed `pushed_at` it is read, and
       with the same `pushed_at` but a record older than 30 days it is read. A test also asserts that a read
       failing with `github-http-error` leaves no record for that repo.
-- [ ] AC4: A run writes at most `limit` entries and reads at most `budget` repos, in newest-`pushed_at`-first
+- [x] AC4: A run writes at most `limit` entries and reads at most `budget` repos, in newest-`pushed_at`-first
       order. A test with more passing repos than `limit` asserts that the written count equals `limit`, and a
       test with more candidates than `budget` asserts that the read count equals `budget` and that the repos
       read are the `budget` newest by `pushed_at`.
-- [ ] AC5: Each repo read gets one report item, which names either the written entry's id and repo URL or a
+- [x] AC5: Each repo read gets one report item, which names either the written entry's id and repo URL or a
       failure name, which is the reader's failure name or `writeEntry`'s. A test asserts the item for one
       fixture repo of each of four outcomes: written, a reader failure, `entry-exists`, and `unsafe-id`.
-- [ ] AC6: When a search request returns an HTTP error, the run writes no entry, leaves the state file as it
+- [x] AC6: When a search request returns an HTTP error, the run writes no entry, leaves the state file as it
       was, and exits 1 with a message that names the request URL and the HTTP status; a CLI test asserts the
       exit code, the message, the absent entries, and the unchanged state file.
-- [ ] AC7: `pnpm discover [--out <dir>] [--state <file>] [--limit <n>] [--budget <n>]` runs `discover` from
+- [x] AC7: `pnpm discover [--out <dir>] [--state <file>] [--limit <n>] [--budget <n>]` runs `discover` from
       the command line, with relative paths resolved against the caller's directory; a CLI test with the
       fixture preload asserts the written files and the report. `pnpm test` and `pnpm check` pass.
 
@@ -110,3 +110,14 @@ grows → candidate row "Warn when the daily build degrades".
 ## Decisions
 
 ## Review
+
+Evidence at 9d9beb2, 2026-10-25: `pnpm test` 319 passed (9 files); `vitest run test/discover.test.ts --reporter=verbose` 9 passed; `pnpm check` 14 entries, 0 problems.
+
+- AC1: "reads each repo of both topics' search pages once" passed on `test/fixtures/discover/search.json` (two `topic:zotero-plugin` pages joined by a Link header, one `topic:zotero-addon` page, example/both on both). The test collects one metadata request per reader call, which the reader makes for the owner/repo of the URL passed to it, and asserts that list equals the 7 distinct repos with no repeat.
+- AC2: "does not read a repo the index lists, by a URL that differs in case, or one in the skip set" passed: Example/Second-Plugin (index URL example/second-plugin) and example/skipped are absent from the reads and reported as `in-index` and `in-skip-set`.
+- AC3: "records a refused read and reads that repo again only when it was pushed or its record is old" passed (record holds pushedAt, failure `no-release`, checkedAt; same pushed_at not read, changed pushed_at read, 31 days later read); "records no read that failed with an HTTP error" passed (403 → `github-http-error`, state `{}`).
+- AC4: "writes at most limit entries" passed (7 passing repos, limit 5, 5 written); "reads at most budget repos, newest pushed first" passed (7 candidates, budget 3, reads p7, p6, p5).
+- AC5: "reports each repo it reads as written or with its failure name" passed: alpha written with id and repo URL, no-release `no-release`, clash `entry-exists`, unsafe `unsafe-id`, 6 read items.
+- AC6: "writes nothing and keeps the state when a search request fails" passed: HTTP 503 on the addon search, exit 1, stderr names the URL and `HTTP 503`, no `out/` directory, state file byte-equal to before.
+- AC7: "writes entries and the state under the caller's directory and prints the report" passed: relative `--out out --state state.json --limit 2` from a temp cwd wrote two entries and the state there, report lists both as written; `pnpm test` and `pnpm check` pass as above.
+- Gate: `cairn_validate.py` exit 0, all checks passed; no principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
