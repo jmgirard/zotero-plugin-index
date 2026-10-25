@@ -31,18 +31,18 @@ text for these limits.
 
 ## Acceptance criteria
 
-- [ ] AC1: When a release XPI's body is longer than 52,428,800 bytes (50 MiB), `readUpstream` returns the failure
+- [x] AC1: When a release XPI's body is longer than 52,428,800 bytes (50 MiB), `readUpstream` returns the failure
       `xpi-too-large`. It reads no more than 52,428,800 bytes plus the chunk that crosses the cap. A Vitest case serves
       fixed-size chunks and asserts the failure name and that the bytes enqueued are at most 52,428,800 plus one chunk.
       A second case serves a body of exactly 52,428,800 bytes and gets no `xpi-too-large`.
-- [ ] AC2: The reader unzips only `manifest.json`, and then only the default locale's `_locales/<locale>/messages.json`.
+- [x] AC2: The reader unzips only `manifest.json`, and then only the default locale's `_locales/<locale>/messages.json`.
       When the zip's central directory gives either file an unzipped size over 1 MiB, `readUpstream` returns the
       failure `manifest-too-large`. Vitest cases cover each of the two files. A further case holds an oversized
       `messages.json` for a locale that is not the default, and it returns facts.
-- [ ] AC3: When the `update.json` body is longer than 1,048,576 bytes (1 MiB), `readUpstream` returns the failure
+- [x] AC3: When the `update.json` body is longer than 1,048,576 bytes (1 MiB), `readUpstream` returns the failure
       `update-json-too-large`. It reads no more than 1,048,576 bytes plus the chunk that crosses the cap. A Vitest case
       serves fixed-size chunks and asserts the failure name and the bytes enqueued.
-- [ ] AC4: The reader takes the host as Node's URL parser gives it, with IPv6 brackets and one trailing dot removed.
+- [x] AC4: The reader takes the host as Node's URL parser gives it, with IPv6 brackets and one trailing dot removed.
       It refuses the host when the host is `localhost` or ends in `.localhost`, or when the host, or any address that
       the reader's lookup returns for it, is in a listed range. IPv4 ranges: 0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10,
       127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.0.2.0/24, 192.168.0.0/16, 198.18.0.0/15,
@@ -55,16 +55,16 @@ text for these limits.
       sends the request: the address just outside each range edge, where that address exists and lies outside every
       listed range, `http://[::ffff:8.8.8.8]/`, and a name that resolves only to public addresses. A name whose lookup
       fails or returns no address gives `request-failed`, with no request sent.
-- [ ] AC5: For the XPI and `update.json` requests, the reader treats 301, 302, 303, 307, and 308 as redirects. It
+- [x] AC5: For the XPI and `update.json` requests, the reader treats 301, 302, 303, 307, and 308 as redirects. It
       resolves the `Location` header against the current URL, checks each target as AC4 states before it requests it,
       and follows at most 5. Vitest cases cover: a redirect to `http://127.0.0.1/` and one to `//127.0.0.1/x`
       (`host-refused`, no request to the target), a chain of 6 (`request-failed`, message containing
       `more than 5 redirects`), a chain of 5 with a relative `Location` that ends in the recorded file (facts), each of
       the five statuses, a 3xx with no `Location`, and a `Location` with a `file:` scheme (both `request-failed`).
-- [ ] AC6: A live `pnpm build` over `plugins/` at review gives no record whose failure is `host-refused`,
+- [x] AC6: A live `pnpm build` over `plugins/` at review gives no record whose failure is `host-refused`,
       `xpi-too-large`, `manifest-too-large`, or `update-json-too-large`, and no `request-failed` record whose message
       contains `more than 5 redirects`.
-- [ ] AC7: `pnpm test` and `pnpm check` pass. The Unreleased section of `CHANGELOG.md` gains one entry that names the
+- [x] AC7: `pnpm test` and `pnpm check` pass. The Unreleased section of `CHANGELOG.md` gains one entry that names the
       four failure names, the three byte caps (50 MiB XPI, 1 MiB for each unzipped file, 1 MiB `update.json`), and the
       5-redirect limit.
 
@@ -131,3 +131,14 @@ text for these limits.
 ## Decisions
 
 ## Review
+
+Pass 1, 2026-10-25, branch m004-download-limits at 00b70a7, main 41e4e81 (not moved).
+
+- AC1: `vitest run test/upstream.test.ts` passes "fails with xpi-too-large and stops reading an XPI past 50 MiB" (60 × 1 MiB chunks; asserts the failure and bytesEnqueued ≤ 52,428,800 + 1,048,576) and "reads the whole of an XPI of exactly 50 MiB" (50 × 1 MiB; `xpi-unreadable`, bytesEnqueued = 52,428,800). Both cap tests went red with the cap disabled (T1).
+- AC2: passes "fails with manifest-too-large when manifest.json unzips to more than 1 MiB", "… when the default locale's messages.json unzips to more than 1 MiB", and "does not fail on an over-1 MiB messages.json of a locale that is not the default" (facts returned). `unzipOne` (src/upstream/reader.ts) filters on the exact name, called for `manifest.json` and then `_locales/<default_locale>/messages.json` only.
+- AC3: passes "fails with update-json-too-large and stops reading an update.json past 1 MiB" (20 × 64 KiB chunks; asserts the failure and bytesEnqueued ≤ 1,048,576 + 65,536); red with the cap disabled (T1).
+- AC4: 47 "refuses an update_url on …" cases pass (first and last of the 14 IPv4 and 7 IPv6 ranges, `[::ffff:127.0.0.1]`, `[::ffff:10.0.0.1]`, `localhost`, `foo.localhost.`, `LOCALHOST.`), each `host-refused` with the XPI as the last request. 37 "requests an update_url on …" cases pass (every outside edge that exists and lies outside all ranges, checked against the AC's list by hand, and `[::ffff:8.8.8.8]`), each with the probe as the last request. Named-host cases pass: mixed public and `fd00::1` refused; public-only requested; failed and empty lookups `request-failed` with no request.
+- AC5: passes the redirect cases: to `http://127.0.0.1/update.json` and to `//127.0.0.1/x` (`host-refused`, last request the redirecting hop); a chain of 6 (`request-failed`, "more than 5 redirects", last request hop 5); 5 relative hops to the file (facts); each of 301, 302, 303, 307, 308 (facts); no Location and a `file:` Location (`request-failed`). "asks fetch not to follow redirects …" asserts `redirect: "manual"` on the XPI and update.json only.
+- AC6: live `pnpm build --out <scratch>` with `GITHUB_TOKEN`, 2026-10-25: "wrote 14 records … 0 with a failed upstream read"; the file's records hold no `failure`, so none of the four names and no redirect-limit message.
+- AC7: `pnpm test` 196 passed (tsc clean); `pnpm check` "checked 14 entries in plugins, 0 problems". `git diff main...HEAD -- CHANGELOG.md` adds one Unreleased entry naming `xpi-too-large`, `update-json-too-large`, `manifest-too-large`, `host-refused`, 50 MiB XPI, 1 MiB update.json, 1 MiB for manifest.json or messages.json, and at most 5 redirects.
+- Gate: `cairn_validate.py` all checks passed (exit 0); no principle changed, so no `cairn_impact`; the generic profile's consistency-gate names no toolchain checks.
