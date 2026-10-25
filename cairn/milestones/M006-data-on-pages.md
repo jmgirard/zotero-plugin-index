@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M006: Publish the data on Pages
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** high   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — the data file and schemas become a public API at a stable URL   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m006-data-on-pages   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -69,7 +69,7 @@ workflow, fetches the data and schema URLs, and logs the result in this file's w
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
 
-- [ ] T1: Set both schemas' `$id` (`schemas/*.v1.schema.json:3`); `src/build/build.ts:36` reads the `$id`, so
+- [x] T1: Set both schemas' `$id` (`schemas/*.v1.schema.json:3`); `src/build/build.ts:36` reads the `$id`, so
       run `pnpm test` to make sure that the record validator still resolves.
 - [ ] T2: Tests first in `test/build.test.ts`: the schema copies, and two fixture trees for the half rule (reuse
       `test/fixtures/build/` responses with the preload fixture, and stub DNS as the M004 lesson says). Then
@@ -98,6 +98,8 @@ workflow, fetches the data and schema URLs, and logs the result in this file's w
 - 2026-10-25: inbox sweep: 0 open issues, 0 open PRs.
 - 2026-10-25: criteria audit (full mode, fresh Opus reader): 5 findings on M006, all taken — AC3 broke the planted-error test (T2 names it), AC3's printed line and exit-0 clause narrowed, AC3 trees fixed at 2 of 4 and 2 of 3 for both parities, AC2 also checked on the exit-1 run, AC5 counts records with a failure, not failed reads; no finding on AC1, AC4, AC6.
 - 2026-10-25: lessons used: 2026-10-25 (M001) pnpm via npx; 2026-10-25 (M002) CLI fixture preload; 2026-10-25 (M004) DNS stub for reader tests; 2026-10-25 (M003) beforeAll hookTimeout.
+- 2026-10-25: implement started on m006-data-on-pages, cut from main at 9f939be.
+- 2026-10-25: T1 done — both schemas' `$id` now under https://jmgirard.github.io/zotero-plugin-index/schemas/; no other file named the old URL outside cairn/; `pnpm test` 217 passed. DESIGN.md lines moved to T4.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
