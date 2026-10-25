@@ -134,3 +134,21 @@ Pass 1, 2026-10-25, on branch `m005-zip-entry-limits` at b96628f; `origin/main` 
 - AC6: `pnpm test` (type check, then Vitest) passed 5 files, 217 tests; `pnpm check` checked 14 entries, 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed. No DESIGN.md principle changed, so `cairn_impact` was skipped. The generic profile's consistency-gate slot names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: a deflate bomb within the 1 MiB caps still holds an unzip for about 4 s (102 KB inflating to 100 MB took 414 ms), in M004's code, and the `unzipOne` comment's "decoding to that much input" misleads — follow-up, candidate "Stop inflating past the declared size"; the comment's input claim was narrowed in 66b2000.
+- diff-bug #2: fflate reads headers past the end as zeros, so the 46 bytes need not be in the file, but the bound holds (1,139,756 passes in 60 ms, UTF-8 names 124 ms) — reject, false: no defect, as the reviewer states.
+- diff-bug #3: the 2,000-entry test overlaps the two-copy test — reject, planned change: AC4 names both cases, the first for the layout with an entry between, the second for refusal before later inflates.
+- diff-bug #4: the messages.json duplicate test runs the same filter code — reject, planned change: AC4 requires the second call site.
+- diff-bug #5: the < 1000 ms check could be flaky on a slow runner — reject, planned change: AC4 states the 1 s bound; it ran in 29 ms, and inflating every copy took 3,444 ms.
+- diff-bug #6: the at-the-bound cases pass on main — reject, planned change: AC3 calls for them, and they pin `>` against `>=`.
+- diff-bug #7: the worked example in the `zipEntryCount` comment — reject, style.
+- diff-bug #8: the test comment on the past-the-end zip repeats offsets — reject, style.
+- blame-history #1: a listed plugin's XPI repeats manifest.json — reject, false: the work-log line is the plan's falsification condition, not a claim, and the live build read 14 of 14 with no `more than one` failure.
+- blame-history #2: refusing duplicates has no D-entry — reject, planned change: the user chose it at the question set, a milestone-local choice recorded in the work log.
+- blame-history #3: a duplicate messages.json fails the read while a non-JSON one is tolerated — reject, planned change: AC4 and the user's answer refuse duplicates of both files.
+- blame-history #4: an XPI with an oversize manifest and an inflated count now reports `xpi-unreadable`, not `manifest-too-large` — reject, planned change: the count check runs before the unzip by design.
+- blame-history #5: the 2,000-entry test name says each copy inflates — fix now, renamed to "refuses at the second of 2,000 manifest.json entries that each point at a 1 MiB stream", fixed 66b2000.
+- prior-review #1: the wall-clock bound in the 2,000-entry test — reject, planned change: AC4 states it.
+- prior-review #2: the `index.mjs:2670` line cite drifts on an fflate bump — reject, planned change: fflate is pinned at exactly 0.8.3, and Scope Out says an upgrade re-runs the AC2 table.
+- ripple #1: the `unzipOne` comment does not mention the duplicate failure — fix now, fixed 66b2000.
+- ripple #2: the candidate row "Refuse zips that claim too many entries" reads as open — reject, planned change: post-merge hygiene graduates it.
+- After the fixes: `pnpm test` 217 passed, `pnpm check` 0 problems. Snapshot files changed: none.
