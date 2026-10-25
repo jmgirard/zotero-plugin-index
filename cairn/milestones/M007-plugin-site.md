@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M007: Build the plugin site
 
-- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** high   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M006   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -125,6 +125,7 @@ page and one plugin page and logs the result in this file's work log.
 - 2026-10-25: T8 done: `pnpm test` 638 passed in 7 files, `pnpm check` 14 entries with 0 problems; `pnpm site` over the real `dist/` (data from 2026-10-25) wrote 15 pages.
 - 2026-10-25: claim audit: 66 claims read, 7 corrected — site/astro.config.ts, site/src/data.ts, src/site/version.ts, site/src/layouts/Base.astro, site/src/pages/index.astro, site/src/pages/plugins/[id]/index.astro, README.md; one was a code mismatch (a failed record's page name took a no-version name override that the table marked "no"), fixed in `appliedValue` with a regression test red before the fix; the same reader re-read all 7 as true; 639 tests pass, `pnpm check` clean.
 - 2026-10-25: status review; implement complete, handed to /milestone-review.
+- 2026-10-25: review return 1: diff-bug #1, the version field takes pasted About Zotero text such as "Version 7.0.11 (64-bit)" as version 0 and reports "older than the declared minimum"; the fix-now findings of review pass 1 (Review section) go back with it.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
@@ -142,3 +143,46 @@ Evidence (2026-10-25, branch head c06eea1, main 772aef2 unmoved):
 - AC6: ruby YAML read of `build.yml`: `pnpm build` is step 5, `pnpm site` step 6 with no `if:`, `upload-pages-artifact` step 8; README "The site" section (line 7) describes the site and the "Your Zotero version" field and its local storage; the branch adds exactly one top-level entry under CHANGELOG `## Unreleased`, the website entry.
 - AC7: `pnpm test` (tsc, then Vitest): 7 files, 639 tests passed; `pnpm check`: 14 entries, 0 problems.
 - Gate: `cairn_validate.py` exit 0, all checks passed; no DESIGN.md principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
+
+Review pass 1 (2026-10-25, head 0fe7ea2):
+
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: pasting the About Zotero text ("Version 7.0.11 (64-bit)", "v7.0.11") parses as 0 and shows "older than the declared minimum" — fix now; floor return (wrong result in the site's main use, with no warning)
+- diff-bug #2: the field and results go stale after Back (bfcache) or in a second tab, since storage is read once — fix now
+- diff-bug #3: text typed before the module script runs is overwritten by the stored value — fix now
+- diff-bug #4: the Applies column says "yes" for an unversioned override that a versioned one beats, and `overrideApplies` repeats the rule of `appliedValue` — fix now
+- diff-bug #5: `buildSite` sets process-wide env vars and never restores them — fix now (restore after the build)
+- diff-bug #6: Astro writes its prerender bundle to `<cwd>/.astro/`, which `.gitignore` does not cover (an empty root `.astro/` exists) — fix now
+- diff-bug #7: `site/*.ts` is outside tsconfig `include`, so `pnpm test` does not type-check it — fix now
+- diff-bug #8: `buildSite` deletes then copies, so a failed copy leaves a partial site, and an old top-level entry the build no longer writes survives — reject, edge: a copy failure (disk error) outside documented and common use, effect an error and exit 1, CI starts from a fresh `dist/`; the README claim names only `index.html` and `plugins/`, which holds
+- diff-bug #9: comparator differs from Mozilla's C++ for "*" vs 2147483647, int32 overflow, a leading space in a part, and non-ASCII strings — reject, false: the code follows the cited format (MDN calls "*" "an infinitely-large number" and compares strings byte-wise, the same order for ASCII); no Zotero version uses these forms
+- diff-bug #10: a `javascript:` `repoUrl` from meta.json renders as a clickable link on a failed record's page; the registry schema puts no rule on `repoUrl` — fix now
+- diff-bug #11: DESIGN.md Function Families has no `src/site/` entry — fix now
+- diff-bug #12: README.md:195 breaks the 80-column wrap — fix now
+- diff-bug #13: `buildSite` and `loadData` read the data file separately — reject, edge: a data file changed during a 1-second build, outside any use; no current path
+- diff-bug #14: untested error branches: the CLI usage error, the clash branch, an Astro build failure — fix now
+- diff-bug #15: untested branches: `rangeText` "or newer"/"or older"/"No declared range", `displayName` falling back to the id, an applied `name` override, the home "Not read" cell; README's telemetry sentence has no test — fix now (tests; README telemetry sentence removed)
+- diff-bug #16: the comparator table runs 390 pairs, many on one code path, reflexive pairs included — fix now (adjacent groups and each member against its group's first)
+- diff-bug #17: the equal-to-maximum test uses "8.0.*" as the Zotero version — fix now
+- diff-bug #18: the `appliedValue` test sits in `describe("rangeResult")` — fix now
+- diff-bug #19: the spawned test build inherits Vitest's env (`BASE_URL`, `MODE`) — reject, false: the reviewer built with and without them and got byte-identical output, and `base.ts` removes the one variable that mattered
+- diff-bug #20: test/site.test.ts column comment partly restates the array — reject, false: the array shows values, not which column each is
+- blame-history #1: a failed `pnpm site` now also stops the data deploy — reject, planned change (AC6: `pnpm site` before the Pages upload with no `if:`)
+- blame-history #2: README says `pnpm site` replaces `index.html` and `plugins/`, while the code replaces every top-level entry — reject, false: the build writes only those two (script inlined, no `_astro/`, seen in AC3's output)
+- blame-history #3: DESIGN.md:165-166 build.yml bullet omits `pnpm site` — fix now
+- blame-history #4: "inside the declared range" reads close to the out-of-scope combined verdict — reject, planned change (plan idea vet: the declared range and the visitor's place in it, no combined verdict)
+- blame-history #5: the more-than-half rule counts steady-state failures — follow-up, already the row "Count only build failures for deploys"
+- prior-review #1: non-atomic site write, unlike the build's temp-and-rename — reject, edge (as diff-bug #8)
+- prior-review #2: spawned `pnpm site` timeout 110 s inside a 60 s test; other suites use 50 s — fix now
+- prior-review #3: the site step adds build-job time against the 30-minute limit — reject, false: `pnpm site` took about 1.3 s on the 14 real records (T8)
+- prior-review #4: README replaced-entries wording — reject, false (as blame-history #2)
+- ripple #1: DESIGN.md:12-13 says the index answers "does this plugin work on my version of Zotero?", while README says the site does not say whether a plugin works — fix now (README wording)
+- ripple #2: DESIGN.md:124 banked line, same wording — reject, false: the banked line states the design goal, which the README fix aligns with
+- ripple #3: ROADMAP candidate "Publish the site and data on Pages" describes the site — reject, planned change: step 9 hygiene graduates the row
+- ripple #4: DESIGN.md Contract boundary fact list omits the declared range — fix now
+- ripple #5: DESIGN.md build.yml bullet — fix now (as blame-history #3)
+- ripple #6: DESIGN.md:139 and tsconfig: `site/` not type-checked — fix now (as diff-bug #7)
+- ripple #7: combined-verdict wording — reject, planned change (as blame-history #4)
+- ripple #8: Function Families entry — fix now (as diff-bug #11)
+- ripple #9: PROFILE verify slot does not name `pnpm site` — reject, false: `pnpm test` runs test/site.test.ts, which spawns `pnpm site`
+- ripple #10: README "publishes its data file" and "the data from the last good build stays" — reject, false: both still describe the data correctly
