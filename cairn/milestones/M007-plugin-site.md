@@ -97,7 +97,7 @@ page and one plugin page and logs the result in this file's work log.
 - [x] T4: Astro project under `site/`, static output, `base: "/zotero-plugin-index/"`; `pnpm site` builds into a
       staging directory and copies the pages into `<out>`, so the data and schemas stay; the site fixture and the
       `test/site.test.ts` page-set, unchanged-bytes, and link-prefix tests (spawned pnpm needs its own hook timeout).
-- [ ] T5: Home page and plugin page templates; plugin links use `encodeURIComponent(id)`; the content tests.
+- [x] T5: Home page and plugin page templates; plugin links use `encodeURIComponent(id)`; the content tests.
 - [ ] T6: The version field and the browser script that stores the value and fills in each result; check it in
       the built-in browser over a local static server that serves `<out>` under `/zotero-plugin-index/`.
 - [ ] T7: `build.yml` `pnpm site` step; README section, CHANGELOG entry, DESIGN.md Architecture line.
@@ -119,6 +119,7 @@ page and one plugin page and logs the result in this file's work log.
 - 2026-10-25: T2 done: `compareVersions`, `declaredRange` (exported for the page templates), and `rangeResult` in `src/site/version.ts` with a structural `RangeRecord` type so the file has no imports; "*" is +Infinity per the source's wording; tests failed first (no module), then 407 pass; two planted defects (string-exists rule, override precedence) turned 59 and 1 tests red.
 - 2026-10-25: T3 done: `astro` 7.4.2 (published 2026-10-21) under `dependencies`, beside `ajv` and `fflate`, which `pnpm build` also runs; its one peer (`@astrojs/markdown-remark`) is optional, so no second package; Astro and Vitest share one Vite 8.3.5; `pnpm test` passes; Astro empties `outDir` unless `vite.build.emptyOutDir` is false (`static-build.js:66`).
 - 2026-10-25: T4 done (one commit with T3): `site/` Astro project, `src/site/site.ts` builds into a temp dir and replaces each top-level entry in `<out>` (so a removed plugin's page goes), refusing to write `v1/` or `schemas/`; `pnpm site` sets `ASTRO_TELEMETRY_DISABLED=1` so the build sends no telemetry; templates read the base from `site/src/base.ts`, because Vitest's `BASE_URL` env var replaced `import.meta.env.BASE_URL` in the spawned build (seen as `href="/"`, then reproduced with `BASE_URL=/`); the link-prefix test was red on that, and the page-set test went red with the stale-page removal planted out.
+- 2026-10-25: T5 done: home table (plugin, declared range, result slot) and plugin page (name, id, declared range, facts as `data-fact` elements, override table with an "Applies" column); the version field sits in the shared header and the not-vetted sentence in the shared footer; the page name uses an applying `name` override, so `appliedValue` is now exported; content tests pass (638 total) and went red with `overrideApplies` planted to always true.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

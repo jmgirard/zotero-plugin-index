@@ -1,13 +1,30 @@
 ---
 import Base from "../layouts/Base.astro";
-import { loadData, pluginHref } from "../data.ts";
+import { displayName, loadData, pluginHref, rangeFields, rangeText } from "../data.ts";
 
 const { plugins } = loadData();
 ---
 
 <Base title="Zotero plugin index">
   <h1>Zotero plugin index</h1>
-  <ul>
-    {plugins.map((record) => <li><a href={pluginHref(record.id)}>{record.upstream?.name ?? record.id}</a></li>)}
-  </ul>
+  <p>
+    Plugins for Zotero 7 and later. Each plugin declares the Zotero versions it supports. Enter your Zotero version
+    above to see where it falls in each declared range.
+  </p>
+  <table>
+    <thead>
+      <tr><th>Plugin</th><th>Declared range</th><th>Your version</th></tr>
+    </thead>
+    <tbody>
+      {
+        plugins.map((record) => (
+          <tr data-plugin={record.id}>
+            <td><a href={pluginHref(record.id)}>{displayName(record)}</a></td>
+            <td>{record.failure ? `Not read: ${record.failure.name}` : rangeText(record)}</td>
+            <td><span data-result-for={rangeFields(record)} /></td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
 </Base>

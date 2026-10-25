@@ -1,9 +1,10 @@
 import { readFileSync } from "node:fs";
-import type { PluginRecord, PluginsFile } from "../../src/build/build.ts";
+import type { Override, PluginRecord, PluginsFile } from "../../src/build/build.ts";
+import { appliedValue, declaredRange } from "../../src/site/version.ts";
 import { BASE } from "./base.ts";
 
 export { BASE };
-export type { PluginRecord };
+export type { Override, PluginRecord };
 
 // pnpm site sets ZPI_SITE_DATA to the data file it builds the pages from.
 export function loadData(): PluginsFile {
@@ -14,6 +15,37 @@ export function loadData(): PluginsFile {
 
 export function pluginHref(id: string): string {
   return `${BASE}plugins/${encodeURIComponent(id)}/`;
+}
+
+// The name after overrides, or the id when the read failed.
+export function displayName(record: PluginRecord): string {
+  return appliedValue(record, "name", record.upstream?.name) ?? record.id;
+}
+
+export function rangeText(record: PluginRecord): string {
+  const { min, max } = declaredRange(record);
+  if (min !== undefined && max !== undefined) return `Zotero ${min} to ${max}`;
+  if (min !== undefined) return `Zotero ${min} or newer`;
+  if (max !== undefined) return `Zotero ${max} or older`;
+  return "No declared range";
+}
+
+// The upstream value an override corrects, under the override's field name.
+export function upstreamValue(record: PluginRecord, field: string): string | undefined {
+  const upstream = record.upstream;
+  if (!upstream) return undefined;
+  const fields: Record<string, string | undefined> = {
+    name: upstream.name,
+    description: upstream.description,
+    homepage: upstream.homepage,
+    strict_min_version: upstream.strictMinVersion,
+    strict_max_version: upstream.strictMaxVersion,
+  };
+  return fields[field];
+}
+
+export function overrideApplies(record: PluginRecord, override: Override): boolean {
+  return record.upstream !== undefined && (override.version === undefined || override.version === record.upstream.version);
 }
 
 // The fields the browser script needs to compute a record's range result.

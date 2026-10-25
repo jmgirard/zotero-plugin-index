@@ -1,14 +1,101 @@
 ---
 import Base from "../../../layouts/Base.astro";
-import { loadData, type PluginRecord } from "../../../data.ts";
+import {
+  day,
+  displayName,
+  loadData,
+  overrideApplies,
+  rangeFields,
+  rangeText,
+  upstreamValue,
+  type PluginRecord,
+} from "../../../data.ts";
 
 export function getStaticPaths() {
   return loadData().plugins.map((record) => ({ params: { id: record.id }, props: { record } }));
 }
 
 const { record } = Astro.props as { record: PluginRecord };
+const { upstream, failure, overrides } = record;
 ---
 
-<Base title={record.upstream?.name ?? record.id}>
-  <h1>{record.upstream?.name ?? record.id}</h1>
+<Base title={`${displayName(record)}: Zotero plugin index`}>
+  <h1>{displayName(record)}</h1>
+  <p><code>{record.id}</code></p>
+  {
+    upstream && (
+      <section>
+        <h2>Declared range</h2>
+        <p data-fact="declared-range">{rangeText(record)}</p>
+        <p><span data-result-for={rangeFields(record)} /></p>
+      </section>
+    )
+  }
+  {
+    failure && (
+      <section>
+        <h2>Not read</h2>
+        <p data-fact="failure">
+          The last build could not read this plugin: <code>{failure.name}</code>: {failure.message}
+        </p>
+      </section>
+    )
+  }
+  <h2>Facts</h2>
+  <dl>
+    <dt>Repository</dt>
+    <dd data-fact="repository"><a href={upstream?.repoUrl ?? record.repoUrl}>{upstream?.repoUrl ?? record.repoUrl}</a></dd>
+    {
+      upstream && (
+        <>
+          <dt>Repository created</dt>
+          <dd data-fact="repo-created">{day(upstream.repoCreatedAt)}</dd>
+          <dt>Latest release with an .xpi</dt>
+          <dd data-fact="latest-release">
+            {upstream.version}, published {day(upstream.latestReleaseDate)}
+          </dd>
+          <dt>Releases with an .xpi</dt>
+          <dd data-fact="release-count">{upstream.releaseCount}</dd>
+          <dt>Open issues and pull requests</dt>
+          <dd data-fact="open-issues">{upstream.openIssues}</dd>
+          <dt>Host of update.json</dt>
+          <dd data-fact="update-host">{upstream.updateHost}</dd>
+          <dt>Releases</dt>
+          <dd data-fact="releases"><a href={`${upstream.repoUrl}/releases`}>{`${upstream.repoUrl}/releases`}</a></dd>
+        </>
+      )
+    }
+  </dl>
+  {
+    overrides.length > 0 && (
+      <section>
+        <h2>Overrides</h2>
+        <p>The index corrects these upstream facts. The declared range above uses the overrides that apply.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Upstream value</th>
+              <th>Override value</th>
+              <th>For version</th>
+              <th>Applies</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {overrides.map((override) => (
+              <tr data-override={override.field}>
+                <td><code>{override.field}</code></td>
+                <td>{upstreamValue(record, override.field) ?? "none"}</td>
+                <td>{override.value}</td>
+                <td>{override.version ?? "every version"}</td>
+                <td>{overrideApplies(record, override) ? "yes" : "no"}</td>
+                <td>{override.reason}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    )
+  }
 </Base>

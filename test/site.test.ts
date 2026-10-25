@@ -83,6 +83,66 @@ describe("pnpm site", () => {
   });
 });
 
+// The text of the element whose data-fact attribute is name, with tags removed.
+function fact(html: string, name: string): string | undefined {
+  const match = new RegExp(`data-fact="${name}"[^>]*>(.*?)</(?:p|dd)>`).exec(html);
+  return match?.[1]!.replace(/<[^>]+>/g, "");
+}
+
+describe("the plugin page", () => {
+  const page = (id: string) => readFileSync(join(out, "plugins", id, "index.html"), "utf8");
+  const FACTS = ["repository", "repo-created", "latest-release", "release-count", "open-issues", "update-host", "releases"];
+
+  test("puts the declared range and the version field before the other facts", () => {
+    const html = page("first-plugin@example.org");
+    const range = html.indexOf('data-fact="declared-range"');
+    const field = html.indexOf('id="zotero-version"');
+    const later = [...FACTS.map((name) => `data-fact="${name}"`), "data-override=", 'data-fact="not-vetted"'];
+    expect(range).toBeGreaterThan(-1);
+    expect(field).toBeGreaterThan(-1);
+    for (const marker of later) {
+      const at = html.indexOf(marker);
+      expect(at, marker).toBeGreaterThan(Math.max(range, field));
+    }
+  });
+
+  test("shows the declared range with the override that applies", () => {
+    expect(fact(page("first-plugin@example.org"), "declared-range")).toBe("Zotero 7.0 to 8.*");
+  });
+
+  test("shows the repository facts", () => {
+    const html = page("first-plugin@example.org");
+    expect(html).toContain('<a href="https://github.com/example/first-plugin">');
+    expect(html).toContain('<a href="https://github.com/example/first-plugin/releases">');
+    expect(fact(html, "repo-created")).toBe("2023-03-14");
+    expect(fact(html, "latest-release")).toBe("1.2.0, published 2026-09-30");
+    expect(fact(html, "release-count")).toBe("27");
+    expect(fact(html, "open-issues")).toBe("12");
+    expect(fact(html, "update-host")).toBe("example.org");
+    expect(fact(html, "not-vetted")).toBe("This index does not vet the plugins it lists.");
+  });
+
+  test("shows each override beside the upstream value", () => {
+    const rows = [...page("first-plugin@example.org").matchAll(/<tr data-override="[^"]*">(.*?)<\/tr>/g)].map((row) =>
+      [...row[1]!.matchAll(/<td>(.*?)<\/td>/g)].map((cell) => cell[1]!.replace(/<[^>]+>/g, "")),
+    );
+    // Field, upstream value, override value, version, applies, reason.
+    expect(rows).toEqual([
+      ["strict_max_version", "7.*", "8.*", "every version", "yes", "The author confirmed that the plugin works on Zotero 8."],
+      ["strict_min_version", "7.0", "8.5", "0.9.0", "no", "Version 0.9.0 needs an API that Zotero 8.5 added."],
+    ]);
+  });
+
+  test("shows the failure and no declared range for a record that was not read", () => {
+    const html = page("broken-plugin@example.org");
+    expect(fact(html, "failure")).toBe(
+      "The last build could not read this plugin: no-xpi-release: no release of example/broken-plugin has an .xpi asset",
+    );
+    expect(html).not.toContain('data-fact="declared-range"');
+    expect(html).not.toContain("data-result-for");
+  });
+});
+
 describe("pnpm site with no data file", () => {
   test("exits 1 and names the missing file", () => {
     const empty = mkdtempSync(join(tmpdir(), "zpi-site-empty-"));

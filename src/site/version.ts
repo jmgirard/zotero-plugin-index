@@ -64,9 +64,9 @@ export interface RangeRecord {
 
 export type RangeResult = "below" | "above" | "inside" | "no-range";
 
-// An override applies when it has no version or names the upstream version. The one that
-// names the version wins over one with none.
-function bound(record: RangeRecord, field: string, upstream: string | undefined): string | undefined {
+// The value of a field after overrides. An override applies when it has no version or
+// names the upstream version. The one that names the version wins over one with none.
+export function appliedValue(record: RangeRecord, field: string, upstream: string | undefined): string | undefined {
   const applying = record.overrides.filter(
     (o) => o.field === field && (o.version === undefined || o.version === record.upstream?.version),
   );
@@ -78,8 +78,8 @@ function bound(record: RangeRecord, field: string, upstream: string | undefined)
 export function declaredRange(record: RangeRecord): { min?: string; max?: string } {
   if (record.failure !== undefined || !record.upstream) return {};
   return {
-    min: bound(record, "strict_min_version", record.upstream.strictMinVersion),
-    max: bound(record, "strict_max_version", record.upstream.strictMaxVersion),
+    min: appliedValue(record, "strict_min_version", record.upstream.strictMinVersion),
+    max: appliedValue(record, "strict_max_version", record.upstream.strictMaxVersion),
   };
 }
 
