@@ -34,6 +34,7 @@ export type Failure =
   | "no-release"
   | "no-xpi-release"
   | "xpi-unreadable"
+  | "xpi-too-large"
   | "no-manifest"
   | "manifest-invalid"
   | "no-zotero-id"
@@ -41,12 +42,16 @@ export type Failure =
   | "no-update-url"
   | "update-json-http-error"
   | "update-json-invalid"
+  | "update-json-too-large"
   | "update-json-missing-id";
 
 export type UpstreamResult = { ok: true; facts: UpstreamFacts } | { ok: false; failure: Failure; message: string };
 
 const API = "https://api.github.com";
 const FETCH_TIMEOUT_MS = 60_000;
+// The largest XPI among the listed plugins was 5.5 MB (observed 2026-10-25).
+export const XPI_MAX_BYTES = 50 * 1024 * 1024;
+export const UPDATE_JSON_MAX_BYTES = 1024 * 1024;
 
 class ReadFailure extends Error {
   readonly failure: Failure;
@@ -248,6 +253,34 @@ async function readText(response: Response, url: string): Promise<string> {
   }
 }
 
+// Reads the body until it ends or passes `max` bytes. Past `max` it cancels the body,
+// so it reads at most `max` bytes plus the chunk that crosses it.
+async function readCapped(response: Response, url: string, max: number, tooLarge: () => never): Promise<Uint8Array> {
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    const reader = response.body?.getReader();
+    for (let chunk = await reader?.read(); chunk && !chunk.done; chunk = await reader!.read()) {
+      total += chunk.value.byteLength;
+      if (total > max) {
+        await reader!.cancel().catch(() => {});
+        tooLarge();
+      }
+      chunks.push(chunk.value);
+    }
+  } catch (error) {
+    if (error instanceof ReadFailure) throw error;
+    fail("request-failed", `GET ${url} failed while reading the body: ${(error as Error).message}`);
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+}
+
 async function readManifest(
   fetch: Fetch,
   url: string,
@@ -255,9 +288,11 @@ async function readManifest(
 ): Promise<{ manifest: ManifestJson; messages: Messages }> {
   const response = await request(fetch, url);
   if (!response.ok) fail("xpi-unreadable", `the XPI of ${tag} at ${url} returned HTTP ${response.status}`);
+  const zip = await readCapped(response, url, XPI_MAX_BYTES, () =>
+    fail("xpi-too-large", `the XPI of ${tag} at ${url} is larger than ${XPI_MAX_BYTES} bytes`),
+  );
   let files: Record<string, Uint8Array>;
   try {
-    const zip = new Uint8Array(await response.arrayBuffer());
     files = unzipSync(zip, {
       filter: (file) => file.name === "manifest.json" || /^_locales\/[^/]+\/messages\.json$/.test(file.name),
     });
@@ -290,7 +325,10 @@ async function readManifest(
 async function checkUpdateJson(fetch: Fetch, url: string, id: string): Promise<void> {
   const response = await request(fetch, url);
   if (!response.ok) fail("update-json-http-error", `the update.json at ${url} returned HTTP ${response.status}`);
-  const text = await readText(response, url);
+  const bytes = await readCapped(response, url, UPDATE_JSON_MAX_BYTES, () =>
+    fail("update-json-too-large", `the update.json at ${url} is larger than ${UPDATE_JSON_MAX_BYTES} bytes`),
+  );
+  const text = new TextDecoder().decode(bytes);
   let body: unknown;
   try {
     body = JSON.parse(text);

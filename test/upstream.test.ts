@@ -221,6 +221,25 @@ describe("readUpstream", () => {
     expect(result).toEqual({ ok: false, failure, message: expect.stringContaining(detail) });
   });
 
+  test("fails with xpi-too-large and stops reading an XPI past 50 MiB", async () => {
+    const { result, requests } = await read((r) => (r[XPI] = { chunks: { size: 1_048_576, count: 60 } }));
+    expect(result).toEqual({ ok: false, failure: "xpi-too-large", message: expect.stringContaining(XPI) });
+    expect(requests.find((q) => q.url === XPI)!.bytesEnqueued).toBeLessThanOrEqual(52_428_800 + 1_048_576);
+  });
+
+  test("reads the whole of an XPI of exactly 50 MiB", async () => {
+    const { result, requests } = await read((r) => (r[XPI] = { chunks: { size: 1_048_576, count: 50 } }));
+    // Zero bytes are not a zip, so the read gets past the cap and fails on the unzip.
+    expect(result).toEqual({ ok: false, failure: "xpi-unreadable", message: expect.stringContaining("zip") });
+    expect(requests.find((q) => q.url === XPI)!.bytesEnqueued).toBe(52_428_800);
+  });
+
+  test("fails with update-json-too-large and stops reading an update.json past 1 MiB", async () => {
+    const { result, requests } = await read((r) => (r[UPDATE] = { chunks: { size: 65_536, count: 20 } }));
+    expect(result).toEqual({ ok: false, failure: "update-json-too-large", message: expect.stringContaining(UPDATE) });
+    expect(requests.find((q) => q.url === UPDATE)!.bytesEnqueued).toBeLessThanOrEqual(1_048_576 + 65_536);
+  });
+
   test.each(["https://gitlab.com/windingwind/zotero-better-notes", "https://github.com/windingwind", "not a url"])(
     "fails on %j, which is not a GitHub repo URL, with no request",
     async (url) => {

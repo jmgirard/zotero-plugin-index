@@ -1,13 +1,13 @@
 # M004: Limit what the reader downloads
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the reader's new failure names appear in the published `plugins.json`
-- **Branch/PR:** —
+- **Branch/PR:** m004-download-limits
 
 ## Goal
 
@@ -80,7 +80,7 @@ text for these limits.
 
 ## Tasks
 
-- [ ] T1: Capped body reads. In `src/upstream/reader.ts`, add a streaming read that stops and cancels the body at a
+- [x] T1: Capped body reads. In `src/upstream/reader.ts`, add a streaming read that stops and cancels the body at a
       byte cap. Use it for the XPI (50 MiB, `xpi-too-large`, replacing `arrayBuffer` at reader.ts:260) and for
       `update.json` (1 MiB, `update-json-too-large`, replacing `readText` at reader.ts:293). Let
       `test/support/fixture-fetch.ts` serve a body of fixed-size chunks and count the bytes enqueued. Tests per AC1
@@ -118,6 +118,8 @@ text for these limits.
 - 2026-10-25: decided: an oversized `messages.json` fails the read as `manifest-too-large`, because only a broken or hostile XPI holds a messages file over 1 MiB.
 - 2026-10-25: decided: a redirect over the limit, a 3xx with no Location, a non-http Location, and a failed or empty lookup all return `request-failed`, with a message that names the cause.
 - 2026-10-25: changelog: one entry under Unreleased (AC7).
+- 2026-10-25: started; branch m004-download-limits cut from main at 41e4e81.
+- 2026-10-25: T1 done: `readCapped` reads the XPI and update.json bodies with caps exported as `XPI_MAX_BYTES` and `UPDATE_JSON_MAX_BYTES`; fixture `chunks` bodies count bytes enqueued; a planted missing cap turned both cap tests red. A cut-off XPI body is now `request-failed`, not `xpi-unreadable`. pnpm test 90 passed, pnpm check clean.
 
 ## Decisions
 

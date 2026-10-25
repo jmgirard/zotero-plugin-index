@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-25 (M003 done and archived; 2 lessons captured, 4 m
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M004 | Limit what the reader downloads | planned | — | high | milestones/M004-download-limits.md |
+| M004 | Limit what the reader downloads | in-progress | — | high | milestones/M004-download-limits.md |
 | M003 | Build the published plugin data | done | M002 | high | milestones/archive/M003-published-data.md |
 | M002 | Read upstream plugin facts and draft entries | done | M001 | high | milestones/archive/M002-upstream-reader.md |
 | M001 | Define the plugin entry format and checker | done | — | high | milestones/archive/M001-entry-format.md |

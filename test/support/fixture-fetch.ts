@@ -5,12 +5,14 @@ import { strToU8, zipSync } from "fflate";
 // is written as JSON. `error` makes the request reject, as a network failure does, and
 // `bodyError` makes reading the body reject, as a connection reset does. `unexpected`
 // answers with an object that throws on any read, which the reader does not expect.
+// `chunks` serves `count` chunks of `size` zero bytes, one for each read of the body.
 export interface Recorded {
   status?: number;
   headers?: Record<string, string>;
   json?: unknown;
   text?: string;
   xpi?: Record<string, unknown>;
+  chunks?: { size: number; count: number };
   error?: string;
   bodyError?: string;
   unexpected?: string;
@@ -27,6 +29,8 @@ export interface Fixture {
 export interface SeenRequest {
   url: string;
   headers: Headers;
+  // The bytes a `chunks` body has handed to the reader so far.
+  bytesEnqueued: number;
 }
 
 export function loadFixture(path: string): Fixture {
@@ -38,7 +42,8 @@ export function fixtureFetch(responses: Responses) {
   const requests: SeenRequest[] = [];
   async function fetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
     const url = String(input);
-    requests.push({ url, headers: new Headers(init?.headers) });
+    const seen: SeenRequest = { url, headers: new Headers(init?.headers), bytesEnqueued: 0 };
+    requests.push(seen);
     const recorded = responses[url];
     if (!recorded) return new Response(`no recorded response for ${url}`, { status: 404 });
     if (recorded.error) throw new TypeError(recorded.error);
@@ -52,12 +57,27 @@ export function fixtureFetch(responses: Responses) {
         },
       });
     }
-    return new Response(body(recorded), { status: recorded.status ?? 200, headers: recorded.headers });
+    return new Response(body(recorded, seen), { status: recorded.status ?? 200, headers: recorded.headers });
   }
   return { fetch, requests };
 }
 
-function body(recorded: Recorded): BodyInit | null {
+function body(recorded: Recorded, seen: SeenRequest): BodyInit | null {
+  const { chunks } = recorded;
+  if (chunks) {
+    let served = 0;
+    return new ReadableStream<Uint8Array>(
+      {
+        pull(controller) {
+          if (served === chunks.count) return controller.close();
+          served++;
+          seen.bytesEnqueued += chunks.size;
+          controller.enqueue(new Uint8Array(chunks.size));
+        },
+      },
+      { highWaterMark: 0 },
+    );
+  }
   const { bodyError } = recorded;
   if (bodyError) return new ReadableStream({ start: (controller) => controller.error(new TypeError(bodyError)) });
   if (recorded.xpi) {
