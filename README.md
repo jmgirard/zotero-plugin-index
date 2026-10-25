@@ -4,6 +4,21 @@ A community index of plugins for Zotero 7 and later. The index lists plugins
 and links to the releases of each author. It does not host plugin files, and
 it does not review or endorse plugins.
 
+## Using the data
+
+The index publishes its data file on GitHub Pages:
+
+- Data: <https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json>
+- Schema for the data file:
+  <https://jmgirard.github.io/zotero-plugin-index/schemas/plugins.v1.schema.json>
+- Schema for `index.json`:
+  <https://jmgirard.github.io/zotero-plugin-index/schemas/index.v1.schema.json>
+
+A daily build updates the data. If more than half of the records carry a
+failure, the build deploys nothing, and the data from the last good build
+stays in place. "Building the data" below describes the file. A breaking
+change to the file gets a new schema version under a new path, such as `v2/`.
+
 ## Plugin entries
 
 Each plugin has one directory, `plugins/<id>/`, where `<id>` is the plugin id
@@ -126,8 +141,13 @@ If the read of a plugin fails, its record has no `upstream` block. The
 record has a `failure` block with the failure name and a message. If the
 read stops with an error that the reader does not name, the failure name is
 `unexpected-error`. If the read gives facts that the schema rejects, the
-failure name is `facts-invalid`. The command still writes the file and exits
-with status 0.
+failure name is `facts-invalid`. The command still writes the file. If half
+of the records or fewer have a `failure` block, it exits with status 0. If
+more than half have one, the command prints how many and exits with status 1.
+So many failures usually come from the build, for example a bad token or a
+GitHub outage.
+
+The command also writes copies of the two schemas to `dist/schemas/`.
 
 The command writes no file and exits with status 1 in these cases:
 
@@ -144,7 +164,10 @@ To write the file under another directory, add `--out <dir>`. As with
 
 The `Build data` workflow runs `pnpm check` and then `pnpm build` once a day,
 and you can also start it by hand. It keeps `dist/` as a workflow artifact named
-`plugins-data`.
+`plugins-data`. If the build succeeds, the workflow deploys `dist/` to GitHub
+Pages. If `pnpm build` exits with status 1, the workflow deploys nothing, and
+the data from the last good build stays published. Only a run on the `main`
+branch can deploy.
 
 ## Running the tests
 
