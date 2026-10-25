@@ -1,7 +1,7 @@
-import { strToU8, unzipSync, zipSync } from "fflate";
+import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { Lookup } from "../src/upstream/host-guard.ts";
-import { readUpstream } from "../src/upstream/reader.ts";
+import { readUpstream, zipEntryCount } from "../src/upstream/reader.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 
 const FIXTURE = "test/fixtures/upstream/better-notes.json";
@@ -299,6 +299,185 @@ describe("readUpstream", () => {
       r[XPI] = { base64: Buffer.from(zip).toString("base64") };
     });
     expect(result).toEqual({ ok: false, failure: "manifest-too-large", message: expect.stringContaining("manifest.json") });
+  });
+
+  // A zip of `length` bytes that is zero bytes up to its end record, whose entry count
+  // is `count` and whose directory starts at offset 0. With `zip64Count`, a zip64 end
+  // record and its locator come before the end record and give that count instead.
+  function endRecords(length: number, count: number, zip64Count?: number): Uint8Array {
+    const zip = new Uint8Array(length);
+    const view = new DataView(zip.buffer);
+    const end = length - 22;
+    view.setUint32(end, 0x06054b50, true);
+    view.setUint16(end + 8, count, true);
+    view.setUint16(end + 10, count, true);
+    if (zip64Count !== undefined) {
+      const record = end - 76;
+      view.setUint32(record, 0x06064b50, true);
+      view.setBigUint64(record + 32, BigInt(zip64Count), true);
+      view.setUint32(end - 20, 0x07064b50, true);
+      view.setBigUint64(end - 12, BigInt(record), true);
+    }
+    return zip;
+  }
+
+  function readZip(zip: Uint8Array) {
+    return read((r) => (r[XPI] = { base64: Buffer.from(zip).toString("base64") }));
+  }
+
+  test.each([
+    ["a zip64 end record", endRecords(98, 0xffff, 4_294_967_295), 4_294_967_295],
+    ["an end record", endRecords(22, 65_535), 65_535],
+  ])("fails with xpi-unreadable when %s claims more entries than the zip can hold", async (_name, zip, count) => {
+    const { result } = await readZip(zip);
+    expect(result).toEqual({ ok: false, failure: "xpi-unreadable", message: expect.stringContaining(`claims ${count} entries`) });
+  }, 10_000);
+
+  // 46 bytes for each entry is the smallest central directory the count allows.
+  test.each([
+    ["a zip64 end record", endRecords(138, 0xffff, 3)],
+    ["an end record", endRecords(46, 1)],
+  ])("reads past the count check when %s claims as many entries as the zip can hold", async (_name, zip) => {
+    const { result } = await readZip(zip);
+    expect(result).toEqual({ ok: false, failure: "no-manifest", message: expect.stringContaining("manifest.json") });
+  });
+
+  // Appends `comment` to a zip whose end record is its last 22 bytes.
+  function withComment(zip: Uint8Array, comment: Uint8Array): Uint8Array {
+    const out = new Uint8Array(zip.length + comment.length);
+    out.set(zip);
+    out.set(comment, zip.length);
+    new DataView(out.buffer).setUint16(zip.length - 2, comment.length, true);
+    return out;
+  }
+
+  function edit(zip: Uint8Array, change: (view: DataView, end: number) => void): Uint8Array {
+    change(new DataView(zip.buffer), zip.length - 22);
+    return zip;
+  }
+
+  const twoFiles = () => zipSync({ a: strToU8("1"), b: strToU8("2") });
+
+  test.each<[string, () => Uint8Array, number]>([
+    ["a two-file zip from zipSync", twoFiles, 2],
+    ["an end record with a comment", () => withComment(twoFiles(), strToU8("a comment")), 2],
+    [
+      "a comment that holds a decoy end record with a larger count",
+      () => {
+        const zip = twoFiles();
+        const decoy = zip.slice(-22);
+        new DataView(decoy.buffer).setUint16(8, 3, true);
+        return withComment(zip, decoy);
+      },
+      3,
+    ],
+    [
+      "an end record signature in the last 21 bytes",
+      () => {
+        const comment = new Uint8Array(21);
+        new DataView(comment.buffer).setUint32(0, 0x06054b50, true);
+        new DataView(comment.buffer).setUint16(8, 9, true);
+        return withComment(twoFiles(), comment);
+      },
+      2,
+    ],
+    ["a zip64 end record whose count is within the bound", () => endRecords(200, 0xffff, 4), 4],
+    [
+      "a zip64 locator whose record offset points outside the file",
+      () => edit(endRecords(98, 2, 3), (view, end) => view.setUint32(end - 12, 10_000, true)),
+      2,
+    ],
+    [
+      "a zip64 locator whose record offset has its high 32 bits set",
+      () => edit(endRecords(98, 0xffff, 2), (view, end) => view.setUint32(end - 8, 1, true)),
+      2,
+    ],
+    ["a 2-byte count of 0 beside a zip64 count of 2^32 - 1", () => endRecords(98, 0, 4_294_967_295), 0],
+    [
+      "a zip64 end record whose count field runs past the end of the zip",
+      () => {
+        // A locator at 0, an end record at 20, and a 4-byte comment that holds the zip64 signature.
+        const zip = new Uint8Array(46);
+        const view = new DataView(zip.buffer);
+        view.setUint32(0, 0x07064b50, true);
+        view.setUint32(8, 42, true);
+        view.setUint32(20, 0x06054b50, true);
+        view.setUint16(28, 0xffff, true);
+        view.setUint16(40, 4, true);
+        view.setUint32(42, 0x06064b50, true);
+        return zip;
+      },
+      0,
+    ],
+  ])("counts the entries that unzipSync loops over in %s", (_name, make, count) => {
+    let calls = 0;
+    unzipSync(make(), { filter: () => (calls++, false) });
+    expect(calls).toBe(count);
+    expect(zipEntryCount(make())).toBe(count);
+  });
+
+  // Appends `times` copies of the central-directory header of `name` to the directory of
+  // a zip with no comment, so that each copy points at the same file data.
+  function repeatEntry(zip: Uint8Array, name: string, times: number): Uint8Array {
+    const view = new DataView(zip.buffer, zip.byteOffset);
+    const end = zip.length - 22;
+    const headerLength = (at: number) =>
+      46 + view.getUint16(at + 28, true) + view.getUint16(at + 30, true) + view.getUint16(at + 32, true);
+    let header = view.getUint32(end + 16, true);
+    while (strFromU8(zip.subarray(header + 46, header + 46 + view.getUint16(header + 28, true))) !== name) {
+      header += headerLength(header);
+    }
+    const copy = zip.slice(header, header + headerLength(header));
+    const out = new Uint8Array(zip.length + copy.length * times);
+    out.set(zip.subarray(0, end));
+    for (let i = 0; i < times; i++) out.set(copy, end + i * copy.length);
+    out.set(zip.subarray(end), end + times * copy.length);
+    const outView = new DataView(out.buffer);
+    const outEnd = out.length - 22;
+    const count = outView.getUint16(outEnd + 8, true) + times;
+    outView.setUint16(outEnd + 8, count, true);
+    outView.setUint16(outEnd + 10, count, true);
+    outView.setUint32(outEnd + 12, outView.getUint32(outEnd + 12, true) + copy.length * times, true);
+    return out;
+  }
+
+  // Reads the recorded plugin with its XPI replaced by `make` of the recorded manifest.
+  function readXpi(make: (json: Uint8Array) => Uint8Array) {
+    return read((r) => {
+      const zip = make(strToU8(JSON.stringify(manifest(r))));
+      r[XPI] = { base64: Buffer.from(zip).toString("base64") };
+    });
+  }
+
+  test("fails with xpi-unreadable when the zip holds manifest.json twice", async () => {
+    const { result } = await readXpi((json) =>
+      repeatEntry(zipSync({ "manifest.json": json, "other.txt": strToU8("x") }), "manifest.json", 1),
+    );
+    expect(result).toEqual({ ok: false, failure: "xpi-unreadable", message: expect.stringContaining("more than one manifest.json") });
+  });
+
+  test("fails with xpi-unreadable when the zip holds the default locale's messages.json twice", async () => {
+    const { result } = await read((r) => {
+      manifest(r).default_locale = "en";
+      const json = strToU8(JSON.stringify(manifest(r)));
+      const files = { "manifest.json": json, "_locales/en/messages.json": strToU8("{}") };
+      const zip = repeatEntry(zipSync(files), "_locales/en/messages.json", 1);
+      r[XPI] = { base64: Buffer.from(zip).toString("base64") };
+    });
+    expect(result).toEqual({
+      ok: false,
+      failure: "xpi-unreadable",
+      message: expect.stringContaining("more than one _locales/en/messages.json"),
+    });
+  });
+
+  test("refuses at the second of 2,000 manifest.json entries that each point at a 1 MiB stream", async () => {
+    const spaces = new Uint8Array(1_048_576).fill(32);
+    const zip = repeatEntry(zipSync({ "manifest.json": [spaces, { level: 9 }] }), "manifest.json", 1999);
+    const started = performance.now();
+    const { result } = await readXpi(() => zip);
+    expect(result).toEqual({ ok: false, failure: "xpi-unreadable", message: expect.stringContaining("more than one manifest.json") });
+    expect(performance.now() - started).toBeLessThan(1000);
   });
 
   // The first and last address of each blocked range, then mapped and loopback names.

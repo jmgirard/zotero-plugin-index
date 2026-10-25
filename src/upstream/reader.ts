@@ -335,6 +335,10 @@ async function readManifest(
   const zip = await readCapped(response, url, XPI_MAX_BYTES, () =>
     fail("xpi-too-large", `the XPI of ${tag} at ${url} is larger than ${XPI_MAX_BYTES} bytes`),
   );
+  const count = zipEntryCount(zip);
+  if (count !== undefined && count * CENTRAL_HEADER_MIN_BYTES > zip.length) {
+    fail("xpi-unreadable", `the XPI of ${tag} claims ${count} entries, more than its ${zip.length} bytes can hold`);
+  }
   const bytes = unzipOne(zip, "manifest.json", tag);
   if (!bytes) fail("no-manifest", `the XPI of ${tag} holds no manifest.json`);
   let manifest: unknown;
@@ -358,16 +362,45 @@ async function readManifest(
   return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {} };
 }
 
-// Unzips the one file `name`, or returns undefined when the zip lacks it. fflate 0.8.3
-// inflates a deflated file into a buffer of the size the central directory declares and
-// drops output past it, but it decodes the whole stream; it returns a stored file at its
-// compressed size (observed 2026-10-25). Refusing a declared or compressed size over the
-// cap bounds the file to UNZIPPED_MAX_BYTES and the decoding to that much input.
+// The smallest central-directory header: its fixed part, with no name, extra field, or comment.
+const CENTRAL_HEADER_MIN_BYTES = 46;
+
+// Returns the entry count that bounds fflate 0.8.3's unzipSync loop, or undefined when it
+// finds no end record. It copies how unzipSync finds the end record and the zip64 end
+// record (node_modules/fflate/esm/index.mjs:2670), and like fflate reads bytes past the
+// end of the zip as 0. unzipSync calls the filter once for each entry, so a 98-byte zip64
+// file that claims 2^32 - 1 entries holds the CPU for minutes.
+export function zipEntryCount(zip: Uint8Array): number | undefined {
+  const u16 = (i: number) => (zip[i] ?? 0) | ((zip[i + 1] ?? 0) << 8);
+  const u32 = (i: number) => (u16(i) | (u16(i + 2) << 16)) >>> 0;
+  let end = zip.length - 22;
+  while (u32(end) !== 0x06054b50) {
+    if (!end || zip.length - end > 65558) return undefined;
+    end--;
+  }
+  const count = u16(end + 8);
+  if (!count) return 0;
+  if (u32(end - 20) !== 0x07064b50) return count;
+  const record = u32(end - 12);
+  return u32(record) === 0x06064b50 ? u32(record + 32) : count;
+}
+
+// Unzips the one file `name`, or returns undefined when the zip lacks it, and fails when
+// the zip holds more than one entry named `name`. fflate 0.8.3 inflates a deflated file
+// into a buffer of the size the central directory declares and drops output past it, but
+// it decodes the whole stream; it returns a stored file at its compressed size (observed
+// 2026-10-25). Refusing a declared or compressed size over the cap bounds the file to
+// UNZIPPED_MAX_BYTES and the compressed input it decodes to that much.
 function unzipOne(zip: Uint8Array, name: string, tag: string): Uint8Array | undefined {
+  // unzipSync unzips each entry the filter accepts, so a zip that repeats `name` would
+  // inflate up to UNZIPPED_MAX_BYTES once for each copy.
+  let found = false;
   try {
     return unzipSync(zip, {
       filter: (file) => {
         if (file.name !== name) return false;
+        if (found) fail("xpi-unreadable", `the XPI of ${tag} holds more than one ${name}`);
+        found = true;
         if (file.originalSize > UNZIPPED_MAX_BYTES || file.size > UNZIPPED_MAX_BYTES) {
           fail("manifest-too-large", `${name} in the XPI of ${tag} is larger than ${UNZIPPED_MAX_BYTES} bytes`);
         }
