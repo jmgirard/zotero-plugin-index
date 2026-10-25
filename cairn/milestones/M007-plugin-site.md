@@ -139,6 +139,7 @@ page and one plugin page and logs the result in this file's work log.
 - 2026-10-25: T11 done: `pnpm test` 310 passed in 8 files, `pnpm check` 14 entries with 0 problems, both after the last T10 edit.
 - 2026-10-25: claim audit: 78 claims read, 3 corrected — site/src/pages/plugins/[id]/index.astro, site/src/data.ts, site/src/layouts/Base.astro; two loose wordings also fixed (src/site/version.ts, README.md, CHANGELOG.md); the same reader re-read them true and proposed the final CHANGELOG wording, taken; 310 tests pass, `pnpm check` clean.
 - 2026-10-25: status review; review return 1 worked (T9-T11), handed to /milestone-review.
+- 2026-10-25: step-7 approval: m007-plugin-site approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
