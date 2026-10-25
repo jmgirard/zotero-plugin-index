@@ -48,7 +48,8 @@ pnpm check
 ```
 
 The command prints one line for each problem, with the entry directory and
-the rule that failed. If it finds a problem, it exits with status 1. To check
+the rule that failed, then a summary line. It exits with status 1 if it finds
+a problem or cannot load the registry schema. To check
 the entries in another directory, give its path: `pnpm check <dir>`.
 
 The first run downloads the registry schema into `.cache/`, so that run needs

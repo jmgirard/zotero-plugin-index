@@ -1,6 +1,6 @@
 # M001: Define the plugin entry format and checker
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
@@ -102,6 +102,8 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - 2026-10-24: implement resumed for review return 1; added T6 (minor amendment) and mapped AC1 and AC2 to it in Coverage.
 - 2026-10-25: T6 done: `check` script is `node src/check/cli.ts` (root defaults to `plugins`), and the tests spawn `pnpm --silent check <root>` through `npm_execpath`, which pnpm sets; registry schema SHA-256 `6decb4ca…d551` pinned and checked on cache and download; stat and read errors become `files-present` findings; CLI sets `process.exitCode`; override `value` has `minLength: 1`; CI `timeout-minutes: 10`; fetch times out after 30 s; new tests for missing meta.json, unreadable meta.json, invalid JSON, download failure, and hash mismatch (15 pass); a planted defect (cache returned without the hash check) turned the hash test red, then was reverted.
 - 2026-10-25: Vitest `testTimeout` set to 20 s, because one run with a slow `npx` start failed a test that the next four runs passed; the check tests start a pnpm process each.
+- 2026-10-25: claim audit: 57 claims read, 2 corrected — README.md (the output also ends with a summary line, and exit 1 also covers an unloadable schema), src/check/registry-schema.ts (the cache comment also covers an unreadable cache).
+- 2026-10-25: all tasks done, `pnpm test` (15 passed) and `pnpm check` clean; status review.
 
 ## Decisions
 

@@ -26,7 +26,7 @@ export async function loadRegistrySchema(cacheDir: string): Promise<object> {
     const cached = await readFile(cachePath, "utf8");
     if (sha256(cached) === REGISTRY_SCHEMA_SHA256) return JSON.parse(cached);
   } catch {
-    // Not cached yet: download it.
+    // Not cached, or the cache cannot be read: download it.
   }
   let text: string;
   try {
