@@ -67,7 +67,7 @@ candidate row. Repos outside GitHub → not in this scope; DESIGN.md says the in
       `__addonID__`.
 - [x] T3: Add the inclusion-bar checks with one named failure per AC2 cause; one plugin's failure never throws
       past the reader.
-- [ ] T4: Write `pnpm add-plugin` and its two tests; it fills `meta.json` from upstream facts only.
+- [x] T4: Write `pnpm add-plugin` and its two tests; it fills `meta.json` from upstream facts only.
 - [ ] T5: Run `pnpm add-plugin` on at least five real plugin repos with the `zotero-plugin` topic and commit the
       entries that pass the bar.
 - [ ] T6: README and `CHANGELOG.md` entries.
@@ -88,6 +88,7 @@ candidate row. Repos outside GitHub → not in this scope; DESIGN.md says the in
 - 2026-10-25: T2: decided `readUpstream(repoUrl, fetch)` returns `{ok, facts}` or `{ok: false, failure, message}`; the newest non-draft release with an `.xpi` (prereleases included, as Scope says) gives the manifest and `latestReleaseDate`; `releaseCount` counts non-draft releases with an `.xpi`; release pages follow the Link header.
 - 2026-10-25: T2: decided `GITHUB_TOKEN` goes only to api.github.com requests, never to the XPI or update.json hosts; the token test asserts both sides.
 - 2026-10-25: T3: one named failure per AC2 cause, plus five the code needed: not-github-repo, request-failed, xpi-unreadable, manifest-invalid (not JSON, no version), no-update-url (absent, not http); each has a test. Errors that are bugs in the reader still throw. Planted defects (no fork check, max below 8, token on every request) turned 4 tests red.
+- 2026-10-25: T4: `src/add-plugin/` writes `meta.json` (id, name, description, homepage, repoUrl, updateUrl, all from the manifest and repo) and `index.json` (`schemaVersion: 1`); decided it refuses an existing entry (entry-exists) and an id with a slash, backslash, or leading dot (unsafe-id); failures print `<name>: <message>` to stderr, exit 1. The CLI tests load `test/support/preload-fixture.ts` through NODE_OPTIONS and run pnpm with `--dir`; 9 tests.
 
 ## Decisions
 

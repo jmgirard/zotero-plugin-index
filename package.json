@@ -9,6 +9,7 @@
     "node": ">=24"
   },
   "scripts": {
+    "add-plugin": "node src/add-plugin/cli.ts",
     "check": "node src/check/cli.ts",
     "test": "tsc --noEmit && vitest run"
   },
