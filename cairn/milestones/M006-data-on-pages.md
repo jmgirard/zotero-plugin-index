@@ -76,7 +76,7 @@ workflow, fetches the data and schema URLs, and logs the result in this file's w
       write the copies in `writeData` or the CLI, and add the exit rule and its line in `src/build/cli.ts`. The
       planted-error test (`test/build.test.ts:130`) fails 2 of 3 records, so it now asserts exit 1 or gains a
       fourth entry; the one-failure tree (1 of 3) keeps exit 0.
-- [ ] T3: Add the Pages upload step, the deploy job (`needs`, `environment: github-pages`, its own permissions),
+- [x] T3: Add the Pages upload step, the deploy job (`needs`, `environment: github-pages`, its own permissions),
       and a `pages` concurrency group to `build.yml`; keep `plugins-data`. Turn on Pages with
       `gh api -X POST repos/jmgirard/zotero-plugin-index/pages -f build_type=workflow`. Dispatch the workflow
       once on the milestone branch to make sure that the build job passes and uploads the artifact; the deploy
@@ -101,6 +101,7 @@ workflow, fetches the data and schema URLs, and logs the result in this file's w
 - 2026-10-25: implement started on m006-data-on-pages, cut from main at 9f939be.
 - 2026-10-25: T1 done — both schemas' `$id` now under https://jmgirard.github.io/zotero-plugin-index/schemas/; no other file named the old URL outside cairn/; `pnpm test` 217 passed. DESIGN.md lines moved to T4.
 - 2026-10-25: T2 done — `writeData` copies both schemas to `<out>/schemas/` before it writes the data file (a failed copy is `write-failed`); the CLI prints `<n> of <m> records carry a failure, more than half` to stderr and exits 1 after the write. The planted-error test is the 2-of-3 tree (now exit 1); a new 2-of-4 test adds an entry whose repo has no recorded response. Both failed on main for the named reasons (exit 0 seen; schema copy ENOENT); `pnpm test` 218 passed.
+- 2026-10-25: T3 done — `build.yml` uses `actions/upload-pages-artifact@v5` (last build step) and `actions/deploy-pages@v5` (latest releases, read with gh api); `plugins-data` now uploads `if: !cancelled()` so a failed build's data stays readable; workflow concurrency group `pages`. Pages turned on (build_type workflow, https://jmgirard.github.io/zotero-plugin-index/); the `github-pages` environment allows branch `main` only. Branch dispatch run 40237546151: build passed (14 records, 0 failures, artifacts plugins-data and github-pages), deploy rejected by the environment rule as expected.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
