@@ -105,6 +105,7 @@ workflow, fetches the data and schema URLs, and logs the result in this file's w
 - 2026-10-25: T4 done — README gains "Using the data" (the three URLs, the deploy rule) and updates "Building the data" (exit 1 over half, schema copies, Pages deploy from main); one CHANGELOG entry; DESIGN.md Contract boundary names the URLs and Architecture the deploy.
 - 2026-10-25: T5 done — `pnpm test` 218 passed; `pnpm check` 14 entries, 0 problems.
 - 2026-10-25: claim audit: 26 claims read, 0 corrected — build.yml, CHANGELOG.md, README.md, src/build/build.ts, src/build/cli.ts, test/build.test.ts; the reader also flagged the unchanged README "writes no file … cannot write the file" case, made stale by the schema copies, now reworded.
+- 2026-10-25: step-7 approval: m006-data-on-pages approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
