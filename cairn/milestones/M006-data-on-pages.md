@@ -35,26 +35,26 @@ workflow, fetches the data and schema URLs, and logs the result in this file's w
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: `schemas/plugins.v1.schema.json` and `schemas/index.v1.schema.json` each set `$id` to
+- [x] AC1: `schemas/plugins.v1.schema.json` and `schemas/index.v1.schema.json` each set `$id` to
       `https://jmgirard.github.io/zotero-plugin-index/schemas/` followed by the file's own name.
-- [ ] AC2: Whenever `pnpm build` writes its data file, whatever its exit status, it also writes
+- [x] AC2: Whenever `pnpm build` writes its data file, whatever its exit status, it also writes
       `<out>/schemas/plugins.v1.schema.json` and `<out>/schemas/index.v1.schema.json`, each byte-identical to the
       file of the same name in `schemas/`. Tests in `test/build.test.ts` compare both files' bytes after the
       exit-0 run and after the exit-1 run of AC3.
-- [ ] AC3: When more than half of the records carry `failure`, `pnpm build` writes the data file, prints a line
+- [x] AC3: When more than half of the records carry `failure`, `pnpm build` writes the data file, prints a line
       that names the failed count, the record count, and that more than half failed, and exits 1. When half or
       fewer carry `failure` and the write succeeds, it exits 0. Tests in `test/build.test.ts` run the CLI on a
       fixture tree where 2 of 4 records fail (exit 0) and on one where 2 of 3 fail (exit 1), and each asserts the
       exit status and the data file's presence, and, for the exit-1 tree, the printed line.
-- [ ] AC4: In `.github/workflows/build.yml`, the job that runs `pnpm build` ends with an
+- [x] AC4: In `.github/workflows/build.yml`, the job that runs `pnpm build` ends with an
       `actions/upload-pages-artifact` step for `dist/`, and a deploy job that `needs` that job runs
       `actions/deploy-pages` in the `github-pages` environment. Neither the upload step nor the deploy job carries
       an `if:` condition, and only the deploy job holds `pages: write` and `id-token: write`.
-- [ ] AC5: README names the data URL `https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json` and both
+- [x] AC5: README names the data URL `https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json` and both
       schema URLs, and says that the daily build deploys nothing when more than half of the records carry a
       failure.
       CHANGELOG's `## Unreleased` gains one entry that says the same.
-- [ ] AC6: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
+- [x] AC6: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate -->
@@ -111,3 +111,12 @@ workflow, fetches the data and schema URLs, and logs the result in this file's w
 
 ## Review
 <!-- owner: review · exclusive. -->
+
+Pass 1, 2026-10-25, on branch head 9d1ea2f (main 9f939be, not moved; no PR yet, route (d); Copilot round off).
+
+- AC1: both schema files read with json: `$id` equals `https://jmgirard.github.io/zotero-plugin-index/schemas/` + own name for plugins.v1 and index.v1 — pass.
+- AC2: `vitest run test/build.test.ts` 15 passed; `expectSchemaCopies` compares both copies' bytes with `schemas/` after the exit-0 2-of-4 run ("exits 0 when exactly half…") and the exit-1 2-of-3 run ("names an error … unexpected-error"); before the fix the 2-of-4 test failed with ENOENT on `<out>/schemas/plugins.v1.schema.json` (implement log) — pass.
+- AC3: same run: 2-of-3 tree asserts status 1, the data file, and stderr "2 of 3 records carry a failure, more than half" (the line names both counts and the rule); 2-of-4 tree asserts status 0, empty stderr, the data file, and the failed ids [fork, missing]; `src/build/cli.ts` exits 1 only when `failed*2 > total`, after a successful write — pass.
+- AC4: `build.yml` parsed with Ruby YAML: jobs build, deploy; the build job runs `pnpm build` and its last step is `actions/upload-pages-artifact@v5` with path `dist/` and no `if`; deploy `needs: build`, environment `github-pages`, one step `actions/deploy-pages@v5`, no `if` on job or step; permissions workflow {contents: read}, build none of its own, deploy {pages: write, id-token: write}. Branch run 40237546151: build passed, deploy refused by the branch rule — pass.
+- AC5: grep: README.md:11, :13, :15 name the data URL and both schema URLs; README.md:17-19 "If more than half of the records carry a failure, the build deploys nothing"; CHANGELOG.md `## Unreleased` one new entry (lines 38-44) naming the URLs and "The daily build then deploys nothing" — pass.
+- AC6: `pnpm test` (tsc, then Vitest) 5 files, 218 passed; `pnpm check` "checked 14 entries in plugins, 0 problems" — pass.
