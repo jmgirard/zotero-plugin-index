@@ -110,3 +110,32 @@ Evidence at 5c5e4b9, 2026-10-25. `pnpm test`: tsc clean, 60 passed (4 files); `p
 - AC6: CHANGELOG.md:10 has the `pnpm add-plugin <github-url>` entry under Unreleased; README.md:49 shows `pnpm add-plugin https://github.com/<owner>/<repo>` under "Adding a plugin"; `pnpm test` 60 passed and `pnpm check` 0 problems on the branch.
 - Gate: `cairn_validate.py` all checks passed (exit 0); no DESIGN.md principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: a non-string or non-numeric `strict_max_version` (6, "abc") passed the bar — fix now (manifest-invalid; 2 tests), fixed b5920a2
+- diff-bug #2: pagination followed a `rel="next"` on any host and sent the token there — fix now (next page must be on api.github.com; test), fixed b5920a2
+- diff-bug #3: a Link header pointing back to a read page looped forever — fix now (seen-page set; test), fixed b5920a2
+- diff-bug #4: a null repo body or a null release threw past `readUpstream` — fix now (request-failed for a non-object repo body, non-object releases skipped; 2 tests), fixed b5920a2
+- diff-bug #5: the id check blocked a few characters; NUL, newline, and 300-character ids reached mkdir — fix now (allowlist `[A-Za-z0-9_@{}+.-]`, at most 200 characters), fixed b5920a2
+- diff-bug #6: no draft fixture and newest-first order, so removing the draft filter or the date sort kept tests green — fix now (one test with a newer draft and an older release first; both plants turn it red), fixed b5920a2
+- diff-bug #7: untested branches (assets not a list, unreadable messages.json, off-host and loop pages) — fix now (tests for each); a Link header with rel="next" second is the same regex path, no test, fixed b5920a2
+- diff-bug #8: the "public repository" part of the bar was not checked — fix now (named failure `private`; test), fixed b5920a2
+- diff-bug #9: a body read cut off was named "not JSON" or update-json-invalid — fix now (body read mapped to request-failed; `bodyError` fixture option; test), fixed b5920a2
+- diff-bug #10: a manifest with `//` comment lines fails as manifest-invalid — reject (edge: plugin-template builds emit plain JSON; a commented manifest is outside common use and gets a named failure, not a wrong result)
+- diff-bug #11: `--out --help`, `--out=dir`, and running cli.ts with node and a stale INIT_CWD — reject (edge: the documented use is `pnpm add-plugin <url> --out <dir>`; each gives a usage message or a wrong directory name only outside it)
+- diff-bug #12: a failed write after mkdir left a half entry that blocked reruns — fix now (remove the directory, return `write-failed`; 2 tests), fixed b5920a2
+- diff-bug #13: no size cap on the XPI or unzipped manifest, and `update_url` may name loopback or private hosts — follow-up, new row "Limit what the reader downloads"
+- diff-bug (c): two unsafe-id rows ran the same path and two usage rows ran the same branch — fix now (dropped `a\\b` and the two-URL usage row), fixed b5920a2; the usage text, `checked 1 entries`, the not-a-zip row, the no-token control, and the `6.*`/`6.999` pair — reject (false: each asserts which failure or is a control the AC requires)
+- prior-review #1: two 50 s pnpm spawns in one test exceed the 60 s test timeout — fix now (that test's timeout 120 s), fixed b5920a2
+- prior-review #2: untested branches (body not JSON, releases not a list, manifest not an object, unreadable messages.json) — fix now (a test each), fixed b5920a2
+- prior-review #3: raw crash and half-written entry on a write error — fix now (same as diff-bug #12), fixed b5920a2
+- prior-review #4: unportable ids reach disk — fix now for characters (diff-bug #5); case collisions and reserved names — follow-up, absorbed into "Catch stray and unportable entry files"
+- prior-review #5: the `readUpstream` comment named a batch run that does not exist yet — fix now (reworded to "a caller that reads many plugins"), fixed b5920a2
+- blame-history #1: Windows-invalid characters, reserved names, case collisions in ids — same disposition as prior-review #4
+- blame-history #2: DESIGN.md said the bot reads "the latest release" — fix now (Data sources item 2 corrected M002), fixed b5920a2
+- blame-history #3: half-written entry directory — fix now (same as diff-bug #12), fixed b5920a2
+- ripple #1: DESIGN.md Data sources item 2 — fix now (same as blame-history #2), fixed b5920a2
+- ripple #2: DESIGN.md inclusion bar said the maintainer removes forks; the reader refuses them — fix now (corrected M002), fixed b5920a2
+- ripple #3: the vitest.config.ts timeout comment named only the check tests — fix now, fixed b5920a2
+- ripple #4: the LESSONS line on `npm_execpath` named only the check tests — fix now (lesson corrected in place), fixed b5920a2
+- ripple #5: DESIGN.md says a bot drafts entries from an issue form — reject (planned change: that sentence states the planned discovery design, which the candidate row "Find new plugins by GitHub topic search" carries; the CLI does not contradict it)
+- ripple #6: DESIGN.md Known issues on rate limits omits the token — fix now (one sentence added), fixed b5920a2
+- After fixes: `pnpm test` 73 passed, `pnpm check` 14 entries 0 problems, `cairn_validate.py` all passed. Planted defects (no draft filter, no sort, no host check, no seen set, no version-type check, no private check, no cleanup) each turned a test red or kept the run from finishing.
