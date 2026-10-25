@@ -1,13 +1,13 @@
 # M002: Read upstream plugin facts and draft entries
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** M001
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — contributors draft entries with its command, and its facts feed the public data
-- **Branch/PR:** —
+- **Branch/PR:** m002-upstream-reader
 
 ## Goal
 
@@ -60,12 +60,12 @@ candidate row. Repos outside GitHub → not in this scope; DESIGN.md says the in
 
 ## Tasks
 
-- [ ] T1: Record response fixtures under `test/fixtures/upstream/`: one passing plugin and one fixture per AC2
-      cause; write the tests for AC1 to AC3 first.
-- [ ] T2: Write the reader in `src/upstream/`: repo metadata, releases, XPI manifest, `update.json`. Read the
+- [x] T1: Record a passing plugin's responses under `test/fixtures/upstream/`, and derive one fixture per AC2 cause
+      by editing that recording in the test; write the tests for AC1 to AC3 first.
+- [x] T2: Write the reader in `src/upstream/`: repo metadata, releases, XPI manifest, `update.json`. Read the
       manifest from the newest release that has an `.xpi` asset, because the source `manifest.json` in plugin-template repos holds placeholders such as
       `__addonID__`.
-- [ ] T3: Add the inclusion-bar checks with one named failure per AC2 cause; one plugin's failure never throws
+- [x] T3: Add the inclusion-bar checks with one named failure per AC2 cause; one plugin's failure never throws
       past the reader.
 - [ ] T4: Write `pnpm add-plugin` and its two tests; it fills `meta.json` from upstream facts only.
 - [ ] T5: Run `pnpm add-plugin` on at least five real plugin repos with the `zotero-plugin` topic and commit the
@@ -81,6 +81,13 @@ candidate row. Repos outside GitHub → not in this scope; DESIGN.md says the in
 - 2026-10-24: plan gate chose reading the manifest from the latest release XPI over reading it from the repo source because the plugin template's source manifest holds placeholders (observed in windingwind/zotero-plugin-template 2026-10-24); falsified by a sample of real repos whose release XPIs are unreadable more often than their source manifests are placeholder-free.
 - 2026-10-24: criteria audit (full mode, fresh Opus reader): 7 findings, all fixed — AC1 states an injected fetch in place of a no-network claim about the tests (instrument) and adds the `GITHUB_TOKEN` header test; AC2 splits two bundled causes, adds a GitHub API HTTP-error cause, names the `strict_max_version` probes and the passing values, and reads the newest release with an `.xpi` to match the DESIGN.md bar; AC3 narrows to the manifest `version`; AC4 adds `--out <dir>`.
 - 2026-10-24: question set: dependencies granted at the M001 plan include fflate for reading XPI files (D-001).
+- 2026-10-25: started; branch m002-upstream-reader cut from main at 240c651.
+- 2026-10-25: dependency: fflate 0.8.3 added (exact pin), granted by D-001 at the M001 plan.
+- 2026-10-25: minor amendment: T1 reworded — the per-cause fixtures are edits of one recording (windingwind/zotero-better-notes) made in the test, not separate files.
+- 2026-10-25: T1: fixture `test/fixtures/upstream/better-notes.json` with a `source` field; `test/support/fixture-fetch.ts` answers by URL and builds the XPI with fflate; 27 reader tests in `test/upstream.test.ts`.
+- 2026-10-25: T2: decided `readUpstream(repoUrl, fetch)` returns `{ok, facts}` or `{ok: false, failure, message}`; the newest non-draft release with an `.xpi` (prereleases included, as Scope says) gives the manifest and `latestReleaseDate`; `releaseCount` counts non-draft releases with an `.xpi`; release pages follow the Link header.
+- 2026-10-25: T2: decided `GITHUB_TOKEN` goes only to api.github.com requests, never to the XPI or update.json hosts; the token test asserts both sides.
+- 2026-10-25: T3: one named failure per AC2 cause, plus five the code needed: not-github-repo, request-failed, xpi-unreadable, manifest-invalid (not JSON, no version), no-update-url (absent, not http); each has a test. Errors that are bugs in the reader still throw. Planted defects (no fork check, max below 8, token on every request) turned 4 tests red.
 
 ## Decisions
 

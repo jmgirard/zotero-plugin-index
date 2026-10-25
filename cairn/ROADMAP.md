@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-25 (M001 done and archived; 2 lessons captured)_
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M002 | Read upstream plugin facts and draft entries | planned | M001 | high | milestones/M002-upstream-reader.md |
+| M002 | Read upstream plugin facts and draft entries | in-progress | M001 | high | milestones/M002-upstream-reader.md |
 | M003 | Build the published plugin data | planned | M002 | high | milestones/M003-published-data.md |
 | M001 | Define the plugin entry format and checker | done | — | high | milestones/archive/M001-entry-format.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
