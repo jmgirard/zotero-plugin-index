@@ -89,7 +89,7 @@ page and one plugin page and logs the result in this file's work log.
 
 - [x] T1: Read Mozilla's Toolkit version format page and write `cairn/references/mozilla-toolkit-version.md`
       (source note template, its ordered examples quoted verbatim, provenance) with its `INDEX.md` line.
-- [ ] T2: Tests first, then `compareVersions` and `rangeResult` in `src/site/version.ts`, in plain TypeScript
+- [x] T2: Tests first, then `compareVersions` and `rangeResult` in `src/site/version.ts`, in plain TypeScript
       that both Vitest and the Astro browser script import.
 - [ ] T3: Add `astro` at an exact version (D-004) with `npx -y pnpm@12.15.0 add`; make sure that `pnpm test`
       (tsc, then Vitest) still passes beside Astro's Vite, and find out whether `astro build` empties its
@@ -116,6 +116,7 @@ page and one plugin page and logs the result in this file's work log.
 - 2026-10-25: criteria audit (full mode, fresh Opus reader): 7 findings on M007, all taken — AC3 gets `--out`, a staging build (Astro may empty its outDir), a hand-made site fixture with a GUID id, raw-id directories, and a `/zotero-plugin-index/` link-prefix check; AC2 states equality and which override wins; AC1 states the three signs and quotes the source's examples; AC4 fixes document order and probes an override that does not apply; AC5 names its data and the served path; no finding on AC6, AC7.
 - 2026-10-25: lessons used: 2026-10-25 (M001) pnpm via npx; 2026-10-25 (M001) INIT_CWD for relative paths; 2026-10-25 (M003) beforeAll hookTimeout.
 - 2026-10-25: T1 done: the Toolkit version format now lives on MDN's "Legacy Version Formats" page; the note quotes its rules and its 12-line example chain; the simple-english hook flags the note's `— observed` stamp, kept because cairn's staleness check reads that form.
+- 2026-10-25: T2 done: `compareVersions`, `declaredRange` (exported for the page templates), and `rangeResult` in `src/site/version.ts` with a structural `RangeRecord` type so the file has no imports; "*" is +Infinity per the source's wording; tests failed first (no module), then 407 pass; two planted defects (string-exists rule, override precedence) turned 59 and 1 tests red.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
