@@ -70,7 +70,10 @@ const { upstream, failure, overrides } = record;
     overrides.length > 0 && (
       <section>
         <h2>Overrides</h2>
-        <p>The index corrects these upstream facts. The declared range above uses the overrides that apply.</p>
+        <p>
+          The index corrects these upstream facts.
+          {upstream && " The declared range above uses the overrides that apply."}
+        </p>
         <table>
           <thead>
             <tr>

@@ -64,9 +64,11 @@ export interface RangeRecord {
 
 export type RangeResult = "below" | "above" | "inside" | "no-range";
 
-// The value of a field after overrides. An override applies when it has no version or
-// names the upstream version. The one that names the version wins over one with none.
+// The value of a field after overrides. An override applies to a record that was read,
+// when it has no version or names the upstream version. The one that names the version
+// wins over one with none.
 export function appliedValue(record: RangeRecord, field: string, upstream: string | undefined): string | undefined {
+  if (!record.upstream) return upstream;
   const applying = record.overrides.filter(
     (o) => o.field === field && (o.version === undefined || o.version === record.upstream?.version),
   );

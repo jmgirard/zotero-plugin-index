@@ -17,7 +17,7 @@ export function pluginHref(id: string): string {
   return `${BASE}plugins/${encodeURIComponent(id)}/`;
 }
 
-// The name after overrides, or the id when the read failed.
+// The name after overrides, or the id when neither the manifest nor an override gives one.
 export function displayName(record: PluginRecord): string {
   return appliedValue(record, "name", record.upstream?.name) ?? record.id;
 }

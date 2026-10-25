@@ -191,8 +191,8 @@ The command reads `dist/v1/plugins.json`. It writes the home page,
 `dist/index.html`, and one page for each record, `dist/plugins/<id>/index.html`.
 It does not change the data file or the schemas. It replaces the `index.html`
 and `plugins/` of an earlier run, so a page for a plugin that the data no
-longer lists goes away. Links in the pages start with `/zotero-plugin-index/`,
-the path of the site on GitHub Pages. The command turns off the telemetry of
+longer lists goes away. Links between the pages, and to the data file, start
+with `/zotero-plugin-index/`, the path of the site on GitHub Pages. The command turns off the telemetry of
 Astro, the site builder.
 
 To read the data from another directory and write the pages there, add

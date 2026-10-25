@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M007: Build the plugin site
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** high   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M006   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -123,6 +123,8 @@ page and one plugin page and logs the result in this file's work log.
 - 2026-10-25: T6 done: the shared layout's script (Astro inlines it) reads and writes `localStorage["zotero-version"]`, tolerates storage being off, and fills each `data-result-for` slot with `rangeResult` text and a `data-result` attribute; built-in browser over `python3 -m http.server` serving the fixture build under `/zotero-plugin-index/`: with storage cleared, first-plugin showed "Zotero 7.0 to 8.*" and no result; typing 8.0.1 on the home page gave no-range, inside, above, below for the four rows, equal to Node's `rangeResult`; the GUID page opened by its link showed "below" with the field prefilled; the failure-page test now matches the attribute, since the inlined script names the selector.
 - 2026-10-25: T7 done: `build.yml` runs `pnpm site` as step 6, after `pnpm build` and before both uploads, with no `if:` (read with ruby's YAML); README gains "The site", "Building the site", and "The daily workflow" sections; one CHANGELOG entry; DESIGN.md Architecture gains the site bullet.
 - 2026-10-25: T8 done: `pnpm test` 638 passed in 7 files, `pnpm check` 14 entries with 0 problems; `pnpm site` over the real `dist/` (data from 2026-10-25) wrote 15 pages.
+- 2026-10-25: claim audit: 66 claims read, 7 corrected — site/astro.config.ts, site/src/data.ts, src/site/version.ts, site/src/layouts/Base.astro, site/src/pages/index.astro, site/src/pages/plugins/[id]/index.astro, README.md; one was a code mismatch (a failed record's page name took a no-version name override that the table marked "no"), fixed in `appliedValue` with a regression test red before the fix; the same reader re-read all 7 as true; 639 tests pass, `pnpm check` clean.
+- 2026-10-25: status review; implement complete, handed to /milestone-review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

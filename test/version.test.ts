@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { compareVersions, rangeResult, type RangeRecord } from "../src/site/version.ts";
+import { appliedValue, compareVersions, rangeResult, type RangeRecord } from "../src/site/version.ts";
 
 // MDN, "Legacy Version Formats", section "Examples" (cairn/references/mozilla-toolkit-version.md).
 // Each group is equal within itself and older than every later group.
@@ -125,6 +125,14 @@ describe("rangeResult", () => {
     ]);
     expect(rangeResult("8.0.1", both)).toBe("inside");
     expect(rangeResult("8.0.1", { ...both, overrides: [...both.overrides].reverse() })).toBe("inside");
+  });
+
+  test("no override applies to a record that was not read", () => {
+    const failed: RangeRecord = {
+      failure: { name: "no-xpi-release", message: "no release" },
+      overrides: [{ field: "name", value: "Corrected Name" }],
+    };
+    expect(appliedValue(failed, "name", undefined)).toBeUndefined();
   });
 
   test("an override can supply a bound the upstream facts lack", () => {

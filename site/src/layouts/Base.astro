@@ -80,8 +80,8 @@ const { generatedAt } = loadData();
         "no-range": (version) => `There is no declared range to compare with Zotero ${version}.`,
       };
 
-      // Storage can be off, for example in a private window; the field then still works on
-      // the page it was typed on.
+      // Storage can be blocked, for example when the browser blocks site data; the field then
+      // still works on the page it was typed on.
       function stored(): string {
         try {
           return localStorage.getItem(KEY) ?? "";
