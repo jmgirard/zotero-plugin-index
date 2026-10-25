@@ -121,3 +121,36 @@ Evidence at 9d9beb2, 2026-10-25: `pnpm test` 319 passed (9 files); `vitest run t
 - AC6: "writes nothing and keeps the state when a search request fails" passed: HTTP 503 on the addon search, exit 1, stderr names the URL and `HTTP 503`, no `out/` directory, state file byte-equal to before.
 - AC7: "writes entries and the state under the caller's directory and prints the report" passed: relative `--out out --state state.json --limit 2` from a temp cwd wrote two entries and the state there, report lists both as written; `pnpm test` and `pnpm check` pass as above.
 - Gate: `cairn_validate.py` exit 0, all checks passed; no principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the CLI writes the state before printing the report and does not catch a failed write, so a failure loses the report of entries on disk — fix now: report printed first, a failed state write prints `cannot write <path>` and exits 1; an unreadable state file now exits 1 before any write.
+- diff-bug #2: a `listEntries` error or a non-ReadFailure throw from the reader is not a named failure and loses the report mid-loop — fix now: an unreadable index ends the run with `cannot read <root>`, and a reader throw becomes `unexpected-error`, not recorded.
+- diff-bug #3: the written item lacks the version and declared range that M009's pull request body needs — fix now: written items carry `version`, `strictMinVersion`, `strictMaxVersion`.
+- diff-bug #4: `failure: string` drops the typed union — fix now: `DiscoveryFailure` types it.
+- diff-bug #5: with `--out` away from `plugins/` and a shared state file, a directory left in the output dir is recorded as `entry-exists` and hides the repo for 30 days — fix now: `writeEntry`'s `entry-exists` and `write-failed` are not recorded; the index clash and `unsafe-id` still are.
+- diff-bug #6: the search sends no sort, so best-match order can shift between pages, and nothing warns past the search's 1,000-result cap — fix now: `sort=updated&order=desc`, and a warning when `total_count` passes 1,000.
+- diff-bug #7: an unparseable `pushed_at` breaks newest-first order — fix now: such an item is left out with a warning.
+- diff-bug #8: a `checkedAt` in the future skips the repo until its next push — fix now: a negative age reads the repo.
+- diff-bug #9: the report does not say how many candidates the limit or budget left unread — fix now: `unread` count.
+- diff-bug #10: an option value is not checked, so `--out --state` takes `--state` as the directory — fix now: a value that is empty or starts with `--` prints the usage.
+- diff-bug #11: `plugins/` resolves against the process directory, so a run from outside the package root sees an empty index — fix now: the index and default output resolve from the source file, as the state path does.
+- diff-bug #12: concurrent runs share one `.tmp` name and the last writer wins — reject (edge): two local runs at once are outside the command's use, and the cost is re-reads; M009's concurrency group covers the workflow.
+- diff-bug #13: state records are never pruned — fix now: the new state keeps records only for repos the search found and the index lacks.
+- diff-bug (c): the AC7 test's `meta.json`/`index.json` existence check repeats `writeEntry` coverage — reject (planned change): AC7 names the written files as its evidence.
+- diff-bug (c): `toHaveLength(6)` repeats the in-index skip check — reject (false): it checks AC5's one item per read, a different property.
+- diff-bug (c): untested branches (incomplete results, malformed items, next-page origin and repeat, missing items, unrecorded failures, CLI usage and limit errors, bad state file, index-side case) — fix now: one test each, with the new fixes' branches.
+- blame-history #1: download failures that an HTTP 429 or 503 can cause (`update-json-http-error` and others) are recorded for 30 days — follow-up: new row "Retry repos refused by a download error", since AC3 as written records every other reader failure.
+- blame-history #2: `githubClient().get` is exported and sends the token to any URL — fix now: `get` refuses a URL off the API host before any request, with a test.
+- blame-history #3: `pnpm discover` writes into `plugins/` with no pull request, past the maintainer's approval — reject (planned change): the plan's scope writes entries with `writeEntry` like `pnpm add-plugin`, which the maintainer commits by hand; pull requests are M009.
+- blame-history #4: the index is read from `plugins/` while entries go to `--out`, so a repo written there is re-read and refused — fix now with diff-bug #5: that refusal is no longer recorded.
+- blame-history #5: search pages have no byte cap — reject (false): the reader applies no cap to GitHub API pages by design, and the finding names no cap bypassed.
+- prior-review #1: discovery feeds up to 100 untrusted repos a run into the unzip that holds about 4 s per crafted manifest — follow-up: absorbed into "Stop inflating past the declared size".
+- prior-review #2: the run has no time budget — follow-up: absorbed into "Warn when the daily build degrades".
+- prior-review #3: discovery writes reserved Windows names and case variants through `writeEntry` — follow-up: absorbed into "Catch stray and unportable entry files".
+- prior-review #4: discovery drafts entries from prerelease manifests — follow-up: absorbed into "Read stable releases before prereleases".
+- prior-review #5: the CLI uses system DNS, so rebinding stays open — follow-up: the parked row "Check addresses when the reader connects" already covers every reader call, unchanged.
+- ripple #1: `test/support/preload-fixture.ts` names only the add-plugin and build tests — fix now.
+- ripple #2: `vitest.config.ts` omits the discover tests from those that start pnpm — fix now.
+- ripple #3: DESIGN.md Data sources and the ROADMAP row say the bot opens pull requests, which `pnpm discover` does not — follow-up: M009 T6 rewrites Data sources when the pull requests ship, and the row is that series' record.
+- ripple #4: DESIGN.md's fixture sentence omits the discover fixtures — fix now.
+- ripple #5: DESIGN.md's reader family omits the `githubClient` export — fix now.
+- After the fixes: `pnpm test` 334 passed (the 9 tests the AC lines name among them, unchanged in what they assert); `pnpm check` 14 entries, 0 problems.

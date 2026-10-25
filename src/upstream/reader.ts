@@ -216,7 +216,9 @@ export function githubClient(fetch: Fetch) {
   const token = process.env.GITHUB_TOKEN;
   if (token) headers.authorization = `Bearer ${token}`;
 
+  // The token goes only to the API host, so a URL on another origin is refused.
   async function get(url: string): Promise<{ body: unknown; link: string | null }> {
+    if (!URL.canParse(url) || new URL(url).origin !== API) fail("request-failed", `${url} is not on ${API}`);
     const response = await request(fetch, url, { headers });
     if (!response.ok) fail("github-http-error", `GET ${url} returned HTTP ${response.status}`);
     const text = await readText(response, url);

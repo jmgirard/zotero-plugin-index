@@ -2,9 +2,9 @@
   "source": "Written by hand for the discover tests, in the shape of GitHub's repository search: two pages for topic:zotero-plugin and one for topic:zotero-addon, with example/both under both topics. The tests add each repo's responses from test/support/plugin-repo.ts.",
   "repoUrl": "",
   "responses": {
-    "https://api.github.com/search/repositories?q=topic%3Azotero-plugin&per_page=100": {
+    "https://api.github.com/search/repositories?q=topic%3Azotero-plugin&sort=updated&order=desc&per_page=100": {
       "headers": {
-        "link": "<https://api.github.com/search/repositories?q=topic%3Azotero-plugin&per_page=100&page=2>; rel=\"next\", <https://api.github.com/search/repositories?q=topic%3Azotero-plugin&per_page=100&page=2>; rel=\"last\""
+        "link": "<https://api.github.com/search/repositories?q=topic%3Azotero-plugin&sort=updated&order=desc&per_page=100&page=2>; rel=\"next\", <https://api.github.com/search/repositories?q=topic%3Azotero-plugin&sort=updated&order=desc&per_page=100&page=2>; rel=\"last\""
       },
       "json": {
         "total_count": 5,
@@ -16,9 +16,9 @@
         ]
       }
     },
-    "https://api.github.com/search/repositories?q=topic%3Azotero-plugin&per_page=100&page=2": {
+    "https://api.github.com/search/repositories?q=topic%3Azotero-plugin&sort=updated&order=desc&per_page=100&page=2": {
       "headers": {
-        "link": "<https://api.github.com/search/repositories?q=topic%3Azotero-plugin&per_page=100&page=1>; rel=\"prev\", <https://api.github.com/search/repositories?q=topic%3Azotero-plugin&per_page=100&page=1>; rel=\"first\""
+        "link": "<https://api.github.com/search/repositories?q=topic%3Azotero-plugin&sort=updated&order=desc&per_page=100&page=1>; rel=\"prev\", <https://api.github.com/search/repositories?q=topic%3Azotero-plugin&sort=updated&order=desc&per_page=100&page=1>; rel=\"first\""
       },
       "json": {
         "total_count": 5,
@@ -29,7 +29,7 @@
         ]
       }
     },
-    "https://api.github.com/search/repositories?q=topic%3Azotero-addon&per_page=100": {
+    "https://api.github.com/search/repositories?q=topic%3Azotero-addon&sort=updated&order=desc&per_page=100": {
       "json": {
         "total_count": 3,
         "incomplete_results": false,
