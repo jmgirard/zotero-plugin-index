@@ -255,3 +255,7 @@ Review pass 2 (2026-10-25, head a2d5c77):
 - ripple #6: ROADMAP row still says "started M007" — reject, planned change (hygiene)
 - ripple #7: `src/build/cli.ts` deploy comment — reject, false: still true for `pnpm build`
 - ripple #8: README says `pnpm build` writes one file — reject, false: still true for `pnpm build`
+- fixed: every pass 2 fix-now finding above, fixed 3fd6432; after it `pnpm test` 310 passed in 8 files, `pnpm check` 0 problems, `cairn_validate.py` passed; a planted removal of `version` from `rangeFields` turned the new round-trip test red
+- AC5 re-run at 3fd6432 (the script changed): built-in browser, storage cleared, first-plugin showed "Zotero 7.0 to 8.*" and no result, its Releases link `https://github.com/example/first-plugin/releases`; 8.0.1 typed on the home page was stored under `zotero-plugin-index:zotero-version` (the only key) and gave no-range, inside, above, below, equal to Node's `rangeResult` at 92dd550, whose range code 3fd6432 did not change; the GUID link opened with the field prefilled and `below`
+- snapshot: the changed-snapshot list is empty (no `_snaps` or `__snapshots__` path in the diff)
+- open-PR cap: `gh pr list --author @me --state open` lists no PR, under the feature cap of 1
