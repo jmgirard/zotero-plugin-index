@@ -119,6 +119,7 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
 - 2026-10-25: T6 done. `pnpm test` 217 passed, `pnpm check` 0 problems.
 - 2026-10-25: claim audit: 39 claims read, 2 corrected — src/upstream/reader.ts (the count bounds fflate's loop, which can stop sooner by throwing), README.md (the lead-in now covers what the reader unzips). The reader re-read both and found them true. The CHANGELOG's "more than 3 minutes" stays, because it is the observed lower bound.
 - 2026-10-25: implement done; status review. `pnpm test` 217 passed, `pnpm check` 0 problems.
+- 2026-10-25: step-7 approval: m005-zip-entry-limits approved for merge
 
 ## Decisions
 
