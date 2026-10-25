@@ -104,6 +104,7 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - 2026-10-25: Vitest `testTimeout` set to 20 s, because one run with a slow `npx` start failed a test that the next four runs passed; the check tests start a pnpm process each.
 - 2026-10-25: claim audit: 57 claims read, 2 corrected — README.md (the output also ends with a summary line, and exit 1 also covers an unloadable schema), src/check/registry-schema.ts (the cache comment also covers an unreadable cache).
 - 2026-10-25: all tasks done, `pnpm test` (15 passed) and `pnpm check` clean; status review.
+- 2026-10-25: step-7 approval: m001-entry-format approved for merge
 
 ## Decisions
 
@@ -166,4 +167,5 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - diff-bug #9: DESIGN.md Function Families and Architecture are stale — reject (false at the head: fixed in 3908bcc after the reviewer's base 494eaab).
 - diff-bug #10: a UTF-8 BOM gives an unclear message — reject (already settled as follow-up in pass 1).
 - diff-bug (c) #1: the meta.json and index.json missing-file cases run one branch — fix now (kept the meta.json case only).
+- fixed shas: pass-1 fix-now items fixed in 0e8066d (ripple #1, #2) and fb2635f (diff-bug #1, #2, #3, #4, #7, #9, #14); pass-2 fix-now items fixed in 3908bcc (ripple #1, #2; blame-history #1, #2) and 76d12f9 (diff-bug #1, #2, #4, #5, #7, #8, (c) #1, (c) #2).
 - diff-bug (c) #2: the `updateUrl`-required test checks Ajv's `required`, while the `downloads` and invalid-JSON tests already cover the registry-schema rule — fix now (removed; this reverses the pass-1 reject, because the rule now has two other tests).
