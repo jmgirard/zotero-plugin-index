@@ -55,6 +55,13 @@ export function compareVersions(a: string, b: string): number {
   return 0;
 }
 
+// The Zotero version in what a visitor typed or pasted: the first run that starts with a
+// digit and ends at a space, a comma, or a parenthesis. So the About Zotero text
+// "Version 7.0.11 (64-bit)" reads as 7.0.11. Text with no digit gives "".
+export function zoteroVersion(input: string): string {
+  return /\d[^\s(),]*/.exec(input)?.[0] ?? "";
+}
+
 // The fields of a published record that the range reads.
 export interface RangeRecord {
   upstream?: { version: string; strictMinVersion?: string; strictMaxVersion?: string };

@@ -80,9 +80,9 @@ page and one plugin page and logs the result in this file's work log.
 - AC2 → T2
 - AC3 → T3, T4
 - AC4 → T5
-- AC5 → T6
+- AC5 → T6, T9
 - AC6 → T7
-- AC7 → T8
+- AC7 → T8, T11
 
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
@@ -102,6 +102,13 @@ page and one plugin page and logs the result in this file's work log.
       the built-in browser over a local static server that serves `<out>` under `/zotero-plugin-index/`.
 - [x] T7: `build.yml` `pnpm site` step; README section, CHANGELOG entry, DESIGN.md Architecture line.
 - [x] T8: Run the `verify` slot.
+- [x] T9: Review return 1: the version field reads the first run that starts with a digit, so pasted About Zotero
+      text such as "Version 7.0.11 (64-bit)" compares as 7.0.11; tests first.
+- [ ] T10: The fix-now findings of review pass 1 (Review section): field refresh on Back and across tabs, typed
+      text kept, a "Used" column from the override `appliedValue` picks, env restored, `.astro/` ignored, `site/`
+      type-checked, non-http repo URLs unlinked, the untested branches and error paths tested, the comparator table
+      cut to adjacent groups, DESIGN.md and README fixes, the spawn timeout at 50 s.
+- [ ] T11: Run the `verify` slot.
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -126,6 +133,8 @@ page and one plugin page and logs the result in this file's work log.
 - 2026-10-25: claim audit: 66 claims read, 7 corrected — site/astro.config.ts, site/src/data.ts, src/site/version.ts, site/src/layouts/Base.astro, site/src/pages/index.astro, site/src/pages/plugins/[id]/index.astro, README.md; one was a code mismatch (a failed record's page name took a no-version name override that the table marked "no"), fixed in `appliedValue` with a regression test red before the fix; the same reader re-read all 7 as true; 639 tests pass, `pnpm check` clean.
 - 2026-10-25: status review; implement complete, handed to /milestone-review.
 - 2026-10-25: review return 1: diff-bug #1, the version field takes pasted About Zotero text such as "Version 7.0.11 (64-bit)" as version 0 and reports "older than the declared minimum"; the fix-now findings of review pass 1 (Review section) go back with it.
+- 2026-10-25: minor amendment: T9 (the return), T10 (fix-now findings), T11 (verify) added; Coverage AC5 → T6, T9 and AC7 → T8, T11.
+- 2026-10-25: T9 done: `zoteroVersion` in `src/site/version.ts` takes the first run that starts with a digit and stops at a space, comma, or parenthesis; the six new tests failed first (no export), then pass (645 total); the browser script stores what was typed and compares the version read from it; it also keeps text typed before the script ran and re-reads storage on a Back restore (`pageshow` persisted) and on a `storage` event (diff-bug #2, #3).
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

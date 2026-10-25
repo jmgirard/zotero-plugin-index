@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { appliedValue, compareVersions, rangeResult, type RangeRecord } from "../src/site/version.ts";
+import { appliedValue, compareVersions, rangeResult, type RangeRecord, zoteroVersion } from "../src/site/version.ts";
 
 // MDN, "Legacy Version Formats", section "Examples" (cairn/references/mozilla-toolkit-version.md).
 // Each group is equal within itself and older than every later group.
@@ -47,6 +47,22 @@ describe("compareVersions", () => {
     ["10.99.99", 1],
   ])("%s against 8.0.1", (version, sign) => {
     expect(Math.sign(compareVersions(version, "8.0.1"))).toBe(sign);
+  });
+});
+
+describe("zoteroVersion", () => {
+  test.each([
+    ["8.0.1", "8.0.1"],
+    ["  8.0.1 ", "8.0.1"],
+    ["Version 7.0.11 (64-bit)", "7.0.11"],
+    ["v7.0.11", "7.0.11"],
+    ["Zotero 8.0-beta.3+abc, 64-bit", "8.0-beta.3+abc"],
+  ])("reads %j as %s", (input, version) => {
+    expect(zoteroVersion(input)).toBe(version);
+  });
+
+  test("reads text with no digit as no version", () => {
+    expect(zoteroVersion("Zotero")).toBe("");
   });
 });
 

@@ -69,7 +69,7 @@ const { generatedAt } = loadData();
       <p>Data file: <a href={`${BASE}v1/plugins.json`}>v1/plugins.json</a></p>
     </footer>
     <script>
-      import { rangeResult, type RangeRecord, type RangeResult } from "../../../src/site/version.ts";
+      import { rangeResult, type RangeRecord, type RangeResult, zoteroVersion } from "../../../src/site/version.ts";
 
       // The visitor's browser keeps the version under this key, so every page shows it.
       const KEY = "zotero-version";
@@ -111,12 +111,29 @@ const { generatedAt } = loadData();
       }
 
       const field = document.querySelector<HTMLInputElement>("#zotero-version")!;
-      field.value = stored();
-      show(field.value.trim());
+      // The field keeps what the visitor typed; the results use the version read from it.
+      function refresh(): void {
+        field.value = stored();
+        show(zoteroVersion(field.value));
+      }
+
+      // Text typed before this script ran is kept and stored.
+      if (field.value) {
+        store(field.value.trim());
+        show(zoteroVersion(field.value));
+      } else {
+        refresh();
+      }
       field.addEventListener("input", () => {
-        const version = field.value.trim();
-        store(version);
-        show(version);
+        store(field.value.trim());
+        show(zoteroVersion(field.value));
+      });
+      // A page restored by Back, or a change made in another tab, reads the stored value again.
+      window.addEventListener("pageshow", (event) => {
+        if (event.persisted) refresh();
+      });
+      window.addEventListener("storage", (event) => {
+        if (event.key === KEY || event.key === null) refresh();
       });
     </script>
   </body>
