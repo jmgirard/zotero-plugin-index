@@ -169,6 +169,16 @@ reused._
   workflow then uploads `dist/` as the Pages artifact, and a deploy job that
   needs the build job publishes it. A failed build deploys nothing, and the
   `github-pages` environment takes deploys from `main` only (M006).
+- `site/` is an Astro project (D-004), and `src/site/` builds it. `pnpm site`
+  reads `<out>/v1/plugins.json`, builds into a temporary directory, because
+  Astro empties its output directory, and copies the pages into `<out>` beside
+  the data. `src/site/version.ts` orders versions by Mozilla's legacy version
+  format (`cairn/references/mozilla-toolkit-version.md`) and places a Zotero
+  version in a record's declared range, with overrides applied. The tests and
+  the pages' one script both import it. The templates take the Pages path
+  from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
+  Astro's `import.meta.env.BASE_URL`. `build.yml` runs `pnpm site` after the
+  build, so a failed site build also deploys nothing (M007).
 
 ## Known issues
 

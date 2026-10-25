@@ -33,6 +33,9 @@ jobs:
       - run: pnpm build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Writes the site pages into dist/ beside the data. A failed site build also
+      # deploys nothing.
+      - run: pnpm site
       # Kept after a failed build too, so the failures can be read. Skipped when no data
       # file exists, for example after a failed `pnpm check`.
       - uses: actions/upload-artifact@v7
