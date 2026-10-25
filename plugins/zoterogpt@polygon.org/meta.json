@@ -1,0 +1,8 @@
+{
+  "id": "zoterogpt@polygon.org",
+  "name": "Awesome GPT",
+  "description": "Awesome GPT for Zotero",
+  "homepage": "https://github.com/MuiseDestiny/zotero-gpt#readme",
+  "repoUrl": "https://github.com/MuiseDestiny/zotero-gpt",
+  "updateUrl": "https://raw.giteeusercontent.com/MuiseDestiny/plugins/raw/master/update.json"
+}

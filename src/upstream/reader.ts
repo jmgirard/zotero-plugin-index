@@ -86,7 +86,7 @@ async function read(repoUrl: string, fetch: Fetch): Promise<UpstreamFacts> {
   if (withXpi.length === 0) fail("no-xpi-release", `no release of ${meta.full_name} has an .xpi asset`);
   const { release, xpi } = withXpi[0];
 
-  const manifest = await readManifest(fetch, xpi!.browser_download_url, release.tag_name);
+  const { manifest, messages } = await readManifest(fetch, xpi!.browser_download_url, release.tag_name);
   const zotero = manifest.applications?.zotero;
   const id = stringOrUndefined(zotero?.id);
   if (!id) fail("no-zotero-id", `the manifest of ${release.tag_name} has no applications.zotero.id`);
@@ -105,8 +105,8 @@ async function read(repoUrl: string, fetch: Fetch): Promise<UpstreamFacts> {
 
   return {
     id,
-    name: stringOrUndefined(manifest.name),
-    description: stringOrUndefined(manifest.description),
+    name: localized(manifest.name, messages),
+    description: localized(manifest.description, messages),
     homepage: stringOrUndefined(manifest.homepage_url),
     version,
     strictMinVersion: stringOrUndefined(zotero?.strict_min_version),
@@ -141,7 +141,21 @@ interface ManifestJson {
   description?: unknown;
   homepage_url?: unknown;
   version?: unknown;
+  default_locale?: unknown;
   applications?: { zotero?: Record<string, unknown> };
+}
+
+// The default locale's _locales/<locale>/messages.json.
+type Messages = Record<string, { message?: unknown } | null>;
+
+// A manifest string such as "__MSG_name__" names a message in the default locale's
+// messages.json; message names ignore case. An unresolved placeholder is not a value.
+function localized(value: unknown, messages: Messages): string | undefined {
+  const text = stringOrUndefined(value);
+  const key = /^__MSG_(\w+)__$/.exec(text ?? "")?.[1];
+  if (!key) return text;
+  const entry = Object.entries(messages).find(([name]) => name.toLowerCase() === key.toLowerCase());
+  return stringOrUndefined(entry?.[1]?.message);
 }
 
 function parseRepoUrl(url: string): { owner: string; repo: string } {
@@ -201,13 +215,19 @@ async function request(fetch: Fetch, url: string, init: RequestInit = {}): Promi
   }
 }
 
-async function readManifest(fetch: Fetch, url: string, tag: string): Promise<ManifestJson> {
+async function readManifest(
+  fetch: Fetch,
+  url: string,
+  tag: string,
+): Promise<{ manifest: ManifestJson; messages: Messages }> {
   const response = await request(fetch, url);
   if (!response.ok) fail("xpi-unreadable", `the XPI of ${tag} at ${url} returned HTTP ${response.status}`);
   let files: Record<string, Uint8Array>;
   try {
     const zip = new Uint8Array(await response.arrayBuffer());
-    files = unzipSync(zip, { filter: (file) => file.name === "manifest.json" });
+    files = unzipSync(zip, {
+      filter: (file) => file.name === "manifest.json" || /^_locales\/[^/]+\/messages\.json$/.test(file.name),
+    });
   } catch (error) {
     fail("xpi-unreadable", `the XPI of ${tag} is not a readable zip: ${(error as Error).message}`);
   }
@@ -222,7 +242,16 @@ async function readManifest(fetch: Fetch, url: string, tag: string): Promise<Man
   if (typeof manifest !== "object" || manifest === null) {
     fail("manifest-invalid", `the manifest.json of ${tag} is not a JSON object`);
   }
-  return manifest as ManifestJson;
+  const locale = stringOrUndefined((manifest as ManifestJson).default_locale);
+  const messagesBytes = locale ? files[`_locales/${locale}/messages.json`] : undefined;
+  let messages: unknown;
+  try {
+    messages = messagesBytes && JSON.parse(strFromU8(messagesBytes));
+  } catch {
+    // Unreadable messages leave the placeholders unresolved.
+  }
+  const isObject = typeof messages === "object" && messages !== null;
+  return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {} };
 }
 
 async function checkUpdateJson(fetch: Fetch, url: string, id: string): Promise<void> {

@@ -1,0 +1,8 @@
+{
+  "id": "zoteropdftranslate@euclpts.com",
+  "name": "Translate for Zotero",
+  "description": "Translate PDF, EPub, webpage, metadata, annotations, notes to the target language. Support 20+ translate services.",
+  "homepage": "https://github.com/windingwind/zotero-pdf-translate#readme",
+  "repoUrl": "https://github.com/windingwind/zotero-pdf-translate",
+  "updateUrl": "https://github.com/windingwind/zotero-pdf-translate/releases/download/release/update.json"
+}

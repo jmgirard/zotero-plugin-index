@@ -1,0 +1,8 @@
+{
+  "id": "zoplicate@chenglongma.com",
+  "name": "Zoplicate",
+  "description": "Detect and manage duplicate items in Zotero.",
+  "homepage": "https://chenglongma.com/zoplicate/",
+  "repoUrl": "https://github.com/ChenglongMa/zoplicate",
+  "updateUrl": "https://github.com/ChenglongMa/zoplicate/releases/download/release/update.json"
+}

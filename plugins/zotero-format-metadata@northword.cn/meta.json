@@ -1,0 +1,8 @@
+{
+  "id": "zotero-format-metadata@northword.cn",
+  "name": "Linter for Zotero",
+  "description": "An addon for Zotero to format item metadata.",
+  "homepage": "https://github.com/northword/zotero-format-metadata#readme",
+  "repoUrl": "https://github.com/northword/zotero-format-metadata",
+  "updateUrl": "https://github.com/northword/zotero-format-metadata/releases/download/releaser/update.json"
+}

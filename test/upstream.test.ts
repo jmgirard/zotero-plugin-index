@@ -77,6 +77,23 @@ describe("readUpstream", () => {
     expect(result.ok && result.facts.version).toBe("v2.0-beta");
   });
 
+  test("resolves __MSG_ placeholders from the default locale, ignoring case", async () => {
+    const { result } = await read((r) => {
+      Object.assign(manifest(r), { default_locale: "en_US", name: "__MSG_name__", description: "__MSG_Desc__" });
+      Object.assign(r[XPI].xpi!, {
+        "_locales/de_DE/messages.json": { name: { message: "Notizen" }, desc: { message: "Deutsch" } },
+        "_locales/en_US/messages.json": { name: { message: "Notes" }, desc: { message: "English" } },
+      });
+    });
+    expect(result.ok && [result.facts.name, result.facts.description]).toEqual(["Notes", "English"]);
+  });
+
+  test("leaves out a placeholder that no messages.json resolves", async () => {
+    const { result } = await read((r) => (manifest(r).name = "__MSG_name__"));
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.facts.name).toBeUndefined();
+  });
+
   test.each(["7.0", "*", undefined])("passes a strict_max_version of %j", async (max) => {
     const { result } = await read((r) => (manifest(r).applications.zotero.strict_max_version = max));
     expect(result.ok).toBe(true);

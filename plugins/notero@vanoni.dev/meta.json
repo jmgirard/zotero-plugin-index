@@ -1,0 +1,8 @@
+{
+  "id": "notero@vanoni.dev",
+  "name": "Notero",
+  "description": "Sync Zotero items and notes into Notion",
+  "homepage": "https://github.com/dvanoni/notero",
+  "repoUrl": "https://github.com/dvanoni/notero",
+  "updateUrl": "https://github.com/dvanoni/notero/releases/download/release/updates.json"
+}
