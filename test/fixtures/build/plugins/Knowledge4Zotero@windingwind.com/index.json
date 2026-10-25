@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "strict_max_version",
+      "value": "9.*",
+      "reason": "A test override: the plugin fails to load on Zotero 10."
+    }
+  ]
+}

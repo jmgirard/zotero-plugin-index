@@ -13,3 +13,9 @@
   the directory that `--out <dir>` names. If the plugin does not meet the
   inclusion bar, the command writes no file and prints the failure name.
 - The index lists its first 14 plugins.
+- `pnpm build` writes the data file `dist/v1/plugins.json`, valid against
+  `schemas/plugins.v1.schema.json` (`schemaVersion` 1). Each entry gets one
+  record, with its upstream facts and its overrides in separate blocks. If
+  the read of a plugin fails, its record carries the failure name, and the
+  build goes on. A workflow runs the build once a day and keeps `dist/` as a
+  workflow artifact.

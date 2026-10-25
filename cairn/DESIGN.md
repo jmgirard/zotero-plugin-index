@@ -89,6 +89,9 @@ exception is a report that is abuse.
   M002.
 - Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
   <dir>]` writes a new entry from the reader's facts. Added M002.
+- Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
+  `dist/v1/plugins.json`, one record per entry, with a failed upstream read
+  kept in that entry's record. Added M003.
 
 ## Conventions
 
@@ -136,16 +139,23 @@ reused._
 - `src/upstream/` reads the GitHub API with plain fetch, unzips the release
   XPI with fflate, and reads the `update.json` that the manifest names. The
   caller passes the fetch function, so the tests answer from recorded
-  responses in `test/fixtures/upstream/`.
+  responses in `test/fixtures/upstream/` and `test/fixtures/build/`.
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request.
+- `src/build/` reads the entries, runs the upstream reader on each plugin in
+  turn, and checks each record and then the whole output against
+  `schemas/plugins.v1.schema.json` before it writes the file.
+  `.github/workflows/build.yml` runs `pnpm check`, then the build, daily and
+  on manual dispatch, and keeps `dist/` as a workflow artifact (M003).
 
 ## Known issues
 
 - Plugin metadata is inconsistent. Some plugins lack an `update.json` or have
   a wrong one, use version strings that are not semver, declare ranges that
   are too loose or too strict, or have no releases. One bad plugin must not
-  stop the run for all others. Expected at design time, 2026-10-24.
+  stop the run for all others. Expected at design time, 2026-10-24. The build
+  keeps a failed read, or facts the schema rejects, in that plugin's record;
+  an invalid entry in the repo still stops the build (M003).
 - GitHub API rate limits apply to a daily job that reads hundreds of
   repositories. Topic search also misses plugins without a topic. Expected at
   design time, 2026-10-24. The reader sends `GITHUB_TOKEN` when it is set,
