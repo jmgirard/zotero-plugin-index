@@ -1,6 +1,6 @@
 # M008: Find new plugin repos by topic search
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
@@ -104,6 +104,8 @@ grows → candidate row "Warn when the daily build degrades".
 - 2026-10-25: planted-defect probes, each restored after: recording transient failures, dropping the topic dedupe, dropping the budget, and a case-sensitive search-side key each turned the matching test red; a case-sensitive index-side key stayed green, since the fixture's index URL is already lowercase and the search side carries the case difference.
 - 2026-10-25: T5 done: `pnpm discover` (`src/discover/cli.ts`) defaults to `--limit 5`, `--budget 100`, `plugins/` as both index and output, and `.cache/discovery-state.json`; it writes the state through a temporary file and treats a state file that is not a JSON object as empty with a warning. The CLI tests cover AC6 and AC7; replacing INIT_CWD with the package root turned the AC7 test red. `pnpm test` passed 319 tests.
 - 2026-10-25: T6 done: DESIGN.md's Function Families and Architecture describe `src/discover/`. Live read-only run (`--limit 3 --budget 20`, gh token, output in the session scratchpad) exited 0: 4 repos read, 3 entries written (aidenlx/zotlit, irism6/alphapulse, justanotherjurastudent/zotero_flexannotate), 1 refused with `no-release` and kept in the state file, no warnings. `pnpm test` and `pnpm check` pass.
+- 2026-10-25: claim audit: not owed — internal tier.
+- 2026-10-25: all tasks done, verify clean; status set to review.
 
 ## Decisions
 
