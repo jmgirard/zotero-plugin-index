@@ -1,5 +1,6 @@
 import process from "node:process";
 import { strFromU8, unzipSync } from "fflate";
+import { type Lookup, refusal, systemLookup } from "./host-guard.ts";
 
 export type Fetch = (url: string, init?: RequestInit) => Promise<Response>;
 
@@ -44,7 +45,8 @@ export type Failure =
   | "update-json-http-error"
   | "update-json-invalid"
   | "update-json-too-large"
-  | "update-json-missing-id";
+  | "update-json-missing-id"
+  | "host-refused";
 
 export type UpstreamResult = { ok: true; facts: UpstreamFacts } | { ok: false; failure: Failure; message: string };
 
@@ -70,17 +72,22 @@ function fail(failure: Failure, message: string): never {
 
 // Reads one GitHub repo. It never throws for a problem with the plugin: each one
 // comes back as a named failure, so a caller that reads many plugins can go on
-// past a bad one.
-export async function readUpstream(repoUrl: string, fetch: Fetch): Promise<UpstreamResult> {
+// past a bad one. `lookup` resolves the hosts of the XPI and update.json URLs for
+// the host check.
+export async function readUpstream(
+  repoUrl: string,
+  fetch: Fetch,
+  { lookup = systemLookup }: { lookup?: Lookup } = {},
+): Promise<UpstreamResult> {
   try {
-    return { ok: true, facts: await read(repoUrl, fetch) };
+    return { ok: true, facts: await read(repoUrl, fetch, downloader(fetch, lookup)) };
   } catch (error) {
     if (error instanceof ReadFailure) return { ok: false, failure: error.failure, message: error.message };
     throw error;
   }
 }
 
-async function read(repoUrl: string, fetch: Fetch): Promise<UpstreamFacts> {
+async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<UpstreamFacts> {
   const { owner, repo } = parseRepoUrl(repoUrl);
   const github = githubClient(fetch);
 
@@ -105,7 +112,7 @@ async function read(repoUrl: string, fetch: Fetch): Promise<UpstreamFacts> {
   if (withXpi.length === 0) fail("no-xpi-release", `no release of ${meta.full_name} has an .xpi asset`);
   const { release, xpi } = withXpi[0];
 
-  const { manifest, messages } = await readManifest(fetch, xpi!.browser_download_url, release.tag_name);
+  const { manifest, messages } = await readManifest(download, xpi!.browser_download_url, release.tag_name);
   const zotero = manifest.applications?.zotero;
   const id = stringOrUndefined(zotero?.id);
   if (!id) fail("no-zotero-id", `the manifest of ${release.tag_name} has no applications.zotero.id`);
@@ -117,7 +124,7 @@ async function read(repoUrl: string, fetch: Fetch): Promise<UpstreamFacts> {
   if (!updateUrl) fail("no-update-url", `the manifest of ${release.tag_name} has no applications.zotero.update_url`);
   const updateHost = httpHost(updateUrl);
   if (!updateHost) fail("no-update-url", `update_url ${updateUrl} is not an http or https URL`);
-  await checkUpdateJson(fetch, updateUrl, id);
+  await checkUpdateJson(download, updateUrl, id);
 
   return {
     id,
@@ -284,12 +291,25 @@ async function readCapped(response: Response, url: string, max: number, tooLarge
   return bytes;
 }
 
+// Requests a plugin file that is not on the GitHub API: the XPI or the update.json.
+type Download = (url: string) => Promise<Response>;
+
+// Checks the host of each URL before it requests it.
+function downloader(fetch: Fetch, lookup: Lookup): Download {
+  return async (url) => {
+    if (!URL.canParse(url)) fail("request-failed", `${url} is not a URL`);
+    const refused = await refusal(new URL(url), lookup);
+    if (refused) fail(refused.failure, refused.message);
+    return request(fetch, url);
+  };
+}
+
 async function readManifest(
-  fetch: Fetch,
+  download: Download,
   url: string,
   tag: string,
 ): Promise<{ manifest: ManifestJson; messages: Messages }> {
-  const response = await request(fetch, url);
+  const response = await download(url);
   if (!response.ok) fail("xpi-unreadable", `the XPI of ${tag} at ${url} returned HTTP ${response.status}`);
   const zip = await readCapped(response, url, XPI_MAX_BYTES, () =>
     fail("xpi-too-large", `the XPI of ${tag} at ${url} is larger than ${XPI_MAX_BYTES} bytes`),
@@ -338,8 +358,8 @@ function unzipOne(zip: Uint8Array, name: string, tag: string): Uint8Array | unde
   }
 }
 
-async function checkUpdateJson(fetch: Fetch, url: string, id: string): Promise<void> {
-  const response = await request(fetch, url);
+async function checkUpdateJson(download: Download, url: string, id: string): Promise<void> {
+  const response = await download(url);
   if (!response.ok) fail("update-json-http-error", `the update.json at ${url} returned HTTP ${response.status}`);
   const bytes = await readCapped(response, url, UPDATE_JSON_MAX_BYTES, () =>
     fail("update-json-too-large", `the update.json at ${url} is larger than ${UPDATE_JSON_MAX_BYTES} bytes`),

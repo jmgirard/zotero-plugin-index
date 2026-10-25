@@ -89,7 +89,7 @@ text for these limits.
       locale's `messages.json`. The fflate filter refuses a file whose `originalSize` is over 1 MiB
       (`manifest-too-large`). Add a code comment that fflate stops inflating at the declared size (observed
       2026-10-25), and one test that pins that output length. Tests per AC2.
-- [ ] T3: Host check. Add `src/upstream/host-guard.ts`: host from the URL with brackets and one trailing dot removed,
+- [x] T3: Host check. Add `src/upstream/host-guard.ts`: host from the URL with brackets and one trailing dot removed,
       the localhost names, the range check (unwrap ::ffff:0:0/96 to IPv4, and do not rely on `net.BlockList`'s IPv4
       default family), and a lookup of every address. `readUpstream` gains an optional third argument with a `lookup`,
       whose default is `node:dns/promises` `lookup` with `all: true`. `test/support/preload-fixture.ts` also replaces
@@ -121,6 +121,7 @@ text for these limits.
 - 2026-10-25: started; branch m004-download-limits cut from main at 41e4e81.
 - 2026-10-25: T1 done: `readCapped` reads the XPI and update.json bodies with caps exported as `XPI_MAX_BYTES` and `UPDATE_JSON_MAX_BYTES`; fixture `chunks` bodies count bytes enqueued; a planted missing cap turned both cap tests red. A cut-off XPI body is now `request-failed`, not `xpi-unreadable`. pnpm test 90 passed, pnpm check clean.
 - 2026-10-25: T2 done: `unzipOne` unzips `manifest.json`, then the default locale's `messages.json`, refusing a declared size over `UNZIPPED_MAX_BYTES`; a test pins fflate's stop at the declared size; a planted missing cap turned both size tests red. pnpm test 94 passed, pnpm check clean.
+- 2026-10-25: T3 done: `src/upstream/host-guard.ts` `refusal()` with its own IPv4/IPv6 parse to bits (no `net.BlockList`); `readUpstream(url, fetch, { lookup })` routes the XPI and update.json through a `downloader` that checks first; an unparseable XPI URL is `request-failed`. The preload replaces `dns.promises.lookup` (confirmed: an `.invalid` name resolved to the stub). Plants (no bracket strip, no mapped unwrap, no trailing-dot strip) turned 16, 2, and 2 probes red. pnpm test 183 passed, pnpm check clean.
 
 ## Decisions
 

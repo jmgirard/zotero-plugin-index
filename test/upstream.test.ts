@@ -1,5 +1,6 @@
 import { unzipSync, zipSync } from "fflate";
 import { afterEach, describe, expect, test, vi } from "vitest";
+import type { Lookup } from "../src/upstream/host-guard.ts";
 import { readUpstream } from "../src/upstream/reader.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 
@@ -21,12 +22,19 @@ function manifest(responses: Responses): Json {
   return responses[XPI].xpi!["manifest.json"] as Json;
 }
 
+const publicLookup: Lookup = async () => ["140.82.112.3"];
+
 // Reads the recorded plugin after `edit` changes its responses.
-async function read(edit?: (responses: Responses) => void, repoUrl = REPO_URL) {
+async function read(edit?: (responses: Responses) => void, repoUrl = REPO_URL, lookup = publicLookup) {
   const { responses } = loadFixture(FIXTURE);
   edit?.(responses);
   const { fetch, requests } = fixtureFetch(responses);
-  return { result: await readUpstream(repoUrl, fetch), requests };
+  return { result: await readUpstream(repoUrl, fetch, { lookup }), requests };
+}
+
+// Reads the recorded plugin with its update_url set to `url`.
+function readUpdateUrl(url: string, lookup = publicLookup) {
+  return read((r) => (manifest(r).applications.zotero.update_url = url), REPO_URL, lookup);
 }
 
 describe("readUpstream", () => {
@@ -276,6 +284,75 @@ describe("readUpstream", () => {
     const header = zip.findLastIndex((_, i) => i + 4 <= zip.length && view.getUint32(i, true) === 0x02014b50);
     view.setUint32(header + 24, 10, true);
     expect(unzipSync(zip)["manifest.json"].length).toBe(10);
+  });
+
+  // The first and last address of each blocked range, then mapped and loopback names.
+  test.each([
+    "0.0.0.0", "0.255.255.255", "10.0.0.0", "10.255.255.255", "100.64.0.0", "100.127.255.255",
+    "127.0.0.0", "127.255.255.255", "169.254.0.0", "169.254.255.255", "172.16.0.0", "172.31.255.255",
+    "192.0.0.0", "192.0.0.255", "192.0.2.0", "192.0.2.255", "192.168.0.0", "192.168.255.255",
+    "198.18.0.0", "198.19.255.255", "198.51.100.0", "198.51.100.255", "203.0.113.0", "203.0.113.255",
+    "224.0.0.0", "239.255.255.255", "240.0.0.0", "255.255.255.255",
+    "[::]", "[::ffff:ffff]", "[fc00::]", "[fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]",
+    "[fe80::]", "[febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff]", "[ff00::]", "[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]",
+    "[64:ff9b::]", "[64:ff9b::ffff:ffff]", "[2002::]", "[2002:ffff:ffff:ffff:ffff:ffff:ffff:ffff]",
+    "[2001:db8::]", "[2001:db8:ffff:ffff:ffff:ffff:ffff:ffff]",
+    "[::ffff:127.0.0.1]", "[::ffff:10.0.0.1]", "localhost", "foo.localhost.", "LOCALHOST.",
+  ])("refuses an update_url on %s with no request to it", async (host) => {
+    const { result, requests } = await readUpdateUrl(`http://${host}/update.json`);
+    expect(result).toEqual({ ok: false, failure: "host-refused", message: expect.stringContaining("does not request") });
+    expect(requests.at(-1)!.url).toBe(XPI);
+  });
+
+  // The address just outside each range edge that lies outside every range, then a public mapped address.
+  test.each([
+    "1.0.0.0", "9.255.255.255", "11.0.0.0", "100.63.255.255", "100.128.0.0", "126.255.255.255", "128.0.0.0",
+    "169.253.255.255", "169.255.0.0", "172.15.255.255", "172.32.0.0", "191.255.255.255", "192.0.1.0",
+    "192.0.1.255", "192.0.3.0", "192.167.255.255", "192.169.0.0", "198.17.255.255", "198.20.0.0",
+    "198.51.99.255", "198.51.101.0", "203.0.112.255", "203.0.114.0", "223.255.255.255",
+    "[::1:0:0]", "[fbff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]", "[fe00::]", "[fe7f:ffff:ffff:ffff:ffff:ffff:ffff:ffff]",
+    "[fec0::]", "[feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]", "[64:ff9a:ffff:ffff:ffff:ffff:ffff:ffff]",
+    "[64:ff9b::1:0:0]", "[2001:ffff:ffff:ffff:ffff:ffff:ffff:ffff]", "[2003::]",
+    "[2001:db7:ffff:ffff:ffff:ffff:ffff:ffff]", "[2001:db9::]", "[::ffff:8.8.8.8]",
+  ])("requests an update_url on %s", async (host) => {
+    const url = new URL(`http://${host}/update.json`).href;
+    const { result, requests } = await readUpdateUrl(url);
+    expect(result).toEqual({ ok: false, failure: "update-json-http-error", message: expect.stringContaining(url) });
+    expect(requests.at(-1)!.url).toBe(url);
+  });
+
+  const NAMES: Record<string, string[]> = {
+    "github.com": ["140.82.112.3"],
+    "mixed.example": ["8.8.8.8", "fd00::1"],
+    "public.example": ["8.8.8.8", "2606:4700::1111"],
+    "empty.example": [],
+  };
+  const namedLookup: Lookup = async (host) => NAMES[host] ?? Promise.reject(new Error(`ENOTFOUND ${host}`));
+
+  test("refuses a name that resolves to one public and one blocked address", async () => {
+    const { result, requests } = await readUpdateUrl("http://mixed.example/update.json", namedLookup);
+    expect(result).toEqual({ ok: false, failure: "host-refused", message: expect.stringContaining("fd00::1") });
+    expect(requests.at(-1)!.url).toBe(XPI);
+  });
+
+  test("requests a name that resolves only to public addresses", async () => {
+    const { requests } = await readUpdateUrl("http://public.example/update.json", namedLookup);
+    expect(requests.at(-1)!.url).toBe("http://public.example/update.json");
+  });
+
+  test.each([
+    ["fails", "missing.example", "ENOTFOUND missing.example"],
+    ["returns no address", "empty.example", "no address"],
+  ])("fails with request-failed and no request when the lookup %s", async (_name, host, detail) => {
+    const { result, requests } = await readUpdateUrl(`http://${host}/update.json`, namedLookup);
+    expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining(detail) });
+    expect(requests.at(-1)!.url).toBe(XPI);
+  });
+
+  test("checks the XPI host as well", async () => {
+    const { result, requests } = await read(undefined, REPO_URL, async () => ["127.0.0.1"]);
+    expect(result).toEqual({ ok: false, failure: "host-refused", message: expect.stringContaining(XPI) });
+    expect(requests.map((r) => r.url)).not.toContain(XPI);
   });
 
   test.each(["https://gitlab.com/windingwind/zotero-better-notes", "https://github.com/windingwind", "not a url"])(
