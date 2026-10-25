@@ -70,7 +70,7 @@ grows → candidate row "Warn when the daily build degrades".
 - [x] T1: Record search fixtures under `test/fixtures/discover/`: two pages for `topic:zotero-plugin` (Link
       header), one for `topic:zotero-addon`, one repo in both, and repos that reach each outcome of AC5,
       reusing the recorded upstream responses where they fit.
-- [ ] T2: Write failing tests in `test/discover.test.ts` for AC1–AC5, passing `{ lookup }` stubs and a fixture
+- [x] T2: Write failing tests in `test/discover.test.ts` for AC1–AC5, passing `{ lookup }` stubs and a fixture
       fetch, and a fixed `now` for the 30-day rule.
 - [ ] T3: Implement the search, the union, and the index and skip-set filters in `src/discover/discover.ts`.
       Share the request and token handling of `src/upstream/reader.ts` (token to the API host only), but read
@@ -99,6 +99,7 @@ grows → candidate row "Warn when the daily build degrades".
 
 - 2026-10-25: implement started on m008-topic-discovery, cut from main at 7234459.
 - 2026-10-25: T1 done: `test/fixtures/discover/search.json` holds the search pages (two for `topic:zotero-plugin`, one for `topic:zotero-addon`, example/both under both), and `test/support/plugin-repo.ts` builds each repo's reader responses, since writing the XPI and update.json responses by hand for every test repo would repeat them.
+- 2026-10-25: T2 done: `test/discover.test.ts` covers AC1–AC5 and fails until `src/discover/discover.ts` exists. API chosen: `discover({ root, outDir, fetch, lookup, state, skip, limit, budget, now })` returns the new state and a report of `read` items (written or refused), `skipped` items (`in-index`, `in-skip-set`, `refused-before`), and warnings; repos are keyed by lowercase `owner/repo`.
 
 ## Decisions
 
