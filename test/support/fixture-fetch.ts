@@ -3,7 +3,8 @@ import { strToU8, zipSync } from "fflate";
 
 // One recorded response. `xpi` maps file names in the zip to their contents; an object
 // is written as JSON. `error` makes the request reject, as a network failure does, and
-// `bodyError` makes reading the body reject, as a connection reset does.
+// `bodyError` makes reading the body reject, as a connection reset does. `unexpected`
+// answers with an object that throws on any read, which the reader does not expect.
 export interface Recorded {
   status?: number;
   headers?: Record<string, string>;
@@ -12,6 +13,7 @@ export interface Recorded {
   xpi?: Record<string, unknown>;
   error?: string;
   bodyError?: string;
+  unexpected?: string;
 }
 
 export type Responses = Record<string, Recorded>;
@@ -40,6 +42,16 @@ export function fixtureFetch(responses: Responses) {
     const recorded = responses[url];
     if (!recorded) return new Response(`no recorded response for ${url}`, { status: 404 });
     if (recorded.error) throw new TypeError(recorded.error);
+    const { unexpected } = recorded;
+    if (unexpected) {
+      // `then` stays undefined, so the promise resolves to the object rather than rejecting.
+      return new Proxy({} as Response, {
+        get: (_target, key) => {
+          if (key === "then") return undefined;
+          throw new Error(unexpected);
+        },
+      });
+    }
     return new Response(body(recorded), { status: recorded.status ?? 200, headers: recorded.headers });
   }
   return { fetch, requests };

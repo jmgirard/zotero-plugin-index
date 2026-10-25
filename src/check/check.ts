@@ -46,12 +46,13 @@ export async function checkTree(root: string, validators: Validators): Promise<C
   return { checked: entries.length, findings };
 }
 
-interface ListedEntry {
+export interface ListedEntry {
   name: string;
   readError?: string;
 }
 
-async function listEntries(root: string): Promise<ListedEntry[]> {
+// The entry directories under root, sorted by name. A missing root has none.
+export async function listEntries(root: string): Promise<ListedEntry[]> {
   let names: string[];
   try {
     names = await readdir(root);

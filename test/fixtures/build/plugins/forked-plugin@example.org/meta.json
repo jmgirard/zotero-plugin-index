@@ -1,0 +1,6 @@
+{
+  "id": "forked-plugin@example.org",
+  "name": "Forked Plugin",
+  "repoUrl": "https://github.com/example/forked-plugin",
+  "updateUrl": "https://raw.githubusercontent.com/example/forked-plugin/main/update.json"
+}

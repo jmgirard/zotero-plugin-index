@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/jmgirard/zotero-plugin-index/schemas/plugins.v1.schema.json",
+  "title": "zotero-plugin-index published data",
+  "description": "The file dist/v1/plugins.json that pnpm build writes: one record for each entry under plugins/.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "generatedAt", "plugins"],
+  "properties": {
+    "schemaVersion": {
+      "description": "Version of this schema.",
+      "const": 1
+    },
+    "generatedAt": {
+      "description": "When the build ran, as a UTC time such as 2026-10-25T06:17:00.000Z.",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "plugins": {
+      "description": "One record for each entry, sorted by id.",
+      "type": "array",
+      "items": { "$ref": "#/definitions/record" }
+    }
+  },
+  "definitions": {
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "repoUrl", "overrides"],
+      "oneOf": [{ "required": ["upstream"] }, { "required": ["failure"] }],
+      "properties": {
+        "id": {
+          "description": "The entry directory name under plugins/, which equals the plugin id in its meta.json.",
+          "type": "string",
+          "minLength": 1
+        },
+        "repoUrl": {
+          "description": "The repoUrl of the entry's meta.json.",
+          "type": "string",
+          "minLength": 1
+        },
+        "upstream": {
+          "description": "The facts read from the plugin's GitHub repo, release XPI, and update.json. Present when the read succeeds.",
+          "$ref": "#/definitions/upstream"
+        },
+        "failure": {
+          "description": "Why the upstream read failed. Present when the read fails, in place of upstream.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "message"],
+          "properties": {
+            "name": {
+              "description": "A failure name of the reader, such as fork or no-xpi-release, or unexpected-error for an error the reader does not name.",
+              "type": "string",
+              "minLength": 1
+            },
+            "message": { "type": "string" }
+          }
+        },
+        "overrides": {
+          "description": "The overrides of the entry's index.json, unchanged. The upstream block does not apply them.",
+          "type": "array",
+          "items": { "$ref": "#/definitions/override" }
+        }
+      }
+    },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "updateUrl",
+        "updateHost",
+        "repoUrl",
+        "repoCreatedAt",
+        "openIssues",
+        "releaseCount",
+        "latestReleaseDate"
+      ],
+      "properties": {
+        "id": { "description": "applications.zotero.id in the manifest.", "type": "string" },
+        "name": { "description": "The manifest name, with a __MSG_ name resolved.", "type": "string" },
+        "description": { "description": "The manifest description, with a __MSG_ name resolved.", "type": "string" },
+        "homepage": { "description": "homepage_url in the manifest.", "type": "string" },
+        "version": { "description": "The manifest version.", "type": "string" },
+        "strictMinVersion": { "description": "applications.zotero.strict_min_version in the manifest.", "type": "string" },
+        "strictMaxVersion": { "description": "applications.zotero.strict_max_version in the manifest.", "type": "string" },
+        "updateUrl": { "description": "applications.zotero.update_url in the manifest.", "type": "string" },
+        "updateHost": { "description": "The host of updateUrl.", "type": "string" },
+        "repoUrl": { "description": "The repo URL that GitHub returns.", "type": "string" },
+        "repoCreatedAt": { "description": "When the repo was created.", "type": "string" },
+        "openIssues": { "description": "Open issues and pull requests in the repo.", "type": "integer", "minimum": 0 },
+        "releaseCount": { "description": "Releases that carry an .xpi asset, drafts excluded.", "type": "integer", "minimum": 1 },
+        "latestReleaseDate": { "description": "The publish date of the release whose manifest was read.", "type": "string" }
+      }
+    },
+    "override": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "value", "reason"],
+      "properties": {
+        "field": {
+          "description": "The manifest key this override corrects. strict_min_version and strict_max_version correct the upstream strictMinVersion and strictMaxVersion.",
+          "enum": ["name", "description", "homepage", "strict_min_version", "strict_max_version"]
+        },
+        "version": {
+          "description": "The plugin version the override applies to. Absent means every version.",
+          "type": "string",
+          "minLength": 1
+        },
+        "value": { "description": "The corrected value.", "type": "string", "minLength": 1 },
+        "reason": { "description": "Why the upstream value is wrong.", "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

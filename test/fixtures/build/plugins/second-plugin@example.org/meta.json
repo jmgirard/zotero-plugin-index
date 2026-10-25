@@ -1,0 +1,6 @@
+{
+  "id": "second-plugin@example.org",
+  "name": "Second Plugin",
+  "repoUrl": "https://github.com/example/second-plugin",
+  "updateUrl": "https://raw.githubusercontent.com/example/second-plugin/main/update.json"
+}
