@@ -1,4 +1,5 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
@@ -9,6 +10,7 @@ import { pluginRepo, searchPage } from "./support/plugin-repo.ts";
 const ROOT = resolve(import.meta.dirname, "..");
 // Holds second-plugin@example.org, whose repoUrl is https://github.com/example/second-plugin.
 const TREE = resolve(ROOT, "test/fixtures/build/plugins");
+const PRELOAD = resolve(ROOT, "test/support/preload-fixture.ts");
 const SEARCH = "https://api.github.com/search/repositories?q=topic%3A";
 const NOW = new Date("2026-10-25T12:00:00Z");
 const DAY = 24 * 60 * 60 * 1000;
@@ -146,5 +148,50 @@ describe("the limit and the budget", () => {
   test("reads at most budget repos, newest pushed first", async () => {
     const { reads } = await run(responses(), { budget: 3 });
     expect(reads).toEqual(["example/p7", "example/p6", "example/p5"]);
+  });
+});
+
+// pnpm sets npm_execpath to its own binary when it runs `pnpm test`. The preload makes
+// the command answer its requests and host lookups from `responses` instead of the network.
+// The command reads the index from the repo's plugins/, which none of the fixture repos is in.
+function pnpmDiscover(args: string[], responses: Responses, cwd: string) {
+  const pnpmPath = process.env.npm_execpath;
+  if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");
+  const fixture = join(tempDir(), "responses.json");
+  writeFileSync(fixture, JSON.stringify({ source: "discover test", repoUrl: "", responses }));
+  const { INIT_CWD: _outer, GITHUB_TOKEN: _token, ...env } = process.env;
+  Object.assign(env, { ZPI_FIXTURE: fixture, NODE_OPTIONS: `--import=${PRELOAD}` });
+  return spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "discover", ...args], { cwd, encoding: "utf8", env, timeout: 50_000 });
+}
+
+describe("pnpm discover", () => {
+  test("writes entries and the state under the caller's directory and prints the report", () => {
+    const cwd = tempDir();
+    const result = pnpmDiscover(["--out", "out", "--state", "state.json", "--limit", "2"], recorded(), cwd);
+    expect(result.stderr).toBe("");
+    expect(result.status).toBe(0);
+    // The two newest repos that pass: example/alpha, then Example/Second-Plugin.
+    expect(readdirSync(join(cwd, "out")).sort()).toEqual(["alpha@example.org", "second-plugin@example.org"]);
+    expect(existsSync(join(cwd, "out/alpha@example.org/meta.json"))).toBe(true);
+    expect(existsSync(join(cwd, "out/alpha@example.org/index.json"))).toBe(true);
+    const report = JSON.parse(result.stdout);
+    expect(report.read.map((item: ReadItem) => [item.repo, item.outcome])).toEqual([
+      ["example/alpha", "written"],
+      ["example/second-plugin", "written"],
+    ]);
+    expect(JSON.parse(readFileSync(join(cwd, "state.json"), "utf8"))).toEqual({});
+  });
+
+  test("writes nothing and keeps the state when a search request fails", () => {
+    const cwd = tempDir();
+    const before = `${JSON.stringify({ "example/old": { pushedAt: "2026-01-01T00:00:00Z", failure: "no-release", checkedAt: "2026-10-01T00:00:00Z" } })}\n`;
+    writeFileSync(join(cwd, "state.json"), before);
+    const responses = recorded();
+    responses[`${SEARCH}zotero-addon&per_page=100`] = { status: 503, text: "unavailable" };
+    const result = pnpmDiscover(["--out", "out", "--state", "state.json"], responses, cwd);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(`GET ${SEARCH}zotero-addon&per_page=100 returned HTTP 503`);
+    expect(existsSync(join(cwd, "out"))).toBe(false);
+    expect(readFileSync(join(cwd, "state.json"), "utf8")).toBe(before);
   });
 });
