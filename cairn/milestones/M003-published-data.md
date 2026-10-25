@@ -117,3 +117,55 @@ Pass 2, 2026-10-25, head c302885 (origin/main 32bef16 is an ancestor; no sync ne
 - AC5: live `pnpm build --out <scratch>` with the gh token over plugins/ exited 0 ("wrote 14 records … 0 with a failed upstream read"); Ajv: valid; 14 records carry upstream facts and no failure (at least 5 required).
 - AC6: CHANGELOG.md:16 Unreleased entry for `pnpm build` and `dist/v1/plugins.json`; README.md:97 names `dist/v1/plugins.json` and `schemaVersion` `1`; `pnpm test` 84 passed (5 files); `pnpm check` 14 entries, 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed; no principle changed (cairn_impact skipped); the generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: facts that fail the schema after a successful read stop the whole build — fix now (per-record check, failure `facts-invalid`; test planted red), fixed e79cdb2
+- diff-bug #2: the fixture test's dist/ backup lives in memory and is taken at load time — fix now (on-disk copy in beforeAll, a created dist/ or dist/v1 removed), fixed e79cdb2
+- diff-bug #3: the daily job exits 0 when every read fails or rate limits bite — follow-up, row "Warn when the daily build degrades"
+- diff-bug #4: hung hosts can push the job past 30 minutes and lose the artifact — follow-up, row "Warn when the daily build degrades"
+- diff-bug #5: the build skips `pnpm check`'s blank-reason rule — fix now (build.yml runs `pnpm check` first), fixed e79cdb2
+- diff-bug #6: the whole-file check names an array index, not a plugin — reject (edge: after diff-bug #1 only a bug in the build's own code reaches it; effect is an error message)
+- diff-bug #7: the README's exit-1 sentence names only an unreadable entry — fix now (README lists each case), fixed e79cdb2
+- diff-bug #8: `additionalProperties: false` makes any added fact a breaking change — fix now (choice recorded in Decisions: a v1 file never changes shape), fixed e79cdb2
+- diff-bug #9: a non-ENOENT readdir error escapes as a stack trace — fix now (caught as a problem; test added), fixed e79cdb2
+- diff-bug #10: the write is not atomic — fix now (temporary file and rename; test added), fixed e79cdb2
+- diff-bug #11: `generatedAt` is the start time — fix now (schema says "when the build started"), fixed e79cdb2
+- diff-bug #12: a stale file survives a failed build — fix now (README says the earlier file stays), fixed e79cdb2
+- diff-bug #13: two tests pin Ajv's English wording — fix now (assert the path prefix only), fixed e79cdb2
+- diff-bug #14: the id-set check repeats across two tests on one run — reject (planned change: AC2 asks its own test to assert a record for every entry, added at review return 1)
+- diff-bug #15: a weaker `fork` check after an exact one — reject (false: it runs on a different build, where it is the only check of that record)
+- diff-bug #16: "read after the error" rests on an unasserted sort order — fix now (asserts the first record is Knowledge4Zotero), fixed e79cdb2
+- diff-bug #17: `stderr` must be exactly empty — reject (edge: only an environment that prints warnings under `pnpm --silent` reaches it; effect is a test error; add-plugin tests assert the same)
+- diff-bug #18: beforeAll runs a blocking build under the 10 s hook timeout — fix now (60 s hook timeout), fixed e79cdb2
+- diff-bug #19: test paths resolve against cwd — fix now (resolved against ROOT), fixed e79cdb2
+- diff-bug #20: readJson and describe copy check.ts helpers — reject (style: the shapes differ and nothing is wrong)
+- diff-bug #21: the schema `$id` is not a fetchable URL — follow-up, row "Publish the site and data on Pages" (sets `$id` to published URLs)
+- blame-history #1: one bad facts read stops the build, against the Known issues line — fix now (as diff-bug #1), fixed e79cdb2
+- blame-history #2: `unexpected-error` changes M002's let-bugs-surface contract — reject (planned change: AC2 calls for it)
+- blame-history #3: the build publishes entries `pnpm check` rejects — fix now (build.yml runs `pnpm check` first), fixed e79cdb2
+- blame-history #4: DESIGN.md's "public API at a stable URL" has no URL yet — follow-up, row "Publish the site and data on Pages"
+- blame-history #5: an empty tree exits 1 where `pnpm check` exits 0 — reject (planned change: recorded implementation choice; an empty build has no data to publish)
+- blame-history #6: the 50 s spawn timeout is below a cold pnpm start — reject (edge: only a cold `npx` start over 50 s reaches it, which CI's installed pnpm does not; effect is a test error)
+- prior-review #1: the daily job now runs the reader that M002 said to cap before a scheduled bot — follow-up, row "Limit what the reader downloads" raised to high, noting the daily build
+- prior-review #2: facts that fail the schema stop the build — fix now (as diff-bug #1), fixed e79cdb2
+- prior-review #3: the build skips stray files under plugins/ like `pnpm check` — follow-up, row "Catch stray and unportable entry files" (unchanged)
+- prior-review #4: a UTF-8 BOM reads as "not valid JSON" in the build too — follow-up, row "Catch stray and unportable entry files" (unchanged)
+- prior-review #5: zero-width-only reasons pass into the data — follow-up, row "Catch stray and unportable entry files" (unchanged; the daily job now runs `pnpm check`)
+- prior-review #6: the new `$id` is not the Pages URL — follow-up, row "Publish the site and data on Pages"
+- prior-review #7: the daily data carries zotmoov's prerelease facts — follow-up, row "Read stable releases before prereleases"
+- prior-review #8: writeData leaves a half-written file on failure — fix now (as diff-bug #10), fixed e79cdb2
+- prior-review #9: test paths resolve against cwd — fix now (as diff-bug #19), fixed e79cdb2
+- prior-review #10: the build takes ids from directory names with no portability check — follow-up, row "Catch stray and unportable entry files" (unchanged)
+- ripple #1: DESIGN.md Known issues says one bad plugin must not stop the run — fix now (diff-bug #1 fix and a note on what still stops the build), fixed e79cdb2
+- ripple #2: DESIGN.md says the data is at a stable URL — follow-up, row "Publish the site and data on Pages"
+- ripple #3: README says the `Failure` type lists each failure name — fix now (Building the data names `unexpected-error` and `facts-invalid`), fixed e79cdb2
+- ripple #4: README exit-1 cases incomplete — fix now (as diff-bug #7), fixed e79cdb2
+- ripple #5: LESSONS.md names only the check and add-plugin tests as spawning pnpm — fix now (names the build tests), fixed e79cdb2
+- ripple #6: the vitest.config.ts timeout comment names only check and add-plugin tests — fix now, fixed e79cdb2
+- ripple #7: DESIGN.md names only test/fixtures/upstream/ — fix now (adds test/fixtures/build/), fixed e79cdb2
+- ripple #8: DESIGN.md's rate-limit line says hundreds of repos — reject (false: it states the expected scale, not today's count)
+- ripple #9: README's id rule is not enforced by the daily job — fix now (build.yml runs `pnpm check` first), fixed e79cdb2
+- ripple #10: DESIGN.md says the data schema uses TypeScript — reject (false: the schema is JSON Schema checked with Ajv, as D-001 chose; the sentence is about the code)
+- ripple #11: reader.ts's Failure comment omits `unexpected-error` — reject (false: the comment covers the reader's own failures; the build's names live in build.ts and the schema)
+- ripple #12: the milestone title says "published" — reject (planned change: the plan's title)
+- ripple #13: PROFILE.md's verify slot omits `pnpm build` — reject (false: the build tests run inside `pnpm test`)
+- After the fixes: `pnpm test` 87 passed (5 files), `pnpm check` 14 entries clean, the live dist/v1/plugins.json SHA-1 unchanged by the test run, `cairn_validate.py` all checks passed.
