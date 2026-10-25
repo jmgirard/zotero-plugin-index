@@ -120,3 +120,32 @@ Pass 1, 2026-10-25, on branch head 9d1ea2f (main 9f939be, not moved; no PR yet, 
 - AC4: `build.yml` parsed with Ruby YAML: jobs build, deploy; the build job runs `pnpm build` and its last step is `actions/upload-pages-artifact@v5` with path `dist/` and no `if`; deploy `needs: build`, environment `github-pages`, one step `actions/deploy-pages@v5`, no `if` on job or step; permissions workflow {contents: read}, build none of its own, deploy {pages: write, id-token: write}. Branch run 40237546151: build passed, deploy refused by the branch rule — pass.
 - AC5: grep: README.md:11, :13, :15 name the data URL and both schema URLs; README.md:17-19 "If more than half of the records carry a failure, the build deploys nothing"; CHANGELOG.md `## Unreleased` one new entry (lines 38-44) naming the URLs and "The daily build then deploys nothing" — pass.
 - AC6: `pnpm test` (tsc, then Vitest) 5 files, 218 passed; `pnpm check` "checked 14 entries in plugins, 0 problems" — pass.
+- gate: `cairn_validate.py` all checks passed (exit 0); no principle changed, `cairn_impact` skipped; generic profile, no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the rule counts steady per-plugin states (fork, no-release, facts-invalid) toward the threshold, and the cli.ts comment says such failures "point at the build" — rule: reject (planned change, AC3 counts every `failure`); comment: fix now ("usually point"); counting only build-level failure names → follow-up, absorbed into candidate "Warn when the daily build degrades".
+- diff-bug #2: workflow-level concurrency group `pages` lets a branch dispatch replace a pending main run — fix now (group `pages-${{ github.ref }}`, comment states the replace rule).
+- diff-bug #3: the default-tree test backs up only `dist/v1/plugins.json` and leaves `dist/schemas/` behind — fix now (backs up and restores all three files, removes the dirs it made).
+- diff-bug #4: the `!cancelled()` upload runs after a failed `pnpm check` and adds a no-files error — fix now (also requires `hashFiles('dist/v1/plugins.json')`).
+- diff-bug #5: schema copies are not atomic, so a failed copy leaves a truncated schema — fix now (temp file and rename per schema, temp removed on failure).
+- diff-bug #6: no test covers the schema-copy failure branch, and the "cannot make" test now fails at `schemas/` — fix now (that test names the schema path; new tests for a failed `v1/` after the copies and for a schema that cannot be replaced).
+- diff-bug #7: the planted-error test carries the exit-1 rule under a name that omits it — fix now (renamed).
+- diff-bug #8: `expect(result.stderr).toBe("")` in the 2-of-4 test breaks on any unrelated warning — fix now (`not.toContain("more than half")`).
+- diff-bug #9: the deploy job has no `timeout-minutes` — fix now (10).
+- diff-bug #10: await question, nothing found — noted.
+- diff-bug #11: nothing keeps `v1/` published once a v2 ships, as DESIGN.md promises — follow-up, new candidate "Keep the v1 data when v2 ships".
+- blame-history #1: README states "only main can deploy" as a repo guarantee, but it rests on the environment setting — fix now (README names the `github-pages` environment setting).
+- blame-history #2: same as diff-bug #4 — fixed there.
+- blame-history #3: same as diff-bug #5 — fixed there.
+- blame-history #4: README "writes no file" lead-in is false for the schema-copy case — fix now ("writes no data file").
+- blame-history #5: a lasting upstream change freezes deploys with only a red run as signal — reject (planned change: the red run and GitHub's failure email are the signal the plan chose); counting rule as diff-bug #1.
+- blame-history #6: the daily run goes red on mass failure — noted (the planned signal).
+- ripple #1: candidate "Warn when the daily build degrades" says the build exits 0 when every read fails — follow-up, narrowed at post-merge hygiene.
+- ripple #2: same as blame-history #4 — fixed there.
+- ripple #3: DESIGN.md Function Families "Data build" omits the schema copies and the exit rule — fix now.
+- ripple #4: candidate "Publish the site and data on Pages" still lists the data and `$id` work — follow-up, narrowed to the site at post-merge hygiene (M007 holds it).
+- ripple #5: same as blame-history #1 — fixed there.
+- ripple #6: DESIGN.md "deploys from the default branch" agrees — noted.
+- prior-review #1: same as diff-bug #3 (regresses M003's dist backup fix) — fixed there.
+- prior-review #2: same as diff-bug #5 (regresses M003's atomic write) — fixed there.
+- prior-review #3: a partial degradation at half or fewer still deploys with no warning — follow-up, already in candidate "Warn when the daily build degrades".
+- prior-review #4: no per-plugin time budget; a hung host still ends the run — follow-up, already in candidate "Warn when the daily build degrades".

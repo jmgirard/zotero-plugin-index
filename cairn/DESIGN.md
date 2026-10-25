@@ -95,7 +95,9 @@ exception is a report that is abuse.
   <dir>]` writes a new entry from the reader's facts. Added M002.
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
-  kept in that entry's record. Added M003.
+  kept in that entry's record, and copies the two schemas to `dist/schemas/`.
+  It exits 1 when more than half of the records carry a failure. Added M003;
+  schemas and exit rule M006.
 
 ## Conventions
 

@@ -149,7 +149,7 @@ GitHub outage.
 
 The command also writes copies of the two schemas to `dist/schemas/`.
 
-The command writes no file and exits with status 1 in these cases:
+The command writes no data file and exits with status 1 in these cases:
 
 - It finds no entries, or it cannot read the entry directory.
 - An entry is not valid, for example a `meta.json` with no `repoUrl`.
@@ -167,8 +167,9 @@ The `Build data` workflow runs `pnpm check` and then `pnpm build` once a day,
 and you can also start it by hand. It keeps `dist/` as a workflow artifact named
 `plugins-data`. If the build succeeds, the workflow deploys `dist/` to GitHub
 Pages. If `pnpm build` exits with status 1, the workflow deploys nothing, and
-the data from the last good build stays published. Only a run on the `main`
-branch can deploy.
+the data from the last good build stays published. The repository's
+`github-pages` environment, set in its GitHub settings, lets only runs on the
+`main` branch deploy.
 
 ## Running the tests
 

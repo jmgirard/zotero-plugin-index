@@ -68,26 +68,30 @@ function record(output: Output, id: string) {
 }
 
 describe("pnpm build over the fixture tree", () => {
-  // This run writes the default dist/, so a file already there is copied aside first and
-  // put back afterward.
+  // This run writes the default dist/, so the files already there are copied aside first
+  // and put back afterward, and what the run added is removed.
   const out = join(ROOT, "dist");
-  const v1 = join(out, "v1");
-  const file = join(v1, "plugins.json");
-  let backup: string | undefined;
-  let made: string | undefined;
+  const files = ["v1/plugins.json", "schemas/plugins.v1.schema.json", "schemas/index.v1.schema.json"];
+  const backups = new Map<string, string>();
+  let made: string[] = [];
   let result: ReturnType<typeof pnpmBuild>;
   beforeAll(() => {
-    if (existsSync(file)) {
-      backup = join(tempDir(), "plugins.json");
-      copyFileSync(file, backup);
+    for (const name of files) {
+      if (!existsSync(join(out, name))) continue;
+      const backup = join(tempDir(), name.replace("/", "-"));
+      copyFileSync(join(out, name), backup);
+      backups.set(name, backup);
     }
-    made = !existsSync(out) ? out : !existsSync(v1) ? v1 : undefined;
+    made = [out, join(out, "v1"), join(out, "schemas")].filter((dir) => !existsSync(dir));
     result = pnpmBuild([TREE], writeFixture(responses()));
   }, 60_000);
   afterAll(() => {
-    if (backup) copyFileSync(backup, file);
-    else if (made) rmSync(made, { recursive: true, force: true });
-    else rmSync(file, { force: true });
+    for (const name of files) {
+      const backup = backups.get(name);
+      if (backup) copyFileSync(backup, join(out, name));
+      else rmSync(join(out, name), { force: true });
+    }
+    for (const dir of made.reverse()) rmSync(dir, { recursive: true, force: true });
   });
 
   test("writes dist/v1/plugins.json by default, valid against its schema, with one record per entry", () => {
@@ -133,7 +137,7 @@ function expectSchemaCopies(out: string) {
 }
 
 describe("pnpm build", () => {
-  test("names an error the reader does not expect unexpected-error and goes on", () => {
+  test("names an error the reader does not expect unexpected-error, goes on, and exits 1 when 2 of 3 records fail", () => {
     // BETTER_NOTES is the first entry by name, so the other two are read after the error.
     // With the fork, 2 of 3 records fail, so the build writes the file and exits 1.
     const recorded = responses();
@@ -162,7 +166,7 @@ describe("pnpm build", () => {
     const out = tempDir();
     const result = pnpmBuild([tree, "--out", out], writeFixture(responses()));
     expect(result.status).toBe(0);
-    expect(result.stderr).toBe("");
+    expect(result.stderr).not.toContain("more than half");
     const output = readOutput(out);
     expect(output.plugins.filter((plugin) => plugin.failure).map((plugin) => plugin.id).sort()).toEqual([FORKED, missing]);
     expectSchemaCopies(out);
@@ -260,8 +264,29 @@ describe("writeData", () => {
     writeFileSync(blocker, "");
     expect(await writeData(join(blocker, "dist"), "{}\n")).toEqual({
       ok: false,
-      message: expect.stringContaining("cannot write"),
+      message: expect.stringContaining(`cannot write ${join(blocker, "dist", "schemas", "plugins.v1.schema.json")}`),
     });
+  });
+
+  test("reports a data directory it cannot make after the schemas are written", async () => {
+    const out = tempDir();
+    writeFileSync(join(out, "v1"), "");
+    expect(await writeData(out, "{}\n")).toEqual({
+      ok: false,
+      message: expect.stringContaining(`cannot write ${join(out, "v1", "plugins.json")}`),
+    });
+    expect(readdirSync(join(out, "schemas")).sort()).toEqual(["index.v1.schema.json", "plugins.v1.schema.json"]);
+  });
+
+  test("removes its temporary schema file when the schema cannot be replaced", async () => {
+    const out = tempDir();
+    mkdirSync(join(out, "schemas", "plugins.v1.schema.json", "taken"), { recursive: true });
+    expect(await writeData(out, "{}\n")).toEqual({
+      ok: false,
+      message: expect.stringContaining(`cannot write ${join(out, "schemas", "plugins.v1.schema.json")}`),
+    });
+    expect(readdirSync(join(out, "schemas"))).toEqual(["plugins.v1.schema.json"]);
+    expect(existsSync(join(out, "v1"))).toBe(false);
   });
 
   test("removes its temporary file when the file cannot be replaced", async () => {

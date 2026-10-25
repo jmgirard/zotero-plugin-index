@@ -87,14 +87,19 @@ const SCHEMAS = join(import.meta.dirname, "..", "..", "schemas");
 const PUBLISHED_SCHEMAS = ["plugins.v1.schema.json", "index.v1.schema.json"];
 
 // Copies the published schemas to <outDir>/schemas/, then writes text to
-// <outDir>/v1/plugins.json through a temporary file, so a failed write leaves any
-// earlier file whole.
+// <outDir>/v1/plugins.json. Each file goes through a temporary file, so a failed write
+// leaves any earlier file whole.
 export async function writeData(outDir: string, text: string): Promise<{ ok: true; path: string } | { ok: false; message: string }> {
-  try {
-    await mkdir(join(outDir, "schemas"), { recursive: true });
-    for (const name of PUBLISHED_SCHEMAS) await copyFile(join(SCHEMAS, name), join(outDir, "schemas", name));
-  } catch (error) {
-    return { ok: false, message: `cannot write ${join(outDir, "schemas")}: ${(error as Error).message}` };
+  for (const name of PUBLISHED_SCHEMAS) {
+    const target = join(outDir, "schemas", name);
+    try {
+      await mkdir(join(outDir, "schemas"), { recursive: true });
+      await copyFile(join(SCHEMAS, name), `${target}.tmp`);
+      await rename(`${target}.tmp`, target);
+    } catch (error) {
+      await rm(`${target}.tmp`, { force: true }).catch(() => {});
+      return { ok: false, message: `cannot write ${target}: ${(error as Error).message}` };
+    }
   }
   const path = join(outDir, "v1", "plugins.json");
   const temporary = `${path}.tmp`;
