@@ -91,10 +91,10 @@ page and one plugin page and logs the result in this file's work log.
       (source note template, its ordered examples quoted verbatim, provenance) with its `INDEX.md` line.
 - [x] T2: Tests first, then `compareVersions` and `rangeResult` in `src/site/version.ts`, in plain TypeScript
       that both Vitest and the Astro browser script import.
-- [ ] T3: Add `astro` at an exact version (D-004) with `npx -y pnpm@12.15.0 add`; make sure that `pnpm test`
+- [x] T3: Add `astro` at an exact version (D-004) with `npx -y pnpm@12.15.0 add`; make sure that `pnpm test`
       (tsc, then Vitest) still passes beside Astro's Vite, and find out whether `astro build` empties its
       `outDir`. A peer conflict or a second package is a stop.
-- [ ] T4: Astro project under `site/`, static output, `base: "/zotero-plugin-index/"`; `pnpm site` builds into a
+- [x] T4: Astro project under `site/`, static output, `base: "/zotero-plugin-index/"`; `pnpm site` builds into a
       staging directory and copies the pages into `<out>`, so the data and schemas stay; the site fixture and the
       `test/site.test.ts` page-set, unchanged-bytes, and link-prefix tests (spawned pnpm needs its own hook timeout).
 - [ ] T5: Home page and plugin page templates; plugin links use `encodeURIComponent(id)`; the content tests.
@@ -117,6 +117,8 @@ page and one plugin page and logs the result in this file's work log.
 - 2026-10-25: lessons used: 2026-10-25 (M001) pnpm via npx; 2026-10-25 (M001) INIT_CWD for relative paths; 2026-10-25 (M003) beforeAll hookTimeout.
 - 2026-10-25: T1 done: the Toolkit version format now lives on MDN's "Legacy Version Formats" page; the note quotes its rules and its 12-line example chain; the simple-english hook flags the note's `— observed` stamp, kept because cairn's staleness check reads that form.
 - 2026-10-25: T2 done: `compareVersions`, `declaredRange` (exported for the page templates), and `rangeResult` in `src/site/version.ts` with a structural `RangeRecord` type so the file has no imports; "*" is +Infinity per the source's wording; tests failed first (no module), then 407 pass; two planted defects (string-exists rule, override precedence) turned 59 and 1 tests red.
+- 2026-10-25: T3 done: `astro` 7.4.2 (published 2026-10-21) under `dependencies`, beside `ajv` and `fflate`, which `pnpm build` also runs; its one peer (`@astrojs/markdown-remark`) is optional, so no second package; Astro and Vitest share one Vite 8.3.5; `pnpm test` passes; Astro empties `outDir` unless `vite.build.emptyOutDir` is false (`static-build.js:66`).
+- 2026-10-25: T4 done (one commit with T3): `site/` Astro project, `src/site/site.ts` builds into a temp dir and replaces each top-level entry in `<out>` (so a removed plugin's page goes), refusing to write `v1/` or `schemas/`; `pnpm site` sets `ASTRO_TELEMETRY_DISABLED=1` so the build sends no telemetry; templates read the base from `site/src/base.ts`, because Vitest's `BASE_URL` env var replaced `import.meta.env.BASE_URL` in the spawned build (seen as `href="/"`, then reproduced with `BASE_URL=/`); the link-prefix test was red on that, and the page-set test went red with the stale-page removal planted out.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

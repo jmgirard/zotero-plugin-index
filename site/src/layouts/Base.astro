@@ -1,0 +1,25 @@
+---
+import { BASE } from "../base.ts";
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header>
+      <a href={BASE}>Zotero plugin index</a>
+    </header>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-25T06:17:00.000Z",
+  "plugins": [
+    {
+      "id": "broken-plugin@example.org",
+      "repoUrl": "https://github.com/example/broken-plugin",
+      "failure": {
+        "name": "no-xpi-release",
+        "message": "no release of example/broken-plugin has an .xpi asset"
+      },
+      "overrides": []
+    },
+    {
+      "id": "first-plugin@example.org",
+      "repoUrl": "https://github.com/example/first-plugin",
+      "upstream": {
+        "id": "first-plugin@example.org",
+        "name": "First Plugin",
+        "description": "A plugin for the site tests.",
+        "version": "1.2.0",
+        "strictMinVersion": "7.0",
+        "strictMaxVersion": "7.*",
+        "updateUrl": "https://example.org/first-plugin/update.json",
+        "updateHost": "example.org",
+        "repoUrl": "https://github.com/example/first-plugin",
+        "repoCreatedAt": "2023-03-14T09:26:53Z",
+        "openIssues": 12,
+        "releaseCount": 27,
+        "latestReleaseDate": "2026-09-30T18:04:11Z"
+      },
+      "overrides": [
+        {
+          "field": "strict_max_version",
+          "value": "8.*",
+          "reason": "The author confirmed that the plugin works on Zotero 8."
+        },
+        {
+          "field": "strict_min_version",
+          "version": "0.9.0",
+          "value": "8.5",
+          "reason": "Version 0.9.0 needs an API that Zotero 8.5 added."
+        }
+      ]
+    },
+    {
+      "id": "old-plugin@example.org",
+      "repoUrl": "https://github.com/example/old-plugin",
+      "upstream": {
+        "id": "old-plugin@example.org",
+        "name": "Old Plugin",
+        "version": "0.4.1",
+        "strictMinVersion": "6.999",
+        "strictMaxVersion": "7.0.*",
+        "updateUrl": "https://github.com/example/old-plugin/releases/download/release/update.json",
+        "updateHost": "github.com",
+        "repoUrl": "https://github.com/example/old-plugin",
+        "repoCreatedAt": "2019-11-02T12:00:00Z",
+        "openIssues": 3,
+        "releaseCount": 5,
+        "latestReleaseDate": "2024-07-01T08:30:00Z"
+      },
+      "overrides": []
+    },
+    {
+      "id": "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}",
+      "repoUrl": "https://github.com/example/guid-plugin",
+      "upstream": {
+        "id": "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}",
+        "name": "GUID Plugin",
+        "version": "3.0.0",
+        "strictMinVersion": "9.0",
+        "strictMaxVersion": "9.*",
+        "updateUrl": "https://github.com/example/guid-plugin/releases/download/release/update.json",
+        "updateHost": "github.com",
+        "repoUrl": "https://github.com/example/guid-plugin",
+        "repoCreatedAt": "2025-01-20T15:45:00Z",
+        "openIssues": 0,
+        "releaseCount": 1,
+        "latestReleaseDate": "2026-10-01T00:00:00Z"
+      },
+      "overrides": []
+    }
+  ]
+}

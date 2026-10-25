@@ -1,0 +1,13 @@
+---
+import Base from "../layouts/Base.astro";
+import { loadData, pluginHref } from "../data.ts";
+
+const { plugins } = loadData();
+---
+
+<Base title="Zotero plugin index">
+  <h1>Zotero plugin index</h1>
+  <ul>
+    {plugins.map((record) => <li><a href={pluginHref(record.id)}>{record.upstream?.name ?? record.id}</a></li>)}
+  </ul>
+</Base>

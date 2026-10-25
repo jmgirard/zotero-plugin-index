@@ -1,0 +1,14 @@
+---
+import Base from "../../../layouts/Base.astro";
+import { loadData, type PluginRecord } from "../../../data.ts";
+
+export function getStaticPaths() {
+  return loadData().plugins.map((record) => ({ params: { id: record.id }, props: { record } }));
+}
+
+const { record } = Astro.props as { record: PluginRecord };
+---
+
+<Base title={record.upstream?.name ?? record.id}>
+  <h1>{record.upstream?.name ?? record.id}</h1>
+</Base>

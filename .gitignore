@@ -4,4 +4,6 @@ cairn/.merge-approved
 cairn/.merge-approved.pending
 node_modules/
 dist/
+site/.astro/
+site/node_modules/
 .cache/
