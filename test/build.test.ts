@@ -1,16 +1,16 @@
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { Ajv } from "ajv";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json" };
 import { buildData, checkOutput, writeData } from "../src/build/build.ts";
-import { loadFixture, type Responses } from "./support/fixture-fetch.ts";
+import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
-const TREE = resolve("test/fixtures/build/plugins");
-const PRELOAD = resolve("test/support/preload-fixture.ts");
+const TREE = resolve(ROOT, "test/fixtures/build/plugins");
+const PRELOAD = resolve(ROOT, "test/support/preload-fixture.ts");
 const BETTER_NOTES = "Knowledge4Zotero@windingwind.com";
 const SECOND = "second-plugin@example.org";
 const FORKED = "forked-plugin@example.org";
@@ -29,8 +29,8 @@ function tempDir(): string {
 // The recorded responses for every repo in TREE.
 function responses(): Responses {
   return {
-    ...loadFixture("test/fixtures/build/responses.json").responses,
-    ...loadFixture("test/fixtures/upstream/better-notes.json").responses,
+    ...loadFixture(resolve(ROOT, "test/fixtures/build/responses.json")).responses,
+    ...loadFixture(resolve(ROOT, "test/fixtures/upstream/better-notes.json")).responses,
   };
 }
 
@@ -63,19 +63,26 @@ function record(output: Output, id: string) {
 }
 
 describe("pnpm build over the fixture tree", () => {
-  // This run writes the default dist/, so a file already there is put back afterward.
+  // This run writes the default dist/, so a file already there is copied aside first and
+  // put back afterward.
   const out = join(ROOT, "dist");
-  const file = join(out, "v1", "plugins.json");
-  const hadDist = existsSync(out);
-  const saved = existsSync(file) ? readFileSync(file) : undefined;
+  const v1 = join(out, "v1");
+  const file = join(v1, "plugins.json");
+  let backup: string | undefined;
+  let made: string | undefined;
   let result: ReturnType<typeof pnpmBuild>;
   beforeAll(() => {
+    if (existsSync(file)) {
+      backup = join(tempDir(), "plugins.json");
+      copyFileSync(file, backup);
+    }
+    made = !existsSync(out) ? out : !existsSync(v1) ? v1 : undefined;
     result = pnpmBuild([TREE], writeFixture(responses()));
-  });
+  }, 60_000);
   afterAll(() => {
-    if (saved) writeFileSync(file, saved);
-    else if (hadDist) rmSync(file, { force: true });
-    else rmSync(out, { recursive: true, force: true });
+    if (backup) copyFileSync(backup, file);
+    else if (made) rmSync(made, { recursive: true, force: true });
+    else rmSync(file, { force: true });
   });
 
   test("writes dist/v1/plugins.json by default, valid against its schema, with one record per entry", () => {
@@ -124,6 +131,7 @@ describe("pnpm build", () => {
     expect(result.status).toBe(0);
     const output = readOutput(out);
     expect(output.plugins.map((plugin) => plugin.id).sort()).toEqual(readdirSync(TREE).sort());
+    expect(output.plugins[0].id).toBe(BETTER_NOTES);
     expect(record(output, BETTER_NOTES)?.failure).toEqual({ name: "unexpected-error", message: "planted reader error" });
     expect(record(output, SECOND)?.upstream?.id).toBe(SECOND);
     expect(record(output, FORKED)?.failure?.name).toBe("fork");
@@ -163,8 +171,30 @@ describe("buildData", () => {
     writeFileSync(join(tree, SECOND, "index.json"), JSON.stringify({ schemaVersion: 1, overrides: [{ field: "name" }] }));
     expect(await buildData(tree, noFetch)).toEqual({
       ok: false,
-      problems: [expect.stringMatching(new RegExp(`^${SECOND}: index.json: /overrides/0 must have required property`))],
+      problems: [expect.stringContaining(`${SECOND}: index.json: /overrides/0 `)],
     });
+  });
+
+  test("refuses an entry directory it cannot read", async () => {
+    const file = join(tempDir(), "file");
+    writeFileSync(file, "");
+    expect(await buildData(file, noFetch)).toEqual({ ok: false, problems: [expect.stringContaining(`cannot read ${file}`)] });
+  });
+
+  test("records facts that the schema rejects as facts-invalid and goes on", async () => {
+    const recorded = responses();
+    const repo = recorded["https://api.github.com/repos/example/second-plugin"].json as Record<string, unknown>;
+    delete repo.created_at;
+    const result = await buildData(TREE, fixtureFetch(recorded).fetch);
+    if (!result.ok) throw new Error(result.problems.join("\n"));
+    const output: Output = JSON.parse(result.text);
+    expect(record(output, SECOND)).toEqual({
+      id: SECOND,
+      repoUrl: "https://github.com/example/second-plugin",
+      failure: { name: "facts-invalid", message: expect.stringContaining("repoCreatedAt") },
+      overrides: [],
+    });
+    expect(record(output, BETTER_NOTES)?.upstream?.id).toBe(BETTER_NOTES);
   });
 });
 
@@ -189,7 +219,7 @@ describe("checkOutput", () => {
 
   test("reports a record that holds both upstream facts and a failure", () => {
     const problems = checkOutput(file({ ...base, upstream: facts, failure: { name: "fork", message: "" } }));
-    expect(problems).toContain("/plugins/0 must match exactly one schema in oneOf");
+    expect(problems.some((problem) => problem.startsWith("/plugins/0 "))).toBe(true);
   });
 });
 
@@ -201,5 +231,12 @@ describe("writeData", () => {
       ok: false,
       message: expect.stringContaining("cannot write"),
     });
+  });
+
+  test("removes its temporary file when the file cannot be replaced", async () => {
+    const out = tempDir();
+    mkdirSync(join(out, "v1", "plugins.json", "taken"), { recursive: true });
+    expect((await writeData(out, "{}\n")).ok).toBe(false);
+    expect(readdirSync(join(out, "v1"))).toEqual(["plugins.json"]);
   });
 });

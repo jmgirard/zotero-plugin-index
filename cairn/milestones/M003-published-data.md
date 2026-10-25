@@ -101,6 +101,11 @@ record carries the failure.
 
 ## Decisions
 
+- 2026-10-25 (review): the v1 schema keeps `additionalProperties: false` on the file, each record, and the
+  upstream block. A v1 file never changes shape, so adding a field to the published data means `plugins.v2`.
+  The strict schema also lets the build's own output check catch drift between the reader's facts and the
+  schema. Falsified by a consumer that needs a field added within v1.
+
 ## Review
 
 Pass 2, 2026-10-25, head c302885 (origin/main 32bef16 is an ancestor; no sync needed).

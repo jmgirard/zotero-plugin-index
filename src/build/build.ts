@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { Ajv, type ErrorObject } from "ajv";
 import indexSchema from "../../schemas/index.v1.schema.json" with { type: "json" };
@@ -33,12 +33,18 @@ export type BuildResult = { ok: true; data: PluginsFile; text: string } | { ok: 
 const ajv = new Ajv({ allErrors: true });
 const validateIndex = ajv.compile(indexSchema);
 const validatePlugins = ajv.compile(pluginsSchema);
+const validateRecord = ajv.getSchema(`${pluginsSchema.$id}#/definitions/record`)!;
 
 // Reads every entry under root, then reads each plugin upstream, one at a time. A failed
 // upstream read goes into that entry's record. An entry that cannot be read, or whose
 // meta.json or index.json is invalid, stops the build before any upstream read.
 export async function buildData(root: string, fetch: Fetch, now = new Date()): Promise<BuildResult> {
-  const listed = await listEntries(root);
+  let listed: Awaited<ReturnType<typeof listEntries>>;
+  try {
+    listed = await listEntries(root);
+  } catch (error) {
+    return { ok: false, problems: [`cannot read ${root}: ${(error as Error).message}`] };
+  }
   if (listed.length === 0) return { ok: false, problems: [`there are no entries in ${root}`] };
 
   const problems: string[] = [];
@@ -52,7 +58,17 @@ export async function buildData(root: string, fetch: Fetch, now = new Date()): P
 
   const plugins: PluginRecord[] = [];
   for (const { id, repoUrl, overrides } of entries) {
-    plugins.push({ id, repoUrl, ...(await readRecord(repoUrl, fetch)), overrides });
+    const record: PluginRecord = { id, repoUrl, ...(await readRecord(repoUrl, fetch)), overrides };
+    // Facts that the schema rejects, such as a repo body with no created_at, become this
+    // record's failure, so one plugin cannot stop the whole file.
+    const recordProblems = validateRecord(JSON.parse(JSON.stringify(record)))
+      ? []
+      : (validateRecord.errors ?? []).map(describe);
+    if (recordProblems.length > 0 && record.upstream) {
+      plugins.push({ id, repoUrl, failure: { name: "facts-invalid", message: recordProblems.join("; ") }, overrides });
+    } else {
+      plugins.push(record);
+    }
   }
   const data: PluginsFile = { schemaVersion: 1, generatedAt: now.toISOString(), plugins };
   const text = `${JSON.stringify(data, null, 2)}\n`;
@@ -67,13 +83,17 @@ export function checkOutput(value: unknown): string[] {
   return validatePlugins(value) ? [] : (validatePlugins.errors ?? []).map(describe);
 }
 
-// Writes text to <outDir>/v1/plugins.json.
+// Writes text to <outDir>/v1/plugins.json through a temporary file, so a failed write
+// leaves any earlier file whole.
 export async function writeData(outDir: string, text: string): Promise<{ ok: true; path: string } | { ok: false; message: string }> {
   const path = join(outDir, "v1", "plugins.json");
+  const temporary = `${path}.tmp`;
   try {
     await mkdir(join(outDir, "v1"), { recursive: true });
-    await writeFile(path, text);
+    await writeFile(temporary, text);
+    await rename(temporary, path);
   } catch (error) {
+    await rm(temporary, { force: true }).catch(() => {});
     return { ok: false, message: `cannot write ${path}: ${(error as Error).message}` };
   }
   return { ok: true, path };

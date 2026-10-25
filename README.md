@@ -103,15 +103,25 @@ their reasons, in an `overrides` block. The schema for the file is
 If the read of a plugin fails, its record has no `upstream` block. The
 record has a `failure` block with the failure name and a message. If the
 read stops with an error that the reader does not name, the failure name is
-`unexpected-error`. The command still writes the file and exits with status 0. If the
-command cannot read an entry, it writes no file and exits with status 1.
+`unexpected-error`. If the read gives facts that the schema rejects, the
+failure name is `facts-invalid`. The command still writes the file and exits
+with status 0.
+
+The command writes no file and exits with status 1 in these cases:
+
+- It finds no entries, or it cannot read the entry directory.
+- An entry is not valid, for example a `meta.json` with no `repoUrl`.
+- The file it built is not valid against the schema.
+- It cannot write the file.
+
+A file from an earlier run then stays in place.
 
 To read the entries in another directory, give its path: `pnpm build <dir>`.
 To write the file under another directory, add `--out <dir>`. As with
 `pnpm add-plugin`, set `GITHUB_TOKEN` to get a higher GitHub API limit.
 
-The `Build data` workflow runs `pnpm build` once a day, and you can also
-start it by hand. It keeps `dist/` as a workflow artifact named
+The `Build data` workflow runs `pnpm check` and then `pnpm build` once a day,
+and you can also start it by hand. It keeps `dist/` as a workflow artifact named
 `plugins-data`.
 
 ## Running the tests
