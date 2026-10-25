@@ -33,7 +33,14 @@ async function main(): Promise<number> {
   }
   const failed = built.data.plugins.filter((plugin) => plugin.failure);
   for (const { id, failure } of failed) console.log(`${id}: ${failure!.name}: ${failure!.message}`);
-  console.log(`wrote ${built.data.plugins.length} records to ${written.path}, ${failed.length} with a failed upstream read`);
+  const total = built.data.plugins.length;
+  console.log(`wrote ${total} records to ${written.path}, ${failed.length} with a failed upstream read`);
+  // So many failures point at the build (a bad token, a GitHub outage), not at the
+  // plugins. Exit 1, so the daily job deploys nothing and the last good data stays.
+  if (failed.length * 2 > total) {
+    console.error(`${failed.length} of ${total} records carry a failure, more than half`);
+    return 1;
+  }
   return 0;
 }
 

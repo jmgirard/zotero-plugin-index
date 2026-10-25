@@ -71,7 +71,7 @@ workflow, fetches the data and schema URLs, and logs the result in this file's w
 
 - [x] T1: Set both schemas' `$id` (`schemas/*.v1.schema.json:3`); `src/build/build.ts:36` reads the `$id`, so
       run `pnpm test` to make sure that the record validator still resolves.
-- [ ] T2: Tests first in `test/build.test.ts`: the schema copies, and two fixture trees for the half rule (reuse
+- [x] T2: Tests first in `test/build.test.ts`: the schema copies, and two fixture trees for the half rule (reuse
       `test/fixtures/build/` responses with the preload fixture, and stub DNS as the M004 lesson says). Then
       write the copies in `writeData` or the CLI, and add the exit rule and its line in `src/build/cli.ts`. The
       planted-error test (`test/build.test.ts:130`) fails 2 of 3 records, so it now asserts exit 1 or gains a
@@ -100,6 +100,7 @@ workflow, fetches the data and schema URLs, and logs the result in this file's w
 - 2026-10-25: lessons used: 2026-10-25 (M001) pnpm via npx; 2026-10-25 (M002) CLI fixture preload; 2026-10-25 (M004) DNS stub for reader tests; 2026-10-25 (M003) beforeAll hookTimeout.
 - 2026-10-25: implement started on m006-data-on-pages, cut from main at 9f939be.
 - 2026-10-25: T1 done — both schemas' `$id` now under https://jmgirard.github.io/zotero-plugin-index/schemas/; no other file named the old URL outside cairn/; `pnpm test` 217 passed. DESIGN.md lines moved to T4.
+- 2026-10-25: T2 done — `writeData` copies both schemas to `<out>/schemas/` before it writes the data file (a failed copy is `write-failed`); the CLI prints `<n> of <m> records carry a failure, more than half` to stderr and exits 1 after the write. The planted-error test is the 2-of-3 tree (now exit 1); a new 2-of-4 test adds an entry whose repo has no recorded response. Both failed on main for the named reasons (exit 0 seen; schema copy ENOENT); `pnpm test` 218 passed.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

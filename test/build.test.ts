@@ -126,20 +126,46 @@ describe("pnpm build over the fixture tree", () => {
   });
 });
 
+function expectSchemaCopies(out: string) {
+  for (const name of ["plugins.v1.schema.json", "index.v1.schema.json"]) {
+    expect(readFileSync(join(out, "schemas", name))).toEqual(readFileSync(join(ROOT, "schemas", name)));
+  }
+}
+
 describe("pnpm build", () => {
   test("names an error the reader does not expect unexpected-error and goes on", () => {
     // BETTER_NOTES is the first entry by name, so the other two are read after the error.
+    // With the fork, 2 of 3 records fail, so the build writes the file and exits 1.
     const recorded = responses();
     recorded["https://api.github.com/repos/windingwind/zotero-better-notes"] = { unexpected: "planted reader error" };
     const out = tempDir();
     const result = pnpmBuild([TREE, "--out", out], writeFixture(recorded));
-    expect(result.status).toBe(0);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("2 of 3 records carry a failure, more than half");
+    expectSchemaCopies(out);
     const output = readOutput(out);
     expect(output.plugins.map((plugin) => plugin.id).sort()).toEqual(readdirSync(TREE).sort());
     expect(output.plugins[0].id).toBe(BETTER_NOTES);
     expect(record(output, BETTER_NOTES)?.failure).toEqual({ name: "unexpected-error", message: "planted reader error" });
     expect(record(output, SECOND)?.upstream?.id).toBe(SECOND);
     expect(record(output, FORKED)?.failure?.name).toBe("fork");
+  });
+
+  test("exits 0 when exactly half of the records carry a failure", () => {
+    // A fourth entry whose repo has no recorded response fails beside the fork: 2 of 4.
+    const tree = tempDir();
+    cpSync(TREE, tree, { recursive: true });
+    const missing = "missing-plugin@example.org";
+    cpSync(join(tree, SECOND), join(tree, missing), { recursive: true });
+    const meta = JSON.parse(readFileSync(join(tree, missing, "meta.json"), "utf8"));
+    writeFileSync(join(tree, missing, "meta.json"), JSON.stringify({ ...meta, id: missing, repoUrl: "https://github.com/example/missing-plugin" }));
+    const out = tempDir();
+    const result = pnpmBuild([tree, "--out", out], writeFixture(responses()));
+    expect(result.status).toBe(0);
+    expect(result.stderr).toBe("");
+    const output = readOutput(out);
+    expect(output.plugins.filter((plugin) => plugin.failure).map((plugin) => plugin.id).sort()).toEqual([FORKED, missing]);
+    expectSchemaCopies(out);
   });
 
   test("writes no file and exits 1 when an entry cannot be read", () => {
