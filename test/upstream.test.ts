@@ -471,7 +471,7 @@ describe("readUpstream", () => {
     });
   });
 
-  test("refuses 2,000 manifest.json entries that each inflate to 1 MiB at the second one", async () => {
+  test("refuses at the second of 2,000 manifest.json entries that each point at a 1 MiB stream", async () => {
     const spaces = new Uint8Array(1_048_576).fill(32);
     const zip = repeatEntry(zipSync({ "manifest.json": [spaces, { level: 9 }] }), "manifest.json", 1999);
     const started = performance.now();

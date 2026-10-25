@@ -385,11 +385,12 @@ export function zipEntryCount(zip: Uint8Array): number | undefined {
   return u32(record) === 0x06064b50 ? u32(record + 32) : count;
 }
 
-// Unzips the one file `name`, or returns undefined when the zip lacks it. fflate 0.8.3
-// inflates a deflated file into a buffer of the size the central directory declares and
-// drops output past it, but it decodes the whole stream; it returns a stored file at its
-// compressed size (observed 2026-10-25). Refusing a declared or compressed size over the
-// cap bounds the file to UNZIPPED_MAX_BYTES and the decoding to that much input.
+// Unzips the one file `name`, or returns undefined when the zip lacks it, and fails when
+// the zip holds more than one entry named `name`. fflate 0.8.3 inflates a deflated file
+// into a buffer of the size the central directory declares and drops output past it, but
+// it decodes the whole stream; it returns a stored file at its compressed size (observed
+// 2026-10-25). Refusing a declared or compressed size over the cap bounds the file to
+// UNZIPPED_MAX_BYTES and the compressed input it decodes to that much.
 function unzipOne(zip: Uint8Array, name: string, tag: string): Uint8Array | undefined {
   // unzipSync unzips each entry the filter accepts, so a zip that repeats `name` would
   // inflate up to UNZIPPED_MAX_BYTES once for each copy.
