@@ -127,6 +127,7 @@ text for these limits.
 - 2026-10-25: claim audit: 66 claims read, 5 corrected — src/upstream/reader.ts, README.md, CHANGELOG.md, test/upstream.test.ts (2 test names). The fflate comment was false: fflate decodes a deflated stream in full and returns a stored file at its compressed size; re-read found all 5 corrections hold.
 - 2026-10-25: decided (from the claim audit): `unzipOne` also refuses a compressed size over 1 MiB, so a stored file with an understated size cannot pass the cap and decoding reads at most 1 MiB; new test with a stored, understated `manifest.json`, red without the check; fixture `base64` bodies added. AC2 wording unchanged. pnpm test 196 passed, pnpm check clean.
 - 2026-10-25: implement done; status review.
+- 2026-10-25: step-7 approval: m004-download-limits approved for merge
 
 ## Decisions
 
