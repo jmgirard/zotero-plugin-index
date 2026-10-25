@@ -94,7 +94,7 @@ text for these limits.
       default family), and a lookup of every address. `readUpstream` gains an optional third argument with a `lookup`,
       whose default is `node:dns/promises` `lookup` with `all: true`. `test/support/preload-fixture.ts` also replaces
       the lookup, so the CLI tests need no network. The table test per AC4.
-- [ ] T4: Manual redirects. A download helper for the XPI and `update.json` sends `redirect: "manual"`, checks each
+- [x] T4: Manual redirects. A download helper for the XPI and `update.json` sends `redirect: "manual"`, checks each
       hop with T3's check, handles the five statuses and `Location` forms, and stops after 5 hops. `request()` for
       GitHub API calls keeps the default. `fixture-fetch.ts` records `init.redirect`, and a test asserts `"manual"` on
       both downloads. Tests per AC5.
@@ -122,6 +122,7 @@ text for these limits.
 - 2026-10-25: T1 done: `readCapped` reads the XPI and update.json bodies with caps exported as `XPI_MAX_BYTES` and `UPDATE_JSON_MAX_BYTES`; fixture `chunks` bodies count bytes enqueued; a planted missing cap turned both cap tests red. A cut-off XPI body is now `request-failed`, not `xpi-unreadable`. pnpm test 90 passed, pnpm check clean.
 - 2026-10-25: T2 done: `unzipOne` unzips `manifest.json`, then the default locale's `messages.json`, refusing a declared size over `UNZIPPED_MAX_BYTES`; a test pins fflate's stop at the declared size; a planted missing cap turned both size tests red. pnpm test 94 passed, pnpm check clean.
 - 2026-10-25: T3 done: `src/upstream/host-guard.ts` `refusal()` with its own IPv4/IPv6 parse to bits (no `net.BlockList`); `readUpstream(url, fetch, { lookup })` routes the XPI and update.json through a `downloader` that checks first; an unparseable XPI URL is `request-failed`. The preload replaces `dns.promises.lookup` (confirmed: an `.invalid` name resolved to the stub). Plants (no bracket strip, no mapped unwrap, no trailing-dot strip) turned 16, 2, and 2 probes red. pnpm test 183 passed, pnpm check clean.
+- 2026-10-25: T4 done: `downloader` sends `redirect: "manual"`, follows 301/302/303/307/308 against the current URL, checks each hop, and stops after 5 (`request-failed`, "more than 5 redirects"); GitHub API requests unchanged. Plants (first hop only checked, limit 6) turned 2 and 1 tests red. A live read of zotero-better-notes returned 3.3.3 through the GitHub release redirect. pnpm test 195 passed, pnpm check clean.
 
 ## Decisions
 

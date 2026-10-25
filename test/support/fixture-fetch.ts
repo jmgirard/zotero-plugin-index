@@ -29,6 +29,7 @@ export interface Fixture {
 export interface SeenRequest {
   url: string;
   headers: Headers;
+  redirect?: RequestRedirect;
   // The bytes a `chunks` body has handed to the reader so far.
   bytesEnqueued: number;
 }
@@ -42,7 +43,7 @@ export function fixtureFetch(responses: Responses) {
   const requests: SeenRequest[] = [];
   async function fetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
     const url = String(input);
-    const seen: SeenRequest = { url, headers: new Headers(init?.headers), bytesEnqueued: 0 };
+    const seen: SeenRequest = { url, headers: new Headers(init?.headers), redirect: init?.redirect, bytesEnqueued: 0 };
     requests.push(seen);
     const recorded = responses[url];
     if (!recorded) return new Response(`no recorded response for ${url}`, { status: 404 });

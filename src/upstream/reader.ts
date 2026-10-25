@@ -294,13 +294,32 @@ async function readCapped(response: Response, url: string, max: number, tooLarge
 // Requests a plugin file that is not on the GitHub API: the XPI or the update.json.
 type Download = (url: string) => Promise<Response>;
 
-// Checks the host of each URL before it requests it.
+const REDIRECTS = [301, 302, 303, 307, 308];
+const MAX_REDIRECTS = 5;
+
+// Follows redirects itself, at most MAX_REDIRECTS, and checks the host of each URL
+// before it requests it.
 function downloader(fetch: Fetch, lookup: Lookup): Download {
   return async (url) => {
     if (!URL.canParse(url)) fail("request-failed", `${url} is not a URL`);
-    const refused = await refusal(new URL(url), lookup);
-    if (refused) fail(refused.failure, refused.message);
-    return request(fetch, url);
+    let current = new URL(url);
+    for (let redirects = 0; ; redirects++) {
+      const refused = await refusal(current, lookup);
+      if (refused) fail(refused.failure, refused.message);
+      const response = await request(fetch, current.href, { redirect: "manual" });
+      if (!REDIRECTS.includes(response.status)) return response;
+      await response.body?.cancel().catch(() => {});
+      if (redirects === MAX_REDIRECTS) fail("request-failed", `GET ${url} took more than ${MAX_REDIRECTS} redirects`);
+      const location = response.headers.get("location");
+      if (location === null || !URL.canParse(location, current)) {
+        fail("request-failed", `GET ${current.href} returned HTTP ${response.status} with no usable Location`);
+      }
+      const next = new URL(location, current);
+      if (!["http:", "https:"].includes(next.protocol)) {
+        fail("request-failed", `GET ${current.href} redirects to ${next.href}, which is not an http or https URL`);
+      }
+      current = next;
+    }
   };
 }
 

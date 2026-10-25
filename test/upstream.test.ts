@@ -355,6 +355,66 @@ describe("readUpstream", () => {
     expect(requests.map((r) => r.url)).not.toContain(XPI);
   });
 
+  test("asks fetch not to follow redirects for the XPI and update.json, and only for those", async () => {
+    const { requests } = await read();
+    expect(requests.map((r) => [r.url, r.redirect])).toEqual([
+      [REPO, undefined],
+      [RELEASES, undefined],
+      [RELEASES_PAGE_2, undefined],
+      [XPI, "manual"],
+      [UPDATE, "manual"],
+    ]);
+  });
+
+  // Each hop of `chain` redirects to the next with `status`; the last hop is the recorded update.json.
+  function redirectChain(r: Responses, chain: string[], status = 302) {
+    manifest(r).applications.zotero.update_url = chain[0];
+    chain.forEach((url, i) => (r[url] = { status, headers: { location: chain[i + 1] ?? UPDATE } }));
+  }
+  const hops = (n: number) => Array.from({ length: n }, (_, i) => `https://hop.example/${i}`);
+
+  test.each([
+    ["an address", "http://127.0.0.1/update.json"],
+    ["a protocol-relative Location", "//127.0.0.1/x"],
+  ])("refuses a redirect to %s with no request to it", async (_name, location) => {
+    const { result, requests } = await read((r) => {
+      manifest(r).applications.zotero.update_url = "https://hop.example/0";
+      r["https://hop.example/0"] = { status: 302, headers: { location } };
+    });
+    expect(result).toEqual({ ok: false, failure: "host-refused", message: expect.stringContaining("127.0.0.1") });
+    expect(requests.at(-1)!.url).toBe("https://hop.example/0");
+  });
+
+  test("fails with request-failed after more than 5 redirects", async () => {
+    const { result, requests } = await read((r) => redirectChain(r, hops(6)));
+    expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining("more than 5 redirects") });
+    expect(requests.at(-1)!.url).toBe("https://hop.example/5");
+  });
+
+  test("follows 5 redirects with relative Locations to the update.json", async () => {
+    const { result } = await read((r) => {
+      redirectChain(r, hops(5));
+      for (let i = 0; i < 4; i++) r[`https://hop.example/${i}`].headers = { location: `/${i + 1}` };
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  test.each([301, 302, 303, 307, 308])("follows a %i redirect", async (status) => {
+    const { result } = await read((r) => redirectChain(r, hops(1), status));
+    expect(result.ok).toBe(true);
+  });
+
+  test.each<[string, Record<string, string> | undefined, string]>([
+    ["no Location", undefined, "no usable Location"],
+    ["a file: Location", { location: "file:///etc/passwd" }, "not an http or https URL"],
+  ])("fails with request-failed on a redirect with %s", async (_name, headers, detail) => {
+    const { result } = await read((r) => {
+      manifest(r).applications.zotero.update_url = "https://hop.example/0";
+      r["https://hop.example/0"] = { status: 302, headers };
+    });
+    expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining(detail) });
+  });
+
   test.each(["https://gitlab.com/windingwind/zotero-better-notes", "https://github.com/windingwind", "not a url"])(
     "fails on %j, which is not a GitHub repo URL, with no request",
     async (url) => {
