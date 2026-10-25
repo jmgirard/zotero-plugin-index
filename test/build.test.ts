@@ -116,15 +116,17 @@ describe("pnpm build over the fixture tree", () => {
 
 describe("pnpm build", () => {
   test("names an error the reader does not expect unexpected-error and goes on", () => {
+    // BETTER_NOTES is the first entry by name, so the other two are read after the error.
     const recorded = responses();
-    recorded["https://api.github.com/repos/example/second-plugin"] = { unexpected: "planted reader error" };
+    recorded["https://api.github.com/repos/windingwind/zotero-better-notes"] = { unexpected: "planted reader error" };
     const out = tempDir();
     const result = pnpmBuild([TREE, "--out", out], writeFixture(recorded));
     expect(result.status).toBe(0);
     const output = readOutput(out);
     expect(output.plugins.map((plugin) => plugin.id).sort()).toEqual(readdirSync(TREE).sort());
-    expect(record(output, SECOND)?.failure).toEqual({ name: "unexpected-error", message: "planted reader error" });
-    expect(record(output, BETTER_NOTES)?.upstream).toBeDefined();
+    expect(record(output, BETTER_NOTES)?.failure).toEqual({ name: "unexpected-error", message: "planted reader error" });
+    expect(record(output, SECOND)?.upstream?.id).toBe(SECOND);
+    expect(record(output, FORKED)?.failure?.name).toBe("fork");
   });
 
   test("writes no file and exits 1 when an entry cannot be read", () => {

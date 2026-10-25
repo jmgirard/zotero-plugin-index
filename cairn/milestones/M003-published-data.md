@@ -32,9 +32,9 @@ record carries the failure.
       `dist/v1/plugins.json`, the file is valid against `schemas/plugins.v1.schema.json`, and its record ids equal
       the set of entry directory names in the fixture tree. A Vitest test asserts all three.
 - [ ] AC2: When the fixture tree holds one entry whose upstream read fails, `pnpm build` exits 0, writes a record
-      for every entry, and the failing entry's record carries the reader's failure name. A second fixture whose
-      fetch throws an unexpected error gives the same result with the failure name `unexpected-error`. A Vitest
-      test asserts each case.
+      for every entry, and the failing entry's record carries the reader's failure name. A second fixture, in which
+      the reader throws an `Error` instead of returning a failure name for one entry, gives the same result with
+      the failure name `unexpected-error` for that entry. A Vitest test asserts each case.
 - [ ] AC3: For a fixture entry with an override, the record's overrides block holds the override's field, value,
       and reason, and its upstream block holds the upstream value unchanged. A Vitest test asserts both values.
 - [ ] AC4: `.github/workflows/build.yml` declares a `schedule` trigger that runs once a day and a
@@ -93,6 +93,9 @@ record carries the failure.
 - 2026-10-25: amendment routed: AC2 — a fetch that throws gives `request-failed`, because the reader catches every fetch rejection, so "a fixture whose fetch throws" cannot give `unexpected-error`; the case needs an error the reader does not name.
 - 2026-10-25: status in-progress for review return 1 and the AC2 amendment.
 - 2026-10-25: T6 added (minor amendment) and done: the fixture run writes the default dist/ and puts back an existing dist/v1/plugins.json (same SHA-1 before and after); the failing-entry test asserts the record id set; pnpm test 84 passed, pnpm check clean.
+- 2026-10-25: re-audit: AC2 (full) — 8 findings: proposed wording widened to every unnamed error and was false for some (fixed: one fixture whose reader throws an `Error`); misplaced modifier (fixed); injected entry read last (test now plants it on the first entry read; a planted stop-after-error defect turned it red); non-Error branch untested (declined, outside AC2); instrument-only reachability (already logged); schema-invalid facts stop the build (candidate row "Keep bad facts from failing the build"); README lacked unexpected-error (fixed).
+- 2026-10-25: re-audit: AC2 (full) — second reader on the fixed wording: it holds the old promise, no widening; 4 low findings answered without a wording change (throwing-entry position, since requiring it would widen; "the reader throws" where readUpstream passes the error on; "a second fixture" for one changed response; README covers non-Error throws, untested).
+- 2026-10-25: amendment return: AC2 — "A second fixture, in which the reader throws an `Error` instead of returning a failure name for one entry, gives the same result with the failure name `unexpected-error` for that entry."
 
 ## Decisions
 

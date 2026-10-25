@@ -101,7 +101,9 @@ their reasons, in an `overrides` block. The schema for the file is
 [`schemas/plugins.v1.schema.json`](schemas/plugins.v1.schema.json).
 
 If the read of a plugin fails, its record has no `upstream` block. The
-record has a `failure` block with the failure name and a message. The command still writes the file and exits with status 0. If the
+record has a `failure` block with the failure name and a message. If the
+read stops with an error that the reader does not name, the failure name is
+`unexpected-error`. The command still writes the file and exits with status 0. If the
 command cannot read an entry, it writes no file and exits with status 1.
 
 To read the entries in another directory, give its path: `pnpm build <dir>`.
