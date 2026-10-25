@@ -1,4 +1,4 @@
-import { unzipSync, zipSync } from "fflate";
+import { strToU8, unzipSync, zipSync } from "fflate";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { Lookup } from "../src/upstream/host-guard.ts";
 import { readUpstream } from "../src/upstream/reader.ts";
@@ -269,7 +269,7 @@ describe("readUpstream", () => {
     });
   });
 
-  test("does not unzip the messages.json of a locale that is not the default", async () => {
+  test("does not fail on an over-1 MiB messages.json of a locale that is not the default", async () => {
     const { result } = await read((r) => {
       manifest(r).default_locale = "en";
       r[XPI].xpi!["_locales/de/messages.json"] = JSON.stringify({ name: { message: "Notizen" } }) + OVER_1_MIB;
@@ -277,13 +277,27 @@ describe("readUpstream", () => {
     expect(result.ok).toBe(true);
   });
 
-  test("fflate inflates a file no further than the size the central directory declares", () => {
-    const zip = zipSync({ "manifest.json": new Uint8Array(100_000).fill(32) });
+  // Sets the uncompressed size of the zip's one file in its central directory, whose
+  // header starts with 0x02014b50 and holds that size at offset 24.
+  function understate(zip: Uint8Array, size: number): Uint8Array {
     const view = new DataView(zip.buffer, zip.byteOffset);
-    // The central directory header starts with 0x02014b50; its uncompressed size is at offset 24.
     const header = zip.findLastIndex((_, i) => i + 4 <= zip.length && view.getUint32(i, true) === 0x02014b50);
-    view.setUint32(header + 24, 10, true);
+    view.setUint32(header + 24, size, true);
+    return zip;
+  }
+
+  test("fflate returns no more bytes of a deflated file than the size the central directory declares", () => {
+    const zip = understate(zipSync({ "manifest.json": new Uint8Array(100_000).fill(32) }), 10);
     expect(unzipSync(zip)["manifest.json"].length).toBe(10);
+  });
+
+  test("fails with manifest-too-large on a stored manifest.json over 1 MiB whose declared size is small", async () => {
+    const { result } = await read((r) => {
+      const json = strToU8(JSON.stringify(manifest(r)) + OVER_1_MIB);
+      const zip = understate(zipSync({ "manifest.json": [json, { level: 0 }] }), 1000);
+      r[XPI] = { base64: Buffer.from(zip).toString("base64") };
+    });
+    expect(result).toEqual({ ok: false, failure: "manifest-too-large", message: expect.stringContaining("manifest.json") });
   });
 
   // The first and last address of each blocked range, then mapped and loopback names.

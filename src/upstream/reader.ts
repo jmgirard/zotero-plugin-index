@@ -356,16 +356,17 @@ async function readManifest(
   return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {} };
 }
 
-// Unzips the one file `name`, or returns undefined when the zip lacks it. fflate sizes
-// the output from the zip's central directory and stops inflating at that size
-// (observed with fflate 0.8.3, 2026-10-25), so refusing a large declared size bounds
-// the memory the file takes.
+// Unzips the one file `name`, or returns undefined when the zip lacks it. fflate 0.8.3
+// inflates a deflated file into a buffer of the size the central directory declares and
+// drops output past it, but it decodes the whole stream; it returns a stored file at its
+// compressed size (observed 2026-10-25). Refusing a declared or compressed size over the
+// cap bounds the file to UNZIPPED_MAX_BYTES and the decoding to that much input.
 function unzipOne(zip: Uint8Array, name: string, tag: string): Uint8Array | undefined {
   try {
     return unzipSync(zip, {
       filter: (file) => {
         if (file.name !== name) return false;
-        if (file.originalSize > UNZIPPED_MAX_BYTES) {
+        if (file.originalSize > UNZIPPED_MAX_BYTES || file.size > UNZIPPED_MAX_BYTES) {
           fail("manifest-too-large", `${name} in the XPI of ${tag} is larger than ${UNZIPPED_MAX_BYTES} bytes`);
         }
         return true;

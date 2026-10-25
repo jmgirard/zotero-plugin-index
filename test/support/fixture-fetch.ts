@@ -6,6 +6,7 @@ import { strToU8, zipSync } from "fflate";
 // `bodyError` makes reading the body reject, as a connection reset does. `unexpected`
 // answers with an object that throws on any read, which the reader does not expect.
 // `chunks` serves `count` chunks of `size` zero bytes, one for each read of the body.
+// `base64` serves the bytes it encodes.
 export interface Recorded {
   status?: number;
   headers?: Record<string, string>;
@@ -13,6 +14,7 @@ export interface Recorded {
   text?: string;
   xpi?: Record<string, unknown>;
   chunks?: { size: number; count: number };
+  base64?: string;
   error?: string;
   bodyError?: string;
   unexpected?: string;
@@ -88,6 +90,7 @@ function body(recorded: Recorded, seen: SeenRequest): BodyInit | null {
     ]);
     return new Blob([zipSync(Object.fromEntries(files)) as Uint8Array<ArrayBuffer>]);
   }
+  if (recorded.base64 !== undefined) return new Blob([Buffer.from(recorded.base64, "base64")]);
   if (recorded.text !== undefined) return recorded.text;
   if (recorded.json !== undefined) return JSON.stringify(recorded.json);
   return null;

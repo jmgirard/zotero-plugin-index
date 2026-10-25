@@ -1,6 +1,6 @@
 # M004: Limit what the reader downloads
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
@@ -124,6 +124,9 @@ text for these limits.
 - 2026-10-25: T3 done: `src/upstream/host-guard.ts` `refusal()` with its own IPv4/IPv6 parse to bits (no `net.BlockList`); `readUpstream(url, fetch, { lookup })` routes the XPI and update.json through a `downloader` that checks first; an unparseable XPI URL is `request-failed`. The preload replaces `dns.promises.lookup` (confirmed: an `.invalid` name resolved to the stub). Plants (no bracket strip, no mapped unwrap, no trailing-dot strip) turned 16, 2, and 2 probes red. pnpm test 183 passed, pnpm check clean.
 - 2026-10-25: T4 done: `downloader` sends `redirect: "manual"`, follows 301/302/303/307/308 against the current URL, checks each hop, and stops after 5 (`request-failed`, "more than 5 redirects"); GitHub API requests unchanged. Plants (first hop only checked, limit 6) turned 2 and 1 tests red. A live read of zotero-better-notes returned 3.3.3 through the GitHub release redirect. pnpm test 195 passed, pnpm check clean.
 - 2026-10-25: T5 done: README limits paragraph after the add-plugin failure text, CHANGELOG Unreleased entry, DESIGN.md Architecture line and a Known issues entry on DNS rebinding. Live `pnpm build` with a token: 14 records, 0 failed reads. pnpm test 195 passed, pnpm check clean.
+- 2026-10-25: claim audit: 66 claims read, 5 corrected — src/upstream/reader.ts, README.md, CHANGELOG.md, test/upstream.test.ts (2 test names). The fflate comment was false: fflate decodes a deflated stream in full and returns a stored file at its compressed size; re-read found all 5 corrections hold.
+- 2026-10-25: decided (from the claim audit): `unzipOne` also refuses a compressed size over 1 MiB, so a stored file with an understated size cannot pass the cap and decoding reads at most 1 MiB; new test with a stored, understated `manifest.json`, red without the check; fixture `base64` bodies added. AC2 wording unchanged. pnpm test 196 passed, pnpm check clean.
+- 2026-10-25: implement done; status review.
 
 ## Decisions
 
