@@ -1,7 +1,7 @@
 import { strToU8, unzipSync, zipSync } from "fflate";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { Lookup } from "../src/upstream/host-guard.ts";
-import { readUpstream } from "../src/upstream/reader.ts";
+import { readUpstream, zipEntryCount } from "../src/upstream/reader.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 
 const FIXTURE = "test/fixtures/upstream/better-notes.json";
@@ -340,6 +340,80 @@ describe("readUpstream", () => {
   ])("reads past the count check when %s claims as many entries as the zip can hold", async (_name, zip) => {
     const { result } = await readZip(zip);
     expect(result).toEqual({ ok: false, failure: "no-manifest", message: expect.stringContaining("manifest.json") });
+  });
+
+  // Appends `comment` to a zip whose end record is its last 22 bytes.
+  function withComment(zip: Uint8Array, comment: Uint8Array): Uint8Array {
+    const out = new Uint8Array(zip.length + comment.length);
+    out.set(zip);
+    out.set(comment, zip.length);
+    new DataView(out.buffer).setUint16(zip.length - 2, comment.length, true);
+    return out;
+  }
+
+  function edit(zip: Uint8Array, change: (view: DataView, end: number) => void): Uint8Array {
+    change(new DataView(zip.buffer), zip.length - 22);
+    return zip;
+  }
+
+  const twoFiles = () => zipSync({ a: strToU8("1"), b: strToU8("2") });
+
+  test.each<[string, () => Uint8Array, number]>([
+    ["a two-file zip from zipSync", twoFiles, 2],
+    ["an end record with a comment", () => withComment(twoFiles(), strToU8("a comment")), 2],
+    [
+      "a comment that holds a decoy end record with a larger count",
+      () => {
+        const zip = twoFiles();
+        const decoy = zip.slice(-22);
+        new DataView(decoy.buffer).setUint16(8, 3, true);
+        return withComment(zip, decoy);
+      },
+      3,
+    ],
+    [
+      "an end record signature in the last 21 bytes",
+      () => {
+        const comment = new Uint8Array(21);
+        new DataView(comment.buffer).setUint32(0, 0x06054b50, true);
+        new DataView(comment.buffer).setUint16(8, 9, true);
+        return withComment(twoFiles(), comment);
+      },
+      2,
+    ],
+    ["a zip64 end record whose count is within the bound", () => endRecords(200, 0xffff, 4), 4],
+    [
+      "a zip64 locator whose record offset points outside the file",
+      () => edit(endRecords(98, 2, 3), (view, end) => view.setUint32(end - 12, 10_000, true)),
+      2,
+    ],
+    [
+      "a zip64 locator whose record offset has its high 32 bits set",
+      () => edit(endRecords(98, 0xffff, 2), (view, end) => view.setUint32(end - 8, 1, true)),
+      2,
+    ],
+    ["a 2-byte count of 0 beside a zip64 count of 2^32 - 1", () => endRecords(98, 0, 4_294_967_295), 0],
+    [
+      "a zip64 end record whose count field runs past the end of the zip",
+      () => {
+        // A locator at 0, an end record at 20, and a 4-byte comment that holds the zip64 signature.
+        const zip = new Uint8Array(46);
+        const view = new DataView(zip.buffer);
+        view.setUint32(0, 0x07064b50, true);
+        view.setUint32(8, 42, true);
+        view.setUint32(20, 0x06054b50, true);
+        view.setUint16(28, 0xffff, true);
+        view.setUint16(40, 4, true);
+        view.setUint32(42, 0x06064b50, true);
+        return zip;
+      },
+      0,
+    ],
+  ])("counts the entries that unzipSync loops over in %s", (_name, make, count) => {
+    let calls = 0;
+    unzipSync(make(), { filter: () => (calls++, false) });
+    expect(calls).toBe(count);
+    expect(zipEntryCount(make())).toBe(count);
   });
 
   // The first and last address of each blocked range, then mapped and loopback names.

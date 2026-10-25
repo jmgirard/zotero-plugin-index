@@ -87,7 +87,7 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
       `b4` does, and never throws. If it finds no end record, the check passes, and fflate reports the error as now.
       `readManifest` calls it once, before the first `unzipOne`. The message reads
       `the XPI of <tag> claims <count> entries, more than its <length> bytes can hold`.
-- [ ] T3: Write the AC2 table in `test/upstream.test.ts`. Each row builds its zip, then compares the count reader's
+- [x] T3: Write the AC2 table in `test/upstream.test.ts`. Each row builds its zip, then compares the count reader's
       result with the `filter` call count of `unzipSync`.
 - [ ] T4: Write the AC4 cases first. A helper copies a central-directory entry N times and raises the counts. Then
       change the `unzipOne` filter (src/upstream/reader.ts:366) to fail at the second entry that matches `name`.
@@ -113,6 +113,7 @@ bound. README, CHANGELOG, and DESIGN.md text for both rules.
 - 2026-10-25: plan gate chose refusing duplicates over reading the first copy, the user's choice; falsified by a listed plugin's XPI that repeats `manifest.json`.
 - 2026-10-25: T1 done. The AC1 and AC3 cases are in `test/upstream.test.ts`. Before the fix, the zip64 case ran past 180 s and past its 10 s timeout, because fflate's loop is synchronous, and the 65,535-entry case got `no-manifest`. A first helper also set the zip64 entries-on-this-disk field, which made fflate stop with "invalid zip data"; the helper now sets only the total-entry field that fflate reads.
 - 2026-10-25: T2 done. `zipEntryCount` in `src/upstream/reader.ts` copies fflate's record search; `readManifest` refuses before the first unzip. Name chosen: `zipEntryCount`, beside `CENTRAL_HEADER_MIN_BYTES = 46`. `pnpm test` 205 passed, `pnpm check` 0 problems.
+- 2026-10-25: T3 done. The AC2 table has 9 zips and states each count apart from both readers. Planted defects, each run then reverted: a scan from the last 4 bytes, no count-0 rule, and an 8-byte locator offset turned the last-21-bytes, count-0, and high-bits rows red, 3 of 9.
 
 ## Decisions
 
