@@ -9,7 +9,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "check": "node src/check/cli.ts plugins",
+    "check": "node src/check/cli.ts",
     "test": "tsc --noEmit && vitest run"
   },
   "devDependencies": {

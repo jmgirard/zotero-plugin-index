@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
@@ -32,8 +32,11 @@ function editJson(path: string, change: (value: Record<string, unknown>) => void
   writeFileSync(path, JSON.stringify(value));
 }
 
+// pnpm sets npm_execpath to its own binary when it runs `pnpm test`.
 function runCheck(root: string) {
-  const result = spawnSync("node", ["src/check/cli.ts", root], { encoding: "utf8" });
+  const pnpm = process.env.npm_execpath;
+  if (!pnpm) throw new Error("run the tests with `pnpm test`, so they can call `pnpm check`");
+  const result = spawnSync(pnpm, ["--silent", "check", root], { encoding: "utf8" });
   const findings = result.stdout
     .split("\n")
     .filter((line) => line.includes(": "))
@@ -53,7 +56,7 @@ function expectOnlyRule(root: string, rule: string) {
   return result;
 }
 
-describe("check CLI (node src/check/cli.ts <root>)", () => {
+describe("pnpm check <root>", () => {
   test("passes a tree of valid entries", () => {
     const result = runCheck(VALID);
     expect(result.stderr).toBe("");
@@ -70,8 +73,24 @@ describe("check CLI (node src/check/cli.ts <root>)", () => {
     expect(result.stdout).toContain("checked 0 entries");
   });
 
-  test("files-present: an entry without index.json", () => {
-    expectOnlyRule(treeWith((dir) => rmSync(join(dir, "index.json"))), "files-present");
+  test.each(["meta.json", "index.json"])("files-present: an entry without %s", (file) => {
+    const result = expectOnlyRule(treeWith((dir) => rmSync(join(dir, file))), "files-present");
+    expect(result.stdout).toContain(`missing ${file}`);
+  });
+
+  test("files-present: a meta.json that cannot be read", () => {
+    const root = treeWith((dir) => {
+      rmSync(join(dir, "meta.json"));
+      mkdirSync(join(dir, "meta.json"));
+    });
+    const result = expectOnlyRule(root, "files-present");
+    expect(result.stdout).toContain("cannot read meta.json");
+  });
+
+  test("registry-schema: a meta.json that is not valid JSON", () => {
+    const root = treeWith((dir) => writeFileSync(join(dir, "meta.json"), "{ not json"));
+    const result = expectOnlyRule(root, "registry-schema");
+    expect(result.stdout).toContain("meta.json is not valid JSON");
   });
 
   test("registry-schema: meta.json without the required updateUrl", () => {

@@ -51,8 +51,8 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 
 ## Coverage
 
-- AC1 → T2, T3
-- AC2 → T3
+- AC1 → T2, T3, T6
+- AC2 → T3, T6
 - AC3 → T4
 - AC4 → T5
 - AC5 → T5
@@ -71,6 +71,10 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - [x] T3: Write the fixture trees under `test/fixtures/` and the Vitest tests for AC1 and AC2, tests first.
 - [x] T4: Add `.github/workflows/ci.yml` (pnpm/action-setup, Node LTS, frozen lockfile, test, check).
 - [x] T5: Write the README entry-format section and the `CHANGELOG.md` entry.
+- [x] T6: Review return 1: make `pnpm check [dir]` take a directory and have the tests run `pnpm check`; pin a
+      SHA-256 of the registry schema; report per-entry read errors as findings; set `process.exitCode`; add
+      tests for schema-unavailable, invalid JSON, and a missing `meta.json`; `minLength: 1` on override
+      `value`; CI `timeout-minutes` and a fetch timeout.
 
 ## Work log
 
@@ -95,6 +99,9 @@ The site, the discovery bot, and user reports → candidate rows in `cairn/ROADM
 - 2026-10-24: claim audit: 41 claims read, 1 corrected — test/check.test.ts (the `describe` label named `pnpm check`, but the tests run `node src/check/cli.ts <root>`); also reworded the cache comment in src/check/registry-schema.ts ("download it again" on a first run).
 - 2026-10-24: all tasks done, `pnpm test` (10 passed) and `pnpm check` clean; status review.
 - 2026-10-24: review return 1: AC2 fails as written, because the tests spawn `node src/check/cli.ts` and never run `pnpm check`, and the `check` script hard-codes `plugins`; fix: make `pnpm check [dir]` take a directory and have the tests run it. Same return carries the fix-now findings: diff-bug #1 and #3 (hash-pin the registry schema), #2 (per-entry read errors as findings), #4 (`process.exitCode`), #7 (tests for schema-unavailable, invalid JSON, missing meta.json), #9 (`value` minLength 1), #14 (CI `timeout-minutes`, fetch timeout).
+- 2026-10-24: implement resumed for review return 1; added T6 (minor amendment) and mapped AC1 and AC2 to it in Coverage.
+- 2026-10-25: T6 done: `check` script is `node src/check/cli.ts` (root defaults to `plugins`), and the tests spawn `pnpm --silent check <root>` through `npm_execpath`, which pnpm sets; registry schema SHA-256 `6decb4ca…d551` pinned and checked on cache and download; stat and read errors become `files-present` findings; CLI sets `process.exitCode`; override `value` has `minLength: 1`; CI `timeout-minutes: 10`; fetch times out after 30 s; new tests for missing meta.json, unreadable meta.json, invalid JSON, download failure, and hash mismatch (15 pass); a planted defect (cache returned without the hash check) turned the hash test red, then was reverted.
+- 2026-10-25: Vitest `testTimeout` set to 20 s, because one run with a slow `npx` start failed a test that the next four runs passed; the check tests start a pnpm process each.
 
 ## Decisions
 

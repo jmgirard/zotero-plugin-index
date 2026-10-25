@@ -36,13 +36,22 @@ type Validators = ReturnType<typeof compileValidators>;
 export async function checkTree(root: string, validators: Validators): Promise<CheckResult> {
   const entries = await listEntries(root);
   const findings: Finding[] = [];
-  for (const entry of entries) {
-    findings.push(...(await checkEntry(join(root, entry), entry, validators)));
+  for (const { name, readError } of entries) {
+    if (readError) {
+      findings.push({ entry: name, rule: "files-present", message: `cannot read the entry: ${readError}` });
+      continue;
+    }
+    findings.push(...(await checkEntry(join(root, name), name, validators)));
   }
   return { checked: entries.length, findings };
 }
 
-async function listEntries(root: string): Promise<string[]> {
+interface ListedEntry {
+  name: string;
+  readError?: string;
+}
+
+async function listEntries(root: string): Promise<ListedEntry[]> {
   let names: string[];
   try {
     names = await readdir(root);
@@ -50,9 +59,14 @@ async function listEntries(root: string): Promise<string[]> {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
     throw error;
   }
-  const entries: string[] = [];
+  const entries: ListedEntry[] = [];
   for (const name of names.sort()) {
-    if ((await stat(join(root, name))).isDirectory()) entries.push(name);
+    try {
+      if ((await stat(join(root, name))).isDirectory()) entries.push({ name });
+    } catch (error) {
+      // A broken symlink, for example: report it as an entry that cannot be read.
+      entries.push({ name, readError: (error as Error).message });
+    }
   }
   return entries;
 }
@@ -65,12 +79,14 @@ async function checkEntry(dir: string, entry: string, validators: Validators): P
   const index = await readJson(join(dir, "index.json"));
   const missing = [meta.missing && "meta.json", index.missing && "index.json"].filter(Boolean);
   if (missing.length > 0) add("files-present", `missing ${missing.join(" and ")}`);
+  if (meta.readError) add("files-present", `cannot read meta.json: ${meta.readError}`);
+  if (index.readError) add("files-present", `cannot read index.json: ${index.readError}`);
 
   if (meta.error) add("registry-schema", `meta.json is not valid JSON: ${meta.error}`);
-  else if (!meta.missing) validate(validators.meta, meta.value, "meta.json", "registry-schema", add);
+  else if ("value" in meta) validate(validators.meta, meta.value, "meta.json", "registry-schema", add);
 
   if (index.error) add("index-schema", `index.json is not valid JSON: ${index.error}`);
-  else if (!index.missing) validate(validators.index, index.value, "index.json", "index-schema", add);
+  else if ("value" in index) validate(validators.index, index.value, "index.json", "index-schema", add);
 
   const id = (meta.value as { id?: unknown } | undefined)?.id;
   if (typeof id === "string" && id !== entry) {
@@ -110,6 +126,7 @@ function describe(error: ErrorObject): string {
 
 interface JsonRead {
   missing: boolean;
+  readError?: string;
   error?: string;
   value?: unknown;
 }
@@ -120,7 +137,7 @@ async function readJson(path: string): Promise<JsonRead> {
     text = await readFile(path, "utf8");
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return { missing: true };
-    throw error;
+    return { missing: false, readError: (error as Error).message };
   }
   try {
     return { missing: false, value: JSON.parse(text) };

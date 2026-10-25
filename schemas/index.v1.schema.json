@@ -30,7 +30,8 @@
           },
           "value": {
             "description": "The corrected value.",
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "reason": {
             "description": "Why the upstream value is wrong.",
