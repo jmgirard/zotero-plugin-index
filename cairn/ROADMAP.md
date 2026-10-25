@@ -1,14 +1,14 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-25 (M001 done and archived; 2 lessons captured)_
+_Last hygiene check: 2026-10-25 (M002 done and archived; 3 lessons captured, 2 marked used; 2 candidate rows added)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M002 | Read upstream plugin facts and draft entries | review | M001 | high | milestones/M002-upstream-reader.md |
 | M003 | Build the published plugin data | planned | M002 | high | milestones/M003-published-data.md |
+| M002 | Read upstream plugin facts and draft entries | done | M001 | high | milestones/archive/M002-upstream-reader.md |
 | M001 | Define the plugin entry format and checker | done | — | high | milestones/archive/M001-entry-format.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
