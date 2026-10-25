@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ocr@bib.uni-mannheim.de",
+  "name": "Zotero OCR",
+  "description": "Zotero Plugin for OCR",
+  "homepage": "https://github.com/UB-Mannheim/zotero-ocr",
+  "repoUrl": "https://github.com/UB-Mannheim/zotero-ocr",
+  "updateUrl": "https://raw.githubusercontent.com/UB-Mannheim/zotero-ocr/master/updates.json"
+}

@@ -53,8 +53,10 @@ shows each one separately.
    new candidate. A person can also paste one repository URL into an issue
    form, and the bot drafts the entry. The maintainer approves each pull
    request.
-2. Upstream facts. The bot reads the `manifest.json`, the `update.json`, the
-   latest release, and the repository metadata of each plugin. These files
+2. Upstream facts. The bot reads the repository metadata, the releases, the
+   `manifest.json` in the newest release that has an `.xpi` file
+   (prereleases included), and the `update.json` that the manifest names
+   (corrected M002). These files
    are the source of truth for the name, the description, the versions, and
    the declared compatibility (`strict_min_version`, `strict_max_version`).
 3. Overrides. An override in the index corrects a fact that the author cannot
@@ -65,8 +67,8 @@ shows each one separately.
    report to the data and closes the issue.
 
 Inclusion bar: a public repository, a Zotero 7+ manifest, and at least one
-release with a readable `update.json`. The bot checks all three. The
-maintainer removes only spam and forks. Inclusion is not a judgment of
+release with a readable `update.json`. The bot checks all three, and it
+refuses forks (corrected M002). The maintainer removes spam. Inclusion is not a judgment of
 quality. The index does not list plugins for Zotero 5 or 6.
 
 If the declared compatibility and the user reports disagree, the page shows
@@ -82,6 +84,11 @@ exception is a report that is abuse.
 - Entry checks (`src/check/`): `pnpm check [dir]` checks each entry
   directory under `plugins/`, or under `dir`, and prints one line for each
   problem. Added M001.
+- Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch)` returns
+  the facts of one GitHub repo, or one named inclusion-bar failure. Added
+  M002.
+- Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
+  <dir>]` writes a new entry from the reader's facts. Added M002.
 
 ## Conventions
 
@@ -126,6 +133,10 @@ reused._
 - `src/check/` holds the checker. It reads the registry schema from
   zotero-plugin-registry at a pinned commit, checks the file against a pinned
   SHA-256, and caches it in the gitignored `.cache/`.
+- `src/upstream/` reads the GitHub API with plain fetch, unzips the release
+  XPI with fflate, and reads the `update.json` that the manifest names. The
+  caller passes the fetch function, so the tests answer from recorded
+  responses in `test/fixtures/upstream/`.
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request.
 
@@ -137,6 +148,7 @@ reused._
   stop the run for all others. Expected at design time, 2026-10-24.
 - GitHub API rate limits apply to a daily job that reads hundreds of
   repositories. Topic search also misses plugins without a topic. Expected at
-  design time, 2026-10-24.
+  design time, 2026-10-24. The reader sends `GITHUB_TOKEN` when it is set,
+  which raises the limit (M002).
 - One person maintains the index. Approvals and disputes wait for that
   person. Expected at design time, 2026-10-24.

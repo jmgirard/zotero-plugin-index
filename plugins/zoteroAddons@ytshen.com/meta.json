@@ -1,0 +1,8 @@
+{
+  "id": "zoteroAddons@ytshen.com",
+  "name": "Add-on Market for Zotero",
+  "description": "Browsing, installing, and reviewing plugins within Zotero",
+  "homepage": "https://github.com/syt2/zotero-addons#readme",
+  "repoUrl": "https://github.com/syt2/zotero-addons",
+  "updateUrl": "https://github.com/syt2/zotero-addons/releases/download/release/update.json"
+}

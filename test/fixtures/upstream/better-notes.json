@@ -1,0 +1,111 @@
+{
+  "source": "Recorded from windingwind/zotero-better-notes on 2026-10-25. The repo body is trimmed to five fields and each release to five. The release list keeps three of its 378 releases, split over two pages, and the page-1 link header was rewritten to point at that second page. The XPI holds only the manifest.json of release v3.3.3.",
+  "repoUrl": "https://github.com/windingwind/zotero-better-notes",
+  "responses": {
+    "https://api.github.com/repos/windingwind/zotero-better-notes": {
+      "json": {
+        "full_name": "windingwind/zotero-better-notes",
+        "html_url": "https://github.com/windingwind/zotero-better-notes",
+        "fork": false,
+        "created_at": "2022-04-27T15:46:23Z",
+        "open_issues_count": 15
+      }
+    },
+    "https://api.github.com/repos/windingwind/zotero-better-notes/releases?per_page=100": {
+      "headers": {
+        "link": "<https://api.github.com/repositories/486255787/releases?per_page=100&page=2>; rel=\"next\", <https://api.github.com/repositories/486255787/releases?per_page=100&page=2>; rel=\"last\""
+      },
+      "json": [
+        {
+          "tag_name": "v3.3.3",
+          "draft": false,
+          "prerelease": false,
+          "published_at": "2026-08-24T13:25:16Z",
+          "assets": [
+            {
+              "name": "better-notes-for-zotero.xpi",
+              "browser_download_url": "https://github.com/windingwind/zotero-better-notes/releases/download/v3.3.3/better-notes-for-zotero.xpi"
+            }
+          ]
+        },
+        {
+          "tag_name": "v3.3.0-beta.5",
+          "draft": false,
+          "prerelease": true,
+          "published_at": "2026-08-01T20:46:06Z",
+          "assets": [
+            {
+              "name": "better-notes-for-zotero.xpi",
+              "browser_download_url": "https://github.com/windingwind/zotero-better-notes/releases/download/v3.3.0-beta.5/better-notes-for-zotero.xpi"
+            }
+          ]
+        }
+      ]
+    },
+    "https://api.github.com/repositories/486255787/releases?per_page=100&page=2": {
+      "json": [
+        {
+          "tag_name": "release",
+          "draft": false,
+          "prerelease": true,
+          "published_at": "2024-05-29T15:19:26Z",
+          "assets": [
+            {
+              "name": "update-beta.json",
+              "browser_download_url": "https://github.com/windingwind/zotero-better-notes/releases/download/release/update-beta.json"
+            },
+            {
+              "name": "update.json",
+              "browser_download_url": "https://github.com/windingwind/zotero-better-notes/releases/download/release/update.json"
+            }
+          ]
+        }
+      ]
+    },
+    "https://github.com/windingwind/zotero-better-notes/releases/download/v3.3.3/better-notes-for-zotero.xpi": {
+      "xpi": {
+        "manifest.json": {
+          "manifest_version": 2,
+          "name": "Better Notes for Zotero",
+          "version": "3.3.3",
+          "description": "Everything about note management. All in Zotero.",
+          "author": "windingwind",
+          "homepage_url": "https://github.com/windingwind/zotero-better-notes#readme",
+          "icons": {
+            "48": "chrome/content/icons/favicon@0.5x.png",
+            "96": "chrome/content/icons/favicon.png"
+          },
+          "applications": {
+            "zotero": {
+              "id": "Knowledge4Zotero@windingwind.com",
+              "update_url": "https://github.com/windingwind/zotero-better-notes/releases/download/release/update.json",
+              "strict_min_version": "8.0-beta.21",
+              "strict_max_version": "10.99.99"
+            }
+          }
+        }
+      }
+    },
+    "https://github.com/windingwind/zotero-better-notes/releases/download/release/update.json": {
+      "json": {
+        "addons": {
+          "Knowledge4Zotero@windingwind.com": {
+            "updates": [
+              {
+                "version": "3.3.3",
+                "update_link": "https://github.com/windingwind/zotero-better-notes/releases/download/v3.3.3/better-notes-for-zotero.xpi",
+                "update_hash": "sha512:b86c775fec80af1f143de93278d497602c71582ef2977c79dd6073cf02249ad271fc40be1016ff1b8b0d1c19d59bf3c53b72fc8af8fa65762f84a65fdc82346e",
+                "applications": {
+                  "zotero": {
+                    "strict_min_version": "8.0-beta.21",
+                    "strict_max_version": "10.99.99"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

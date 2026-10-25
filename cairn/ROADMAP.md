@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-25 (M001 done and archived; 2 lessons captured)_
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M002 | Read upstream plugin facts and draft entries | planned | M001 | high | milestones/M002-upstream-reader.md |
+| M002 | Read upstream plugin facts and draft entries | review | M001 | high | milestones/M002-upstream-reader.md |
 | M003 | Build the published plugin data | planned | M002 | high | milestones/M003-published-data.md |
 | M001 | Define the plugin entry format and checker | done | — | high | milestones/archive/M001-entry-format.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
@@ -16,8 +16,10 @@ _Last hygiene check: 2026-10-25 (M001 done and archived; 2 lessons captured)_
 ## Candidates
 - Publish the site and data on Pages: a static TypeScript site on GitHub Pages, one page per plugin answering "does it work on my Zotero?" first, with the M003 data file at a stable versioned URL, and the schemas' `$id` set to their published URLs (M001 review) — added 2026-10-24 — cairn/DESIGN.md Contract boundary, M003
 - Find new plugins by GitHub topic search: a scheduled bot searches the `zotero-plugin` and `zotero-addon` topics and opens one pull request per new candidate, plus an issue form that takes one repo URL — added 2026-10-24 — cairn/DESIGN.md Data sources, M002
-- Catch stray and unportable entry files: `pnpm check` skips a stray file under `plugins/` with exit 0, accepts directory names that break on Windows or collide by case, passes an override reason of only zero-width characters, passes two overrides for the same field and version, and reports a UTF-8 BOM as "not valid JSON" (M001 review) — added 2026-10-24 — M001
+- Catch stray and unportable entry files: `pnpm check` skips a stray file under `plugins/` with exit 0, accepts directory names that break on Windows or collide by case, passes an override reason of only zero-width characters, passes two overrides for the same field and version, and reports a UTF-8 BOM as "not valid JSON" (M001 review); `pnpm add-plugin` also writes an id that differs only by case from an existing entry or is a reserved Windows name such as CON (M002 review) — added 2026-10-24 — M001, M002
 - Collect works and broken user reports: "Works" and "Broken" links open a prefilled issue form, and a bot adds the report to the data and closes the issue — added 2026-10-24 — cairn/DESIGN.md Data sources
+- Read stable releases before prereleases: the reader takes the manifest from the newest release with an `.xpi`, prereleases included, so wileyyugioh/zotmoov reads as prerelease 1.2.34 (observed 2026-10-25); prefer the newest stable release with an `.xpi` when one exists — added 2026-10-25 — M002
+- Limit what the reader downloads: the reader reads a release XPI and unzips its manifest with no size cap, and fetches an `update_url` on any host, loopback and private addresses included; cap both sizes and refuse such hosts before a scheduled bot runs the reader (M002 review) — added 2026-10-25 — M002
 - [parked] Test plugins load in headless Zotero: a CI job installs each listed plugin into a headless Zotero and records whether it loads, shown as its own source beside declared ranges and reports; promote when the data pipeline and user reports ship — added 2026-10-24 — cairn/DESIGN.md Data sources
 <!-- unnumbered ideas; one line each, ordered high → normal → low → parked:
      - [high] short title: detail — added YYYY-MM-DD — links
