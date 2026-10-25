@@ -37,7 +37,10 @@ contributor needs a GitHub account.
 
 The generated JSON data is a public API at a stable URL, with a schema
 version. A breaking change gets a new schema version. The old version stays
-available for a transition period.
+available for a transition period. The URL is
+`https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json`, and the
+schemas are under `https://jmgirard.github.io/zotero-plugin-index/schemas/`,
+each schema's `$id` being its own URL (M006).
 
 Out of scope: install buttons, mirrors for regions that cannot reach GitHub,
 user accounts, and a combined compatibility verdict.
@@ -92,7 +95,9 @@ exception is a report that is abuse.
   <dir>]` writes a new entry from the reader's facts. Added M002.
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
-  kept in that entry's record. Added M003.
+  kept in that entry's record, and copies the two schemas to `dist/schemas/`.
+  It exits 1 when more than half of the records carry a failure. Added M003;
+  schemas and exit rule M006.
 
 ## Conventions
 
@@ -158,7 +163,12 @@ reused._
   turn, and checks each record and then the whole output against
   `schemas/plugins.v1.schema.json` before it writes the file.
   `.github/workflows/build.yml` runs `pnpm check`, then the build, daily and
-  on manual dispatch, and keeps `dist/` as a workflow artifact (M003).
+  on manual dispatch, and keeps `dist/` as a workflow artifact (M003). The
+  build also copies both schemas to `dist/schemas/`, and it exits 1 after it
+  writes the file when more than half of the records carry a failure. The
+  workflow then uploads `dist/` as the Pages artifact, and a deploy job that
+  needs the build job publishes it. A failed build deploys nothing, and the
+  `github-pages` environment takes deploys from `main` only (M006).
 
 ## Known issues
 

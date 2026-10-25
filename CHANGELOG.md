@@ -35,3 +35,10 @@
   The same holds for the default-locale `messages.json`.
   Before, a 98-byte XPI that claimed 4,294,967,295 entries held the reader
   for more than 3 minutes.
+- The daily build publishes the data on GitHub Pages at
+  `https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json`, with its
+  schemas under `https://jmgirard.github.io/zotero-plugin-index/schemas/`.
+  The schemas' `$id` values are now these URLs. `pnpm build` also writes the
+  schemas to `dist/schemas/`. If more than half of the records carry a
+  failure, `pnpm build` writes the file and exits with status 1. The daily
+  build then deploys nothing.

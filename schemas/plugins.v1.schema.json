@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/jmgirard/zotero-plugin-index/schemas/plugins.v1.schema.json",
+  "$id": "https://jmgirard.github.io/zotero-plugin-index/schemas/plugins.v1.schema.json",
   "title": "zotero-plugin-index published data",
   "description": "The file dist/v1/plugins.json that pnpm build writes: one record for each entry under plugins/.",
   "type": "object",
