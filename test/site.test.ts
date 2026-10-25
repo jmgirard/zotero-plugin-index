@@ -139,7 +139,7 @@ describe("the plugin page", () => {
       "The last build could not read this plugin: no-xpi-release: no release of example/broken-plugin has an .xpi asset",
     );
     expect(html).not.toContain('data-fact="declared-range"');
-    expect(html).not.toContain("data-result-for");
+    expect(html).not.toMatch(/\sdata-result-for="/);
   });
 });
 

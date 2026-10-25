@@ -68,5 +68,56 @@ const { generatedAt } = loadData();
       <p>The build read each plugin's repository and releases on {day(generatedAt)}.</p>
       <p>Data file: <a href={`${BASE}v1/plugins.json`}>v1/plugins.json</a></p>
     </footer>
+    <script>
+      import { rangeResult, type RangeRecord, type RangeResult } from "../../../src/site/version.ts";
+
+      // The visitor's browser keeps the version under this key, so every page shows it.
+      const KEY = "zotero-version";
+      const MESSAGES: Record<RangeResult, (version: string) => string> = {
+        inside: (version) => `Zotero ${version} is inside the declared range.`,
+        below: (version) => `Zotero ${version} is older than the declared minimum.`,
+        above: (version) => `Zotero ${version} is newer than the declared maximum.`,
+        "no-range": (version) => `There is no declared range to compare with Zotero ${version}.`,
+      };
+
+      // Storage can be off, for example in a private window; the field then still works on
+      // the page it was typed on.
+      function stored(): string {
+        try {
+          return localStorage.getItem(KEY) ?? "";
+        } catch {
+          return "";
+        }
+      }
+
+      function store(version: string): void {
+        try {
+          if (version) localStorage.setItem(KEY, version);
+          else localStorage.removeItem(KEY);
+        } catch {}
+      }
+
+      function show(version: string): void {
+        for (const slot of document.querySelectorAll<HTMLElement>("[data-result-for]")) {
+          if (!version) {
+            slot.textContent = "";
+            delete slot.dataset.result;
+            continue;
+          }
+          const result = rangeResult(version, JSON.parse(slot.dataset.resultFor!) as RangeRecord);
+          slot.dataset.result = result;
+          slot.textContent = MESSAGES[result](version);
+        }
+      }
+
+      const field = document.querySelector<HTMLInputElement>("#zotero-version")!;
+      field.value = stored();
+      show(field.value.trim());
+      field.addEventListener("input", () => {
+        const version = field.value.trim();
+        store(version);
+        show(version);
+      });
+    </script>
   </body>
 </html>

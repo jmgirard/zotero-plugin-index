@@ -98,7 +98,7 @@ page and one plugin page and logs the result in this file's work log.
       staging directory and copies the pages into `<out>`, so the data and schemas stay; the site fixture and the
       `test/site.test.ts` page-set, unchanged-bytes, and link-prefix tests (spawned pnpm needs its own hook timeout).
 - [x] T5: Home page and plugin page templates; plugin links use `encodeURIComponent(id)`; the content tests.
-- [ ] T6: The version field and the browser script that stores the value and fills in each result; check it in
+- [x] T6: The version field and the browser script that stores the value and fills in each result; check it in
       the built-in browser over a local static server that serves `<out>` under `/zotero-plugin-index/`.
 - [ ] T7: `build.yml` `pnpm site` step; README section, CHANGELOG entry, DESIGN.md Architecture line.
 - [ ] T8: Run the `verify` slot.
@@ -120,6 +120,7 @@ page and one plugin page and logs the result in this file's work log.
 - 2026-10-25: T3 done: `astro` 7.4.2 (published 2026-10-21) under `dependencies`, beside `ajv` and `fflate`, which `pnpm build` also runs; its one peer (`@astrojs/markdown-remark`) is optional, so no second package; Astro and Vitest share one Vite 8.3.5; `pnpm test` passes; Astro empties `outDir` unless `vite.build.emptyOutDir` is false (`static-build.js:66`).
 - 2026-10-25: T4 done (one commit with T3): `site/` Astro project, `src/site/site.ts` builds into a temp dir and replaces each top-level entry in `<out>` (so a removed plugin's page goes), refusing to write `v1/` or `schemas/`; `pnpm site` sets `ASTRO_TELEMETRY_DISABLED=1` so the build sends no telemetry; templates read the base from `site/src/base.ts`, because Vitest's `BASE_URL` env var replaced `import.meta.env.BASE_URL` in the spawned build (seen as `href="/"`, then reproduced with `BASE_URL=/`); the link-prefix test was red on that, and the page-set test went red with the stale-page removal planted out.
 - 2026-10-25: T5 done: home table (plugin, declared range, result slot) and plugin page (name, id, declared range, facts as `data-fact` elements, override table with an "Applies" column); the version field sits in the shared header and the not-vetted sentence in the shared footer; the page name uses an applying `name` override, so `appliedValue` is now exported; content tests pass (638 total) and went red with `overrideApplies` planted to always true.
+- 2026-10-25: T6 done: the shared layout's script (Astro inlines it) reads and writes `localStorage["zotero-version"]`, tolerates storage being off, and fills each `data-result-for` slot with `rangeResult` text and a `data-result` attribute; built-in browser over `python3 -m http.server` serving the fixture build under `/zotero-plugin-index/`: with storage cleared, first-plugin showed "Zotero 7.0 to 8.*" and no result; typing 8.0.1 on the home page gave no-range, inside, above, below for the four rows, equal to Node's `rangeResult`; the GUID page opened by its link showed "below" with the field prefilled; the failure-page test now matches the attribute, since the inlined script names the selector.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
