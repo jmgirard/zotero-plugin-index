@@ -1,6 +1,6 @@
 # M003: Build the published plugin data
 
-- **Status:** review
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** M002
 - **Driving RR:** —
@@ -87,6 +87,9 @@ record carries the failure.
 - 2026-10-25: T5 done: README "Building the data" section (path, schemaVersion 1, failure block, exit codes, workflow artifact) and a CHANGELOG Unreleased entry; DESIGN.md Function Families and Architecture name src/build/ and build.yml; pnpm test 84 passed, pnpm check clean.
 - 2026-10-25: claim audit: 80 claims read, 5 corrected — schemas/plugins.v1.schema.json (3), src/build/build.ts, test/build.test.ts; also a stale comment in test/support/preload-fixture.ts; the same reader re-read all 6 as true.
 - 2026-10-25: status review; pnpm test 84 passed, pnpm check 14 entries clean.
+- 2026-10-25: review return 1: AC1 — the fixture test runs `pnpm build --out <temp>`, so no Vitest test asserts the file at `dist/v1/plugins.json` (the README's default path is untested too); AC2 first case — the exit-0 and failure-name test does not itself assert a record for every entry.
+- 2026-10-25: amendment routed: AC2 — a fetch that throws gives `request-failed`, because the reader catches every fetch rejection, so "a fixture whose fetch throws" cannot give `unexpected-error`; the case needs an error the reader does not name.
+- 2026-10-25: status in-progress for review return 1 and the AC2 amendment.
 
 ## Decisions
 
