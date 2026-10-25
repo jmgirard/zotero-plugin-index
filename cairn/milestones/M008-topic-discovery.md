@@ -72,11 +72,11 @@ grows → candidate row "Warn when the daily build degrades".
       reusing the recorded upstream responses where they fit.
 - [x] T2: Write failing tests in `test/discover.test.ts` for AC1–AC5, passing `{ lookup }` stubs and a fixture
       fetch, and a fixed `now` for the 30-day rule.
-- [ ] T3: Implement the search, the union, and the index and skip-set filters in `src/discover/discover.ts`.
+- [x] T3: Implement the search, the union, and the index and skip-set filters in `src/discover/discover.ts`.
       Share the request and token handling of `src/upstream/reader.ts` (token to the API host only), but read
       search pages as `{ total_count, incomplete_results, items }`, which its `pages()` rejects as not a list;
       a page with `incomplete_results: true` adds a warning to the report and the run goes on.
-- [ ] T4: Implement the state file, the read order, the budget, the limit, the entry writes, and the report.
+- [x] T4: Implement the state file, the read order, the budget, the limit, the entry writes, and the report.
 - [ ] T5: Implement `src/discover/cli.ts` and the `discover` script in `package.json`, with a CLI test for AC6
       and AC7 that runs pnpm with `--dir` and the fixture preload; the state file defaults to
       `.cache/discovery-state.json`.
@@ -100,6 +100,7 @@ grows → candidate row "Warn when the daily build degrades".
 - 2026-10-25: implement started on m008-topic-discovery, cut from main at 7234459.
 - 2026-10-25: T1 done: `test/fixtures/discover/search.json` holds the search pages (two for `topic:zotero-plugin`, one for `topic:zotero-addon`, example/both under both), and `test/support/plugin-repo.ts` builds each repo's reader responses, since writing the XPI and update.json responses by hand for every test repo would repeat them.
 - 2026-10-25: T2 done: `test/discover.test.ts` covers AC1–AC5 and fails until `src/discover/discover.ts` exists. API chosen: `discover({ root, outDir, fetch, lookup, state, skip, limit, budget, now })` returns the new state and a report of `read` items (written or refused), `skipped` items (`in-index`, `in-skip-set`, `refused-before`), and warnings; repos are keyed by lowercase `owner/repo`.
+- 2026-10-25: T3 and T4 done in one commit, since both live in `src/discover/discover.ts`: `reader.ts` now exports `githubClient` (with its `get`) and `ReadFailure`; discovery checks a new id against the index's entry names itself (`entry-exists`), because `--out` can point away from `plugins/` where `writeEntry` would see the clash; `write-failed` joins the unrecorded failures, since it is a local problem; the 7 discover tests pass.
 
 ## Decisions
 

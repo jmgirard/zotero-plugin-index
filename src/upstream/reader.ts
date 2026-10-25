@@ -58,7 +58,7 @@ export const UPDATE_JSON_MAX_BYTES = 1024 * 1024;
 // Each file the reader unzips: manifest.json and the default locale's messages.json.
 export const UNZIPPED_MAX_BYTES = 1024 * 1024;
 
-class ReadFailure extends Error {
+export class ReadFailure extends Error {
   readonly failure: Failure;
   constructor(failure: Failure, message: string) {
     super(message);
@@ -206,7 +206,8 @@ function parseRepoUrl(url: string): { owner: string; repo: string } {
   return { owner, repo: repo.replace(/\.git$/, "") };
 }
 
-function githubClient(fetch: Fetch) {
+// Requests to the GitHub API. Each failure throws a ReadFailure.
+export function githubClient(fetch: Fetch) {
   const headers: Record<string, string> = {
     accept: "application/vnd.github+json",
     "x-github-api-version": "2022-11-28",
@@ -227,6 +228,7 @@ function githubClient(fetch: Fetch) {
   }
 
   return {
+    get,
     json: async (url: string): Promise<unknown> => (await get(url)).body,
     // Follows the Link header's rel="next" and joins the pages' arrays. The token
     // goes only to the API host, and a page seen before ends the read.
