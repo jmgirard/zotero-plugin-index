@@ -1,0 +1,124 @@
+# M004: Limit what the reader downloads
+
+- **Status:** planned
+- **Priority:** high
+- **Depends on:** —
+- **Driving RR:** —
+- **Principles touched:** —
+- **Resolves:** —
+- **Surface tier:** user-facing — the reader's new failure names appear in the published `plugins.json`
+- **Branch/PR:** —
+
+## Goal
+
+The upstream reader caps the bytes it downloads and unzips, and it refuses hosts in a listed set of loopback, private, and reserved address ranges.
+
+## Scope
+
+**In:** A byte cap on the XPI body and on the `update.json` body. A size cap on each file that the reader unzips, and
+unzipping of only `manifest.json` and the default locale's `messages.json`. A host check before each request to the XPI
+URL, the `update_url`, and each redirect target of either: the URL host and each address that the reader's own DNS
+lookup returns. Redirects followed by hand for those two requests, at most 5. Four new failure names:
+`xpi-too-large`, `manifest-too-large`, `update-json-too-large`, and `host-refused`. README, DESIGN.md, and CHANGELOG
+text for these limits.
+
+**Out:**
+- Responses from `api.github.com` stay uncapped and keep fetch's default redirect handling, because GitHub serves them
+  and the 60 s timeout bounds each one. No further work is planned for them.
+- A time budget per plugin and a warning on mass failure: candidate "Warn when the daily build degrades".
+- An address check at connect time, which closes the DNS rebinding gap: candidate "Check addresses when the reader
+  connects".
+
+## Acceptance criteria
+
+- [ ] AC1: When a release XPI's body is longer than 52,428,800 bytes (50 MiB), `readUpstream` returns the failure
+      `xpi-too-large`. It reads no more than 52,428,800 bytes plus the chunk that crosses the cap. A Vitest case serves
+      fixed-size chunks and asserts the failure name and that the bytes enqueued are at most 52,428,800 plus one chunk.
+      A second case serves a body of exactly 52,428,800 bytes and gets no `xpi-too-large`.
+- [ ] AC2: The reader unzips only `manifest.json`, and then only the default locale's `_locales/<locale>/messages.json`.
+      When the zip's central directory gives either file an unzipped size over 1 MiB, `readUpstream` returns the
+      failure `manifest-too-large`. Vitest cases cover each of the two files. A further case holds an oversized
+      `messages.json` for a locale that is not the default, and it returns facts.
+- [ ] AC3: When the `update.json` body is longer than 1,048,576 bytes (1 MiB), `readUpstream` returns the failure
+      `update-json-too-large`. It reads no more than 1,048,576 bytes plus the chunk that crosses the cap. A Vitest case
+      serves fixed-size chunks and asserts the failure name and the bytes enqueued.
+- [ ] AC4: The reader takes the host as Node's URL parser gives it, with IPv6 brackets and one trailing dot removed.
+      It refuses the host when the host is `localhost` or ends in `.localhost`, or when the host, or any address that
+      the reader's lookup returns for it, is in a listed range. IPv4 ranges: 0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10,
+      127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.0.2.0/24, 192.168.0.0/16, 198.18.0.0/15,
+      198.51.100.0/24, 203.0.113.0/24, 224.0.0.0/4, 240.0.0.0/4. IPv6 ranges: ::/96, fc00::/7, fe80::/10, ff00::/8,
+      64:ff9b::/96, 2002::/16, 2001:db8::/32, and ::ffff:0:0/96 when its IPv4 part is in an IPv4 range above. For each
+      of the following probes, written as a URL, `readUpstream` returns `host-refused` and sends no request to it: the
+      first and last address of each range except ::ffff:0:0/96, `http://[::ffff:127.0.0.1]/`,
+      `http://[::ffff:10.0.0.1]/`, `http://localhost/`, `http://foo.localhost./`, `http://LOCALHOST./`, and a name that
+      the test's lookup resolves to one public and one blocked address. For each of the following probes, the reader
+      sends the request: the address just outside each range edge, where that address exists and lies outside every
+      listed range, `http://[::ffff:8.8.8.8]/`, and a name that resolves only to public addresses. A name whose lookup
+      fails or returns no address gives `request-failed`, with no request sent.
+- [ ] AC5: For the XPI and `update.json` requests, the reader treats 301, 302, 303, 307, and 308 as redirects. It
+      resolves the `Location` header against the current URL, checks each target as AC4 states before it requests it,
+      and follows at most 5. Vitest cases cover: a redirect to `http://127.0.0.1/` and one to `//127.0.0.1/x`
+      (`host-refused`, no request to the target), a chain of 6 (`request-failed`, message containing
+      `more than 5 redirects`), a chain of 5 with a relative `Location` that ends in the recorded file (facts), each of
+      the five statuses, a 3xx with no `Location`, and a `Location` with a `file:` scheme (both `request-failed`).
+- [ ] AC6: A live `pnpm build` over `plugins/` at review gives no record whose failure is `host-refused`,
+      `xpi-too-large`, `manifest-too-large`, or `update-json-too-large`, and no `request-failed` record whose message
+      contains `more than 5 redirects`.
+- [ ] AC7: `pnpm test` and `pnpm check` pass. The Unreleased section of `CHANGELOG.md` gains one entry that names the
+      four failure names, the three byte caps (50 MiB XPI, 1 MiB for each unzipped file, 1 MiB `update.json`), and the
+      5-redirect limit.
+
+## Coverage
+
+- AC1 → T1
+- AC2 → T2
+- AC3 → T1
+- AC4 → T3
+- AC5 → T4
+- AC6 → T3, T4, T5
+- AC7 → T1, T2, T3, T4, T5
+
+## Tasks
+
+- [ ] T1: Capped body reads. In `src/upstream/reader.ts`, add a streaming read that stops and cancels the body at a
+      byte cap. Use it for the XPI (50 MiB, `xpi-too-large`, replacing `arrayBuffer` at reader.ts:260) and for
+      `update.json` (1 MiB, `update-json-too-large`, replacing `readText` at reader.ts:293). Let
+      `test/support/fixture-fetch.ts` serve a body of fixed-size chunks and count the bytes enqueued. Tests per AC1
+      and AC3.
+- [ ] T2: Unzip caps. In `readManifest` (reader.ts:251-288), unzip in two passes: `manifest.json`, then the default
+      locale's `messages.json`. The fflate filter refuses a file whose `originalSize` is over 1 MiB
+      (`manifest-too-large`). Add a code comment that fflate stops inflating at the declared size (observed
+      2026-10-25), and one test that pins that output length. Tests per AC2.
+- [ ] T3: Host check. Add `src/upstream/host-guard.ts`: host from the URL with brackets and one trailing dot removed,
+      the localhost names, the range check (unwrap ::ffff:0:0/96 to IPv4, and do not rely on `net.BlockList`'s IPv4
+      default family), and a lookup of every address. `readUpstream` gains an optional third argument with a `lookup`,
+      whose default is `node:dns/promises` `lookup` with `all: true`. `test/support/preload-fixture.ts` also replaces
+      the lookup, so the CLI tests need no network. The table test per AC4.
+- [ ] T4: Manual redirects. A download helper for the XPI and `update.json` sends `redirect: "manual"`, checks each
+      hop with T3's check, handles the five statuses and `Location` forms, and stops after 5 hops. `request()` for
+      GitHub API calls keeps the default. `fixture-fetch.ts` records `init.redirect`, and a test asserts `"manual"` on
+      both downloads. Tests per AC5.
+- [ ] T5: Docs and live run. A README paragraph after the `pnpm add-plugin` failure text on the limits and the host
+      check. A DESIGN.md Architecture line, and a Known issues entry on the DNS rebinding gap. The CHANGELOG entry per
+      AC7. Run a live `pnpm build` once and read its failures (AC6).
+
+## Work log
+
+- 2026-10-25: created by /milestone-plan.
+- 2026-10-25: tier check: milestone — hardening of running code with design choices (caps, host rule), not a fix that restores documented behavior.
+- 2026-10-25: idea vet: one concern, that a check of the URL text alone misses names that resolve to private addresses and redirects to them; the question set chose a URL plus DNS check on every hop.
+- 2026-10-25: lessons used: 2026-10-25 (M002) the CLI tests' preload replaces fetch, so T3 also replaces the lookup there; 2026-10-25 (M001) run pnpm as `npx -y pnpm@12.15.0`.
+- 2026-10-25: question set: how to refuse private hosts — URL host plus Node's built-in DNS lookup before each request and redirect, no new package.
+- 2026-10-25: question set: download limits — 50 MiB XPI, 1 MiB for each unzipped file, 1 MiB update.json, 5 redirects.
+- 2026-10-25: plan gate chose a reader-side DNS check over adding undici for a check at connect time because it adds no dependency and the reader publishes no response body; falsified by evidence that the build publishes response bodies or that a rebinding answer reaches a service on the runner.
+- 2026-10-25: plan gate chose a two-pass unzip over a size cap on every locale file because it unzips only the files the reader uses; falsified by a listed plugin whose name or description resolves only from a locale that is not the default.
+- 2026-10-25: criteria audit (full mode, Opus reader): 14 findings, all taken. Byte bounds now count against fixed test chunks and accept a body of exactly the cap. AC2 unzips two files only and drops the claim about understated zip sizes, which held only for the planted case. AC4 strips brackets and a trailing dot, adds ::/96, 64:ff9b::/96, 2002::/16, and the documentation and benchmark ranges, fixes the edge probes, and states the lookup failure. AC5 adds relative and protocol-relative redirects, the five statuses, and a missing or non-http Location. AC6 and AC7 use exact texts.
+- 2026-10-25: collision check: absorbs the candidate "Limit what the reader downloads" in full; "Warn when the daily build degrades" stays separate (time budget, mass-failure warning); no D-entry overlaps.
+- 2026-10-25: inbox sweep: 0 open issues, 0 open PRs.
+- 2026-10-25: decided: an oversized `messages.json` fails the read as `manifest-too-large`, because only a broken or hostile XPI holds a messages file over 1 MiB.
+- 2026-10-25: decided: a redirect over the limit, a 3xx with no Location, a non-http Location, and a failed or empty lookup all return `request-failed`, with a message that names the cause.
+- 2026-10-25: changelog: one entry under Unreleased (AC7).
+
+## Decisions
+
+## Review
