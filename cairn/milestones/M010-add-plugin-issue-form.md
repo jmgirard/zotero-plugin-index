@@ -48,7 +48,7 @@ an edit to M009's CHANGELOG entry.
       on the `add-plugin` label, the concurrency group `discover` that `discover.yml` names, and the
       permissions `contents: write`, `pull-requests: write`, and `issues: write` and no other.
 - [x] AC6: README describes the form, and M009's CHANGELOG entry names it; `pnpm test` and `pnpm check` pass.
-- [ ] AC7: After the merge, one issue opened from the form for a repo that has no entry and no bot pull
+- [x] AC7: After the merge, one issue opened from the form for a repo that has no entry and no bot pull
       request gets the comment that AC2 or AC3 names from the workflow.
 
 ## Coverage
@@ -70,7 +70,7 @@ an edit to M009's CHANGELOG entry.
 - [x] T4: Write `add-plugin-issue.yml` with the body in `env:` only and the `discover` concurrency group;
       check it with `ruby -ryaml`.
 - [x] T5: Write the README text and edit M009's CHANGELOG entry; run the verify slot.
-- [ ] T6: After the merge, ask the user to open one issue from the form (or open it at their yes), and record
+- [x] T6: After the merge, ask the user to open one issue from the form (or open it at their yes), and record
       the issue and run URLs in the Review section.
 
 ## Work log
@@ -116,6 +116,7 @@ Evidence on the branch at 5a30199 plus the CRLF test fix below, 2026-10-26; main
 - AC5: `ruby -ryaml` on `add-plugin-issue.yml`: 2 `run:` values, 0 containing `${{` (a planted `echo "${{ github.event.issue.body }}"` read as 1 in implement); an `env:` value is `${{ github.event.issue.body }}`; trigger `{"issues"=>{"types"=>["opened"]}}`; job `if: contains(github.event.issue.labels.*.name, 'add-plugin')`; concurrency group `discover`, equal to `discover.yml`'s; permissions `contents: write, pull-requests: write, issues: write` at the top level and none on the job.
 - AC6: README section "Proposing a plugin with an issue" (README.md:184) describes the "Add a plugin" form, its label, the workflow, and each outcome; M009's CHANGELOG entry (CHANGELOG.md:62-68) names the form. `pnpm test`: type check clean, 11 files, 361 tests passed; `pnpm check`: 14 entries, 0 problems.
 - AC7: owed after the merge (T6); not verified yet.
+- AC7 (after the merge): the user opened issue #12 from the form for https://github.com/windingwind/zotero-pdf-preview (no entry, no bot PR); it carried the `add-plugin` label, and run 40306878224 (`issues` event) succeeded. The workflow commented "The bot opened https://github.com/jmgirard/zotero-plugin-index/pull/13. This issue closes when that pull request merges." (AC2's comment). PR #13, head `discover/windingwind/zotero-pdf-preview`, base main, adds `plugins/pdfpreview@windingwind.com/`, its body has `Closes #12`, and GitHub lists #12 as a closing issue; #12 stays open.
 - Gate: `cairn_validate.py` exit 0, all checks passed; no DESIGN principle changed, so no `cairn_impact`; the generic profile's consistency-gate names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
 - diff-bug #1: the `add-plugin` label does not exist, so the job condition fails for every issue and AC7 fails — fix now at T6: create the label after the merge, before the live issue, under the merge approval
