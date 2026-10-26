@@ -16,8 +16,8 @@ plugin, its page shows the failure in place of the declared range.
 
 The index lists a plugin whose GitHub repository is archived. Its row on the
 home page shows "(archived)" after its name, and its page shows "Archived on
-GitHub: Yes". GitHub makes an archived repository read-only until its owner
-unarchives it.
+GitHub: Yes". GitHub makes an archived repository read-only until someone
+with admin access to it unarchives it.
 
 To compare your Zotero version with each declared range, enter it in the
 "Your Zotero version" field at the top of any page. You can also paste the
@@ -44,8 +44,9 @@ A daily build updates the data. If more than half of the records carry a
 failure, the build deploys nothing. If the site build fails, the build also
 deploys nothing. The data from the last good build then stays in place. "Building the data" below describes the file. A breaking
 change to the file gets a new schema version under a new path, such as `v2/`.
-A new optional field is not a breaking change, so it stays in the current
-version.
+By this project's rule, a new optional field does not get a new schema
+version. The schema rejects fields that it does not define. If you validate
+against a saved copy of the schema, fetch it again after such a change.
 
 ## Plugin entries
 

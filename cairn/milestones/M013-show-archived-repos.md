@@ -79,7 +79,7 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 - [x] T4: Edit README.md's inclusion bar and fact list. Edit DESIGN.md's Contract boundary fact list (lines 29-31),
       its Data sources inclusion bar (lines 78-80), and its upstream reader and site architecture lines. Add a
       CHANGELOG.md Unreleased entry.
-- [ ] T5: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
+- [x] T5: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
 - [ ] T6: After the merge, dispatch `build.yml` on the default branch once. Read the deployed data, one archived-fact
       page, and the deployed schema.
 
@@ -100,6 +100,8 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 - 2026-10-26: T1, T2 done in one commit, since the reader's new field fails the build tests until the schema admits it. The better-notes fixture gains `"archived": false`, as GitHub returned on 2026-10-26, and the happy-path test expects it. The build fixture's example/second-plugin is archived. A planted `"type": "string"` in the schema failed both new build tests. `pnpm test`: 417 passed.
 - 2026-10-26: T3 done. The archived fact sits first in the facts list after Repository, and the home marker is a `<span data-archived>` after the name link. Site fixture: old-plugin archived, first-plugin not, the GUID plugin with no value, broken-plugin a failure. The three new tests failed before the template change. `pnpm test`: 421 passed. `pnpm check`: 16 entries, 0 problems.
 - 2026-10-26: T4 done. README.md states the listing and marker in "The site", the optional-field rule in "Using the data", the inclusion bar in "Adding a plugin", and the field in "Building the data". README.md has no single inclusion-bar section, so its statement sits beside the failure names. DESIGN.md: Contract boundary facts and API rule, Data sources bar, reader and site architecture lines. CHANGELOG.md: one Unreleased entry.
+- 2026-10-26: T5 done. `pnpm test`: 421 passed. `pnpm check`: 16 entries, 0 problems.
+- 2026-10-26: claim audit: 25 claims read, 3 corrected — README.md, CHANGELOG.md. The optional-field rule is now stated as the project's rule, with a note to fetch a saved schema copy again. The CHANGELOG page claim is now conditional on an `archived` value. "Its owner" became "someone with admin access". The fourth flag, the better-notes fixture's read date, holds: the read ran in this session.
 
 ## Decisions
 
