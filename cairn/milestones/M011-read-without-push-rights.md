@@ -186,3 +186,8 @@ Evidence on the branch at 3fa8346, 2026-10-26; main had not moved (`git rev-list
 - ripple #1: row "Limit what an issue run can reach" describes the pre-M011 job — fix now: the row graduates at hygiene
 - ripple #2: row "Stop retrying a failing bot pull request" names `pnpm discover --propose` and a push by `pnpm discover-issue` — fix now: the row is reworded to the new commands, and its branch-name part narrows once diff-bug #2's fix records such repos
 - ripple #3: row "Keep issues open on a bot read failure" names `pnpm discover-issue` as the command that closes — fix now: reworded to `pnpm propose`
+
+Pass 3 evidence on the branch at d7b0873, 2026-10-26, after review returns 1 and 2; main had not moved.
+- AC1, AC4, AC5: the `ruby -ryaml` check passes again (the T9 upload `if:` and the discover write job's `if:` add no `run` step and name no token); the issue write job's `if:` and `continue-on-error` are unchanged.
+- AC2, AC3: the three test files pass again; AC3's plants are now 18 with the symbolic-link `entries`, and the new tests for a digit in a failure name, `not-proposable` in an issue run and in a mixed discover run, and a non-`ReadFailure` read pass.
+- AC7: `npx -y pnpm@12.15.0 test`: type check clean, Test Files 12 passed (12); Tests 401 passed (401); `npx -y pnpm@12.15.0 check`: checked 14 entries in plugins, 0 problems.
