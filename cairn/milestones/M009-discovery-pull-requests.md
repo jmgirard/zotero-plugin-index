@@ -114,6 +114,7 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 - 2026-10-26: T6: README "Finding new plugins" (with `pnpm discover` itself, which M008 left to this milestone) and "Pull requests from the bot"; one CHANGELOG entry; DESIGN Data sources, Function Families, and an Architecture bullet. The AC2 test moved to `pnpm discover --propose` with no `--limit`, because the in-process run passed the limit and so did not test the default of 5; a planted default of 6 turned it red; verify green (339 tests, 14 entries).
 - 2026-10-26: claim audit: 65 claims read, 5 corrected — CHANGELOG.md, README.md, src/discover/cli.ts, src/discover/propose.ts (2); the false one was a defect: a manifest value with a blank line ended its code span in the pull request body, so `code()` now collapses whitespace, with a test that fails without it; the same reader re-read the five and found all true.
 - 2026-10-26: T7 is the post-merge live dispatch, left for /milestone-review; status set to review; verify green (340 tests, 14 entries).
+- 2026-10-26: step-7 approval: m009-discovery-pull-requests approved for merge
 
 ## Decisions
 
