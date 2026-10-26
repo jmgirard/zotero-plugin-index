@@ -64,7 +64,7 @@ an edit to M009's CHANGELOG entry.
 ## Tasks
 
 - [x] T1: Write `add-plugin.yml` and failing tests for AC1–AC4, with form bodies in the shape GitHub renders.
-- [ ] T2: Implement the form-body parser.
+- [x] T2: Implement the form-body parser.
 - [ ] T3: Implement the issue run on top of M009's propose step: the index and skip checks, the read, the pull
       request with `Closes #<issue>`, the comment, and the close.
 - [ ] T4: Write `add-plugin-issue.yml` with the body in `env:` only and the `discover` concurrency group;
@@ -89,6 +89,7 @@ an edit to M009's CHANGELOG entry.
 - 2026-10-26: decided the API: `parseIssueBody` with problems `no-url-heading` and `no-response`, `issueRun` returning an exit status, and a `pnpm discover-issue` CLI reading `ISSUE_NUMBER`, `ISSUE_BODY`, and `GITHUB_REPOSITORY` from the environment.
 - 2026-10-26: decided the close reasons: `completed` when an entry already names the repo, `not_planned` for every other close.
 - 2026-10-26: the repo has no `add-plugin` label, and GitHub applies a form's label only when it exists; creating it is an outward action left for T6, at the user's yes.
+- 2026-10-26: T2 done: `parseIssueBody` in `src/discover/issue.ts`; its 6 tests pass; `issueRun` is a stub until T3.
 
 ## Decisions
 
