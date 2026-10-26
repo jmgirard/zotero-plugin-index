@@ -1,17 +1,16 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-26 (M010 done and archived; 1 row graduated, 4 rows added, 3 rows extended; 3 lessons captured, 5 marked used; M007 row pruned)_
+_Last hygiene check: 2026-10-26 (M011 done and archived; 1 row graduated, 2 rows reworded, 2 rows added; 1 lesson captured, 8 marked used; M008 row pruned)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M011 | Read untrusted repos without push rights | review | — | high | milestones/M011-read-without-push-rights.md |
 | M012 | Stop inflating past the declared size | planned | — | normal | milestones/M012-bound-unzip-output.md |
-| M008 | Find new plugin repos by topic search | done | — | high | milestones/archive/M008-topic-discovery.md |
 | M009 | Open a pull request for each new plugin | done | M008 | high | milestones/archive/M009-discovery-pull-requests.md |
 | M010 | Take one repo URL from an issue form | done | M009 | normal | milestones/archive/M010-add-plugin-issue-form.md |
+| M011 | Read untrusted repos without push rights | done | — | high | milestones/archive/M011-read-without-push-rights.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
 
@@ -27,7 +26,6 @@ _Last hygiene check: 2026-10-26 (M010 done and archived; 1 row graduated, 4 rows
 - Bound the time of a discover run: `discover.yml` stops at 30 minutes, and `pnpm discover` writes its state only at the end, so a run the limit kills saves the old state again and the next run reads the same first repos; its `git` and `pnpm check` spawns have no timeout; add a time budget that ends the reads early and writes the state; see "Warn when the daily build degrades" (M009 review) — added 2026-10-26 — M008, M009
 - Keep issues open on a bot read failure: `pnpm propose` closes an issue as not planned on any failed read in its read step, `github-http-error` and `request-failed` included, which a rate limit or a GitHub outage can cause; leave such an issue open with its comment, as for a failed push; `unexpected-error` from the reader closes it the same way (M010, M010 review) — added 2026-10-26 — M010
 - Answer issues whose run was canceled: `add-plugin-issue.yml` shares the `discover` concurrency group, and GitHub's docs say a new pending run in a group cancels the one already pending, so an issue opened while another run waits can get no comment; rerun such issues, for example from a scheduled sweep of unanswered `add-plugin` issues; an issue run can also cancel a pending scheduled `Discover plugins` run, so many issues can hold off discovery (M010, M010 review) — added 2026-10-26 — M010
-- Limit what an issue run can reach: anyone who opens an `add-plugin` issue starts a job with `contents: write` and `issues: write` that runs `pnpm install` while the checkout's token is in `.git/config`, and unzips the XPI of a repo they choose, which before ran only on a schedule; see "Stop inflating past the declared size" (M010 review) — added 2026-10-26 — M010 — started M011
 - Keep read jobs from writing the cache: the read jobs of `discover.yml` and `add-plugin-issue.yml` can save Actions cache entries after they read repos that anyone names, and `build.yml` restores its `cache: pnpm` entry from the default branch's cache, so a read job that a crafted file took over could plant a dependency store; drop `cache: pnpm` from `build.yml` or keep caches out of the read jobs (M011 review) — added 2026-10-26 — M011
 - Check the index at the push base: `pnpm propose` checks the index in its checkout, the commit the read job saw, but builds each commit on the newest default branch, so an entry merged during the run can be proposed again; read `plugins/` at the fetched base commit (M011 review) — added 2026-10-26 — M011
 - [low] Close the issue when its pull request closes: an issue whose bot pull request is closed without a merge stays open, though the bot's comment said it closes when that pull request merges (M010 review) — added 2026-10-26 — M010
