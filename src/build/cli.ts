@@ -32,7 +32,10 @@ async function main(): Promise<number> {
     return 1;
   }
   const failed = built.data.plugins.filter((plugin) => plugin.failure);
-  for (const { id, failure } of failed) console.log(`${id}: ${failure!.name}: ${failure!.message}`);
+  // A message can hold upstream text, such as an update_url. Each goes on one line, so no
+  // part of it starts a line that GitHub Actions reads as a workflow command.
+  const oneLine = (text: string) => text.replace(/[\r\n]+/g, " ");
+  for (const { id, failure } of failed) console.log(`${id}: ${failure!.name}: ${oneLine(failure!.message)}`);
   const counts = new Map<string, number>();
   for (const { failure } of failed) counts.set(failure!.name, (counts.get(failure!.name) ?? 0) + 1);
   for (const name of [...counts.keys()].sort()) console.log(`failed with ${name}: ${counts.get(name)}`);

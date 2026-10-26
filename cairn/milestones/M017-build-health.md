@@ -146,6 +146,8 @@ planned.
 - 2026-10-26: review return 1: AC6 — the DESIGN.md Architecture paragraph (`cairn/DESIGN.md:315-318`) states the build-level exit rule but neither names what a build-level failure is nor points to the README for it.
 - 2026-10-26: minor amendment: T7 added for review return 1, Coverage AC6 → T5, T7. T7 done: the Architecture paragraph now says "as README "Building the data" defines it". Docs only; `pnpm test` and `pnpm check` unaffected, run below.
 - 2026-10-26: implement complete after return 1; status set to review.
+- 2026-10-26: correction to the "implement chose" line above: `buildData` returns `buildLevel` in record order, not sorted; records follow entry order, which the listing sorts.
+- 2026-10-26: review pass 2: four lenses, 27 findings; 6 fix now (message on one line with a regression test, D-011, DESIGN rewrap, two test comments, this correction), 4 follow-up into new row "Withhold deploys when all reads fail", 17 rejected. Verify: 484 passed, 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
@@ -169,3 +171,28 @@ Pass 2, 2026-10-26, at 91af72f (level with origin/main), after review return 1.
 - AC6: README "Building the data" lists the four build-level causes and README:60-63 points to it; CHANGELOG's new Unreleased entry says only build-level failures count and points to README, and its M006 entry defines one by example; DESIGN Function Families (147-150) and Architecture (316-317) both say "as README "Building the data" defines it"; `build.yml:37` names examples and points to README.
 - AC1–AC5, AC7: code unchanged since pass 1 (T7 touched `cairn/DESIGN.md` only); `pnpm test` 483 passed and `pnpm check` 0 problems at 91af72f.
 - Gate: `cairn_validate.py` all checks passed.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: a failure message holds upstream text (a raw `update_url`), so a newline in it can start a `::stop-commands::` line that hides the new `::warning::` or fakes annotations — fix now: `cli.ts` puts each message on one line; regression test planted `\n::stop-commands::planted` in an update_url (red before, green after)
+- diff-bug #2: a dead plugin domain's lookup failure counts as build-level every day — reject, planned change (AC1 "on any host"; README says so)
+- diff-bug #3: a GitHub API 200 with an HTML body is not build-level — follow-up: row "Withhold deploys when all reads fail"
+- diff-bug #4: a 403 from GitHub's release-asset host is not build-level — follow-up: row "Withhold deploys when all reads fail"
+- diff-bug #5: `buildLevel` is `boolean`, `true | undefined`, and `boolean | undefined` in different types — reject, style
+- diff-bug #6: the work log's "implement chose" line says sorted ids, the code keeps record order — fix now: correcting work-log line
+- diff-bug #7: the new DESIGN Architecture lines are not wrapped — fix now: rewrapped
+- diff-bug #8: the fork-only warning test runs the same path as the 404-and-forks test — reject, planned change (AC4 names a fork-only build)
+- diff-bug #9: the `buildLevelStatus` test's expectation restates the rule — reject, false: the expectation is the AC1 list stated apart from the code, and the planted always-true rule turned it red
+- diff-bug #10: the two "body cut off" rows reach the same `readCapped` catch — reject, false: the `update.json` row goes through `readCapped`, the GitHub rows through `readText`; both rows predate M017 and only moved tables
+- diff-bug #11: mixed-failure cases repeat reader-table and CLI cases — reject, planned change (AC1 names each probe)
+- diff-bug #12: narrative comments at `test/build.test.ts:176-177` and `:214` — fix now: removed
+- blame-history #1: the build-level rule reverses M006's purpose with no D-entry; a reader or schema regression that fails every record with a named failure now deploys — fix now: D-011 records the decision and its cost; the safety net goes to new row "Withhold deploys when all reads fail"
+- blame-history #2: zip-structure `xpi-unreadable` failures are never build-level — follow-up: row "Withhold deploys when all reads fail"
+- blame-history #3: the M006 exit tests were replaced with no test of exit 1 for mostly non-build-level failures — reject, planned change (AC2: such a build exits 0)
+- blame-history #4: several repos answering 403 each count — reject, planned change (work log 2026-10-26 accepts the 403 rule)
+- blame-history #5: one shared download host's 429 or 5xx across many plugins can block a deploy — reject, planned change (work log: 429 and 5xx from any host)
+- blame-history #6: README top paragraph has a long joined line — reject, style (the line predates M017)
+- prior-review #1: `unexpected-error` now counts toward the deploy block — reject, planned change (AC1)
+- prior-review #2: every fetch rejection and lookup failure counts on any host — reject, planned change (AC1)
+- prior-review #3: a GitHub API 403 for one blocked repo counts — reject, planned change (work log)
+- prior-review #4: an empty DNS answer counts as build-level — reject, planned change (AC1 "the DNS lookup fails")
+- ripple: no ripple evidence outside the diff; ROADMAP:20-21 describe the pre-M017 rule as dated rows that carry "started M017"
+- Return floor: diff-bug #1 is not load-bearing for users (only a crafted upstream file reaches it, and it hides a warning, not a deploy decision), so no status return.

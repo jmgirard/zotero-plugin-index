@@ -173,8 +173,6 @@ const SECOND_UPDATE = "https://raw.githubusercontent.com/example/second-plugin/m
 describe("pnpm build", () => {
   test("names an error the reader does not expect unexpected-error, goes on, and exits 1 when 2 of 3 records fail for build-level reasons", () => {
     // BETTER_NOTES is the first entry by name, so the other two are read after the error.
-    // With the 503, 2 of 3 records carry a build-level failure, so the build writes the
-    // file and exits 1.
     const recorded = responses();
     recorded["https://api.github.com/repos/windingwind/zotero-better-notes"] = { unexpected: "planted reader error" };
     recorded[SECOND_UPDATE] = { status: 503, text: "Service Unavailable" };
@@ -211,7 +209,6 @@ describe("pnpm build", () => {
   });
 
   test("exits 0 with no warning when every record fails for reasons that are not build-level", () => {
-    // A GitHub API 404 and two forks: 3 of 3 records fail, none for a build-level reason.
     const recorded = responses();
     delete recorded["https://api.github.com/repos/windingwind/zotero-better-notes"];
     (recorded["https://api.github.com/repos/example/second-plugin"].json as { fork: boolean }).fork = true;
@@ -222,6 +219,18 @@ describe("pnpm build", () => {
     expect(summary(result.stdout)).toEqual(["failed with fork: 2", "failed with github-http-error: 1", "build-level failures: 0 of 3 records"]);
     expect(result.stdout).not.toContain("::warning::");
     expect(readOutput(out).plugins.every((plugin) => plugin.failure)).toBe(true);
+  });
+
+  test("prints each failure message on one line, so upstream text cannot start a workflow command", () => {
+    const recorded = responses();
+    recorded["https://api.github.com/repos/windingwind/zotero-better-notes"] = { unexpected: "planted reader error" };
+    const xpi = recorded["https://github.com/example/second-plugin/releases/download/v1.0.0/second-plugin.xpi"].xpi!;
+    const manifest = xpi["manifest.json"] as { applications: { zotero: { update_url: string } } };
+    manifest.applications.zotero.update_url = `${SECOND_UPDATE}\n::stop-commands::planted`;
+    const result = pnpmBuild([TREE, "--out", tempDir()], writeFixture(recorded));
+    expect(result.stdout).toContain(`${SECOND}: update-json-http-error: the update.json at ${SECOND_UPDATE} ::stop-commands::planted`);
+    const commands = result.stdout.split("\n").filter((line) => line.startsWith("::"));
+    expect(commands).toEqual(["::warning::1 of 3 records carry a build-level failure"]);
   });
 
   test("prints no warning when only a fork fails", () => {
