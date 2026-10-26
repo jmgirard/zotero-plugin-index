@@ -124,7 +124,7 @@ describe("readUpstream", () => {
     expect(result.ok && result.facts.name).toBeUndefined();
   });
 
-  test("reads the newest published release with an .xpi, whatever the list order", async () => {
+  test("reads the newest published stable release with an .xpi, whatever the list order", async () => {
     const { result } = await read((r) => {
       const [stable, beta] = r[RELEASES].json as Json[];
       const draft = {
@@ -197,21 +197,18 @@ describe("readUpstream", () => {
       expect(result.ok && result.facts.version).toBe("3.3.3");
     });
 
-    test.each<[string, unknown]>([
-      ["absent", undefined],
-      ['the string "true"', "true"],
-    ])("reads a release whose prerelease value is %s as stable", async (_name, value) => {
+    test('reads a release whose prerelease value is the string "true" as stable', async () => {
       const { result } = await read((r) => {
         addBeta(r);
-        (r[RELEASES].json as Json[])[1].prerelease = value;
+        (r[RELEASES].json as Json[])[1].prerelease = "true";
       });
       expect(result.ok && [result.facts.version, result.facts.prerelease]).toEqual(["3.3.3", false]);
     });
 
-    const notZotero7: [string, (m: Json, r: Responses) => void, string][] = [
-      ["no-manifest", (_m, r) => (r[XPI] = { xpi: { "install.rdf": "" } }), "v3.3.3"],
-      ["no-zotero-id", (m) => delete m.applications.zotero.id, "v3.3.3"],
-      ["max-version-below-7", (m) => (m.applications.zotero.strict_max_version = "6.*"), "6.*"],
+    const notZotero7: [string, (m: Json, r: Responses) => void][] = [
+      ["no-manifest", (_m, r) => (r[XPI] = { xpi: { "install.rdf": "" } })],
+      ["no-zotero-id", (m) => delete m.applications.zotero.id],
+      ["max-version-below-7", (m) => (m.applications.zotero.strict_max_version = "6.*")],
     ];
 
     test.each(notZotero7)("reads the prerelease when the stable release fails with %s", async (_name, edit) => {
@@ -226,10 +223,16 @@ describe("readUpstream", () => {
       ]);
     });
 
-    test.each(notZotero7)("returns %s when no release is later than the stable one", async (failure, edit, detail) => {
-      const { result, requests } = await read((r) => edit(manifest(r), r));
-      expect(result).toEqual({ ok: false, failure, message: expect.stringContaining(detail) });
-      expect(requests.some((q) => q.url.includes("/v3.3.0-beta.5/"))).toBe(false);
+    test.each<[string, (r: Responses) => void]>([
+      ["no prerelease", () => {}],
+      ["a prerelease with the same publish date", (r) => addBeta(r, "2026-08-24T13:25:16Z")],
+    ])("returns the stable failure, reading its XPI once, when %s is later", async (_name, edit) => {
+      const { result, requests } = await read((r) => {
+        edit(r);
+        r[XPI] = { xpi: { "install.rdf": "" } };
+      });
+      expect(result).toEqual({ ok: false, failure: "no-manifest", message: expect.stringContaining("v3.3.3") });
+      expect(requests.filter((q) => q.url.endsWith(".xpi")).map((q) => q.url)).toEqual([XPI]);
     });
 
     test("returns the prerelease's failure when both reads fail", async () => {

@@ -73,3 +73,19 @@ new data until it fetches the schema again. The user chose the optional v1
 field at the M013 plan question set with that cost stated, so D-006 stands
 and replaces the M003 rule. The README and the changelog tell consumers to
 fetch the schema again.
+
+### D-008: Read the newest stable release first, superseding M002's prereleases-included rule
+
+2026-10-26, M014 review. M002 shipped a reader that takes the manifest from
+the newest release with an `.xpi`, prereleases included. The M002 review left
+a candidate row to read stable releases first. At the M014 plan question set
+the user chose to read the newest stable release with an `.xpi` first. The
+user also chose a fallback over a stable-only rule. If the stable release is
+not a Zotero 7+ build (`no-manifest`, `no-zotero-id`, or
+`max-version-below-7`), the reader reads the newest later release. A
+stable-only rule drops each plugin whose Zotero 7 build exists only as a
+prerelease. The data gains an optional `prerelease` field under D-006 and
+D-007. For some plugins the change moves the values of existing v1 fields,
+such as `version` and `latestReleaseDate`. This is not a breaking change,
+because each field still describes the release whose manifest was read, as
+the v1 schema says, and the record keeps its shape.
