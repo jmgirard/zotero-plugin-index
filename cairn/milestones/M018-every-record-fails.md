@@ -47,7 +47,7 @@ D-012 is written by this plan, not by the milestone.
      coverage-complete counts AC checkboxes positionally (M107); departures:
      a "Deviations from RR<NN>" table ends this section. -->
 
-- [ ] AC1: After `pnpm build` writes the file, it exits 1 when every record
+- [x] AC1: After `pnpm build` writes the file, it exits 1 when every record
       carries a failure, and it prints the line
       `all <n> records carry a failure` on stderr, where `<n>` is the number
       of records. A test whose 3 records fail with `fork`, with a GitHub API
@@ -55,18 +55,18 @@ D-012 is written by this plan, not by the milestone.
       that line with `<n>` = 3, the stdout line
       `build-level failures: 0 of 3 records`, and a written file in which
       every record carries a failure.
-- [ ] AC2: The every-record bar does not fire while one record has no
+- [x] AC2: The every-record bar does not fire while one record has no
       failure. A test whose 3 records include exactly one with no failure,
       the other two failing with `fork`, shows exit status 0 and no stderr
       line that contains `records carry a failure`.
-- [ ] AC3: The build-level bar keeps its rule apart from the new bar. A test
+- [x] AC3: The build-level bar keeps its rule apart from the new bar. A test
       whose 3 records hold 2 build-level failures and 1 record with no
       failure shows exit status 1, the stderr line that ends in
       `more than half`, and no stderr line that contains
       `records carry a failure`. The existing test with 2 of 3 build-level
       failures, whose 3 records all fail, shows both stderr lines. The
       existing test with 1 of 2 build-level failures still exits 0.
-- [ ] AC4: Each of these six places holds the phrase
+- [x] AC4: Each of these six places holds the phrase
       `every record carries a failure`: the comment above the exit rule in
       `src/build/cli.ts`, the comment above `pnpm build` in
       `.github/workflows/build.yml`, README's paragraph that starts
@@ -78,10 +78,10 @@ D-012 is written by this plan, not by the milestone.
       `or fewer carry one, the command exits with status 0.`. The
       `## Unreleased` section of CHANGELOG.md gains one entry that holds the
       same phrase.
-- [ ] AC5: The published data keeps its shape:
+- [x] AC5: The published data keeps its shape:
       `git diff --stat <default-branch>...HEAD -- schemas src/build/build.ts`
       prints nothing.
-- [ ] AC6: `pnpm test` and `pnpm check` pass.
+- [x] AC6: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate; each acceptance criterion → the
@@ -170,3 +170,15 @@ D-012 is written by this plan, not by the milestone.
      results, review findings + triage. EXEMPT from the 150-line cap (M55),
      as are the work log (D-046) and the decisions section (D-074); evidence
      never scrambles plan-owned content. -->
+
+Pass 1, 2026-10-26, on b26d80a; main had not moved since the branch was cut.
+
+- AC1: `pnpm test` 486 passed in 14 files. The test "exits 1 with no warning when every record fails for reasons that are not build-level" passed; it asserts status 1, stderr `all 3 records carry a failure`, the summary `failed with facts-invalid: 1`, `fork: 1`, `github-http-error: 1`, `build-level failures: 0 of 3 records`, and a written file in which every record has a failure.
+- AC2: same run; "exits 0 while one record has no failure, though the others fail" passed; it asserts status 0, no stderr `records carry a failure`, and the summary `failed with fork: 2`, `build-level failures: 0 of 3 records`.
+- AC3: same run; "exits 1 when 2 of 3 records fail for build-level reasons and one has no failure" passed (status 1, the `more than half` line, no `records carry a failure` line); the 2-of-3 test passed with both stderr lines asserted; "exits 0 and warns when exactly half of the records fail for build-level reasons" passed with status 0.
+- AC4: with each file's lines joined and comment marks removed, the phrase `every record carries a failure` occurs once in the `src/build/cli.ts` comment, once in the `build.yml` comment, in README lines 60-65 and in the "Building the data" paragraph at 351-362, and in both DESIGN entries (lines 144-153 and 313-322). Line-joined README searches for `for a reason of its own` and `or fewer carry one, the command exits with status 0.` each found 0. The branch adds one CHANGELOG entry under `## Unreleased`, and it holds the phrase.
+- AC5: `git diff --stat main...HEAD -- schemas src/build/build.ts` printed nothing.
+- AC6: `pnpm test` 486 passed in 14 files (the run above); `pnpm check` checked 17 entries, 0 problems.
+- Record: the AC3 to AC6 ticks landed one edit before their evidence lines, which a chain of failed edits left unwritten; the lines above were written from the same commands' output in the same pass.
+- Consistency gate: `cairn_validate.py` all checks passed; no DESIGN principle changed, so `cairn_impact` was skipped; the generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
