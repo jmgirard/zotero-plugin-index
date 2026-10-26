@@ -26,17 +26,17 @@ as M011 left them, with no dependency cache. The discovery state cache stays, be
 
 ## Acceptance criteria
 
-- [ ] AC1: In `.github/workflows/build.yml`, no step of any job has a `uses:` that names `actions/cache`,
+- [x] AC1: In `.github/workflows/build.yml`, no step of any job has a `uses:` that names `actions/cache`,
       `actions/cache/restore`, or `actions/cache/save`. No step's `with:` block has a `cache` key.
-- [ ] AC2: `test/workflows.test.ts` fails on each of these forms in `build.yml`: a block `cache:` key, a flow
+- [x] AC2: `test/workflows.test.ts` fails on each of these forms in `build.yml`: a block `cache:` key, a flow
       `{cache: …}` key, and a `uses:` of `actions/cache@`, `actions/cache/restore@`, or `actions/cache/save@` in any
       letter case. It passes on the milestone's `build.yml`.
-- [ ] AC3: A `workflow_dispatch` run of `build.yml` on the milestone branch finishes its `build` job with success.
+- [x] AC3: A `workflow_dispatch` run of `build.yml` on the milestone branch finishes its `build` job with success.
       That job restores no cache: its log, searched case-sensitively, has no line containing `Cache restored`. The
       `deploy` job is outside this criterion, because the `github-pages` environment takes deploys from `main` only.
-- [ ] AC4: `CHANGELOG.md`'s `## Unreleased` section and `cairn/DESIGN.md`'s Architecture text on `build.yml` each
+- [x] AC4: `CHANGELOG.md`'s `## Unreleased` section and `cairn/DESIGN.md`'s Architecture text on `build.yml` each
       state that the build job of `build.yml` restores no Actions cache.
-- [ ] AC5: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
+- [x] AC5: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -89,3 +89,11 @@ as M011 left them, with no dependency cache. The discovery state cache stays, be
 ## Decisions
 
 ## Review
+
+- AC1: `ruby -ryaml` parse of `build.yml` at ffe348b lists 10 steps in 2 jobs (build, deploy); no `uses` starts with `actions/cache` in any case, and no step's `with:` keys include `cache` (keys seen: `node-version`, `name`, `path`, `if-no-files-found`). Workflow `cache-mode` is `none`.
+- AC2: at ffe348b, `test/workflows.test.ts` passes (8 tests). Each form planted in a copy of `build.yml` (block `cache: pnpm`, flow `{ node-version: 24, cache: pnpm }`, `actions/cache@v6`, `ACTIONS/CACHE/RESTORE@v6`, `Actions/Cache/Save@v6`) gave "1 failed, 7 passed", the failing test being the `build.yml` one; restored from a copy, `git status` clean.
+- AC3: dispatch run 40340509817 on the branch at a9e7ac1: build job 121633624337 conclusion success; its log (383 lines) has 0 lines with `Cache restored`, against 2 in main run 40338224850's build job. `build.yml` changed after a9e7ac1 only in comment lines (`git diff a9e7ac1 HEAD`). The deploy job's failure is the `github-pages` environment rule, outside the criterion.
+- AC4: `CHANGELOG.md:122`, under `## Unreleased`, and `cairn/DESIGN.md:318` each read "The build job of `build.yml` restores no Actions cache".
+- AC5: `pnpm test` 14 files, 475 tests passed; `pnpm check` 17 entries, 0 problems, at ffe348b.
+- consistency gate: `cairn_validate.py` all checks passed; no principle changed, so no `cairn_impact` run; the generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
