@@ -19,13 +19,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # This job restores and saves no Actions cache. The read job of `Discover plugins`
+    # reads repos that anyone can tag, and its scheduled and dispatched runs can save
+    # caches that a run on the default branch restores. A dependency store planted there
+    # could be restored into this job before `pnpm install`, and this job writes the site
+    # and data that Pages publishes. GitHub enforces this mode with the job's cache token.
+    cache-mode: none
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
+      # No dependency cache, as `cache-mode` above says.
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       # Exits 1 when more than half of the records carry a failure. The steps below
