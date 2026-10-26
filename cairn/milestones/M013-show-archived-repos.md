@@ -71,7 +71,7 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 - [x] T2: Add the optional boolean `archived` to the `upstream` definition of `schemas/plugins.v1.schema.json`
       (lines 81-96). Give one repo in `test/fixtures/build/responses.json` `"archived": true`. Add the build test
       and the `checkOutput` test of AC2 to `test/build.test.ts`.
-- [ ] T3: Add the "Archived on GitHub" `<dt>` and `<dd data-fact="archived">` to
+- [x] T3: Add the "Archived on GitHub" `<dt>` and `<dd data-fact="archived">` to
       `site/src/pages/plugins/[id]/index.astro` (facts list, lines 49-65), shown only when `upstream.archived` is a
       boolean. Add the `data-archived` marker after the name link in `site/src/pages/index.astro:22`. Give
       `test/fixtures/site/plugins.json` records of the four kinds, and add the AC3 and AC4 tests to
@@ -98,6 +98,7 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 - 2026-10-26: inbox sweep: issue #12 overlaps, since its PR #13 proposes an archived repo. It closes when the user merges PR #13, so it takes no Resolves slot. Bot PR #15 does not overlap and takes no disposition here.
 - 2026-10-26: started on branch m013-show-archived-repos, cut from main at eef203d.
 - 2026-10-26: T1, T2 done in one commit, since the reader's new field fails the build tests until the schema admits it. The better-notes fixture gains `"archived": false`, as GitHub returned on 2026-10-26, and the happy-path test expects it. The build fixture's example/second-plugin is archived. A planted `"type": "string"` in the schema failed both new build tests. `pnpm test`: 417 passed.
+- 2026-10-26: T3 done. The archived fact sits first in the facts list after Repository, and the home marker is a `<span data-archived>` after the name link. Site fixture: old-plugin archived, first-plugin not, the GUID plugin with no value, broken-plugin a failure. The three new tests failed before the template change. `pnpm test`: 421 passed. `pnpm check`: 16 entries, 0 problems.
 
 ## Decisions
 

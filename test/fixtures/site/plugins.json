@@ -27,7 +27,8 @@
         "repoCreatedAt": "2023-03-14T09:26:53Z",
         "openIssues": 12,
         "releaseCount": 27,
-        "latestReleaseDate": "2026-09-30T18:04:11Z"
+        "latestReleaseDate": "2026-09-30T18:04:11Z",
+        "archived": false
       },
       "overrides": [
         {
@@ -58,7 +59,8 @@
         "repoCreatedAt": "2019-11-02T12:00:00Z",
         "openIssues": 3,
         "releaseCount": 5,
-        "latestReleaseDate": "2024-07-01T08:30:00Z"
+        "latestReleaseDate": "2024-07-01T08:30:00Z",
+        "archived": true
       },
       "overrides": []
     },
