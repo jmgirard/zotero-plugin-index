@@ -47,12 +47,13 @@ async function main(): Promise<number> {
   console.log(`wrote ${total} records to ${written.path}, ${failed.length} with a failed upstream read`);
   // A build-level failure, such as a rate limit or a network error, usually points at the
   // build, not at the plugin. When more than half of the records carry one, exit 1, so the daily
-  // build deploys nothing and the last good data stays.
-  if (buildLevel * 2 > total) {
-    console.error(`${buildLevel} of ${total} records carry a build-level failure, more than half`);
-    return 1;
-  }
-  return 0;
+  // build deploys nothing and the last good data stays. Also exit 1 when every record carries a
+  // failure of any name, since a reader or schema bug can fail them all with named failures.
+  const tooManyBuildLevel = buildLevel * 2 > total;
+  const allFailed = failed.length === total;
+  if (tooManyBuildLevel) console.error(`${buildLevel} of ${total} records carry a build-level failure, more than half`);
+  if (allFailed) console.error(`all ${total} records carry a failure`);
+  return tooManyBuildLevel || allFailed ? 1 : 0;
 }
 
 // Set exitCode rather than calling exit(), so piped output is not cut off.

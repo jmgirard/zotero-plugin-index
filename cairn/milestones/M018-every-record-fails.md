@@ -102,7 +102,7 @@ D-012 is written by this plan, not by the milestone.
      cites; an insertion, removal, or reorder renumbers the labels and the
      Coverage lines together. -->
 
-- [ ] T1: Write the tests first in `test/build.test.ts`. Change the test
+- [x] T1: Write the tests first in `test/build.test.ts`. Change the test
       "exits 0 with no warning when every record fails for reasons that are
       not build-level" (line 211) to the AC1 test. Make its third record fail
       with `facts-invalid`, for example with no `created_at` in the repo
@@ -113,7 +113,7 @@ D-012 is written by this plan, not by the milestone.
       on one line" also fails all 3 records and will exit 1, and it asserts
       no exit status. Run the new tests and see them fail on the unchanged
       code.
-- [ ] T2: In `src/build/cli.ts`, count the records that carry a failure.
+- [x] T2: In `src/build/cli.ts`, count the records that carry a failure.
       Print each bar's stderr line that holds, and return 1 when either bar
       holds. Update the comment above the rule. Leave `src/build/build.ts`
       and `schemas/` as they are.
@@ -151,6 +151,9 @@ D-012 is written by this plan, not by the milestone.
 - 2026-10-26: inbox sweep: no open issues; 6 open bot "Add plugin" pull requests, none overlapping.
 - 2026-10-26: criteria audit (full, fresh Opus reader): 10 findings, all taken. Docs check moved from a grep that missed a wrapped README line to a fixed phrase at six named places and a line-joined search; added AC3 for the build-level bar alone, since every existing build-level test also fails all records; added `facts-invalid` to the all-fail test; moved the live run from a criterion to T4; added AC5 for the data shape; moved the D-entry to this plan; narrowed the Goal; D-012 names the never-deploy risk.
 - 2026-10-26: changelog: one new `## Unreleased` entry (T3).
+- 2026-10-26: implement started on branch m018-every-record-fails.
+- 2026-10-26: T1 done (its checkpoint commit carried no tick, added here): the all-fail test now uses `fork`, a GitHub API 404, and `facts-invalid`; added the one-clean-record test and the build-level-alone test, whose tree copies SECOND under the id `second-copy@example.org` so both read the 503. On the old code the all-fail test and the 2-of-3 both-lines assertion failed, and the two new tests passed, as they pin kept behavior.
+- 2026-10-26: T2 done: `src/build/cli.ts` prints each bar's stderr line that holds and returns 1 when either holds; `build.ts` and `schemas/` untouched. `pnpm test` 486 passed, `pnpm check` 17 entries, 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote
