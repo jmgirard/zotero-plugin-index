@@ -147,3 +147,21 @@ Pass 2 (2026-10-26), branch at ad995d6, main not moved; T5 changed only the `iss
 - AC4: joined copies: README's issue section says a build-level read failure leaves the issue open and the run fails; the CHANGELOG entry says the bot "leaves the issue open, and the workflow run fails"; the `issueRead` comment now reads "the outcome is `failed` with the failure name, so the write step leaves the issue open and the run fails"; the `issueAnswer` comment says "the comment says so and the issue stays open, and the status is 1". Both removed sentences: 0 hits.
 - AC5: `pnpm test` 14 files, 496 passed; `pnpm check` 17 entries, 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed; no principle changed, so no `cairn_impact`; the generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: a plugin host that always answers 5xx (or a repo GitHub always answers 403) keeps its issue open with a failed run and no auto-close — reject (planned change): the plan chose the reader's mark and recorded this as its falsifier; the workflow runs once per opened issue, so a maintainer closes it by hand.
+- diff-bug #2: README's first issue paragraph still says a failed read closes the issue, beside the new build-level paragraph — fix now, fixed d6c5f59.
+- diff-bug #3: the GitHub API 429, 503, and 403 cases run the same issue-side branch — reject (planned change): AC1 names each case.
+- diff-bug #4: no issue-run test for an XPI download 5xx — reject (false): the issue path decides by the reader's mark alone, with no per-source branch, and `test/upstream.test.ts` pins the XPI mark.
+- diff-bug #5: `refuse(..., undefined, read.buildLevel)` is positional and easy to misread — reject (style).
+- blame-history #1: an `unexpected-error` from the entry check (`plannedProblem` throwing) still closes the issue, though D-011 counts the name as build-level — follow-up: new row "Keep issues open on entry-check errors".
+- blame-history #2: the same README sentence as diff-bug #2 — fix now, fixed d6c5f59.
+- blame-history #3: every GitHub API 403 is build-level, so a repo answered 403 for good keeps its issue open — reject (planned change): D-011's list, chosen at the question set.
+- blame-history #4: discovery records an `update-json-http-error` 503 for 30 days (pre-existing) — follow-up: already held by row "Retry repos refused by a download error".
+- prior-review #1: the same README sentence as diff-bug #2 — fix now, fixed d6c5f59.
+- prior-review #2: uneven line wrap at "If `pnpm propose`" in README — fix now, fixed d6c5f59.
+- prior-review #3: the failure-name pattern now applies to `failed`; checked clear, every reader failure name fits — reject (false).
+- ripple #1: the same README sentence as diff-bug #2 — fix now, fixed d6c5f59.
+- ripple #2: candidate row "Keep issues open on a bot read failure" describes the old behavior — reject (planned change): hygiene graduates the row at merge.
+- ripple #3: the issue form says the bot closes the issue when the plugin "does not pass", silent on bot read failures — reject (planned change): T3 kept it, since a failed read is not a refusal of the plugin.
+- ripple #4: the CHANGELOG's "does not pass" sentence sits before the new sentence — reject (planned change): the next sentence states the open-issue case.
+- After fixes: `pnpm test` 496 passed, `pnpm check` 0 problems, `cairn_validate.py` all passed.
