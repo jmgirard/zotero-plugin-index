@@ -280,7 +280,8 @@ The bot can also find no URL in the issue body, fail to read the repository,
 or fail to write the entry. Then it comments the failure name and its message,
 and it closes the issue as not planned. A failed read includes a GitHub API
 answer of HTTP 404, which a repository that does not exist or is private
-gives.
+gives. An `unexpected-error` from the check of the written entry also closes
+the issue, as a failed write does.
 
 The bot itself can fail. Its read of the repository can stop with a
 build-level failure, as "Building the data" defines it. Examples are a rate

@@ -34,7 +34,8 @@ export type IssueOutcome =
   | { outcome: "entry"; entry: PlannedEntry }
   | { outcome: "known"; repo: string }
   | { outcome: "refused"; failure: string; message: string }
-  // `failure` names the reader failure when the bot's read of the repo failed.
+  // `failure` names the failure when the read of the repo stopped with a build-level
+  // failure or threw.
   | { outcome: "failed"; failure?: string; message: string };
 
 export type Plan = { kind: "discover"; entries: PlannedEntry[] } | ({ kind: "issue" } & IssueOutcome);

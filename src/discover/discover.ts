@@ -150,8 +150,8 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
 export type Drafted =
   | { ok: true; id: string; dir: string; repoUrl: string; version: string; strictMinVersion?: string; strictMaxVersion?: string }
   // `recorded` is false for a refusal that says nothing about the repo. `buildLevel` marks a
-  // refusal that points at the bot rather than at the repo: a reader failure that the
-  // reader marks build-level, or a read that threw.
+  // refusal that usually points at the bot rather than at the repo: a reader failure that
+  // the reader marks build-level, or a read that threw.
   | { ok: false; failure: DiscoveryFailure; message: string; recorded: boolean; buildLevel?: true };
 
 export interface DraftOptions {

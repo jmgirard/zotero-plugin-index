@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M019: Keep issues open on a bot read failure
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -118,6 +118,7 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
 - 2026-10-26: T2: `draftEntry` refusals carry `buildLevel` from the reader and on a thrown read; `readOutcome` turns those into `failed`, which gains an optional `failure` in the handoff schema (same name pattern as `refused`), so the comment shows the name in a code span then the message. Chose a schema field over folding the name into the message so the name keeps its own pattern check. `pnpm test` 496 passed, `pnpm check` 0 problems.
 - 2026-10-26: T3: README issue section, CHANGELOG issue-form entry, `issueRead`/`issueAnswer` comments, and DESIGN's Discovery line updated; README points at "Building the data" for the build-level list instead of repeating it. Joined-copy search finds 0 of both removed sentences. The simple-english lint flags README line 68 ("validate"), text this branch does not touch; left as is.
 - 2026-10-26: T4: `pnpm test` 496 passed (14 files), `pnpm check` 17 entries, 0 problems.
+- 2026-10-26: claim audit: 22 claims read, 3 corrected — src/discover/discover.ts, src/discover/handoff.ts, README.md (re-read once: all true; README sentence moved to the paragraph on issues that close).
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->
