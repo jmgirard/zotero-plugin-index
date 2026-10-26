@@ -7,7 +7,7 @@
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — a public issue form that anyone can use to propose a plugin
-- **Branch/PR:** m010-add-plugin-issue-form
+- **Branch/PR:** m010-add-plugin-issue-form, https://github.com/jmgirard/zotero-plugin-index/pull/11
 
 ## Goal
 
@@ -101,6 +101,7 @@ an edit to M009's CHANGELOG entry.
 - 2026-10-26: T1–T5 done, verify clean (`pnpm test` 361 passed, `pnpm check` 0 problems); status review.
 - 2026-10-26: review: four-lens fan-out, 34 findings (14 fix now, 8 follow-up, 11 reject, 1 noted), no return; Review section lists each.
 - 2026-10-26: step-7 approval: m010-add-plugin-issue-form approved for merge, with the `add-plugin` label and one test issue for AC7 after it.
+- 2026-10-26: PR #11 merged 2026-10-26T10:19:40Z as de15750 after CI passed (2 checks); label `add-plugin` created; the browser pane had no GitHub sign-in, so the user chose to submit the form for AC7 (windingwind/zotero-pdf-preview, prefilled link) themselves.
 
 ## Decisions
 
