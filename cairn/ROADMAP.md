@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-26 (M011 done and archived; 1 row graduated, 2 rows
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M012 | Stop inflating past the declared size | planned | — | normal | milestones/M012-bound-unzip-output.md |
+| M012 | Stop inflating past the declared size | in-progress | — | normal | milestones/M012-bound-unzip-output.md |
 | M009 | Open a pull request for each new plugin | done | M008 | high | milestones/archive/M009-discovery-pull-requests.md |
 | M010 | Take one repo URL from an issue form | done | M009 | normal | milestones/archive/M010-add-plugin-issue-form.md |
 | M011 | Read untrusted repos without push rights | done | — | high | milestones/archive/M011-read-without-push-rights.md |

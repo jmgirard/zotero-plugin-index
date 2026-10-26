@@ -1,5 +1,6 @@
+import { deflateRawSync, inflateRawSync } from "node:zlib";
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import type { Lookup } from "../src/upstream/host-guard.ts";
 import { readUpstream, zipEntryCount } from "../src/upstream/reader.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
@@ -299,6 +300,68 @@ describe("readUpstream", () => {
       r[XPI] = { base64: Buffer.from(zip).toString("base64") };
     });
     expect(result).toEqual({ ok: false, failure: "manifest-too-large", message: expect.stringContaining("manifest.json") });
+  });
+
+  // Marks the stored entry `name` of a zipSync zip as deflated and sets its declared
+  // unzipped size, so that the reader inflates its stored bytes.
+  function asDeflated(zip: Uint8Array, name: string, size: number): Uint8Array {
+    const view = new DataView(zip.buffer, zip.byteOffset);
+    const nameLength = (at: number) => view.getUint16(at + 28, true);
+    let header = view.getUint32(zip.length - 22 + 16, true);
+    while (strFromU8(zip.subarray(header + 46, header + 46 + nameLength(header))) !== name) {
+      header += 46 + nameLength(header) + view.getUint16(header + 30, true) + view.getUint16(header + 32, true);
+    }
+    view.setUint16(header + 10, 8, true);
+    view.setUint32(header + 24, size, true);
+    view.setUint16(view.getUint32(header + 42, true) + 8, 8, true);
+    return zip;
+  }
+
+  // Raw deflate data that inflates to 512 MiB of zero bytes, as one stream with no stored
+  // blocks.
+  let deflatedZeros: Uint8Array;
+  beforeAll(() => {
+    deflatedZeros = deflateRawSync(Buffer.alloc(512 * 1024 * 1024), { level: 9 });
+  }, 30_000);
+
+  test("the crafted deflate data is under 1 MiB and inflates to 512 MiB", () => {
+    expect(deflatedZeros.length).toBeLessThan(1_048_576);
+    expect(inflateRawSync(deflatedZeros).length).toBe(536_870_912);
+  });
+
+  test.each(["manifest.json", "_locales/en/messages.json"])(
+    "fails with xpi-unreadable within 1 s when %s inflates to 512 MiB past its declared 1000 bytes",
+    async (name) => {
+      const json = { ...manifest(loadFixture(FIXTURE).responses), default_locale: "en" };
+      const files = {
+        "manifest.json": strToU8(JSON.stringify(json)),
+        "_locales/en/messages.json": strToU8("{}"),
+        [name]: [deflatedZeros, { level: 0 }] as [Uint8Array, { level: 0 }],
+      };
+      const zip = asDeflated(zipSync(files), name, 1000);
+      const started = performance.now();
+      const { result } = await readXpi(() => zip);
+      expect(performance.now() - started).toBeLessThan(1000);
+      expect(result).toEqual({
+        ok: false,
+        failure: "xpi-unreadable",
+        message: expect.stringContaining(`${name} in the XPI of v3.3.3 inflates past the 1000 bytes`),
+      });
+    },
+  );
+
+  test("fails with xpi-unreadable when manifest.json inflates to one byte more than its declared size", async () => {
+    const { result } = await readXpi((json) => understate(zipSync({ "manifest.json": json }), json.length - 1));
+    expect(result).toEqual({
+      ok: false,
+      failure: "xpi-unreadable",
+      message: expect.stringContaining("manifest.json in the XPI of v3.3.3 inflates past the"),
+    });
+  });
+
+  test.each([0, 1])("reads a manifest.json whose declared size is its unzipped size plus %i", async (extra) => {
+    const { result } = await readXpi((json) => understate(zipSync({ "manifest.json": json }), json.length + extra));
+    expect(result.ok && result.facts.version).toBe("3.3.3");
   });
 
   // A zip of `length` bytes that is zero bytes up to its end record, whose entry count

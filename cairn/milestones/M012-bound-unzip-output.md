@@ -1,13 +1,13 @@
 # M012: Stop inflating past the declared size
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the failure name lands in the published data
-- **Branch/PR:** —
+- **Branch/PR:** m012-bound-unzip-output
 
 ## Goal
 
@@ -49,10 +49,10 @@ and "Bound the time of a discover run". The read-only read job → M011.
 
 ## Tasks
 
-- [ ] T1: Write the failing tests in `test/upstream.test.ts` (AC1, AC2). Build the 512 MiB deflate data once in a
+- [x] T1: Write the failing tests in `test/upstream.test.ts` (AC1, AC2). Build the 512 MiB deflate data once in a
       `beforeAll` with its own timeout, or write the deflate stream directly. Run the failing-first test in the
       background, because a hold inside fflate's synchronous unzip cannot be stopped by a Vitest timeout.
-- [ ] T2: Replace `unzipSync` in `unzipOne` (`src/upstream/reader.ts:434`). Find the entry's local header from the
+- [x] T2: Replace `unzipSync` in `unzipOne` (`src/upstream/reader.ts:434`). Find the entry's local header from the
       central directory, keep the duplicate and size checks, inflate with `Inflate` in chunks of at most 64 KiB,
       and stop at the first output byte past the declared size. A stored entry keeps its current size check.
       Correct the comment above `unzipOne`.
@@ -70,6 +70,11 @@ and "Bound the time of a discover run". The read-only read job → M011.
 - 2026-10-26: plan split the request: M011 covers the read-only read job and M012 the unzip bound, because the two ship apart and touch different files.
 - 2026-10-26: criteria audit (full): 4 findings on these criteria. AC1 kept as is: decoding 512 MiB in one push takes about 1.7 s on the plan commit, so the 1 s bound already excludes an unbounded push. AC2 adds an entry shorter than its declared size. AC3 compares a default-branch build with a branch build, run back to back, for `xpi-unreadable` only. A fixture-cost note moved to T1. AC4 and AC5: no finding.
 - 2026-10-26: collision check: absorbs candidate "Stop inflating past the declared size"; extends M004 and M005 (archived).
+- 2026-10-26: started by /milestone-implement on branch m012-bound-unzip-output, cut from main at 184fca4.
+- 2026-10-26: T1 fixture: a first fixture of 64 sync-flushed 8 MiB blocks failed fast on the old reader with "offset is out of bounds" (fflate throws on an empty stored block past a fixed output buffer), not by holding; replaced with one `deflateRawSync` stream of 512 MiB zeros (521,826 bytes, built in a `beforeAll` with a 30 s timeout) on which old `unzipSync` held 1.67 s in a scratch run.
+- 2026-10-26: T1 failing-first on the old reader: both AC1 tests failed on time (1,976 ms and 1,877 ms against the 1 s bound), the AC2 one-byte-over test failed as `manifest-invalid`; the two AC2 read-as-before cases passed.
+- 2026-10-26: T2 choices: chunks of 16 KiB input (at most about 16 MB of output past the bound per push, given deflate's ratio limit near 1032:1); a central-directory walk that mirrors fflate's end-record, zip64, and header reads, shared with `zipEntryCount`; failure message "<name> in the XPI of <tag> inflates past the <n> bytes its zip declares"; the size check stays at the first match and the duplicate check at the second, as before.
+- 2026-10-26: T1+T2 in one checkpoint, because the T1 tests are red without T2. `pnpm test` 412 passed, `pnpm check` exit 0; the two 512 MiB reads take 67 ms and 50 ms.
 
 ## Decisions
 
