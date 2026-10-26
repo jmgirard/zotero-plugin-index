@@ -97,3 +97,25 @@ as M011 left them, with no dependency cache. The discovery state cache stays, be
 - AC5: `pnpm test` 14 files, 475 tests passed; `pnpm check` 17 entries, 0 problems, at ffe348b.
 - consistency gate: `cairn_validate.py` all checks passed; no principle changed, so no `cairn_impact` run; the generic profile names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the flow-key test case passed through the same `\s` branch as the block case, so the `{` and `,` branches of the key regex had no test — fix now, fixed f008ea8 (cases `with: {node-version: 24,cache: pnpm}` and `with: {"cache": pnpm}`).
+- diff-bug #2: the deploy job has never run under workflow-level `cache-mode: none` (branch runs stop at the environment rule) — fix now, fixed f008ea8 (`cache-mode: none` moved to the build job; the deploy job keeps its old setup).
+- diff-bug #3: the comment said a planted store "would be restored", but setup-node restores an exact lockfile-hash key — fix now, fixed f008ea8 ("could be restored").
+- diff-bug #4: the key regex also matches a job id `cache:`, an env `CACHE:`, or `cache:` inside a run line — reject, false: each such match only fails the test, so no cache key can pass unseen.
+- diff-bug #5: stripping ` #` comments cut quoted values, so `{ path: "a #b", cache: pnpm }` passed — fix now, fixed f008ea8 (only full-line comments are dropped; planted, the test failed).
+- diff-bug #6: no test notices removal of `cache-mode: none` or a cache path with no `cache` key — fix now for the first, fixed f008ea8 (test "sets cache-mode none on the build job"; planted removal failed it); the rest reject, false: `cache-mode: none` refuses any cache path at run time.
+- diff-bug #7: the restore and save `uses` cases run one regex group — reject, planned change: each is a form AC2 names, and the save case checks letter case.
+- blame-history #1: the choice of fix is recorded only in the work log, where M011's comparable choice got D-005 — fix now, fixed f008ea8 (D-010).
+- blame-history #2: enforcement of `cache-mode` rests on docs and the "Cache mode: none" log line, and no test guards the key — fix now, fixed f008ea8 (presence test, as diff-bug #6).
+- blame-history #3: the discover read job restores `discovery-state-` by prefix in the job that reads untrusted repos, so planted state could hide repos — follow-up, row "Check the restored discovery state".
+- blame-history #4: `ci.yml` keeping `cache: pnpm` is safe only if no check gates a merge — reject, false: `gh api` shows main unprotected with no required checks.
+- blame-history #5: the daily build now reinstalls dependencies each run — reject, planned change.
+- prior-review #1: the changelog's "cannot change the site and data" claims more than DESIGN's mechanism — fix now, fixed f008ea8 ("the build job cannot restore a cache that such a job saved").
+- prior-review #2: the absorbed row "Keep read jobs from writing the cache" is still listed — reject, planned change: hygiene graduates it at merge.
+- ripple #1: the row "Keep read jobs from writing the cache" still describes `cache: pnpm` in `build.yml` — reject, planned change: hygiene graduates it.
+- ripple #2: that row says the issue read job can save caches, against DESIGN's read-only `issues` access — reject, planned change: the row leaves at hygiene.
+- ripple #3: the `build.yml` comment names only the discover read job as a cache source — reject, false: `issues` runs cannot save caches.
+- ripple #4: `add-plugin-issue.yml:38` "a cache this job saved would reach later jobs" reads as if the job could save — reject, false: it states a conditional reason and stays true.
+- ripple #5: DESIGN.md:249 "Neither job uses the dependency cache" — reject, false: still true of the bot jobs.
+- ripple #6: `cache-mode` may not be a GitHub key — reject, false: workflow-syntax docs define it, and runs 40340509817 and 40342164629 log "Cache mode: none".
+- re-verified at f008ea8: AC1 Ruby parse: build job `cache-mode` "none", no `actions/cache` step, no `cache` key. AC2: 9 tests pass; each of the 5 forms planted again gave "1 failed, 8 passed" on "has no cache step and no cache key". AC3: run 40342164629, build job 121639476323 success, 382 log lines, 0 `Cache restored`, "Cache mode: none"; deploy refused by the environment rule. AC4: CHANGELOG.md and DESIGN.md keep the sentence. AC5: 476 tests passed, 17 entries, 0 problems.
+- return floor: no finding shows a criterion failing or a load-bearing defect after the fixes; no return.
