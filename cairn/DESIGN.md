@@ -54,7 +54,10 @@ shows each one separately.
 1. Discovery. A scheduled bot searches GitHub for repositories with the topic
    `zotero-plugin` or `zotero-addon`. In total, 400 and 109 repositories carry
    these topics (observed 2026-10-24). The bot opens a pull request for each
-   new candidate. A person can also paste one repository URL into an issue
+   new candidate that passes the inclusion bar, at most 5 a run, with the
+   result of `pnpm check` on the entry in its body. A bot pull request closed
+   without a merge keeps the bot from proposing that owner/repo name again
+   (M009). A person can also paste one repository URL into an issue
    form, and the bot drafts the entry. The maintainer approves each pull
    request.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
@@ -99,11 +102,12 @@ exception is a report that is abuse.
 - Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
   <dir>]` writes a new entry from the reader's facts. Added M002.
 - Discovery (`src/discover/`): `pnpm discover [--out <dir>] [--state
-  <file>] [--limit <n>] [--budget <n>]` searches the `zotero-plugin` and
+  <file>] [--limit <n>] [--budget <n>] [--propose]` searches the `zotero-plugin` and
   `zotero-addon` topics, reads each repo that no entry names, and writes
   the entries of up to `limit` repos (5 by default) that pass the inclusion
   bar. It prints a JSON report of what it wrote, refused, and skipped.
-  Added M008.
+  Added M008. With `--propose`, it opens one pull request for each entry it
+  writes (M009).
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
@@ -157,7 +161,8 @@ reused._
 - `src/check/` holds the checker. It reads the registry schema from
   zotero-plugin-registry at a pinned commit, checks the file against a pinned
   SHA-256, and caches it in the gitignored `.cache/`.
-- `src/upstream/` reads the GitHub API with plain fetch, unzips the release
+- `src/upstream/` reads the GitHub API with plain fetch (its client's `post`
+  also creates the bot's pull requests, M009), unzips the release
   XPI with fflate, and reads the `update.json` that the manifest names. The
   caller passes the fetch function, so the tests answer from recorded
   responses in `test/fixtures/upstream/` and `test/fixtures/build/`, and
@@ -191,8 +196,29 @@ reused._
   A failed search ends the run before any read and leaves the state file as
   it was. The report names, for each entry written, its version and declared
   range (M008).
+- `src/discover/propose.ts` runs discovery for `pnpm discover --propose`. It
+  first lists the index repo's pull requests (`state=all`, every page) and
+  puts in the skip set each repo whose `discover/<owner>/<repo>` pull request
+  from the index repo itself is open or closed without a merge. A merged
+  one's entry is in the index. For each entry written, it runs `pnpm check`
+  on a temporary directory that holds only that entry. Then it builds one
+  commit on top of the default branch with a temporary git index file,
+  `commit-tree`, and the `github-actions[bot]` identity, force-pushes it to
+  the branch, and sends one create-pull-request request whose body carries
+  the check's status and output. The checkout's branch and working tree do
+  not change. A failure for one entry is reported, and the run goes on and
+  exits 1 at the end. It also reads the files of each open bot pull request,
+  and discovery refuses, without recording, a repo whose plugin id one of
+  them adds. `githubClient` gains `post`, which fails on a redirect.
+  `.github/workflows/discover.yml` runs it daily and on dispatch on the
+  default branch only, with a `limit` input, with `contents: write` and `pull-requests: write`, in the
+  `discover` concurrency group. It restores the state file from the newest
+  cache by prefix and saves it under a key with the run id, after a failed
+  run too. Pull requests opened with the built-in token start no CI run, so
+  the body carries the check result (M009).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
-  and pull request.
+  and pull request, except those the built-in token makes, such as the
+  discovery bot's (M009).
 - `src/build/` reads the entries, runs the upstream reader on each plugin in
   turn, and checks each record and then the whole output against
   `schemas/plugins.v1.schema.json` before it writes the file.

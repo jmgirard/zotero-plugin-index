@@ -50,3 +50,13 @@
   then shows whether that version is inside the declared range, older than its
   minimum, or newer than its maximum. `pnpm site` builds the pages into `dist/`
   beside the data. If `pnpm site` fails, the daily build deploys nothing.
+- A bot finds new plugins. Once a day, the `Discover plugins` workflow
+  searches GitHub for repositories with the topic `zotero-plugin` or
+  `zotero-addon` that no entry names. It opens one pull request for each
+  new entry that passes the inclusion bar, at most 5 for each daily run. A
+  run started by hand can set another limit. Each pull
+  request body gives the repository URL, the plugin version, the declared
+  Zotero range, and the result of `pnpm check` on the entry. If a bot pull
+  request is closed without a merge, the bot does not propose that
+  repository again. `pnpm discover` runs the same search by hand and writes
+  the new entries to disk, with no pull request.

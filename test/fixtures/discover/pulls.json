@@ -1,0 +1,66 @@
+{
+  "source": "Written by hand for the propose tests, in the shape of GitHub's pull-request list for example/index with state=all: two pages. Bot heads for example/open-pr (open), example/closed-pr (closed, not merged), and example/merged-pr (merged); a discover/ head from a fork, and a head that is not under discover/. The files of the open bot pull request #11.",
+  "repoUrl": "",
+  "responses": {
+    "https://api.github.com/repos/example/index": {
+      "json": { "full_name": "example/index", "default_branch": "main" }
+    },
+    "https://api.github.com/repos/example/index/pulls?state=all&per_page=100": {
+      "headers": {
+        "link": "<https://api.github.com/repos/example/index/pulls?state=all&per_page=100&page=2>; rel=\"next\", <https://api.github.com/repos/example/index/pulls?state=all&per_page=100&page=2>; rel=\"last\""
+      },
+      "json": [
+        {
+          "number": 15,
+          "state": "open",
+          "merged_at": null,
+          "html_url": "https://github.com/example/index/pull/15",
+          "user": { "login": "a-maintainer" },
+          "head": { "ref": "fix-readme", "repo": { "full_name": "example/index" } }
+        },
+        {
+          "number": 14,
+          "state": "open",
+          "merged_at": null,
+          "html_url": "https://github.com/example/index/pull/14",
+          "user": { "login": "someone" },
+          "head": { "ref": "discover/example/fork-pr", "repo": { "full_name": "someone/index" } }
+        },
+        {
+          "number": 13,
+          "state": "closed",
+          "merged_at": "2026-10-20T08:00:00Z",
+          "html_url": "https://github.com/example/index/pull/13",
+          "user": { "login": "github-actions[bot]" },
+          "head": { "ref": "discover/example/merged-pr", "repo": { "full_name": "example/index" } }
+        },
+        {
+          "number": 11,
+          "state": "open",
+          "merged_at": null,
+          "html_url": "https://github.com/example/index/pull/11",
+          "user": { "login": "github-actions[bot]" },
+          "head": { "ref": "discover/example/open-pr", "repo": { "full_name": "example/index" } }
+        }
+      ]
+    },
+    "https://api.github.com/repos/example/index/pulls/11/files?per_page=100": {
+      "json": [
+        { "filename": "plugins/open-pr@example.org/index.json", "status": "added" },
+        { "filename": "plugins/open-pr@example.org/meta.json", "status": "added" }
+      ]
+    },
+    "https://api.github.com/repos/example/index/pulls?state=all&per_page=100&page=2": {
+      "json": [
+        {
+          "number": 12,
+          "state": "closed",
+          "merged_at": null,
+          "html_url": "https://github.com/example/index/pull/12",
+          "user": { "login": "github-actions[bot]" },
+          "head": { "ref": "discover/example/closed-pr", "repo": { "full_name": "Example/Index" } }
+        }
+      ]
+    }
+  }
+}

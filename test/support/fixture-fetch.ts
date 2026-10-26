@@ -20,6 +20,9 @@ export interface Recorded {
   unexpected?: string;
 }
 
+// Keyed by URL for GET requests. A request with another method is answered from
+// `<METHOD> <url> #<n>` for its nth request with that method and URL, else from
+// `<METHOD> <url>`.
 export type Responses = Record<string, Recorded>;
 
 export interface Fixture {
@@ -29,8 +32,10 @@ export interface Fixture {
 }
 
 export interface SeenRequest {
+  method: string;
   url: string;
   headers: Headers;
+  body?: string;
   redirect?: RequestRedirect;
   // The bytes a `chunks` body has handed to the reader so far.
   bytesEnqueued: number;
@@ -40,14 +45,19 @@ export function loadFixture(path: string): Fixture {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
-// A fetch that answers from `responses` by exact URL and records each request.
-export function fixtureFetch(responses: Responses) {
+// A fetch that answers from `responses` by the keys above and records each request.
+// `onRequest` sees each request as it is made.
+export function fixtureFetch(responses: Responses, onRequest?: (seen: SeenRequest) => void) {
   const requests: SeenRequest[] = [];
   async function fetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
     const url = String(input);
-    const seen: SeenRequest = { url, headers: new Headers(init?.headers), redirect: init?.redirect, bytesEnqueued: 0 };
+    const method = init?.method ?? "GET";
+    const sent = typeof init?.body === "string" ? init.body : undefined;
+    const seen: SeenRequest = { method, url, headers: new Headers(init?.headers), body: sent, redirect: init?.redirect, bytesEnqueued: 0 };
     requests.push(seen);
-    const recorded = responses[url];
+    onRequest?.(seen);
+    const nth = requests.filter((request) => request.method === method && request.url === url).length;
+    const recorded = method === "GET" ? responses[url] : (responses[`${method} ${url} #${nth}`] ?? responses[`${method} ${url}`]);
     if (!recorded) return new Response(`no recorded response for ${url}`, { status: 404 });
     if (recorded.error) throw new TypeError(recorded.error);
     const { unexpected } = recorded;
