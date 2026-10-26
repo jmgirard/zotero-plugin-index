@@ -1,6 +1,6 @@
 # M011: Read untrusted repos without push rights
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
@@ -137,6 +137,8 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 - 2026-10-26: T5 Ruby check (AC1, AC4, AC5 shapes) passes on the branch and reports 15 failures on main's two workflows.
 - 2026-10-26: T6: README ("Pull requests from the bot", "Proposing a plugin with an issue"), DESIGN.md (Function Families, Architecture), one CHANGELOG.md entry, and the preload comment updated; T7 is the live check after the merge, run by review.
 - 2026-10-26: claim audit pass found 5 false or misleading claims of about 105 (the write step's index re-check reads its own checkout, not a fresher index; "reads no repo" in both workflows; the README refusal list read as complete; the issue CLI's exit-1 comment; the issue run's limit of 1); all 5 corrected in comments, README, DESIGN.md, and two test names; the same reader's re-read is pending.
+- 2026-10-26: claim audit: 105 claims read, 5 corrected — src/discover/propose.ts, src/discover/issue.ts, src/discover/issue-cli.ts, .github/workflows/add-plugin-issue.yml, .github/workflows/discover.yml, README.md, cairn/DESIGN.md, test/propose.test.ts, test/issue.test.ts; the reader's re-read found all 5 hold, and one comment rewrapped.
+- 2026-10-26: implement done; T1-T6 checked, `pnpm test` (393 tests) and `pnpm check` (14 entries, 0 problems) pass; T7 is the post-merge live check; status review.
 
 ## Decisions
 

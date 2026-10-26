@@ -110,8 +110,9 @@ export interface IssueRunResult {
 
 // The write step of an issue run. It checks the bot pull requests again by repo and
 // plugin id, since they can change while the read step runs, and the index in its
-// checkout, which is the commit the read step saw. Then it opens a pull request that closes the issue when it merges, or closes the issue. Each answer is a
-// comment on the issue. If the read step failed, or the bot cannot read the index, its
+// checkout, which is the commit the read step saw. Then it opens a pull request that
+// closes the issue when it merges, or closes the issue. Each answer is a comment on the
+// issue. If the read step failed, or the bot cannot read the index, its
 // pull requests, or the default branch, or the push or the pull request fails, the
 // comment says so and the issue stays open.
 export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRunResult> {
