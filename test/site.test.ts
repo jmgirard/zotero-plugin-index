@@ -165,6 +165,18 @@ describe("the plugin page", () => {
   test("shows no archived fact when the record has no archived value", () => {
     expect(page("{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}")).not.toMatch(/\sdata-fact="archived"/);
   });
+
+  test("labels the release fact as the release the index read", () => {
+    expect(page("first-plugin@example.org")).toMatch(/<dt>Release read by the index<\/dt>\s*<dd data-fact="latest-release">/);
+  });
+
+  test.each([
+    ["old-plugin@example.org", "0.4.1, published 2024-07-01 (prerelease)"],
+    ["first-plugin@example.org", "1.2.0, published 2026-09-30"],
+    ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "3.0.0, published 2026-10-01"],
+  ])("marks the release of %s as a prerelease only when the record says so", (id, text) => {
+    expect(fact(page(id), "latest-release")).toBe(text);
+  });
 });
 
 describe("the home page", () => {

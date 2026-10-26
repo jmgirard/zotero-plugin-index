@@ -138,7 +138,7 @@ declares.
       `schemas/plugins.v1.schema.json` with a description. Add the
       `test/build.test.ts` tests of AC3, with fixture responses that give one
       prerelease read.
-- [ ] T4: Change the label and add the mark in
+- [x] T4: Change the label and add the mark in
       `site/src/pages/plugins/[id]/index.astro:62-65`. Add the
       `test/site.test.ts` tests of AC4 and give the site fixture data the
       three `prerelease` cases.
@@ -175,6 +175,7 @@ declares.
 - 2026-10-26: T1: 13 new reader tests; 11 failed before T2. The no-later-release cases and the both-fail case passed before T2, since the old rule also read the newest release there.
 - 2026-10-26: T2: `readRelease` now holds the manifest and update.json read, so the fallback can run it twice. `UpstreamFacts.prerelease` is optional in the type, to match the schema and older records. The reader always sets it.
 - 2026-10-26: T3: example/second-plugin's one release is now a prerelease in the build fixture. T1 to T3 share one commit, since the build tests fail between T2 and T3. `pnpm test` 437 passed; `pnpm check` 17 entries, 0 problems.
+- 2026-10-26: T4: the page puts " (prerelease)" after the publish date, so the value ends with it as AC4 says. The site fixture gives old-plugin `prerelease: true` and first-plugin `false`; the GUID record has none. The label test and the old-plugin mark test failed before the page change. `test/site.test.ts` 25 passed after it.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote
