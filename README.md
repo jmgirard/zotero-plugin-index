@@ -7,28 +7,45 @@ it does not review or endorse plugins.
 ## The site
 
 The website <https://jmgirard.github.io/zotero-plugin-index/> shows the index.
-The home page lists every plugin with the range of Zotero versions that the
-plugin declares. If the last build failed to read a plugin, its row shows the
-failure. Each plugin has its own page. The page shows the declared
-range first, then facts about the repository and its releases, then the
-overrides of the index for that plugin. If the last build failed to read a
-plugin, its page shows the failure in place of the declared range.
+The home page lists every plugin with its name, its description, and one
+pill for each Zotero major version from 7 to 10. A pill shows how much of
+that version the plugin's declared range covers. A check mark (✓) means all
+of it, a half circle (◐) means part of it, and a dash means none of it. Hold
+the pointer over a pill to read its meaning and, for a half circle, the
+declared range. On a touch screen, open the plugin's page to read its
+declared range. A pill counts Zotero N as the versions from N.0 to N.9.
+Plugin authors often write a maximum such as 10.99.99 to mean every Zotero 10
+release. They also write a minimum such as 8.999 to mean Zotero 9 and newer.
+The declared range uses the overrides that apply to the plugin version that
+the index read. The site does not test plugins. The pills show what each
+plugin declares.
+
+A plugin with no declared range shows "No declared range" in place of the
+pills. If the last build failed to read a plugin, its row shows the failure.
+
+The description comes from the plugin's manifest. If the manifest has no
+description, if it is blank, or if it only repeats the plugin's name, the
+site shows no description. The site checks for a repeated name this way. It
+takes the words of the description and of the name. It leaves out "zotero",
+"plugin", "addon", "add", "on", "extension", "for", "a", "an", and "the". If
+every word of the description that is left is also a word of the name, the
+description only repeats the name. For example, "Zotero Plugin for OCR" only repeats the name
+"Zotero OCR". A `description` override that applies to the plugin version
+that the index read replaces the manifest description. The name check does
+not apply to an override.
+
+Each plugin has its own page. The page shows the name, the description, the
+pills, the declared range, and links to the repository and its releases. A
+closed "Details" section follows. It holds the plugin id, facts about the
+repository and its releases, and the overrides of the index for the plugin.
+If the last build failed to read a plugin, its page shows the failure in place
+of the pills.
 
 The index lists a plugin whose GitHub repository is archived. Its row on the
-home page shows "(archived)" after its name, and its page shows the fact
-"Archived on GitHub" with the value "Yes". GitHub makes an archived repository read-only until someone
-with admin access to it unarchives it.
-
-To compare your Zotero version with each declared range, enter it in the
-"Your Zotero version" field at the top of any page. You can also paste the
-version line from About Zotero, such as "Version 7.0.11 (64-bit)". The site
-reads the version from the first part of the text that starts with a digit.
-Your browser keeps the value in its local storage, so the other pages show it
-too. Each plugin then shows whether your version is inside its declared
-range, older than its minimum, or newer than its maximum. The declared range
-uses the overrides that apply to the plugin version that the index read. The
-site does not test plugins. It compares your version with what each plugin
-declares.
+home page shows "(archived)" after its name. The Details section of its page
+shows the fact "Archived on GitHub" with the value "Yes". GitHub makes an
+archived repository read-only until someone with admin access to it
+unarchives it.
 
 ## Using the data
 

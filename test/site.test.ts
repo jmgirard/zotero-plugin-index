@@ -1,10 +1,14 @@
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { Ajv } from "ajv";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json" };
+import { displayName, pluginHref, rangeText, type PluginRecord } from "../site/src/data.ts";
+import type { PluginsFile } from "../src/build/build.ts";
+import { shownDescription } from "../src/site/description.ts";
+import { declaredRange, majorSupport, ZOTERO_MAJORS } from "../src/site/version.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const FIXTURE = resolve(ROOT, "test/fixtures/site/plugins.json");
@@ -96,25 +100,111 @@ describe("pnpm site", () => {
 });
 
 function fact(html: string, name: string): string | undefined {
-  const match = new RegExp(`data-fact="${name}"[^>]*>(.*?)</(?:p|dd)>`).exec(html);
+  const match = new RegExp(`data-fact="${name}"[^>]*>(.*?)</(?:p|dd|li|span)>`).exec(html);
   return match?.[1]!.replace(/<[^>]+>/g, "");
 }
 
-describe("the plugin page", () => {
-  const page = (id: string) => readFileSync(join(out, "plugins", id, "index.html"), "utf8");
-  const FACTS = ["repository", "archived", "repo-created", "latest-release", "release-count", "open-issues", "update-host", "releases"];
+const page = (id: string) => readFileSync(join(out, "plugins", id, "index.html"), "utf8");
+const home = () => readFileSync(join(out, "index.html"), "utf8");
+const records = (fixture as unknown as PluginsFile).plugins;
 
-  test("puts the declared range and the version field before the other facts", () => {
-    const html = page("first-plugin@example.org");
-    const range = html.indexOf('data-fact="declared-range"');
-    const field = html.indexOf('id="zotero-version"');
-    const later = [...FACTS.map((name) => `data-fact="${name}"`), "data-override=", 'data-fact="not-vetted"'];
-    expect(range).toBeGreaterThan(-1);
-    expect(field).toBeGreaterThan(-1);
-    for (const marker of later) {
-      const at = html.indexOf(marker);
-      expect(at, marker).toBeGreaterThan(Math.max(range, field));
+// Text as Astro writes it into the page.
+function escaped(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function hasBound(record: PluginRecord): boolean {
+  const { min, max } = declaredRange(record);
+  return min !== undefined || max !== undefined;
+}
+
+// Each marker is found, after the one before it.
+function expectInOrder(html: string, markers: string[]): void {
+  let last = -1;
+  for (const marker of markers) {
+    const at = html.indexOf(marker, last + 1);
+    expect(at, marker).toBeGreaterThan(last);
+    last = at;
+  }
+}
+
+const PILL =
+  /<span class="pill" role="listitem" data-major="([^"]+)" data-support="([^"]+)" title="([^"]*)"><span aria-hidden="true">([^<]*)<\/span><span class="visually-hidden">([^<]*)<\/span><\/span>/g;
+
+function pills(html: string) {
+  return [...html.matchAll(PILL)].map(([, major, support, title, visible, hidden]) => ({ major, support, title, visible, hidden }));
+}
+
+function expectPills(html: string, record: PluginRecord): void {
+  const marks: Record<string, string> = { all: "✓", some: "◐", none: "–" };
+  const label = (major: string, support: string) =>
+    support === "all"
+      ? `Declares all of Zotero ${major}`
+      : support === "some"
+        ? `Declares part of Zotero ${major}. Declared range: ${rangeText(record)}`
+        : `Does not declare Zotero ${major}`;
+  const found = pills(html);
+  expect(found.map(({ major, support }) => [major, support])).toEqual(
+    ZOTERO_MAJORS.map((major) => [major, majorSupport(record, major)]),
+  );
+  for (const pill of found) {
+    expect(pill.visible).toBe(`${pill.major} ${marks[pill.support!]}`);
+    expect(pill.title).toBe(label(pill.major!, pill.support!));
+    expect(pill.hidden).toBe(pill.title);
+  }
+}
+
+describe("the site fixture", () => {
+  test("holds each shape of row and page", () => {
+    const pilled = records.filter((record) => !record.failure && hasBound(record));
+    expect(records.some((record) => record.failure)).toBe(true);
+    expect(records.some((record) => !record.failure && !hasBound(record))).toBe(true);
+    expect(records.some((record) => record.upstream?.archived === true)).toBe(true);
+    expect(records.some((record) => record.upstream?.description && !shownDescription(record))).toBe(true);
+    expect(records.some((record) => record.overrides.some((o) => o.field === "description"))).toBe(true);
+    for (const support of ["all", "some", "none"]) {
+      expect(pilled.some((record) => ZOTERO_MAJORS.some((major) => majorSupport(record, major) === support)), support).toBe(true);
     }
+  });
+});
+
+describe("the plugin page", () => {
+  test.each(ids)("shows the parts of %s in order, with the minor facts in a closed Details section", (id) => {
+    const record = records.find((r) => r.id === id)!;
+    const html = page(id);
+    const description = shownDescription(record);
+    const support = record.failure ? 'data-fact="failure"' : hasBound(record) ? 'class="pills"' : 'data-status="no-range"';
+    const archived = record.upstream?.archived === true ? "<span data-archived>(archived)</span>" : "";
+    expectInOrder(html, [
+      `<h1>${escaped(displayName(record))}${archived}</h1>`,
+      ...(description ? [`<p class="description" data-description>${escaped(description)}</p>`] : []),
+      support,
+      ...(hasBound(record) ? ['data-fact="declared-range"'] : []),
+      'data-fact="repository"',
+      ...(record.upstream ? ['data-fact="releases"'] : []),
+      "<details>",
+    ]);
+    if (!description) expect(html).not.toContain("data-description");
+    if (!hasBound(record)) expect(html).not.toContain('data-fact="declared-range"');
+    if (!record.upstream) expect(html).not.toContain('data-fact="releases"');
+    if (!record.failure && hasBound(record)) expectPills(html, record);
+    else expect(pills(html)).toEqual([]);
+
+    expect(html).not.toMatch(/<details\s+open/);
+    const start = html.indexOf("<details>");
+    const end = html.indexOf("</details>");
+    const inside = ['data-fact="id"'];
+    if (record.upstream) {
+      if (typeof record.upstream.archived === "boolean") inside.push('data-fact="archived"');
+      inside.push(...["repo-created", "latest-release", "release-count", "open-issues", "update-host"].map((n) => `data-fact="${n}"`));
+    }
+    if (record.overrides.length > 0) inside.push("data-override=");
+    for (const marker of inside) {
+      const at = html.indexOf(marker);
+      expect(at, marker).toBeGreaterThan(start);
+      expect(at, marker).toBeLessThan(end);
+    }
+    expect(html.indexOf('data-fact="not-vetted"')).toBeGreaterThan(end);
   });
 
   test("shows the declared range with the override that applies", () => {
@@ -150,7 +240,6 @@ describe("the plugin page", () => {
       "The last build could not read this plugin: no-xpi-release: no release of example/broken-plugin has an .xpi asset",
     );
     expect(html).not.toContain('data-fact="declared-range"');
-    expect(html).not.toMatch(/\sdata-result-for="/);
     expect(html).toContain("<h1>broken-plugin@example.org</h1>");
   });
 
@@ -189,18 +278,46 @@ describe("the home page", () => {
     for (const id of linked) expect(existsSync(join(out, "plugins", id, "index.html")), id).toBe(true);
   });
 
-  test("names the failure of a record that was not read", () => {
-    const row = /<tr data-plugin="broken-plugin@example\.org">(.*?)<\/tr>/.exec(readFileSync(join(out, "index.html"), "utf8"));
-    expect(row?.[1]).toContain("<td>Not read: no-xpi-release</td>");
+  // The row holds no other <li>, so it ends at the first </li> after it starts.
+  function row(id: string): string {
+    const html = home();
+    const start = html.indexOf(`<li class="plugin" data-plugin="${id}">`);
+    expect(start, id).toBeGreaterThan(-1);
+    return html.slice(start, html.indexOf("</li>", start));
+  }
+
+  test.each(ids)("shows the row of %s with its parts in order", (id) => {
+    const record = records.find((r) => r.id === id)!;
+    const html = row(id);
+    const archived = record.upstream?.archived === true;
+    const description = shownDescription(record);
+    const status = record.failure ? `Not read: ${record.failure.name}` : hasBound(record) ? 'class="pills"' : "No declared range";
+    expectInOrder(html, [
+      `<a href="${escaped(pluginHref(id))}">${escaped(displayName(record))}</a>`,
+      ...(archived ? ["<span data-archived>(archived)</span>"] : []),
+      ...(description ? [`<p class="description" data-description>${escaped(description)}</p>`] : []),
+      status,
+    ]);
+    if (!archived) expect(html).not.toContain("data-archived");
+    if (!description) expect(html).not.toContain("data-description");
+    if (!record.failure && hasBound(record)) expectPills(html, record);
+    else expect(pills(html)).toEqual([]);
   });
 
-  test("marks the name of each archived plugin and no other", () => {
-    const html = readFileSync(join(out, "index.html"), "utf8");
-    const marked = [...html.matchAll(/<tr data-plugin="([^"]+)">(.*?)<\/tr>/g)]
-      .filter((row) => /<td><a [^>]*>[^<]*<\/a>\s*<span data-archived[^>]*>\(archived\)<\/span><\/td>/.test(row[2]!))
-      .map((row) => row[1]);
-    expect(marked).toEqual(["old-plugin@example.org"]);
-    expect(html.match(/\sdata-archived/g)).toHaveLength(1);
+  test("marks only the archived plugin", () => {
+    expect(home().match(/\sdata-archived/g)).toHaveLength(1);
+  });
+});
+
+describe("the built site", () => {
+  test("has no trace of the Zotero version field", () => {
+    const files = (readdirSync(out, { recursive: true }) as string[]).filter((path) => statSync(join(out, path)).isFile());
+    expect(files.length).toBeGreaterThan(ids.length);
+    const traces = ['id="zotero-version"', 'for="zotero-version"', "Your Zotero version", "zotero-plugin-index:zotero-version", "data-result-for"];
+    for (const file of files) {
+      const text = readFileSync(join(out, file), "utf8");
+      for (const trace of traces) expect(text.includes(trace), `${file}: ${trace}`).toBe(false);
+    }
   });
 });
 

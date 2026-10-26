@@ -1,9 +1,10 @@
 import { readFileSync } from "node:fs";
 import type { Override, PluginRecord, PluginsFile } from "../../src/build/build.ts";
+import { shownDescription } from "../../src/site/description.ts";
 import { appliedValue, declaredRange, usedOverride } from "../../src/site/version.ts";
 import { BASE } from "./base.ts";
 
-export { BASE };
+export { BASE, declaredRange, shownDescription };
 export type { Override, PluginRecord };
 
 let loaded: { path: string; data: PluginsFile } | undefined;
@@ -60,23 +61,6 @@ export function overrideUsed(record: PluginRecord, override: Override): boolean 
 // Only an http or https URL becomes a link; repoUrl in meta.json is any string.
 export function safeHref(url: string): string | undefined {
   return /^https?:\/\//i.test(url) ? url : undefined;
-}
-
-// The fields the browser script needs to compute a record's range result: the upstream
-// version and bounds, the failure, and the overrides of the two bounds.
-export function rangeFields(record: PluginRecord): string {
-  const { upstream, failure, overrides } = record;
-  return JSON.stringify({
-    upstream: upstream && {
-      version: upstream.version,
-      strictMinVersion: upstream.strictMinVersion,
-      strictMaxVersion: upstream.strictMaxVersion,
-    },
-    failure: failure && { name: failure.name },
-    overrides: overrides
-      .filter((o) => o.field === "strict_min_version" || o.field === "strict_max_version")
-      .map(({ field, version, value }) => ({ field, version, value })),
-  });
 }
 
 export function day(timestamp: string): string {

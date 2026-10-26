@@ -2,9 +2,10 @@ import { describe, expect, test } from "vitest";
 import {
   appliedValue,
   compareVersions,
-  rangeResult,
+  declaredRange,
+  majorSupport,
   type RangeRecord,
-  zoteroVersion,
+  ZOTERO_MAJORS,
 } from "../src/site/version.ts";
 
 // MDN, "Legacy Version Formats", section "Examples" (cairn/references/mozilla-toolkit-version.md).
@@ -56,21 +57,6 @@ describe("compareVersions", () => {
   });
 });
 
-describe("zoteroVersion", () => {
-  test.each([
-    ["8.0.1", "8.0.1"],
-    ["Version 7.0.11 (64-bit)", "7.0.11"],
-    ["Zotero 8.0-beta.3+abc, 64-bit", "8.0-beta.3+abc"],
-    ["7.0.11/64-bit", "7.0.11"],
-  ])("reads %j as %s", (input, version) => {
-    expect(zoteroVersion(input)).toBe(version);
-  });
-
-  test("reads text with no digit as no version", () => {
-    expect(zoteroVersion("Zotero")).toBe("");
-  });
-});
-
 function record(
   facts: { version?: string; strictMinVersion?: string; strictMaxVersion?: string },
   overrides: RangeRecord["overrides"] = [],
@@ -78,70 +64,81 @@ function record(
   return { upstream: { version: "2.0.0", ...facts }, overrides };
 }
 
-describe("rangeResult", () => {
-  const ranged = record({ strictMinVersion: "7.0", strictMaxVersion: "8.0.*" });
-
-  test("a version older than the minimum is below", () => {
-    expect(rangeResult("6.0.30", ranged)).toBe("below");
-  });
-
-  test("a version newer than the maximum is above", () => {
-    expect(rangeResult("9.0", ranged)).toBe("above");
-  });
-
-  test("a version equal to the minimum is inside", () => {
-    expect(rangeResult("7.0.0", ranged)).toBe("inside");
-  });
-
-  test("a version equal to the maximum is inside", () => {
-    expect(rangeResult("8.0.1", record({ strictMinVersion: "7.0", strictMaxVersion: "8.0.1" }))).toBe("inside");
-  });
-
-  test("a missing minimum sets no lower bound", () => {
-    expect(rangeResult("0.1", record({ strictMaxVersion: "8.*" }))).toBe("inside");
-  });
-
-  test("a missing maximum sets no upper bound", () => {
-    expect(rangeResult("99", record({ strictMinVersion: "7.0" }))).toBe("inside");
-  });
-
-  test("a record with neither bound has no range", () => {
-    expect(rangeResult("7.0", record({}))).toBe("no-range");
-  });
+describe("declaredRange", () => {
+  const upstream = { strictMinVersion: "7.0", strictMaxVersion: "7.*" };
 
   test("a record with a failure has no range", () => {
     const failed: RangeRecord = { failure: { name: "no-xpi-release", message: "no release" }, overrides: [] };
-    expect(rangeResult("7.0", failed)).toBe("no-range");
+    expect(declaredRange(failed)).toEqual({});
   });
 
   test("an override with no version replaces the upstream value", () => {
-    const corrected = record({ strictMinVersion: "7.0", strictMaxVersion: "7.*" }, [
-      { field: "strict_max_version", value: "8.*" },
-    ]);
-    expect(rangeResult("8.0.1", corrected)).toBe("inside");
+    expect(declaredRange(record(upstream, [{ field: "strict_max_version", value: "8.*" }])).max).toBe("8.*");
   });
 
   test("an override for the upstream version replaces the upstream value", () => {
-    const corrected = record({ strictMinVersion: "7.0", strictMaxVersion: "7.*" }, [
-      { field: "strict_max_version", version: "2.0.0", value: "8.*" },
-    ]);
-    expect(rangeResult("8.0.1", corrected)).toBe("inside");
+    const corrected = record(upstream, [{ field: "strict_max_version", version: "2.0.0", value: "8.*" }]);
+    expect(declaredRange(corrected).max).toBe("8.*");
   });
 
   test("an override for another version does not apply", () => {
-    const stale = record({ strictMinVersion: "7.0", strictMaxVersion: "7.*" }, [
-      { field: "strict_max_version", version: "1.0.0", value: "8.*" },
-    ]);
-    expect(rangeResult("8.0.1", stale)).toBe("above");
+    const stale = record(upstream, [{ field: "strict_max_version", version: "1.0.0", value: "8.*" }]);
+    expect(declaredRange(stale).max).toBe("7.*");
   });
 
   test("an override for the upstream version wins over one with no version", () => {
-    const both = record({ strictMinVersion: "7.0", strictMaxVersion: "7.*" }, [
+    const both = record(upstream, [
       { field: "strict_max_version", version: "2.0.0", value: "8.*" },
       { field: "strict_max_version", value: "7.5" },
     ]);
-    expect(rangeResult("8.0.1", both)).toBe("inside");
-    expect(rangeResult("8.0.1", { ...both, overrides: [...both.overrides].reverse() })).toBe("inside");
+    expect(declaredRange(both).max).toBe("8.*");
+    expect(declaredRange({ ...both, overrides: [...both.overrides].reverse() }).max).toBe("8.*");
+  });
+});
+
+describe("majorSupport", () => {
+  test("ZOTERO_MAJORS lists Zotero 7 to 10", () => {
+    expect(ZOTERO_MAJORS).toEqual(["7", "8", "9", "10"]);
+  });
+
+  test.each([
+    [{ strictMinVersion: "8.0-beta.21", strictMaxVersion: "10.99.99" }, "7", "none"],
+    [{ strictMinVersion: "8.0-beta.21", strictMaxVersion: "10.99.99" }, "8", "all"],
+    [{ strictMinVersion: "8.0-beta.21", strictMaxVersion: "10.99.99" }, "9", "all"],
+    [{ strictMinVersion: "8.0-beta.21", strictMaxVersion: "10.99.99" }, "10", "all"],
+    [{ strictMinVersion: "8.999", strictMaxVersion: "10.0.*" }, "8", "none"],
+    [{ strictMinVersion: "8.999", strictMaxVersion: "10.0.*" }, "9", "all"],
+    [{ strictMinVersion: "8.999", strictMaxVersion: "10.0.*" }, "10", "some"],
+    [{ strictMinVersion: "6.999", strictMaxVersion: "7.0.*" }, "7", "some"],
+    [{ strictMinVersion: "6.999", strictMaxVersion: "7.0.*" }, "8", "none"],
+    [{ strictMinVersion: "8.0.1" }, "8", "some"],
+    [{ strictMinVersion: "8.0.1" }, "10", "all"],
+    [{ strictMaxVersion: "10.*" }, "7", "all"],
+    [{ strictMaxVersion: "10.9.9" }, "10", "all"],
+    [{ strictMinVersion: "8.5", strictMaxVersion: "8.2" }, "8", "none"],
+  ])("reads %j for Zotero %s as %s", (facts, major, support) => {
+    expect(majorSupport(record(facts), major)).toBe(support);
+  });
+
+  test("gives no result for a record with neither bound", () => {
+    expect(majorSupport(record({}), "8")).toBeUndefined();
+  });
+
+  test("gives no result for a record with a failure", () => {
+    const failed: RangeRecord = { failure: { name: "no-xpi-release", message: "no release" }, overrides: [] };
+    expect(majorSupport(failed, "8")).toBeUndefined();
+  });
+
+  test("reads the maximum after a strict_max_version override", () => {
+    const facts = { strictMinVersion: "7.0", strictMaxVersion: "7.*" };
+    expect(majorSupport(record(facts), "8")).toBe("none");
+    expect(majorSupport(record(facts, [{ field: "strict_max_version", value: "8.*" }]), "8")).toBe("all");
+  });
+
+  test("reads the minimum after a strict_min_version override", () => {
+    const facts = { strictMinVersion: "7.0", strictMaxVersion: "10.*" };
+    expect(majorSupport(record(facts), "8")).toBe("all");
+    expect(majorSupport(record(facts, [{ field: "strict_min_version", value: "9.0" }]), "8")).toBe("none");
   });
 });
 
