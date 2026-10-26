@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M017: Stop deploys only for build failures
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — it decides whether the public site and data deploy, and it changes what `pnpm build` prints   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m017-build-health   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -92,7 +92,7 @@ planned.
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
 
-- [ ] T1: Before any code change, build the mixed-failure fixture (recorded
+- [x] T1: Before any code change, build the mixed-failure fixture (recorded
       responses under `test/fixtures/build/`, using `error`, `bodyError`, and
       `unexpected` in `test/support/fixture-fetch.ts`) and commit its
       `plugins.json` from the default-branch code as the AC5 golden file. Then
@@ -131,6 +131,9 @@ planned.
 - 2026-10-26: plan chose a build-level mark carried beside the failure over new failure names or parsing `message`, because new names change the published data and message parsing breaks on rewording; falsified by evidence that data consumers need the cause in `plugins.json`.
 - 2026-10-26: plan chose to count HTTP 429 and 5xx from any host over GitHub API answers only (audit finding): an outage of GitHub's release-asset host fails every record as `xpi-unreadable`, which the old rule blocked and an API-only rule would deploy; falsified by evidence that download-host 5xx answers come from steady plugin-side faults often enough to pass half the records.
 - 2026-10-26: a GitHub 403 for one blocked repo counts as build-level; accepted, since one record cannot pass the half rule alone.
+- 2026-10-26: implement started on branch m017-build-health.
+- 2026-10-26: T1 done: `test/support/mixed-failures.ts` writes 12 entries (7 build-level causes, 4 others, 1 passing); golden `test/fixtures/build/mixed-failures.plugins.json` made by `buildData` on unchanged `src/` with a fixed date; new tests red for the right reason (no summary lines, no `buildLevel`, no `buildLevelStatus`), golden test green. The DNS-timeout reader test now expects the build-level mark.
+- 2026-10-26: implement chose: `buildData` returns `buildLevel` (sorted ids) beside `data`; summary lines read `failed with <name>: <n>` and `build-level failures: <n> of <total> records`; the warning reads `::warning::<n> of <total> records carry a build-level failure`.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

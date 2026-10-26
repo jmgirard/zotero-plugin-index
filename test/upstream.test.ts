@@ -2,7 +2,7 @@ import { deflateRawSync, inflateRawSync } from "node:zlib";
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import type { Lookup } from "../src/upstream/host-guard.ts";
-import { readUpstream, zipEntryCount } from "../src/upstream/reader.ts";
+import { buildLevelStatus, readUpstream, zipEntryCount } from "../src/upstream/reader.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 
 const FIXTURE = "test/fixtures/upstream/better-notes.json";
@@ -759,7 +759,7 @@ describe("readUpstream", () => {
         await vi.advanceTimersByTimeAsync(10_000);
       }
       const { result, requests } = await pending;
-      expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining("no answer after 60000 ms") });
+      expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining("no answer after 60000 ms"), buildLevel: true });
       expect(requests.at(-1)!.url).toBe(XPI);
     } finally {
       vi.useRealTimers();
@@ -840,4 +840,14 @@ describe("readUpstream", () => {
       expect(requests).toEqual([]);
     },
   );
+});
+
+describe("buildLevelStatus", () => {
+  test("counts 401 and 403 from the GitHub API, and 429 and 500 to 599 from any host", () => {
+    for (let status = 200; status <= 599; status++) {
+      const anyHost = status === 429 || status >= 500;
+      expect([status, buildLevelStatus(status, "github-api")]).toEqual([status, anyHost || status === 401 || status === 403]);
+      expect([status, buildLevelStatus(status, "download")]).toEqual([status, anyHost]);
+    }
+  });
 });
