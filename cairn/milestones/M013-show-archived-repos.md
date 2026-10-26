@@ -118,3 +118,18 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 - AC7 evidence (2026-10-26): `pnpm test` 12 files, 421 passed; `pnpm check` 16 entries, 0 problems.
 - Consistency gate (2026-10-26): `cairn_validate.py` exit 0, all checks passed. No principle changed, so no impact report. The generic profile names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- prior-review #1: the diff adds a field to v1, which reverses M003's milestone-local rule that a v1 file never changes shape and adding a field means `plugins.v2`; D-006 does not name it — fix now: D-007 records that D-006 replaces the M003 rule and that strict validators must fetch the schema again; DESIGN.md says so, fixed 0a43b96. The plan's collision check missed the M003 rule because it read D-entries, not archived milestone decisions.
+- blame-history #1: D-006's reason ("readers that ignore unknown fields keep working") does not hold for readers that validate against a saved strict v1 schema — fix now: same fix as prior-review #1, fixed 0a43b96. Follow-up row "Let old v1 schemas accept new fields" holds the schema loosening.
+- diff-bug #1: DESIGN.md's Contract boundary list states the archived fact without its condition — fix now: "(when GitHub's response says)", fixed 0a43b96.
+- ripple #1: same as diff-bug #1 — fix now, fixed 0a43b96.
+- diff-bug #2: README.md's "Archived on GitHub: Yes" reads as literal output, but the page uses a dt/dd pair with no colon — fix now: reworded as the fact and its value, fixed 0a43b96.
+- prior-review #2: README.md:106 ran to 83 columns, against M007's 80-column wrap finding — fix now: rewrapped, fixed 0a43b96.
+- ripple #3: the site ordering test's fact list omits `archived`, so its place after the declared range is untested — fix now: added to the list, fixed 0a43b96.
+- diff-bug #4: the build test's `false` assertion repeats the copy path of the `true` assertion, and the upstream happy path already covers `false` — fix now: dropped, fixed 0a43b96.
+- diff-bug #3: the absent, null, and "true" reader cases take the same `typeof` branch — reject (planned change): AC1 names all three, and each fails a different wrong implementation (`??`, truthiness, `Boolean()`).
+- diff-bug #5: the dt/dd pattern is checked for both the Yes and No pages — reject (planned change): AC3 names the pair for each value.
+- diff-bug #6: a count follows the exact row check on the home page — reject (false): the count also catches a stray `data-archived` outside the rows, so it is not weaker.
+- ripple #2: discovery's 5-a-run cap now covers archived repos, and no text says so — reject (false): the cap applies to every repo that passes the bar, and no text disagrees.
+- blame-history #2: the better-notes fixture note names two dates — reject (false): both dates are true; the `archived` value was read from GitHub on 2026-10-26 in this session.
+- blame-history #3: the home-row regexes need each `<tr>` on one line, and the new `<td>` spans several source lines — reject (false): Astro emits the row on one line; the AC4 test passed and failed before the template change.
+- Re-verify after fixes (2026-10-26): `pnpm test` 421 passed; `pnpm check` 0 problems; `cairn_validate.py` all passed. AC2's build evidence now rests on the `true` case alone, which AC2 names.
