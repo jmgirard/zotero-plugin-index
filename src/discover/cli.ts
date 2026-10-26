@@ -1,30 +1,28 @@
-import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import process, { argv } from "node:process";
-import { type DiscoveryState, discover, type Report } from "./discover.ts";
-import { type ProposeFailure, type Proposed, pnpmCheck, proposeRun } from "./propose.ts";
+import { type DiscoverResult, type DiscoveryState, discover } from "./discover.ts";
+import { entriesDir, planned, writePlan } from "./handoff.ts";
+import { discoverRead, type Written } from "./propose.ts";
 
-const USAGE = "usage: pnpm discover [--out <dir>] [--state <file>] [--limit <n>] [--budget <n>] [--propose]";
-const OPTIONS = ["--out", "--state", "--limit", "--budget"];
+const USAGE = "usage: pnpm discover [--out <dir> | --handoff <dir>] [--state <file>] [--limit <n>] [--budget <n>]";
+const OPTIONS = ["--out", "--handoff", "--state", "--limit", "--budget"];
 const PACKAGE_ROOT = resolve(import.meta.dirname, "../..");
 
 async function main(): Promise<number> {
   const args = argv.slice(2);
   const values: Record<string, string> = {};
-  let propose = false;
   for (let i = 0; i < args.length; i += 2) {
-    if (args[i] === "--propose" && !propose) {
-      propose = true;
-      i--;
-      continue;
-    }
     const value = args[i + 1];
     if (!OPTIONS.includes(args[i]) || !value || value.startsWith("--") || args[i] in values) {
       console.error(USAGE);
       return 1;
     }
     values[args[i]] = value;
+  }
+  if (values["--out"] && values["--handoff"]) {
+    console.error(USAGE);
+    return 1;
   }
   const limit = count(values["--limit"] ?? "5");
   const budget = count(values["--budget"] ?? "100");
@@ -33,8 +31,8 @@ async function main(): Promise<number> {
     return 1;
   }
   const indexRepo = process.env.GITHUB_REPOSITORY;
-  if (propose && !/^[\w.-]+\/[\w.-]+$/.test(indexRepo ?? "")) {
-    console.error(`--propose needs GITHUB_REPOSITORY set to the index repo as <owner>/<repo>\n${USAGE}`);
+  if (values["--handoff"] && !/^[\w.-]+\/[\w.-]+$/.test(indexRepo ?? "")) {
+    console.error(`--handoff needs GITHUB_REPOSITORY set to the index repo as <owner>/<repo>\n${USAGE}`);
     return 1;
   }
 
@@ -46,64 +44,50 @@ async function main(): Promise<number> {
   const statePath = values["--state"]
     ? resolve(cwd, values["--state"])
     : join(PACKAGE_ROOT, ".cache/discovery-state.json");
+  const handoff = values["--handoff"] ? resolve(cwd, values["--handoff"]) : undefined;
+  // With --handoff, the entries go into the handoff for `pnpm propose`.
+  const outDir = handoff ? entriesDir(handoff) : values["--out"] ? resolve(cwd, values["--out"]) : root;
 
-  let draftDir: string | undefined;
-  try {
-    // With --propose, the entries go into pull requests, so by default they are drafted
-    // outside the checkout.
-    if (propose && !values["--out"]) {
-      try {
-        draftDir = await mkdtemp(join(tmpdir(), "zpi-discover-"));
-      } catch (error) {
-        console.error(`cannot create a draft directory: ${(error as Error).message}\nwrote no entry`);
-        return 1;
-      }
-    }
-    const outDir = values["--out"] ? resolve(cwd, values["--out"]) : (draftDir ?? root);
-    const warnings: string[] = [];
-    const state = await readState(statePath, warnings);
-    if (typeof state === "string") {
-      console.error(`${state}\nwrote no entry`);
-      return 1;
-    }
-    const options = { root, outDir, fetch: (url: string, init?: RequestInit) => fetch(url, init), state, limit, budget };
-    let result:
-      | { ok: true; state: DiscoveryState; report: Report; proposed?: Proposed[]; failed?: ProposeFailure[] }
-      | { ok: false; message: string };
-    if (propose) {
-      // The checkout whose remote takes the pushes is the caller's directory.
-      result = await proposeRun({ ...options, indexRepo: indexRepo!, gitDir: cwd, check: pnpmCheck });
-    } else {
-      result = await discover({ ...options, skip: new Set() });
-    }
-    if (!result.ok) {
-      console.error(`${result.message}\nwrote no entry and left ${statePath} as it was`);
-      return 1;
-    }
-    // The report names the entries already written and the pull requests already opened,
-    // so it is printed before the state write, which can still fail.
-    result.report.warnings.unshift(...warnings);
-    const { proposed, failed = [] } = result;
-    console.log(JSON.stringify(proposed ? { ...result.report, proposed } : result.report, null, 2));
-    let status = 0;
-    if (failed.length > 0) {
-      const lines = failed.map(({ repo, id, message }) => `- ${repo} (${id}): ${message}`);
-      console.error(`opened no pull request for ${failed.length} entries:\n${lines.join("\n")}`);
-      status = 1;
-    }
-    try {
-      // Written to a temporary file first, so a cut-off write leaves the old state.
-      await mkdir(dirname(statePath), { recursive: true });
-      await writeFile(`${statePath}.tmp`, `${JSON.stringify(result.state, null, 2)}\n`);
-      await rename(`${statePath}.tmp`, statePath);
-    } catch (error) {
-      console.error(`cannot write ${statePath}: ${(error as Error).message}`);
-      return 1;
-    }
-    return status;
-  } finally {
-    if (draftDir) await rm(draftDir, { recursive: true, force: true });
+  const warnings: string[] = [];
+  const state = await readState(statePath, warnings);
+  if (typeof state === "string") {
+    console.error(`${state}\nwrote no entry`);
+    return 1;
   }
+  const options = { root, outDir, fetch: (url: string, init?: RequestInit) => fetch(url, init), state, limit, budget };
+  let result: DiscoverResult;
+  if (handoff) {
+    result = await discoverRead({ ...options, indexRepo: indexRepo! });
+  } else {
+    result = await discover({ ...options, skip: new Set() });
+  }
+  if (!result.ok) {
+    console.error(`${result.message}\nwrote no entry and left ${statePath} as it was`);
+    return 1;
+  }
+  if (handoff) {
+    const written = result.report.read.filter((item): item is Written => item.outcome === "written");
+    try {
+      await writePlan(handoff, { kind: "discover", entries: written.map(planned) });
+    } catch (error) {
+      console.error(`cannot write the handoff in ${handoff}: ${(error as Error).message}`);
+      return 1;
+    }
+  }
+  // The report names the entries already written, so it is printed before the state
+  // write, which can still fail.
+  result.report.warnings.unshift(...warnings);
+  console.log(JSON.stringify(result.report, null, 2));
+  try {
+    // Written to a temporary file first, so a cut-off write leaves the old state.
+    await mkdir(dirname(statePath), { recursive: true });
+    await writeFile(`${statePath}.tmp`, `${JSON.stringify(result.state, null, 2)}\n`);
+    await rename(`${statePath}.tmp`, statePath);
+  } catch (error) {
+    console.error(`cannot write ${statePath}: ${(error as Error).message}`);
+    return 1;
+  }
+  return 0;
 }
 
 function count(value: string): number | undefined {

@@ -81,21 +81,21 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 
 ## Tasks
 
-- [ ] T1: Define the handoff in a new `src/discover/handoff.ts`: a plan file with a JSON schema (kind `discover` or
+- [x] T1: Define the handoff in a new `src/discover/handoff.ts`: a plan file with a JSON schema (kind `discover` or
       `issue`, the drafted entries' structured fields, and for an issue a refusal or failure name and message) and
       `entries/<id>/` directories. Add `--handoff <dir>` to `pnpm discover` (`src/discover/cli.ts`) in place of
       `--propose`. The read step still reads the bot pull requests for the skip set, and it writes the state file.
       Add `--handoff <dir>` to `pnpm discover-issue` (`src/discover/issue-cli.ts`, `issue.ts`), which then makes no
       GitHub write. Test the read side against the fixtures.
-- [ ] T2: Add `pnpm propose <dir> [--limit <n>]` (`src/discover/propose-cli.ts`). It takes `ISSUE_NUMBER` for
+- [x] T2: Add `pnpm propose <dir> [--limit <n>]` (`src/discover/propose-cli.ts`). It takes `ISSUE_NUMBER` for
       an issue run and checks the handoff (AC3's list), then checks the index and the bot pull requests again. It
       runs `pnpmCheck` with `GITHUB_TOKEN` removed from the child's environment, and pushes and opens pull requests
       through `propose` (`src/discover/propose.ts:174`). It builds each issue comment from structured fields, with
       messages in code spans. With an issue number and no handoff, it posts the "could not finish" comment.
-- [ ] T3: Move the cases of `test/propose.test.ts` and `test/issue.test.ts` that assert requests, comments, closes,
+- [x] T3: Move the cases of `test/propose.test.ts` and `test/issue.test.ts` that assert requests, comments, closes,
       or trees onto the two-step path (AC2), with the check output's temporary path replaced in body comparisons.
       Add the planted-handoff tests (AC3). Build each fixture from a copy of a good handoff.
-- [ ] T4: In `propose`, pass `GITHUB_TOKEN` to `git push` only through `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_0`, and
+- [x] T4: In `propose`, pass `GITHUB_TOKEN` to `git push` only through `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_0`, and
       `GIT_CONFIG_VALUE_0` (an `http.https://github.com/.extraheader`), never through argv or a config file. Test
       it against a local bare remote with a `git` shim on `PATH` that logs argv (AC4).
 - [ ] T5: Split both workflows. Read job: its own read-only `permissions`, `persist-credentials: false`, the
@@ -126,6 +126,12 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 - 2026-10-26: inbox sweep: 1 open issue (#12) and 2 bot pull requests (#10, #13), no overlap.
 - 2026-10-26: collision check: absorbs candidate "Limit what an issue run can reach"; extends M009 and M010 (archived); D-001 to D-004 do not conflict.
 - 2026-10-26: implement started on branch m011-read-without-push-rights; paused before T1 code at the user's request to discuss whether the split is worth its cost.
+- 2026-10-26: resumed at the user's request ("Continue M011 as planned.").
+- 2026-10-26: T1-T4 landed in one commit, because the old propose and issue tests reference `proposeRun` and `issueRun` and fail the type check until the write step and the moved tests exist.
+- 2026-10-26: implement chose `discoverRead`/`proposeHandoff` in `propose.ts` and `issueRead`/`issueAnswer` in `issue.ts`, a `pnpm propose` script in `src/discover/propose-cli.ts`, and `pnpm discover-issue --handoff <dir>` as that command's only form; the read step writes a `known` outcome for a repo the index or a bot pull request has, and the write step answers it from its own read.
+- 2026-10-26: implement chose to validate `plan.json` with Ajv (D-001) against a schema in `handoff.ts`; the failure name must match `^[a-z][a-z-]{0,59}$`, string fields have length caps, and each entry file is capped at 64 KiB.
+- 2026-10-26: a handoff that `readHandoff` refuses gets no answer on its issue, as AC3 requires; the write job fails, which shows on the run.
+- 2026-10-26: T4 check discrimination: passing the full environment to `pnpm check`, and dropping the environment config from the push, each turned the token test red; restored from a copy.
 
 ## Decisions
 

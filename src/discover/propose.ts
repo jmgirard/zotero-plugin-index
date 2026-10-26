@@ -6,7 +6,7 @@ import process from "node:process";
 import { promisify } from "node:util";
 import type { Lookup } from "../upstream/host-guard.ts";
 import { type Fetch, githubClient, ReadFailure } from "../upstream/reader.ts";
-import { type DiscoveryState, discover, type ReadItem, type Report } from "./discover.ts";
+import { type DiscoverResult, type DiscoveryState, discover, indexed, type ReadItem } from "./discover.ts";
 
 const API = "https://api.github.com";
 // The bot's branches are `discover/<owner>/<repo>`, lowercase.
@@ -25,11 +25,14 @@ export type Written = Extract<ReadItem, { outcome: "written" }>;
 export type CheckRunner = (dir: string) => Promise<{ status: number; output: string }>;
 
 // Runs `pnpm check <dir>` with the pnpm that runs this command, and returns its exit
-// status and its output, stderr after stdout.
+// status and its output, stderr after stdout. The check needs no GitHub token, so it
+// gets none.
 export const pnpmCheck: CheckRunner = (dir) =>
   new Promise((resolveCheck, reject) => {
+    const { GITHUB_TOKEN: _token, ...env } = process.env;
     const child = spawn(process.env.npm_execpath ?? "pnpm", ["--silent", "--dir", PACKAGE_ROOT, "check", dir], {
       stdio: ["ignore", "pipe", "pipe"],
+      env,
     });
     let stdout = "";
     let stderr = "";
@@ -52,7 +55,7 @@ export interface ProposeFailure {
   message: string;
 }
 
-export interface ProposeRunOptions {
+export interface DiscoverReadOptions {
   // As for discover: the index's entries, and where new entries are written.
   root: string;
   outDir: string;
@@ -62,24 +65,62 @@ export interface ProposeRunOptions {
   limit: number;
   budget: number;
   now?: Date;
+  // The index repo as owner/repo.
+  indexRepo: string;
+}
+
+// The read step of a discover run, which makes no GitHub write. It reads the index
+// repo's bot pull requests and runs discovery with each repo whose bot pull request is
+// open or was closed without a merge in the skip set. A failed pull-request read ends
+// the run before discovery reads.
+export async function discoverRead(options: DiscoverReadOptions): Promise<DiscoverResult> {
+  let pulls: BotPulls;
+  try {
+    pulls = await botPulls(options.fetch, options.indexRepo);
+  } catch (error) {
+    if (error instanceof ReadFailure) return { ok: false, message: error.message };
+    throw error;
+  }
+  return discover({ ...options, skip: pulls.skip, pendingIds: pulls.ids });
+}
+
+export interface ProposeHandoffOptions {
+  // The index's entries.
+  root: string;
+  fetch: Fetch;
   // The index repo as owner/repo, and a checkout of it whose remote takes the pushes.
   indexRepo: string;
   gitDir: string;
   remote?: string;
   check: CheckRunner;
+  // The entries of a checked discover handoff.
+  entries: Written[];
 }
 
-export type ProposeRunResult =
-  | { ok: true; state: DiscoveryState; report: Report; proposed: Proposed[]; failed: ProposeFailure[] }
+export interface SkippedEntry {
+  repo: string;
+  id: string;
+  reason: "in-index" | "in-bot-pull";
+}
+
+export type ProposeHandoffResult =
+  | { ok: true; proposed: Proposed[]; failed: ProposeFailure[]; skipped: SkippedEntry[] }
   | { ok: false; message: string };
 
-// Reads the index repo's bot pull requests, runs discovery with each repo whose bot pull
-// request is open or was closed without a merge in the skip set, and opens one pull
-// request for each entry discovery writes. A failed pull-request read ends the run
-// before discovery reads; a failure for one entry is reported, and the run goes on.
-export async function proposeRun(options: ProposeRunOptions): Promise<ProposeRunResult> {
-  const { fetch, indexRepo, limit } = options;
-  let pulls: Awaited<ReturnType<typeof botPulls>>;
+// The write step of a discover run. It checks the index and the bot pull requests again
+// by repo and plugin id, since they can change while the read step runs, and opens one
+// pull request for each entry neither has. A failed read of the index, the pull
+// requests, or the default branch ends the run before any push; a failure for one entry
+// is reported, and the run goes on.
+export async function proposeHandoff(options: ProposeHandoffOptions): Promise<ProposeHandoffResult> {
+  const { root, fetch, indexRepo, entries } = options;
+  let index: Awaited<ReturnType<typeof indexed>>;
+  try {
+    index = await indexed(root);
+  } catch (error) {
+    return { ok: false, message: `cannot read ${root}: ${(error as Error).message}` };
+  }
+  let pulls: BotPulls;
   let base: string;
   try {
     pulls = await botPulls(fetch, indexRepo);
@@ -88,11 +129,16 @@ export async function proposeRun(options: ProposeRunOptions): Promise<ProposeRun
     if (error instanceof ReadFailure) return { ok: false, message: error.message };
     throw error;
   }
-  const result = await discover({ ...options, skip: pulls.skip, pendingIds: pulls.ids });
-  if (!result.ok) return result;
-  const written = result.report.read.filter((item): item is Written => item.outcome === "written").slice(0, limit);
+  const skipped: SkippedEntry[] = [];
+  const written: Written[] = [];
+  for (const entry of entries) {
+    const { repo, id } = entry;
+    if (index.repos.has(repo) || index.ids.has(id.toLowerCase())) skipped.push({ repo, id, reason: "in-index" });
+    else if (pulls.skip.has(repo) || pulls.ids.has(id.toLowerCase())) skipped.push({ repo, id, reason: "in-bot-pull" });
+    else written.push(entry);
+  }
   const { proposed, failed } = await propose({ ...options, base, written });
-  return { ...result, proposed, failed };
+  return { ok: true, proposed, failed, skipped };
 }
 
 export interface BotPulls {
@@ -176,6 +222,17 @@ export async function propose(options: ProposeOptions): Promise<{ proposed: Prop
   const failed: ProposeFailure[] = [];
   if (written.length === 0) return { proposed, failed };
   const github = githubClient(fetch);
+  // The fetch and the push reach the remote with the token, if one is set, as the header
+  // that actions/checkout would store. It goes through git's environment configuration,
+  // so it is in no argument and no config file.
+  const token = process.env.GITHUB_TOKEN;
+  const auth: Record<string, string> = token
+    ? {
+        GIT_CONFIG_COUNT: "1",
+        GIT_CONFIG_KEY_0: "http.https://github.com/.extraheader",
+        GIT_CONFIG_VALUE_0: `AUTHORIZATION: basic ${Buffer.from(`x-access-token:${token}`).toString("base64")}`,
+      }
+    : {};
   const git = async (args: string[], env: Record<string, string> = {}) => {
     try {
       return (await run("git", args, { cwd: gitDir, env: { ...process.env, ...env } })).stdout.trim();
@@ -189,7 +246,7 @@ export async function propose(options: ProposeOptions): Promise<{ proposed: Prop
     let baseCommit: string;
     try {
       work = await mkdtemp(join(tmpdir(), "zpi-propose-"));
-      await git(["fetch", "--quiet", remote, base]);
+      await git(["fetch", "--quiet", remote, base], auth);
       baseCommit = await git(["rev-parse", "FETCH_HEAD^{commit}"]);
     } catch (error) {
       for (const { repo, id } of written) failed.push({ repo, id, message: (error as Error).message });
@@ -217,7 +274,7 @@ export async function propose(options: ProposeOptions): Promise<{ proposed: Prop
           GIT_COMMITTER_EMAIL: BOT.email,
         });
         // Forced, so a branch left by an earlier run, whose request failed, is replaced.
-        await git(["push", "--quiet", "--force", remote, `${commit}:refs/heads/${branch}`]);
+        await git(["push", "--quiet", "--force", remote, `${commit}:refs/heads/${branch}`], auth);
 
         const pull = (await github.post(`${API}/repos/${indexRepo}/pulls`, {
           title: `Add ${repo}`,
