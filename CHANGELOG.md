@@ -126,7 +126,8 @@
   `Discover plugins` reads repositories that anyone can tag, and its runs can
   save caches that a run on the default branch restores. Thus the build job
   cannot restore a cache that such a job saved.
-- `pnpm build` counts only build-level failures toward its exit-1 rule.
+- `pnpm build` counts only build-level failures toward its more-than-half
+  exit-1 rule.
   "Building the data" in the README lists them. A 404, a fork, or a release
   with no `.xpi` file no longer counts. Before, a build where most records
   failed for such reasons deployed nothing. The command also prints the
@@ -135,7 +136,7 @@
   a `::warning::` line, which GitHub Actions shows on the run.
 - If every record carries a failure, build-level or not, `pnpm build` now
   exits with status 1 after it writes the file, and the daily build deploys
-  nothing. Before, the rule let a bug that fails every record for a reason
-  that is not build-level, such as `facts-invalid`, deploy. That site had no
-  upstream data for any record. The rule for build-level failures stays as
-  it was.
+  nothing. Before, a bug of this kind did not stop the deploy. One example
+  is a bug that fails every record with `facts-invalid`, which is not
+  build-level. The site then showed no upstream data for any record. The rule for build-level failures
+  stays as it was.

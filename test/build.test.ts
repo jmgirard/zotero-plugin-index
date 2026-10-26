@@ -171,7 +171,7 @@ function treeOf(...ids: string[]): string {
 const SECOND_UPDATE = "https://raw.githubusercontent.com/example/second-plugin/main/update.json";
 
 describe("pnpm build", () => {
-  test("names an error the reader does not expect unexpected-error, goes on, and exits 1 when 2 of 3 records fail for build-level reasons", () => {
+  test("names an error the reader does not expect unexpected-error, goes on, and exits 1 when 2 of 3 records fail for build-level reasons and all 3 fail", () => {
     // BETTER_NOTES is the first entry by name, so the other two are read after the error.
     const recorded = responses();
     recorded["https://api.github.com/repos/windingwind/zotero-better-notes"] = { unexpected: "planted reader error" };
