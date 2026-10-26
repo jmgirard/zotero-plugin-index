@@ -188,6 +188,8 @@ declares.
      Entries carry their rationale; the counterweight `decisions format`
      advisory watches for pasted output, not for entry length (D-075). -->
 
+- 2026-10-26 (review): promoted to D-008. The stable-first rule with its fallback replaces M002's prereleases-included rule, and the moved values of existing v1 fields are not a breaking change.
+
 ## Review
 <!-- owner: review · exclusive; evidence per criterion, consistency-gate
      results, review findings + triage. EXEMPT from the 150-line cap (M55),
@@ -203,3 +205,32 @@ Pass 1, 2026-10-26, on m014-stable-releases-first at 76946a9 plus a CHANGELOG.md
 - AC5: the plan's grep, rerun at head, shows README.md:97, CHANGELOG.md:11, cairn/DESIGN.md:72, src/discover/propose.ts:307, and .github/ISSUE_TEMPLATE/add-plugin.yml:9 each naming the newest stable release first. README.md:96-104 and cairn/DESIGN.md:72-79 state the fallback. CHANGELOG.md:94-108 is the new Unreleased entry: the rule, the `prerelease` field, and "fetch any saved copy of it again".
 - AC6: waits on the first deploying `build.yml` run after the merge.
 - AC7: `pnpm test` 441 passed (tsc clean); `pnpm check` checked 17 entries in plugins, 0 problems.
+- gate: `cairn_validate.py` all checks passed. No principle changed, so no impact report. The generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple.
+- diff-bug #1: the strict "later" check had no test, and `>=` would read the stable XPI twice with the same result — fix now, fixed e5d96c4 (a same-date case and a one-XPI-request check; a planted `>=` failed both).
+- diff-bug #2: a listed plugin can newly fail when its older stable release fails with a name outside the three — reject, planned change (AC2). A local `pnpm build` against live GitHub on 2026-10-26 wrote 17 records with 0 failures.
+- diff-bug #3: when both reads fail, only the prerelease's failure comes back — reject, planned change (AC2).
+- diff-bug #4: an invalid `published_at` gives NaN and an undefined sort order — follow-up, row "Order releases with bad dates safely" (pre-existing sort).
+- diff-bug #5: the no-later-release check that beta.5 is never requested holds whatever the fallback does — fix now, fixed e5d96c4 (it now asserts the XPI requests are exactly the stable XPI once).
+- diff-bug #6: `prerelease` could be required on the reader's return type — reject, style.
+- diff-bug #7: the "absent" prerelease case and the three-name no-later loop repeat one code path — fix now, fixed e5d96c4 (one string case, one failure name).
+- diff-bug #8: the first-plugin page case repeats the label test's page read — reject, planned change (AC4 names three cases).
+- diff-bug #9: the build fixture lost a second stable read — reject, false: better-notes is read from a stable release.
+- diff-bug #10: the bot body states the rule, not which release was read — reject, planned change (AC5 asks the site to state the rule).
+- diff-bug #11: `latestReleaseDate` can hold an older stable date — reject, planned change (the v1 name stays; its description is accurate).
+- blame-history #1: existing v1 fields now describe a different release, and no record says this is not breaking — fix now, fixed e5d96c4 (D-008).
+- blame-history #2: DESIGN.md's bar says "at least one release" with a readable update.json, but the reader checks one release — follow-up, row "State the bar for the release read" (pre-existing since M002).
+- blame-history #3: M002's "prereleases included" outcome is reversed with no D-entry — fix now, fixed e5d96c4 (D-008).
+- blame-history #4: a Zotero 6-only plugin can report the prerelease's failure name — reject, planned change (AC2).
+- blame-history #5: `latestReleaseDate` and `data-fact="latest-release"` keep "latest" — reject, planned change (v1 name frozen; the label changed per AC4).
+- blame-history #6: the bot sentence and schema description leave out "later" — reject, false: the bot text appears only after a read that passed, and the schema's "only when" states a necessary condition, as the claim audit read.
+- blame-history #7: second-plugin now runs the prerelease path in the archived build test — reject, false: that test asserts `archived`, which the release choice does not touch.
+- blame-history #8: the fallback adds a second download for affected plugins — reject, planned change (the user chose the fallback; M004 caps hold per download).
+- prior-review #1: a second optional field under the strict v1 `upstream` block, as the row "Let old v1 schemas accept new fields" names — reject, planned change (chosen at the gate with that cost stated; CHANGELOG tells consumers to fetch the schema).
+- prior-review #2: `addBeta` builds the prerelease XPI in the test, not from a recording — reject, false: it is a recorded-response `xpi` entry, and the tests check release choice, not manifest shape.
+- prior-review #3: the fallback adds time to `pnpm build` and `pnpm discover` — reject, planned change (one more download for one listed plugin today).
+- prior-review #4: second-plugin is now prerelease-only — reject, false: intended, and its fixture source says so.
+- prior-review #5: the bot body grows by about 130 characters — reject, false: the body stays far below GitHub's 65,536-character limit.
+- ripple #1: test/upstream.test.ts:127's title states the removed rule — fix now, fixed e5d96c4.
+- snapshot: no changed snapshot files.
+- verify after fixes: `pnpm test` 439 passed.
