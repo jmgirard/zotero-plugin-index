@@ -1,16 +1,15 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-26 (M014 done and archived; 1 row graduated, 2 added; 6 lessons marked used, 2 captured, 2 evicted; M011 row pruned)_
+_Last hygiene check: 2026-10-26 (M015 done and archived; no rows graduated or added; 4 lessons marked used, 1 corrected, 1 retired, 1 captured; M012 row pruned)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M015 | Show version pills and descriptions | review | — | normal | milestones/M015-pills-and-descriptions.md |
+| M015 | Show version pills and descriptions | done | — | normal | milestones/archive/M015-pills-and-descriptions.md |
 | M014 | Read stable releases before prereleases | done | — | normal | milestones/archive/M014-stable-releases-first.md |
 | M013 | Show whether a plugin repo is archived | done | — | normal | milestones/archive/M013-show-archived-repos.md |
-| M012 | Stop inflating past the declared size | done | — | normal | milestones/archive/M012-bound-unzip-output.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
 
