@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ai-butler@github.com",
+  "name": "zotero-ai-butler",
+  "description": "Your personal AI butler, automatically and meticulously reads papers and summarizes notes.",
+  "homepage": "https://github.com/steven-jianhao-li/zotero-AI-Butler#readme",
+  "repoUrl": "https://github.com/steven-jianhao-li/zotero-AI-Butler",
+  "updateUrl": "https://github.com/steven-jianhao-li/zotero-AI-Butler/releases/download/release/update.json"
+}
