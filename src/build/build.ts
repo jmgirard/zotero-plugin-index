@@ -28,7 +28,7 @@ export interface PluginsFile {
   plugins: PluginRecord[];
 }
 
-// `buildLevel` lists the ids of the records whose failure points at the build, such as a
+// `buildLevel` lists the ids of the records whose failure usually points at the build, such as a
 // rate limit or a network error, in record order. It stays out of the data.
 export type BuildResult = { ok: true; data: PluginsFile; text: string; buildLevel: string[] } | { ok: false; problems: string[] };
 

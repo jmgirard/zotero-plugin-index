@@ -42,8 +42,8 @@ async function main(): Promise<number> {
   // GitHub Actions shows this line as a warning on the run.
   if (buildLevel > 0) console.log(`::warning::${buildLevel} of ${total} records carry a build-level failure`);
   console.log(`wrote ${total} records to ${written.path}, ${failed.length} with a failed upstream read`);
-  // A build-level failure, such as a rate limit or a network error, points at the build,
-  // not at the plugin. When more than half of the records carry one, exit 1, so the daily
+  // A build-level failure, such as a rate limit or a network error, usually points at the
+  // build, not at the plugin. When more than half of the records carry one, exit 1, so the daily
   // build deploys nothing and the last good data stays.
   if (buildLevel * 2 > total) {
     console.error(`${buildLevel} of ${total} records carry a build-level failure, more than half`);

@@ -337,8 +337,9 @@ read stops with an error that the reader does not name, the failure name is
 `unexpected-error`. If the read gives facts that the schema rejects, the
 failure name is `facts-invalid`. The command still writes the file.
 
-A build-level failure points at the build, not at the plugin. These
-failures are build-level:
+A build-level failure usually comes from the build, not from the plugin.
+A plugin's own download host that is down also gives one. These failures
+are build-level:
 
 - an `unexpected-error`,
 - a request that gets no whole response, such as a failed host lookup, a

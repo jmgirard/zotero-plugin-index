@@ -53,7 +53,7 @@ export type Failure =
   | "update-json-missing-id"
   | "host-refused";
 
-// `buildLevel` marks a failure that points at the build rather than at the plugin: a
+// `buildLevel` marks a failure that usually points at the build rather than at the plugin: a
 // request with no whole response, or an answer that buildLevelStatus counts. The build
 // counts such failures to decide whether to deploy. It is not part of the published data.
 export type UpstreamResult =
@@ -82,7 +82,7 @@ function fail(failure: Failure, message: string, buildLevel = false): never {
   throw new ReadFailure(failure, message, buildLevel);
 }
 
-// Whether an HTTP error answer points at the build: a rate limit or a server error from
+// Whether an HTTP error answer usually points at the build: a rate limit or a server error from
 // any host, or a refused token from the GitHub API. A 404 and the other answers point at
 // the plugin.
 export function buildLevelStatus(status: number, from: "github-api" | "download"): boolean {

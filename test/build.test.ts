@@ -231,7 +231,7 @@ describe("pnpm build", () => {
     expect(result.stdout).not.toContain("::warning::");
   });
 
-  test("prints only the build-level line when no record fails", () => {
+  test("prints the build-level line, no failure-name line, and no warning when no record fails", () => {
     const result = pnpmBuild([treeOf(BETTER_NOTES, SECOND), "--out", tempDir()], writeFixture(responses()));
     expect(result.status).toBe(0);
     const lines = result.stdout.trim().split("\n");

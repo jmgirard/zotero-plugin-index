@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M017: Stop deploys only for build failures
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -139,6 +139,8 @@ planned.
 - 2026-10-26: T4 done: `cli.ts` prints `failed with <name>: <n>` lines sorted by name, the build-level line, and the `::warning::` line before `wrote`; build tests 26 passed. Planted `buildLevelStatus` returning true (copy and restore): reader tests went red on the 404 rows; restored file matches the commit.
 - 2026-10-26: T5 done: README (top paragraph and "Building the data", now listing the four build-level causes), CHANGELOG (M006 entry edited, new entry for the rule, summary, and warning), DESIGN (Function Families and Architecture), `build.yml:37` comment. Grep for "more than half", "carry a failure", "half of", and "deploys nothing" over README, CHANGELOG, DESIGN, `.github`, `site/src`, and `src`: every hit states the build-level rule or a site-build failure. The simple-english hook's pre-existing README:67 "validate" hit left alone.
 - 2026-10-26: T6 done: `pnpm test` 483 passed (14 files); `pnpm check` 17 entries, 0 problems.
+- 2026-10-26: claim audit: 36 claims read, 2 corrected — README.md, src/build/build.ts, src/build/cli.ts, src/upstream/reader.ts, test/build.test.ts ("points at the build" softened to "usually", since a plugin's own dead download host also counts; one test name made exact). The `::warning::` annotation claim matches GitHub's documented workflow command but is unobserved; the granted post-merge `Build data` run checks it. Verify re-run: 483 passed, 0 problems.
+- 2026-10-26: implement complete; status set to review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
