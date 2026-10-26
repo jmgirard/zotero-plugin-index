@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-26 (M014 done and archived; 1 row graduated, 2 adde
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M015 | Show version pills and descriptions | in-progress | — | normal | milestones/M015-pills-and-descriptions.md |
+| M015 | Show version pills and descriptions | review | — | normal | milestones/M015-pills-and-descriptions.md |
 | M014 | Read stable releases before prereleases | done | — | normal | milestones/archive/M014-stable-releases-first.md |
 | M013 | Show whether a plugin repo is archived | done | — | normal | milestones/archive/M013-show-archived-repos.md |
 | M012 | Stop inflating past the declared size | done | — | normal | milestones/archive/M012-bound-unzip-output.md |

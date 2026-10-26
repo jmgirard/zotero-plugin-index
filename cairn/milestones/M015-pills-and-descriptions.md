@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M015: Show version pills and descriptions
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -152,6 +152,8 @@ change to the published data or its schemas.
 - 2026-10-26: T5 done: plugin page in the AC5 order; repository and releases are `<li data-fact>` links; the id becomes a `data-fact="id"` row inside `<details>`; the overrides table sits in a scrolling wrapper for narrow screens.
 - 2026-10-26: T6 done: version field, hint, and script removed from Base; `zoteroVersion`, `rangeResult`, `RangeResult`, `rangeFields` and their tests removed; the override-precedence cases that went through `rangeResult` now test `declaredRange` directly; AC6 test reads every file the build writes. Planted defects (`<details open>`, ◐ shown as ✓) turned 8 of 37 site tests red, then the files were restored from copies.
 - 2026-10-26: T7 done: README "The site", one new CHANGELOG bullet plus a pointer in the earlier site bullet (no release tag exists, so its typed-field sentences would be false), DESIGN Contract boundary, Function Families, and Architecture; the doc search for the three phrases finds nothing; `pnpm test` 466 passed, `pnpm check` 0 problems. Screenshots of the home page and the Zoplicate page, built from the live data of 2026-10-26, were taken in the built-in browser (dark scheme; the light-scheme emulation did not apply in the pane). The README's older "validate" wording in "Using the data" was left as it was.
+- 2026-10-26: claim audit: 28 claims read, 3 corrected — README.md (description override applies only to the version read; full filler-word list), CHANGELOG.md (no-description, no-range, and failure cases).
+- 2026-10-26: implement done; status review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

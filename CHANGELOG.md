@@ -107,7 +107,10 @@
   release fact "Release read by the index". If the reader read a prerelease,
   the page shows "(prerelease)" after the publish date.
 - The home page and each plugin page show the plugin's description and one
-  version pill for each Zotero major version from 7 to 10. If the declared
+  version pill for each Zotero major version from 7 to 10. A plugin with no
+  description shows none. A
+  plugin with no declared range shows "No declared range" instead, and a
+  plugin that the build failed to read shows its failure. If the declared
   range covers all of that version, the pill shows a check mark (✓). A half
   circle (◐) means part of it, and a dash means none of it. A pill counts Zotero N
   as the versions from N.0 to N.9. The "Your Zotero version" field and the

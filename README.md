@@ -26,12 +26,13 @@ pills. If the last build failed to read a plugin, its row shows the failure.
 The description comes from the plugin's manifest. If the manifest has no
 description, if it is blank, or if it only repeats the plugin's name, the
 site shows no description. The site checks for a repeated name this way. It
-takes the words of the description and of the name and leaves out "Zotero",
-"plugin", "add-on", and similar filler words. If every word of the
+takes the words of the description and of the name. It leaves out "zotero",
+"plugin", "addon", "add", "on", "extension", "for", "a", "an", and "the". If every word of the
 description that is left is also a word of the name, the description only
 repeats the name. For example, "Zotero Plugin for OCR" only repeats the name
-"Zotero OCR". A `description` override replaces the manifest description,
-and the site always shows it.
+"Zotero OCR". A `description` override that applies to the plugin version
+that the index read replaces the manifest description. The name check does
+not apply to an override.
 
 Each plugin has its own page. The page shows the name, the description, the
 pills, the declared range, and links to the repository and its releases. A
