@@ -315,12 +315,13 @@ reused._
   workflow then uploads `dist/` as the Pages artifact, and a deploy job that
   needs the build job publishes it. A failed build deploys nothing, and the
   `github-pages` environment takes deploys from `main` only (M006).
-  The build job of `build.yml` restores no Actions cache: the workflow sets
+  The build job of `build.yml` restores no Actions cache: the job sets
   `cache-mode: none`, which GitHub enforces with the job's cache token, and no
-  step sets a `cache` input. Scheduled and dispatched runs of the discover read
-  job can save caches in the default branch's scope, while `issues` runs get
-  read-only cache access. `test/workflows.test.ts` fails on a `cache` key or an
-  `actions/cache` step in `build.yml`; `ci.yml` keeps `cache: pnpm` (M016).
+  step sets a `cache` input (D-010). Scheduled and dispatched runs of the
+  discover read job can save caches in the default branch's scope, while
+  `issues` runs get read-only cache access. `test/workflows.test.ts` fails on a
+  `cache` key or an `actions/cache` step in `build.yml`, or on a build job
+  without `cache-mode: none`; `ci.yml` keeps `cache: pnpm` (M016).
 - `site/` is an Astro project (D-004), and `src/site/` builds it. `pnpm site`
   reads `<out>/v1/plugins.json`, builds into a temporary directory, because
   Astro empties its output directory, and copies the pages into `<out>` beside

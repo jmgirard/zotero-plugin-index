@@ -119,9 +119,9 @@
   the plugin id, the repository and release facts such as the release count,
   and the overrides in a closed "Details" section. An archived plugin shows
   "(archived)" after its name on its page too.
-- The build job of `build.yml` restores no Actions cache. The `Build data`
-  workflow sets `cache-mode: none`, and its `actions/setup-node` step no
-  longer sets `cache: pnpm`. The read job of `Discover plugins` reads
-  repositories that anyone can tag, and its runs can save caches that a run
-  on the default branch restores. Thus a cache that such a job saved cannot
-  change the site and data that the build publishes.
+- The build job of `build.yml` restores no Actions cache. The build job of
+  the `Build data` workflow sets `cache-mode: none`, and its
+  `actions/setup-node` step no longer sets `cache: pnpm`. The read job of
+  `Discover plugins` reads repositories that anyone can tag, and its runs can
+  save caches that a run on the default branch restores. Thus the build job
+  cannot restore a cache that such a job saved.

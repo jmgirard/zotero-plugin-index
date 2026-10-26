@@ -97,3 +97,15 @@ stays one small script". At the M015 plan question set the user chose version
 pills over the typed Zotero version field, so M015 removes the field and its
 script. The pages now carry no script. The choice of Astro stands: it still
 writes plain HTML from TypeScript templates and sends no browser framework.
+
+### D-010: The deploy build restores no Actions cache
+
+2026-10-26, M016 review. The build job of `build.yml` writes the site and data
+that Pages publishes, so it restores no Actions cache: it sets
+`cache-mode: none`, and no step sets a `cache` input. The fix sits in the job
+that restores, not in the jobs that might write, because the discover read job
+reads repos that anyone can tag and must save its state cache, and GitHub lets
+its scheduled and dispatched runs save caches in the default branch's scope. A
+job that a crafted file took over could save any key there. `ci.yml` keeps its
+dependency cache, because it deploys nothing and no check gates a merge. A
+later workflow that publishes or writes takes the same rule.
