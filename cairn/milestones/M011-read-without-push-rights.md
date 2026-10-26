@@ -63,7 +63,7 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
       holds `always()` and `needs.<read job>.result != 'skipped'`), and its download step does not fail the job
       when no handoff exists (Ruby parse). `pnpm propose`, given the issue number and no handoff, comments that the
       bot could not finish, leaves the issue open, and exits 1 (test).
-- [ ] AC6: After the merge, an issue the user opens from a prefilled "Add a plugin" link gets the bot's answer (a
+- [x] AC6: After the merge, an issue the user opens from a prefilled "Add a plugin" link gets the bot's answer (a
       pull request or a refusal comment), and a dispatched `Discover plugins` run with `limit` 1 ends with both
       jobs green; each run's job logs show `Contents: read` for the read job and `Contents: write` for the write
       job in the "GITHUB_TOKEN Permissions" group.
@@ -211,3 +211,4 @@ Pass 3 evidence on the branch at d7b0873, 2026-10-26, after review returns 1 and
 - ripple #1: row "Limit what an issue run can reach" still describes the pre-M011 job — fix now: it graduates at hygiene (pass 2)
 - ripple #2: DESIGN.md placed the open bot pull requests' file read in the write step alone — fix now: both steps named, fixed c48b43a
 - Pass-3 fixes: planting each back (no file check, no exit-code test, `known` without the shape test, the search name in the plan) turned 4 of the 5 new tests red; restored; `pnpm test` 406 passed, `pnpm check` 0 problems, the `ruby -ryaml` workflow check passes.
+- AC6: after the merge (682d6d1), `Discover plugins` run 40313601247 (dispatch, limit 1) ended green with job `read` logging `Contents: read`, `PullRequests: read` and job `write` logging `Contents: write`, `PullRequests: write` under "GITHUB_TOKEN Permissions"; it opened PR #15. The user submitted issue #16 from the prefilled link for retorquere/zotero-better-bibtex; run 40313876526 ended green with job `read` `Contents: read`, `PullRequests: read` and job `write` `Contents: write`, `Issues: write`, `PullRequests: write`; the bot commented "The bot opened https://github.com/jmgirard/zotero-plugin-index/pull/17. This issue closes when that pull request merges."
