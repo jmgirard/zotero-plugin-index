@@ -66,3 +66,14 @@
   when that pull request merges. If the plugin does not pass, the bot comments
   the reason and closes the issue. It does the same for a repository that the
   index or a bot pull request already has.
+- The bot reads the repositories that anyone can name in a job that cannot
+  write to the index repository. The `Discover plugins` and `Add a plugin
+  from an issue` workflows each run a read job with read-only permissions and
+  a write job. The read job runs `pnpm discover --handoff <dir>` or
+  `pnpm discover-issue --handoff <dir>`, which write the new entries and a
+  plan into a directory. The write job runs `pnpm propose <dir>`, which
+  pushes the branches, opens the pull requests, and answers the issue.
+  `pnpm propose` refuses a handoff that does not pass its checks, before it
+  sends any request. `pnpm discover --propose` is gone. If the write job
+  cannot propose a plugin's entry, the read job refuses the plugin as
+  `not-proposable`. Thus one such plugin does not stop the other pull requests.

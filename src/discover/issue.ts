@@ -1,11 +1,11 @@
+import { rm } from "node:fs/promises";
 import type { Lookup } from "../upstream/host-guard.ts";
 import { type Fetch, githubClient } from "../upstream/reader.ts";
 import { draftEntry, indexed, repoName } from "./discover.ts";
+import { type IssueOutcome, MESSAGE_MAX, planned, plannableRepo } from "./handoff.ts";
 import { type BotPulls, botPulls, type CheckRunner, code, defaultBranch, propose, type Written } from "./propose.ts";
 
 const API = "https://api.github.com";
-// The most characters of a message that a comment quotes.
-const MESSAGE_MAX = 2000;
 
 // The label of the URL input in .github/ISSUE_TEMPLATE/add-plugin.yml. GitHub writes each
 // input of a form into the issue body as a level-3 heading with the label, then the value.
@@ -31,20 +31,84 @@ export function parseIssueBody(body: string): ParseResult {
   return { ok: true, url: value };
 }
 
-export interface IssueRunOptions {
-  // The index's entries, and where the new entry is written.
+export interface IssueReadOptions {
+  // The index's entries, and where the new entry is drafted.
   root: string;
   outDir: string;
   fetch: Fetch;
   lookup?: Lookup;
+  // The index repo as owner/repo.
+  indexRepo: string;
+  // The issue's body.
+  body: string;
+}
+
+// The read step of an issue run, which makes no GitHub write. If the body names a repo
+// that the index or a bot pull request already has, it reads nothing. If the parser or
+// draftEntry refuses, the outcome names the failure; that includes a GitHub request
+// error while the reader reads the repo. If the bot cannot read the index, its pull
+// requests, or the default branch, the outcome is `failed`.
+// A message is cut to what a comment quotes, so a long one cannot make the handoff too
+// large for the write step.
+export async function issueRead(options: IssueReadOptions): Promise<IssueOutcome> {
+  const outcome = await readOutcome(options);
+  if (outcome.outcome === "refused" || outcome.outcome === "failed") {
+    return { ...outcome, message: outcome.message.slice(0, MESSAGE_MAX + 1) || "no message" };
+  }
+  return outcome;
+}
+
+async function readOutcome(options: IssueReadOptions): Promise<IssueOutcome> {
+  const { root, fetch, indexRepo } = options;
+  const parsed = parseIssueBody(options.body);
+  if (!parsed.ok) return { outcome: "refused", failure: parsed.problem, message: parsed.message };
+  let index: Awaited<ReturnType<typeof indexed>>;
+  try {
+    index = await indexed(root);
+  } catch (error) {
+    return { outcome: "failed", message: `cannot read ${root}: ${(error as Error).message}` };
+  }
+  let pulls: BotPulls;
+  try {
+    pulls = await botPulls(fetch, indexRepo);
+    // Read here too, so a failure ends the run before the repo is read.
+    await defaultBranch(fetch, indexRepo);
+  } catch (error) {
+    // Any error here is the bot's, so the issue gets an answer either way.
+    return { outcome: "failed", message: (error as Error).message };
+  }
+  // A name of a shape the handoff refuses is never `known`: the read goes on, and
+  // draftEntry refuses such a repo as not-proposable.
+  const known = (name: string | undefined) => !!name && plannableRepo(name) && (index.repos.has(name) || pulls.pulls.has(name));
+  const given = githubRepo(parsed.url);
+  if (known(given)) return { outcome: "known", repo: given! };
+
+  const drafted = await draftEntry(parsed.url, { ...options, ids: index.ids, pendingIds: pulls.ids });
+  if (!drafted.ok) return { outcome: "refused", failure: drafted.failure, message: drafted.message };
+  // A renamed repo answers for its old name, and GitHub gives its new one. The reader
+  // read the given URL, so it is a GitHub repo URL.
+  const repo = repoName(drafted.repoUrl) ?? given!;
+  if (known(repo)) {
+    // The handoff holds only the entries it plans.
+    await rm(drafted.dir, { recursive: true, force: true });
+    return { outcome: "known", repo };
+  }
+  return { outcome: "entry", entry: planned({ ...drafted, repo }) };
+}
+
+export interface IssueAnswerOptions {
+  // The index's entries.
+  root: string;
+  fetch: Fetch;
   // The index repo as owner/repo, and a checkout of it whose remote takes the push.
   indexRepo: string;
   gitDir: string;
   remote?: string;
   check: CheckRunner;
-  // The issue's number and body.
+  // The issue's number, and the read step's outcome with the drafted entry's directory,
+  // or undefined when the read step left no handoff.
   issue: number;
-  body: string;
+  read: { outcome: IssueOutcome; dir?: string } | undefined;
 }
 
 export interface IssueRunResult {
@@ -56,15 +120,15 @@ export interface IssueRunResult {
   errors: string[];
 }
 
-// Answers one issue opened from add-plugin.yml. If the body names a repo that the index
-// or a bot pull request already has, the run reads nothing. If the parser or draftEntry
-// refuses, the run closes the issue as not planned; that includes a GitHub request error
-// while the reader reads the repo. If the run drafts the entry, it opens a pull request
-// that closes the issue when it merges. Each answer is a comment on the issue. If the
-// bot cannot read the index, its pull requests, or the default branch, or the push or
-// the pull request fails, the comment says so and the issue stays open.
-export async function issueRun(options: IssueRunOptions): Promise<IssueRunResult> {
-  const { root, fetch, indexRepo, issue } = options;
+// The write step of an issue run. It checks the bot pull requests again by repo and
+// plugin id, since they can change while the read step runs, and the index in its
+// checkout, which is the commit the read step saw. Then it opens a pull request that
+// closes the issue when it merges, or closes the issue. Each answer is a comment on the
+// issue. If the read step failed, or the bot cannot read the index, its
+// pull requests, or the default branch, or the push or the pull request fails, the
+// comment says so and the issue stays open.
+export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRunResult> {
+  const { root, fetch, indexRepo, issue, read } = options;
   const github = githubClient(fetch);
   const issueUrl = `${API}/repos/${indexRepo}/issues/${issue}`;
   const errors: string[] = [];
@@ -86,22 +150,11 @@ export async function issueRun(options: IssueRunOptions): Promise<IssueRunResult
     errors.push(message);
     return answer(`The bot could not finish, so this issue stays open for a maintainer.\n\n${quoted(message)}`);
   };
-  // The entry or the bot pull request that already has the repo `name`.
-  const known = (name: string | undefined) => {
-    const entry = name && index.repos.get(name);
-    if (entry) return answer(`The index already lists this repo in the entry \`plugins/${entry}/\`.`, "completed");
-    const pull = name && pulls.pulls.get(name);
-    if (!pull) return undefined;
-    return answer(
-      pull.open
-        ? `The bot already proposed this repo in ${pull.url}.`
-        : `The bot proposed this repo in ${pull.url}, which was closed without a merge, so the bot does not propose it again.`,
-      "not_planned",
-    );
-  };
 
-  const parsed = parseIssueBody(options.body);
-  if (!parsed.ok) return refuse(parsed.problem, parsed.message);
+  if (!read) return failed("the read step left no handoff");
+  const { outcome } = read;
+  if (outcome.outcome === "failed") return failed(outcome.message);
+  if (outcome.outcome === "refused") return refuse(outcome.failure, outcome.message);
   let index: Awaited<ReturnType<typeof indexed>>;
   try {
     index = await indexed(root);
@@ -114,23 +167,34 @@ export async function issueRun(options: IssueRunOptions): Promise<IssueRunResult
     pulls = await botPulls(fetch, indexRepo);
     base = await defaultBranch(fetch, indexRepo);
   } catch (error) {
-    // Any error here is the bot's, so the issue gets an answer either way.
     return failed((error as Error).message);
   }
-  const given = await known(githubRepo(parsed.url));
+  // The entry or the bot pull request that already has the repo `name`.
+  const known = (name: string) => {
+    const entry = index.repos.get(name);
+    if (entry) return answer(`The index already lists this repo in the entry \`plugins/${entry}/\`.`, "completed");
+    const pull = pulls.pulls.get(name);
+    if (!pull) return undefined;
+    return answer(
+      pull.open
+        ? `The bot already proposed this repo in ${pull.url}.`
+        : `The bot proposed this repo in ${pull.url}, which was closed without a merge, so the bot does not propose it again.`,
+      "not_planned",
+    );
+  };
+
+  if (outcome.outcome === "known") {
+    return known(outcome.repo) ?? failed(`the read step found ${outcome.repo} in the index or a bot pull request, and the write step does not`);
+  }
+  const { entry } = outcome;
+  const given = known(entry.repo);
   if (given) return given;
+  const id = entry.id.toLowerCase();
+  if (index.ids.has(id)) return refuse("entry-exists", `the index already has an entry for the id ${entry.id}`);
+  if (pulls.ids.has(id)) return refuse("entry-exists", `an open pull request already adds an entry for the id ${entry.id}`);
 
-  const drafted = await draftEntry(parsed.url, { ...options, ids: index.ids, pendingIds: pulls.ids });
-  if (!drafted.ok) return refuse(drafted.failure, drafted.message);
-  // A renamed repo answers for its old name, and GitHub gives its new one. The reader
-  // read the given URL, so it is a GitHub repo URL.
-  const repo = repoName(drafted.repoUrl) ?? githubRepo(parsed.url)!;
-  const renamed = await known(repo);
-  if (renamed) return renamed;
-
-  const { id, dir, repoUrl, version, strictMinVersion, strictMaxVersion } = drafted;
-  const written: Written = { repo, repoUrl, outcome: "written", id, dir, version, strictMinVersion, strictMaxVersion };
-  const result = await propose({ ...options, base, written: [written] });
+  const written: Written = { ...entry, outcome: "written", dir: read.dir! };
+  const result = await propose({ ...options, base, written: [written], issue });
   if (result.failed.length > 0) return failed(result.failed[0].message);
   const { url, branch } = result.proposed[0];
   // The create request's answer can lack the URL; the branch still names the pull request.

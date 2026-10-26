@@ -1,9 +1,10 @@
-import { readFile } from "node:fs/promises";
+import { readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { type WriteResult, writeEntry } from "../add-plugin/add-plugin.ts";
 import { listEntries } from "../check/check.ts";
 import type { Lookup } from "../upstream/host-guard.ts";
 import { type Failure, type Fetch, githubClient, ReadFailure, readUpstream } from "../upstream/reader.ts";
+import { plannedProblem } from "./handoff.ts";
 
 const API = "https://api.github.com";
 export const TOPICS = ["zotero-plugin", "zotero-addon"];
@@ -12,7 +13,7 @@ const SEARCH_MAX = 1000;
 // A refused repo is read again after this long, even when it was not pushed.
 const RECHECK_MS = 30 * 24 * 60 * 60 * 1000;
 
-export type DiscoveryFailure = Failure | Extract<WriteResult, { ok: false }>["failure"] | "unexpected-error";
+export type DiscoveryFailure = Failure | Extract<WriteResult, { ok: false }>["failure"] | "not-proposable" | "unexpected-error";
 
 // Failures that say nothing about the repo, such as a rate limit, are not recorded, so
 // the next run reads the repo again.
@@ -138,7 +139,10 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
     delete state[repo];
     index.ids.add(id.toLowerCase());
     written++;
-    report.read.push({ repo, repoUrl, outcome: "written", id, dir, version, strictMinVersion, strictMaxVersion });
+    // The name and URL that draftEntry checked, which can differ from the search
+    // result's after a rename.
+    const read = { repo: repoName(drafted.repoUrl) ?? repo, repoUrl: drafted.repoUrl };
+    report.read.push({ ...read, outcome: "written", id, dir, version, strictMinVersion, strictMaxVersion });
   }
   return { ok: true, state, report };
 }
@@ -186,6 +190,22 @@ export async function draftEntry(repoUrl: string, options: DraftOptions): Promis
   const entry = await writeEntry(outDir, read.facts);
   // An existing directory in outDir, or a failed write, is about outDir, not the repo.
   if (!entry.ok) return refuse(entry.failure, entry.message, entry.failure === "unsafe-id");
+  // `pnpm propose` refuses a handoff with an entry it cannot push, so such a repo is
+  // refused here, and recorded.
+  const repo = repoName(read.facts.repoUrl);
+  let problem: string | undefined;
+  try {
+    problem = repo
+      ? await plannedProblem({ repo, repoUrl: read.facts.repoUrl, id, version, strictMinVersion, strictMaxVersion }, entry.dir)
+      : `${read.facts.repoUrl} names no owner/repo`;
+  } catch (error) {
+    await rm(entry.dir, { recursive: true, force: true });
+    return refuse("unexpected-error", `checking the entry of ${read.facts.repoUrl} threw: ${(error as Error).message}`);
+  }
+  if (problem) {
+    await rm(entry.dir, { recursive: true, force: true });
+    return refuse("not-proposable", `the bot cannot propose ${read.facts.repoUrl}: ${problem}`);
+  }
   return { ok: true, id, dir: entry.dir, repoUrl: read.facts.repoUrl, version, strictMinVersion, strictMaxVersion };
 }
 

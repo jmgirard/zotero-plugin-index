@@ -10,11 +10,11 @@ on:
         type: number
         default: 5
 
-# Pushes the discover/ branches and opens their pull requests. A pull request opened
-# with this token starts no workflow run, so its body carries the check result.
-permissions:
-  contents: write
-  pull-requests: write
+# Each job sets its own permissions. The read job reads repos that anyone can tag, so it
+# cannot write; the write job pushes the discover/ branches and opens their pull requests
+# from the read job's handoff, and reads no plugin repo itself. A pull request opened with this
+# token starts no workflow run, so its body carries the check result.
+permissions: {}
 
 # One run at a time, so two runs cannot propose the same plugin. `Add a plugin from
 # an issue` also pushes discover/ branches and runs in this group.
@@ -23,19 +23,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  discover:
+  read:
     # The index and the code come from the checkout, and the pull requests are based on
     # the default branch, so a dispatch on another branch does nothing.
     if: github.event_name == 'schedule' || github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: read
+    # Empty when this attempt uploaded no handoff, so the write job never reads an
+    # earlier attempt's.
+    outputs:
+      handoff: ${{ steps.upload.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v6
+      # No dependency cache: a cache this job saved would reach later jobs.
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: pnpm
       - run: pnpm install --frozen-lockfile
       # A cache key cannot be written twice, so each run saves the state under its own
       # key, and the next run restores the newest one by the prefix.
@@ -46,7 +55,7 @@ jobs:
           restore-keys: discovery-state-
       # Scheduled runs have no inputs, so LIMIT is empty and the command's default of 5
       # applies. A dispatched limit reaches the command as given, so 0 is refused.
-      - run: pnpm discover --propose ${LIMIT:+--limit "$LIMIT"}
+      - run: pnpm discover --handoff handoff ${LIMIT:+--limit "$LIMIT"}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LIMIT: ${{ inputs.limit }}
@@ -56,3 +65,43 @@ jobs:
         with:
           path: .cache/discovery-state.json
           key: discovery-state-${{ github.run_id }}-${{ github.run_attempt }}
+      # Also after a failed step that left a plan, such as a failed state write. A re-run
+      # replaces the first attempt's handoff.
+      - id: upload
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && hashFiles('handoff/plan.json') != '' }}
+        with:
+          name: handoff
+          path: handoff/
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+  write:
+    needs: read
+    # Also after a failed read job that uploaded a plan, such as one whose state write
+    # failed; not when the read job uploaded none.
+    if: ${{ !cancelled() && needs.read.outputs.handoff != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      # The token reaches git only in `pnpm propose`, through its environment.
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v8
+        with:
+          name: handoff
+          path: handoff
+      - run: pnpm propose handoff ${LIMIT:+--limit "$LIMIT"}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LIMIT: ${{ inputs.limit }}

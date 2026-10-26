@@ -142,6 +142,15 @@ change these numbers, add `--limit <n>` or `--budget <n>`. To write the
 entries in another directory, add `--out <dir>`. The command prints a JSON
 report that names each repository that it wrote, refused, or skipped.
 
+The command also refuses a plugin that the bot cannot propose, with the
+failure name `not-proposable`. Some examples:
+
+- an id that is not a Mozilla add-on id
+- a repository name that git refuses as a branch name
+- a value longer than `pnpm propose` accepts
+
+`pnpm discover-issue` refuses such a plugin in the same way.
+
 The command keeps a state file, `.cache/discovery-state.json`. The file
 records each refused repository. A later run reads that repository again
 only after a new push or after 30 days. The file does not record a GitHub API
@@ -150,14 +159,39 @@ again on the next run. To use another file, add `--state <file>`.
 
 ### Pull requests from the bot
 
-The `Discover plugins` workflow runs `pnpm discover --propose` once a day. You
-can also start it by hand on the default branch and set its `limit` input. A
-run started on another branch does nothing. With `--propose`, the
-command writes each new entry in a temporary directory outside the checkout,
-unless `--out` names a directory. For each entry, it pushes
-the branch `discover/<owner>/<repo>` with one commit that adds the two files
-of the entry. Then it opens a pull request from that branch. A run opens at
-most 5 pull requests, or the number that `--limit` gives.
+The `Discover plugins` workflow runs once a day in two jobs. You can also
+start it by hand on the default branch and set its `limit` input. A run
+started on another branch does nothing.
+
+The first job can only read the index repository, and its checkout keeps no
+token. It runs `pnpm discover --handoff handoff`. With `--handoff <dir>`, the
+command writes each new entry under `<dir>/entries/` and a plan file,
+`<dir>/plan.json`, that lists them. The command makes no change on GitHub.
+The job keeps the directory as a workflow artifact.
+
+The second job can push and open pull requests, and it reads no plugin
+repository. It runs `pnpm propose handoff`. For each entry in the handoff,
+the command pushes the branch `discover/<owner>/<repo>` with one commit that
+adds the two files of the entry. Then it opens a pull request from that
+branch. A run opens at most 5 pull requests, or the number that `--limit`
+gives.
+
+The first job reads files that anyone can write, so `pnpm propose` does not
+trust the handoff. It refuses the whole handoff, and pushes nothing and sends
+no request, in cases such as these:
+
+- `plan.json` does not match its schema.
+- An id is not a Mozilla add-on id.
+- A repository name is not a lowercase owner/repo that makes a valid branch
+  name.
+- The handoff holds more entries than the limit, which is 1 for an issue
+  run.
+- An entry directory holds anything other than the regular files `meta.json`
+  and `index.json`.
+
+Before it pushes, the command reads the bot pull requests again, and the
+index in its checkout. It skips an entry that one of them has. It gives
+the token to git only in git's environment, and `pnpm check` gets no token.
 
 The workflow uses the built-in `GITHUB_TOKEN`, and a pull request that this
 token opens starts no CI run. Thus the body of each pull request gives the
@@ -176,7 +210,7 @@ If the push or the pull request fails for one entry, the command goes on to
 the next entry. At the end, it names each failed entry with its error and
 exits with status 1.
 
-The command reads the name of the index repository from the
+Both commands read the name of the index repository from the
 `GITHUB_REPOSITORY` environment variable, which GitHub Actions sets. The
 workflow needs the repository setting "Allow GitHub Actions to create and
 approve pull requests" under Settings > Actions > General.
@@ -188,15 +222,18 @@ of the plugin's GitHub repository. The form adds the label `add-plugin` to the
 issue. If the repository has no such label, GitHub does not add it.
 
 When an issue with that label opens, the `Add a plugin from an issue` workflow
-runs `pnpm discover-issue`. The command reads the URL from the issue body. If
-an entry already names the repository, the bot comments the entry and closes
+runs in two jobs, as `Discover plugins` does. The first job runs
+`pnpm discover-issue --handoff handoff`. The command reads the URL from the
+issue body, writes its outcome and any new entry into the handoff, and makes no
+change on GitHub. The second job runs `pnpm propose handoff` with the issue
+number, which answers the issue. If an entry already names the repository, the bot comments the entry and closes
 the issue as completed. A bot pull request for the repository can be open, or
 closed without a merge. Then the bot comments its link and closes the issue as
 not planned. In these cases the bot does not read the repository.
 
 Otherwise, the bot reads the repository in the same way as `pnpm add-plugin`.
 If the plugin passes the inclusion bar, the bot opens a pull request in the
-same way as `pnpm discover --propose`. The body of the pull request contains
+same way as for `Discover plugins`. The body of the pull request contains
 `Closes #<issue>`. Thus a merge of the pull request closes the issue. The bot
 comments the link to the pull request on the issue.
 
@@ -207,11 +244,13 @@ error, such as a rate limit, while the bot reads the repository.
 
 The bot itself can fail. It can fail to read `plugins/`, its own pull
 requests, or the default branch, or the push or the pull request can fail.
-Then the bot comments the error and leaves the issue open, and the workflow
-run fails.
+The first job can also fail and leave no handoff. Then the bot comments the
+error and leaves the issue open, and the workflow run fails. If `pnpm propose`
+refuses the handoff, the bot does not answer the issue, and the workflow run
+fails.
 
-The workflow passes the issue number and body to the command in the
-`ISSUE_NUMBER` and `ISSUE_BODY` environment variables. It runs in the
+The first job gets the issue body in the `ISSUE_BODY` environment variable.
+The second job gets the issue number in `ISSUE_NUMBER`. The workflow runs in the
 concurrency group of `Discover plugins`, so the two workflows do not push at
 the same time. A concurrency group holds one running run and one pending run.
 A newer run cancels the pending run, and the issue of that run gets no

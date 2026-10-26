@@ -4,11 +4,10 @@ on:
   issues:
     types: [opened]
 
-# Pushes a discover/ branch, opens its pull request, and comments on or closes the issue.
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+# Each job sets its own permissions. The read job reads the repo that the issue names, so
+# it cannot write; the write job pushes, opens the pull request, and answers the issue
+# from the read job's handoff, and reads no plugin repo itself.
+permissions: {}
 
 # The group that `Discover plugins` uses, so a run here and a discover run never push
 # the same branch at once. A group holds one running and one pending run, so a newer
@@ -18,24 +17,76 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  add-plugin:
+  read:
     # Issues opened from .github/ISSUE_TEMPLATE/add-plugin.yml carry this label. A user
     # with write access can also set it when they open an issue.
     if: contains(github.event.issue.labels.*.name, 'add-plugin')
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read
+    # Empty when this attempt uploaded no handoff, so the write job never reads an
+    # earlier attempt's.
+    outputs:
+      handoff: ${{ steps.upload.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      # No dependency cache: a cache this job saved would reach later jobs.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: pnpm install --frozen-lockfile
+      # The issue body is text that anyone can write, so it reaches the command only
+      # through the environment, never through an expression in the script.
+      - run: pnpm discover-issue --handoff handoff
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+      # Also after a failed step that left a plan, such as a failed state write. A re-run
+      # replaces the first attempt's handoff.
+      - id: upload
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && hashFiles('handoff/plan.json') != '' }}
+        with:
+          name: handoff
+          path: handoff/
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+  write:
+    needs: read
+    # Also after a failed read job, so the issue gets an answer; not when the read job
+    # was skipped, which is every issue without the label.
+    if: always() && needs.read.result != 'skipped'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      # The token reaches git only in `pnpm propose`, through its environment.
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # The issue body is text that anyone can write, so it reaches the command only
-      # through the environment, never through an expression in the script.
-      - run: pnpm discover-issue
+      # A failed read job can leave no handoff; `pnpm propose` then says so on the issue.
+      - uses: actions/download-artifact@v8
+        if: ${{ needs.read.outputs.handoff != '' }}
+        continue-on-error: true
+        with:
+          name: handoff
+          path: handoff
+      - run: pnpm propose handoff
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
-          ISSUE_BODY: ${{ github.event.issue.body }}

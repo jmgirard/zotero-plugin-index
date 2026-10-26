@@ -3,7 +3,8 @@ import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync 
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
-import { issueRun, parseIssueBody, URL_LABEL } from "../src/discover/issue.ts";
+import { entriesDir, readHandoff, writePlan } from "../src/discover/handoff.ts";
+import { issueAnswer, issueRead, parseIssueBody, URL_LABEL } from "../src/discover/issue.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 import { checkout } from "./support/git-checkout.ts";
 import { pluginRepo } from "./support/plugin-repo.ts";
@@ -44,21 +45,34 @@ const indexRepo: Responses = {
 
 const opened: Responses = { [`POST ${PULLS}`]: { status: 201, json: { html_url: "https://github.com/example/index/pull/9" } } };
 
-// Runs issueRun for issue 7 in-process against `responses`, with a check that always
-// passes, and returns its result, the requests it sent other than GET, and the URLs it
-// fetched.
+// Runs the read step and then the write step for issue 7 in-process against `responses`,
+// through a handoff written to disk, with a check that always passes, and returns the
+// write step's result, the requests the two sent other than GET, and the URLs they
+// fetched. `outDir` replaces the read step's output directory.
 async function runIssue(body: string, responses: Responses, options: { root?: string; outDir?: string; gitDir?: string } = {}) {
   const { fetch, requests } = fixtureFetch(responses);
-  const result = await issueRun({
-    root: options.root ?? tempDir(),
-    outDir: options.outDir ?? tempDir(),
+  const root = options.root ?? tempDir();
+  const handoff = tempDir();
+  const outcome = await issueRead({
+    root,
+    outDir: options.outDir ?? entriesDir(handoff),
     fetch,
     lookup: publicLookup,
+    indexRepo: "example/index",
+    body,
+  });
+  await writePlan(handoff, { kind: "issue", ...outcome });
+  const checked = await readHandoff(handoff, "issue", 1);
+  if (!checked.ok || checked.plan.kind !== "issue") throw new Error(`handoff refused: ${JSON.stringify(checked)}`);
+  const { kind: _kind, ...read } = checked.plan;
+  const result = await issueAnswer({
+    root,
+    fetch,
     indexRepo: "example/index",
     gitDir: options.gitDir ?? checkout(tempDir()).work,
     check: async () => ({ status: 0, output: "checked 1 entries in x, 0 problems\n" }),
     issue: 7,
-    body,
+    read: { outcome: read, dir: read.outcome === "entry" ? checked.dirs.get(read.entry.id) : undefined },
   });
   const sent = requests
     .filter(({ method }) => method !== "GET")
@@ -107,7 +121,7 @@ describe("parseIssueBody", () => {
   });
 });
 
-describe("issueRun", () => {
+describe("an issue run", () => {
   test("opens one pull request that closes the issue, and comments its URL", async () => {
     const { result, sent } = await runIssue(rendered("https://github.com/example/alpha"), {
       ...indexRepo,
@@ -173,7 +187,64 @@ describe("issueRun", () => {
   });
 });
 
-describe("issueRun answers", () => {
+describe("an issue run's refusals with names the reader gives", () => {
+  test("comments a failure name with a digit and closes the issue as not planned", async () => {
+    const repo = pluginRepo("example/old", "old@example.org");
+    const xpi = Object.keys(repo).find((url) => url.endsWith(".xpi"))!;
+    const manifest = (repo[xpi].xpi as Record<string, { applications: { zotero: Record<string, string> } }>)["manifest.json"];
+    manifest.applications.zotero.strict_max_version = "6.*";
+    const { result, sent } = await runIssue(rendered("https://github.com/example/old"), { ...indexRepo, ...repo });
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([
+      { method: "POST", url: COMMENTS, body: expect.stringContaining("`max-version-below-7`") },
+      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "not_planned" },
+    ]);
+  });
+
+  test.each<[string, (manifest: { version: string; description?: string }) => void]>([
+    ["a version longer than the handoff allows", (manifest) => (manifest.version = "1".repeat(600))],
+    ["a description that makes meta.json larger than 64 KiB", (manifest) => (manifest.description = "x".repeat(70_000))],
+  ])("refuses as not-proposable, with no push, %s", async (_name, change) => {
+    const repo = pluginRepo("example/big", "big@example.org");
+    const xpi = Object.keys(repo).find((url) => url.endsWith(".xpi"))!;
+    change((repo[xpi].xpi as Record<string, { version: string; description?: string }>)["manifest.json"]);
+    const { result, sent } = await runIssue(rendered("https://github.com/example/big"), { ...indexRepo, ...repo, ...opened });
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([
+      { method: "POST", url: COMMENTS, body: expect.stringContaining("`not-proposable`") },
+      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "not_planned" },
+    ]);
+  });
+
+  test("reads on, and refuses as not-proposable, a repo whose name a bot branch has but a handoff refuses", async () => {
+    const pull = { number: 30, state: "open", merged_at: null, html_url: "https://github.com/example/index/pull/30", head: { ref: "discover/example/b!", repo: { full_name: "example/index" } } };
+    const { result, sent } = await runIssue(rendered("https://github.com/example/b!"), {
+      ...indexRepo,
+      [`${PULLS}?state=all&per_page=100`]: { json: [pull] },
+      [`${PULLS}/30/files?per_page=100`]: { json: [] },
+      ...pluginRepo("example/b!", "b@example.org"),
+    });
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([
+      { method: "POST", url: COMMENTS, body: expect.stringContaining("`not-proposable`") },
+      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "not_planned" },
+    ]);
+  });
+
+  test.each([
+    ["an id that is not a Mozilla add-on id", "example/no-at", "plugin-no-at"],
+    ["a repo whose branch name git refuses", "example/.dot", "dot@example.org"],
+  ])("refuses as not-proposable, with no push, %s", async (_name, repo, id) => {
+    const { result, sent } = await runIssue(rendered(`https://github.com/${repo}`), { ...indexRepo, ...pluginRepo(repo, id), ...opened });
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([
+      { method: "POST", url: COMMENTS, body: expect.stringContaining("`not-proposable`") },
+      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "not_planned" },
+    ]);
+  });
+});
+
+describe("an issue run's answers", () => {
   test("names the open bot pull request when a closed one for the same repo comes after it in the list", async () => {
     const pull = (number: number, state: string) => ({
       number,
@@ -209,12 +280,14 @@ describe("issueRun answers", () => {
   });
 });
 
-describe("issueRun failures of the bot", () => {
+describe("an issue run's failures of the bot", () => {
   test.each([
-    ["the pull-request list fails", { [`${PULLS}?state=all&per_page=100`]: { status: 503, text: "unavailable" } }, "returned HTTP 503"],
-    ["the create request is refused", { [`POST ${PULLS}`]: { status: 422, json: { message: "Validation Failed" } } }, "returned HTTP 422: Validation Failed"],
-  ])("comments the error, leaves the issue open, and returns 1 when %s", async (_name, change, message) => {
-    const { result, sent } = await runIssue(rendered("https://github.com/example/alpha"), {
+    ["the pull-request list fails", { [`${PULLS}?state=all&per_page=100`]: { status: 503, text: "unavailable" } }, "returned HTTP 503", false],
+    ["the repo record has no default branch", { [INDEX]: { json: { full_name: "example/index" } } }, "returned no default_branch", false],
+    ["the pull-request list throws an error the reader does not name", { [`${PULLS}?state=all&per_page=100`]: { unexpected: "list exploded" } }, "list exploded", false],
+    ["the create request is refused", { [`POST ${PULLS}`]: { status: 422, json: { message: "Validation Failed" } } }, "returned HTTP 422: Validation Failed", true],
+  ])("comments the error, leaves the issue open, and returns 1 when %s", async (_name, change, message, readsRepo) => {
+    const { result, sent, gets } = await runIssue(rendered("https://github.com/example/alpha"), {
       ...indexRepo,
       ...pluginRepo("example/alpha", "alpha@example.org"),
       ...opened,
@@ -227,6 +300,7 @@ describe("issueRun failures of the bot", () => {
       body: expect.stringContaining(message),
     });
     expect(sent.some(({ method }) => method === "PATCH")).toBe(false);
+    expect(gets.some((url) => url.includes("/repos/example/alpha"))).toBe(readsRepo);
   });
 
   test("returns 1 when the comment request fails", async () => {
@@ -255,46 +329,116 @@ describe("issueRun failures of the bot", () => {
 });
 
 // As in the discover tests, the preload answers the command's requests from `responses`.
-function pnpmIssue(responses: Responses, cwd: string, env: Record<string, string>) {
+function pnpm(script: string, args: string[], responses: Responses, cwd: string, env: Record<string, string>) {
   const pnpmPath = process.env.npm_execpath;
   if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");
   const fixture = join(tempDir(), "responses.json");
   writeFileSync(fixture, JSON.stringify({ source: "issue test", repoUrl: "", responses }));
-  const { INIT_CWD: _outer, GITHUB_TOKEN: _token, GITHUB_REPOSITORY: _repo, ...outer } = process.env;
+  const { INIT_CWD: _outer, GITHUB_TOKEN: _token, GITHUB_REPOSITORY: _repo, ISSUE_NUMBER: _issue, ...outer } = process.env;
   Object.assign(outer, { ZPI_FIXTURE: fixture, NODE_OPTIONS: `--import=${PRELOAD}` }, env);
-  return spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "discover-issue"], { cwd, encoding: "utf8", env: outer, timeout: 50_000 });
+  return spawnSync(pnpmPath, ["--silent", "--dir", ROOT, script, ...args], { cwd, encoding: "utf8", env: outer, timeout: 50_000 });
 }
 
-describe("pnpm discover-issue", () => {
+// The requests other than GET in a request log.
+const writes = (log: string) =>
+  readFileSync(log, "utf8")
+    .trim()
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => JSON.parse(line))
+    .filter(({ method }) => method !== "GET");
+
+describe("pnpm discover-issue --handoff then pnpm propose", () => {
   test("comments the error, leaves the issue open, and exits 1 when the push fails", () => {
     const { remote, work } = checkout(tempDir());
     const hook = join(remote, "hooks/pre-receive");
     writeFileSync(hook, '#!/bin/sh\necho "refused by the test hook" >&2\nexit 1\n');
     chmodSync(hook, 0o755);
     const requestLog = join(tempDir(), "requests.jsonl");
-    const result = pnpmIssue({ ...indexRepo, ...pluginRepo("example/alpha", "alpha@example.org"), ...opened }, work, {
+    const responses = { ...indexRepo, ...pluginRepo("example/alpha", "alpha@example.org"), ...opened };
+    const handoff = join(tempDir(), "handoff");
+    const read = pnpm("discover-issue", ["--handoff", handoff], responses, tempDir(), {
       GITHUB_REPOSITORY: "example/index",
-      ISSUE_NUMBER: "7",
       ISSUE_BODY: rendered("https://github.com/example/alpha"),
       ZPI_REQUESTS: requestLog,
     });
+    expect(read.stderr).toBe("");
+    expect(read.status).toBe(0);
+    const result = pnpm("propose", [handoff], responses, work, { GITHUB_REPOSITORY: "example/index", ISSUE_NUMBER: "7", ZPI_REQUESTS: requestLog });
     expect(result.stderr).toMatch(/git push failed: .*refused by the test hook/s);
     expect(result.status).toBe(1);
-    const sent = readFileSync(requestLog, "utf8")
-      .trim()
-      .split("\n")
-      .map((line) => JSON.parse(line))
-      .filter(({ method }) => method !== "GET");
-    expect(sent).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(/git push failed: .*refused by the test hook/s) }]);
+    expect(writes(requestLog)).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(/git push failed: .*refused by the test hook/s) }]);
   });
 
-  test.each([
-    ["ISSUE_NUMBER is not a number", { GITHUB_REPOSITORY: "example/index", ISSUE_NUMBER: "x" }, "ISSUE_NUMBER must be the number of an issue"],
-    ["GITHUB_REPOSITORY does not name a repo", { GITHUB_REPOSITORY: "example", ISSUE_NUMBER: "7" }, "GITHUB_REPOSITORY must name the index repo"],
-  ])("prints the usage when %s", (_name, env, message) => {
-    const result = pnpmIssue({}, tempDir(), { ...env, ISSUE_BODY: "" });
+  test("comments that the bot could not finish, leaves the issue open, and exits 1 when the read step left no handoff", () => {
+    const requestLog = join(tempDir(), "requests.jsonl");
+    writeFileSync(requestLog, "");
+    const result = pnpm("propose", [join(tempDir(), "missing")], indexRepo, tempDir(), {
+      GITHUB_REPOSITORY: "example/index",
+      ISSUE_NUMBER: "7",
+      ZPI_REQUESTS: requestLog,
+    });
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain(message);
+    expect(writes(requestLog)).toEqual([
+      { method: "POST", url: COMMENTS, body: expect.stringMatching(/^\{"body":"The bot could not finish, so this issue stays open.*the read step left no handoff/s) },
+    ]);
+  });
+
+  test("prints the usage when ISSUE_NUMBER is not a number", () => {
+    const result = pnpm("propose", [tempDir()], {}, tempDir(), { GITHUB_REPOSITORY: "example/index", ISSUE_NUMBER: "x" });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("ISSUE_NUMBER must be the number of an issue");
     expect(result.stdout).toBe("");
+  });
+
+  test("prints the usage when GITHUB_REPOSITORY does not name a repo", () => {
+    const result = pnpm("discover-issue", ["--handoff", tempDir()], {}, tempDir(), { GITHUB_REPOSITORY: "example", ISSUE_BODY: "" });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("GITHUB_REPOSITORY must name the index repo");
+    expect(result.stdout).toBe("");
+  });
+});
+
+describe("the write step of an issue run", () => {
+  // Runs only the write step for issue 7 on an outcome, as if a read step had left it.
+  async function answer(read: Parameters<typeof issueAnswer>[0]["read"], responses: Responses, root = tempDir()) {
+    const { fetch, requests } = fixtureFetch(responses);
+    const result = await issueAnswer({
+      root,
+      fetch,
+      indexRepo: "example/index",
+      gitDir: checkout(tempDir()).work,
+      check: async () => ({ status: 0, output: "" }),
+      issue: 7,
+      read,
+    });
+    const sent = requests
+      .filter(({ method }) => method !== "GET")
+      .map(({ method, url, body: payload }) => ({ method, url, ...JSON.parse(payload!) }));
+    return { result, sent };
+  }
+
+  test("answers as today, with no push, when an entry in the write step's checkout names the repo", async () => {
+    const dir = tempDir();
+    const { result, sent } = await answer(
+      {
+        outcome: { outcome: "entry", entry: { repo: "example/second-plugin", repoUrl: "https://github.com/example/second-plugin", id: "new@example.org", version: "1.0" } },
+        dir,
+      },
+      { ...indexRepo, ...opened },
+      TREE,
+    );
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([
+      { method: "POST", url: COMMENTS, body: expect.stringContaining("plugins/second-plugin@example.org/") },
+      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "completed" },
+    ]);
+  });
+
+  test("quotes a message from the handoff only inside a code span", async () => {
+    const { sent } = await answer({ outcome: { outcome: "refused", failure: "not-github-repo", message: "see @someone\n\n@other" } }, indexRepo);
+    const comment: string = sent[0].body;
+    expect(comment).toContain("` see @someone @other `");
+    expect(comment.replace(/`[^`]*`/g, "")).not.toContain("@");
   });
 });
