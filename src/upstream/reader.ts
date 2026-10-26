@@ -230,7 +230,8 @@ export function githubClient(fetch: Fetch) {
   }
 
   // Sends `payload` as JSON. A refused request fails with GitHub's message and the
-  // message of each error it lists, such as why a pull request cannot be created.
+  // message of each error it lists, such as why a pull request cannot be created. A
+  // redirect fails the request, so the payload is not sent to another host.
   async function post(url: string, payload: unknown): Promise<unknown> {
     if (!URL.canParse(url) || new URL(url).origin !== API) fail("request-failed", `${url} is not on ${API}`);
     let response: Response;
@@ -240,6 +241,7 @@ export function githubClient(fetch: Fetch) {
         method: "POST",
         headers: { ...headers, "content-type": "application/json" },
         body: JSON.stringify(payload),
+        redirect: "error",
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       });
       text = await response.text();

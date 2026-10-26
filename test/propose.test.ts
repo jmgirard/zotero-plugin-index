@@ -186,6 +186,85 @@ describe("proposing pull requests", () => {
   });
 });
 
+// Runs proposeRun in-process against `responses`, with a check that always passes.
+async function proposeWith(responses: Responses, gitDir = tempDir()) {
+  const { fetch, requests } = fixtureFetch(responses);
+  const result = await proposeRun({
+    root: tempDir(),
+    outDir: tempDir(),
+    fetch,
+    lookup: publicLookup,
+    state: {},
+    limit: 5,
+    budget: 100,
+    now: NOW,
+    indexRepo: "example/index",
+    gitDir,
+    check: async () => ({ status: 0, output: "checked 1 entries in x, 0 problems\n" }),
+  });
+  return { result, posts: requests.filter(({ method }) => method === "POST") };
+}
+
+describe("proposeRun failures", () => {
+  test("refuses, without recording, a repo whose plugin id an open bot pull request adds", async () => {
+    const { result, posts } = await proposeWith({
+      ...loadFixture(resolve(ROOT, "test/fixtures/discover/pulls.json")).responses,
+      ...searched([["example/copy", "2026-10-01T00:00:00Z"]]),
+      ...pluginRepo("example/copy", "Open-PR@example.org"),
+    });
+    if (!result.ok) throw new Error(result.message);
+    expect(result.report.read).toEqual([
+      expect.objectContaining({ repo: "example/copy", failure: "entry-exists", message: expect.stringContaining("open pull request") }),
+    ]);
+    expect(result.state).toEqual({});
+    expect(posts).toEqual([]);
+  });
+
+  test.each([
+    ["the pull-request list fails", { [`${PULLS}?state=all&per_page=100`]: { status: 503, text: "unavailable" } }, "returned HTTP 503"],
+    ["the repo record has no default branch", { [INDEX]: { json: { full_name: "example/index" } } }, "returned no default_branch"],
+  ])("ends the run before discovery reads when %s", async (_name, change, message) => {
+    const { fetch, requests } = fixtureFetch({ ...indexRepo, ...passing(["alpha"]), ...change });
+    const result = await proposeRun({
+      root: tempDir(),
+      outDir: tempDir(),
+      fetch,
+      lookup: publicLookup,
+      state: {},
+      limit: 5,
+      budget: 100,
+      indexRepo: "example/index",
+      gitDir: tempDir(),
+      check: pnpmCheck,
+    });
+    expect(result).toEqual({ ok: false, message: expect.stringContaining(message) });
+    expect(requests.some(({ url }) => url.includes("/search/"))).toBe(false);
+  });
+
+  test("names every entry as failed when the default branch cannot be fetched", async () => {
+    // A directory that is not a git checkout.
+    const { result, posts } = await proposeWith({ ...indexRepo, ...passing(["alpha", "beta"]) });
+    if (!result.ok) throw new Error(result.message);
+    expect(result.failed).toEqual([
+      { repo: "example/beta", id: "beta@example.org", message: expect.stringMatching(/^git fetch failed: .*not a git repository/s) },
+      { repo: "example/alpha", id: "alpha@example.org", message: expect.stringMatching(/^git fetch failed: .*not a git repository/s) },
+    ]);
+    expect(posts).toEqual([]);
+  });
+
+  test("names an entry as failed when the create request answers with a body that is not JSON", async () => {
+    const { work } = checkout();
+    const { result } = await proposeWith(
+      { ...indexRepo, ...passing(["alpha"]), [`POST ${PULLS}`]: { status: 201, text: "created" } },
+      work,
+    );
+    if (!result.ok) throw new Error(result.message);
+    expect(result.failed).toEqual([
+      { repo: "example/alpha", id: "alpha@example.org", message: `POST ${PULLS} returned a body that is not JSON` },
+    ]);
+  });
+});
+
 describe("pnpm discover --propose failures", () => {
   test("goes on past a failed push and a refused request, then exits 1 naming both", () => {
     const { remote, work } = checkout();
@@ -259,13 +338,18 @@ describe("pnpm discover --propose", () => {
     expect(result.stderr).toBe("");
     expect(result.status).toBe(0);
     const report = JSON.parse(result.stdout);
-    expect(report.skipped).toEqual(
-      expect.arrayContaining<SkippedItem>([
-        { repo: "example/open-pr", reason: "in-skip-set" },
-        { repo: "example/closed-pr", reason: "in-skip-set" },
-      ]),
-    );
+    expect(report.skipped).toEqual<SkippedItem[]>([
+      { repo: "example/closed-pr", reason: "in-skip-set" },
+      { repo: "example/open-pr", reason: "in-skip-set" },
+    ]);
     expect(report.read.map((item: ReadItem) => item.repo).sort()).toEqual(["example/fork-pr", "example/merged-pr"]);
     expect(report.proposed).toEqual([]);
+  });
+
+  test("prints the usage when GITHUB_REPOSITORY does not name a repo", () => {
+    const result = pnpmDiscover(["--propose"], {}, tempDir(), { GITHUB_REPOSITORY: "example" });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("--propose needs GITHUB_REPOSITORY set to the index repo as <owner>/<repo>");
+    expect(result.stdout).toBe("");
   });
 });

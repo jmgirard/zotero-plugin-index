@@ -79,28 +79,32 @@ export type ProposeRunResult =
 // before discovery reads; a failure for one entry is reported, and the run goes on.
 export async function proposeRun(options: ProposeRunOptions): Promise<ProposeRunResult> {
   const { fetch, indexRepo, limit } = options;
-  let skip: Set<string>;
+  let pulls: Awaited<ReturnType<typeof botPulls>>;
   let base: string;
   try {
-    skip = await skipSet(fetch, indexRepo);
+    pulls = await botPulls(fetch, indexRepo);
     base = await defaultBranch(fetch, indexRepo);
   } catch (error) {
     if (error instanceof ReadFailure) return { ok: false, message: error.message };
     throw error;
   }
-  const result = await discover({ ...options, skip });
+  const result = await discover({ ...options, skip: pulls.skip, pendingIds: pulls.ids });
   if (!result.ok) return result;
   const written = result.report.read.filter((item): item is Written => item.outcome === "written").slice(0, limit);
   const { proposed, failed } = await propose({ ...options, base, written });
   return { ...result, proposed, failed };
 }
 
-// The lowercase owner/repo of each bot pull request that is open or was closed without a
-// merge. A merged one's entry is in the index, which discovery reads. A pull request
-// from a fork is not the bot's, whatever its branch is named.
-export async function skipSet(fetch: Fetch, indexRepo: string): Promise<Set<string>> {
-  const pulls = (await githubClient(fetch).pages(`${API}/repos/${indexRepo}/pulls?state=all&per_page=100`)) as PullJson[];
+// `skip` holds the lowercase owner/repo of each bot pull request that is open or was
+// closed without a merge. A merged one's entry is in the index, which discovery reads.
+// `ids` holds the lowercase plugin ids whose entry directories the open ones add, so
+// another repo with the same id is not proposed beside them. A pull request from a fork
+// is not the bot's, whatever its branch is named.
+async function botPulls(fetch: Fetch, indexRepo: string): Promise<{ skip: Set<string>; ids: Set<string> }> {
+  const github = githubClient(fetch);
+  const pulls = (await github.pages(`${API}/repos/${indexRepo}/pulls?state=all&per_page=100`)) as PullJson[];
   const skip = new Set<string>();
+  const ids = new Set<string>();
   for (const pull of pulls) {
     const ref = pull?.head?.ref;
     const headRepo = pull?.head?.repo?.full_name;
@@ -109,11 +113,20 @@ export async function skipSet(fetch: Fetch, indexRepo: string): Promise<Set<stri
     const parts = ref.slice(PREFIX.length).split("/");
     if (parts.length !== 2 || !parts[0] || !parts[1]) continue;
     if (pull.state === "open" || (pull.state === "closed" && !pull.merged_at)) skip.add(parts.join("/").toLowerCase());
+    if (pull.state !== "open") continue;
+    const files = (await github.pages(`${API}/repos/${indexRepo}/pulls/${pull.number}/files?per_page=100`)) as {
+      filename?: unknown;
+    }[];
+    for (const { filename } of files) {
+      const id = typeof filename === "string" ? /^plugins\/([^/]+)\//.exec(filename)?.[1] : undefined;
+      if (id) ids.add(id.toLowerCase());
+    }
   }
-  return skip;
+  return { skip, ids };
 }
 
 interface PullJson {
+  number?: unknown;
   state?: unknown;
   merged_at?: unknown;
   head?: { ref?: unknown; repo?: { full_name?: unknown } | null };
@@ -154,10 +167,11 @@ async function propose(options: ProposeOptions): Promise<{ proposed: Proposed[];
       throw new Error(`git ${args[0]} failed: ${stderr?.trim() || (error as Error).message}`);
     }
   };
-  const work = await mkdtemp(join(tmpdir(), "zpi-propose-"));
+  let work: string | undefined;
   try {
     let baseCommit: string;
     try {
+      work = await mkdtemp(join(tmpdir(), "zpi-propose-"));
       await git(["fetch", "--quiet", remote, base]);
       baseCommit = await git(["rev-parse", "FETCH_HEAD^{commit}"]);
     } catch (error) {
@@ -200,7 +214,7 @@ async function propose(options: ProposeOptions): Promise<{ proposed: Proposed[];
       }
     }
   } finally {
-    await rm(work, { recursive: true, force: true });
+    if (work) await rm(work, { recursive: true, force: true });
   }
   return { proposed, failed };
 }

@@ -127,4 +127,40 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 - AC5 evidence (2026-10-26): `ruby -ryaml` parse of `.github/workflows/discover.yml`: `on` (read as `true`) has `schedule` cron `43 14 * * *` and `workflow_dispatch` input `limit` with default 5; `permissions` is exactly `contents: write`, `pull-requests: write`; concurrency group `discover`; the run step's env has `GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}`; `actions/cache/restore@v6` with `restore-keys: discovery-state-` comes before the run, and `actions/cache/save@v6` with `if: always()` and key `discovery-state-${{ github.run_id }}-${{ github.run_attempt }}` after it.
 - AC6 evidence (2026-10-26): README "Pull requests from the bot" (README.md:151) says what the bot proposes, "once a day", "A run opens at most 5 pull requests, or the number that `--limit` gives" (:158-159), and "If you close a bot pull request without a merge, the bot does not propose that owner/repo name again" (:168-169). CHANGELOG has one bot entry, CHANGELOG.md:53, under its only heading `## Unreleased`. `pnpm test` 340 passed; `pnpm check` 14 entries, 0 problems.
 - consistency gate (2026-10-26): `cairn_validate.py` exit 0, all checks passed; no DESIGN principle changed, so no `cairn_impact` run; the generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: two open bot pull requests can add the same plugin id, since the id check sees only `plugins/` — fix now (the open bot pull requests' files are read, and discovery refuses those ids without recording them)
+- diff-bug #2: a failure that recurs each run (a branch name git refuses, such as one with a part starting with `.` or ending in `.lock`; a body over GitHub's limit) uses a slot and fails the workflow daily — follow-up, new row "Stop retrying a failing bot pull request"
+- diff-bug #3: a dispatch on another branch reads that branch's `plugins/` but bases pull requests on the default branch — fix now (job `if:` runs only on schedule or the default branch)
+- diff-bug #4: the index and the base commit go stale during a run, so an entry merged to main mid-run is proposed again — reject, edge: only a merge to the default branch during the minutes of a run reaches it, and the pull request it gives shows as conflicting or empty on GitHub
+- diff-bug #5: `inputs.limit || 5` turns a dispatched 0 into 5 — fix now (the input reaches `--limit` as given, and an empty input leaves the CLI default)
+- diff-bug #6: creating a pull request right after a push can briefly 422 — reject, edge: only GitHub's own lag after a push reaches it (not observed), and the effect is one failed entry, exit 1, and a retry next run
+- diff-bug #7: persisted checkout credentials expose a write token to `pnpm install` and the XPI parser — reject, false: the run step already holds `GITHUB_TOKEN` in its env, the parser runs no plugin code, and pnpm runs no dependency build scripts that `package.json` does not allow (it allows none)
+- diff-bug #8: the body shows the runner's temp path in the check output — reject, style
+- diff-bug #9: `.slice(0, limit)` changes nothing — reject, style
+- diff-bug #10: an empty `strict_max_version` prints an empty code span — reject, false: the reader refuses it as `manifest-invalid`, and `stringOrUndefined` drops an empty version or min version
+- diff-bug #11: the CLI tests' real check runs under the fixture preload and can fail unseen — reject, false: no assertion in those tests reads the check result, and the AC3 test, which does, runs the check without the preload
+- diff-bug #12 (test floor): the status-1 body assertion repeats a path — reject, false: with only 0 tested, a constant "0" would pass
+- diff-bug #13 (test floor): `arrayContaining` on `skipped` is weaker than exact — fix now
+- diff-bug #14 (test floor): the AC3 regex re-tests the checker's summary — reject, false: "checked 1 entries" is how the test shows the directory holds only that entry, which AC3 names
+- diff-bug #15 (test floor): the per-branch loop repeats one path — reject, planned change (AC2 names each branch's changed paths)
+- diff-bug #16 (test floor): no tests for the pull-list failure, a missing default branch, a failed fetch, a bad `GITHUB_REPOSITORY`, or a non-JSON create body — fix now (5 tests)
+- diff-bug #17: README has an unwrapped long line — fix now
+- blame-history #1: `post` follows redirects, so a 307 from the API would resend the body elsewhere — fix now (`redirect: "error"`)
+- blame-history #2: the state is written after pull requests open, so a failed write leaves them with no state — reject, false: a lost state costs only extra reads, and the skip set, not the state, keeps pull requests from repeating
+- prior-review #1: README says a rate-limit or network refusal is read again next run, but a download host's HTTP error (`update-json-http-error`) is recorded; the line is also unwrapped — fix now (the sentence names GitHub API errors and failed requests only)
+- prior-review #2: a 30-minute kill loses the run's state, so the same first repos are read again daily — follow-up, new row "Bound the time of a discover run"
+- prior-review #3: the body does not flag a draft from a prerelease — reject, planned change: Scope Out sends prereleases to "Read stable releases before prereleases"
+- prior-review #4: child processes get `GITHUB_TOKEN`, and the workflow grants write for the whole job — reject, false: git and `pnpm check` send no request with that variable, and the workflow has one job
+- prior-review #5: `mkdtemp` outside a `try` gives an unhandled rejection — fix now (both calls now report a message)
+- prior-review #6: no timeout on the git and `pnpm check` spawns — follow-up, absorbed into the new row "Bound the time of a discover run"
+- prior-review #7: `actions/cache/save` with `if: always()` may fail on a missing file — reject, false: v6.1.0's `saveImpl` catches errors and logs them as warnings
+- ripple #1: DESIGN says `ci.yml` runs on every push and pull request — fix now
+- ripple #2: DESIGN's discover usage lacks `[--propose]` — fix now
+- ripple #3: README "The daily workflow" reads as the only daily workflow — fix now (heading "The daily build")
+- ripple #4: DESIGN says `src/upstream/` only reads the API — fix now
+- ripple #5: the `.cache/` lines do not name the state file — reject, false: neither line claims to list everything in `.cache/`
+- ripple #6: the ROADMAP topic-search candidate row still describes the pull-request bot — fix now at step 9 hygiene, which narrows the row to the issue form
+- ripple #7: `src/build/cli.ts` says "the daily job" — fix now
+- 2026-10-26: one planted-defect run (pending-id check removed) also failed the AC4 test after more than 5 minutes; unplanted runs then passed 12 of 12 in 7.5 s and the full suite 346 of 346 twice, so it did not recur.
+- re-check after the fix-now work (2026-10-26): AC1's test now asserts `skipped` exactly (closed-pr, open-pr) and passed with the fixture's new files page for #11; a fresh `ruby -ryaml` parse shows AC5's items unchanged plus the job `if:`; `pnpm test` 346 passed; `pnpm check` 14 entries, 0 problems; `cairn_validate.py` all checks passed.
 - AC7: not yet run; it follows the merge, the user's setting change, and a `limit` 1 dispatch (T7).

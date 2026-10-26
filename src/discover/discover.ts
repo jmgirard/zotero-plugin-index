@@ -63,6 +63,9 @@ export interface DiscoverOptions {
   state: DiscoveryState;
   // Lowercase owner/repo names that are not read.
   skip: Set<string>;
+  // Lowercase plugin ids that an open pull request adds. A repo with one is refused,
+  // and the refusal is not recorded, since it says nothing about the repo.
+  pendingIds?: Set<string>;
   // The most entries to write, and the most repos to read.
   limit: number;
   budget: number;
@@ -144,6 +147,10 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
     // Entry directories may be in another place than outDir, so writeEntry cannot see them.
     if (index.ids.has(id.toLowerCase())) {
       refuse("entry-exists", `the index already has an entry for the id ${id}`);
+      continue;
+    }
+    if (options.pendingIds?.has(id.toLowerCase())) {
+      refuse("entry-exists", `an open pull request already adds an entry for the id ${id}`, false);
       continue;
     }
     const entry = await writeEntry(outDir, read.facts);

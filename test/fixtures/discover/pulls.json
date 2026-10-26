@@ -1,5 +1,5 @@
 {
-  "source": "Written by hand for the propose tests, in the shape of GitHub's pull-request list for example/index with state=all: two pages. Bot heads for example/open-pr (open), example/closed-pr (closed, not merged), and example/merged-pr (merged); a discover/ head from a fork, and a head that is not under discover/.",
+  "source": "Written by hand for the propose tests, in the shape of GitHub's pull-request list for example/index with state=all: two pages. Bot heads for example/open-pr (open), example/closed-pr (closed, not merged), and example/merged-pr (merged); a discover/ head from a fork, and a head that is not under discover/. The files of the open bot pull request #11.",
   "repoUrl": "",
   "responses": {
     "https://api.github.com/repos/example/index": {
@@ -42,6 +42,12 @@
           "user": { "login": "github-actions[bot]" },
           "head": { "ref": "discover/example/open-pr", "repo": { "full_name": "example/index" } }
         }
+      ]
+    },
+    "https://api.github.com/repos/example/index/pulls/11/files?per_page=100": {
+      "json": [
+        { "filename": "plugins/open-pr@example.org/index.json", "status": "added" },
+        { "filename": "plugins/open-pr@example.org/meta.json", "status": "added" }
       ]
     },
     "https://api.github.com/repos/example/index/pulls?state=all&per_page=100&page=2": {

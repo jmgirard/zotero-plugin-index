@@ -43,15 +43,23 @@ async function main(): Promise<number> {
   // The repo's own files are found from this file, wherever the command runs from.
   const cwd = process.env.INIT_CWD ?? process.cwd();
   const root = join(PACKAGE_ROOT, "plugins");
-  // With --propose, the entries go into pull requests, so by default they are drafted
-  // outside the checkout.
-  const draftDir = propose && !values["--out"] ? await mkdtemp(join(tmpdir(), "zpi-discover-")) : undefined;
-  const outDir = values["--out"] ? resolve(cwd, values["--out"]) : (draftDir ?? root);
   const statePath = values["--state"]
     ? resolve(cwd, values["--state"])
     : join(PACKAGE_ROOT, ".cache/discovery-state.json");
 
+  let draftDir: string | undefined;
   try {
+    // With --propose, the entries go into pull requests, so by default they are drafted
+    // outside the checkout.
+    if (propose && !values["--out"]) {
+      try {
+        draftDir = await mkdtemp(join(tmpdir(), "zpi-discover-"));
+      } catch (error) {
+        console.error(`cannot create a draft directory: ${(error as Error).message}\nwrote no entry`);
+        return 1;
+      }
+    }
+    const outDir = values["--out"] ? resolve(cwd, values["--out"]) : (draftDir ?? root);
     const warnings: string[] = [];
     const state = await readState(statePath, warnings);
     if (typeof state === "string") {

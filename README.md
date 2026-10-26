@@ -143,15 +143,16 @@ entries in another directory, add `--out <dir>`. The command prints a JSON
 report that names each repository that it wrote, refused, or skipped.
 
 The command keeps a state file, `.cache/discovery-state.json`. The file
-records each repository refused for a reason about the repository itself. A
-later run reads that repository again only after a new push or after 30 days. A repository refused for another reason, such as a rate limit or a
-network error, is read again on the next run. To use another file, add
-`--state <file>`.
+records each refused repository. A later run reads that repository again
+only after a new push or after 30 days. The file does not record a GitHub API
+error, such as a rate limit, or a failed request. Such a repository is read
+again on the next run. To use another file, add `--state <file>`.
 
 ### Pull requests from the bot
 
 The `Discover plugins` workflow runs `pnpm discover --propose` once a day. You
-can also start it by hand and set its `limit` input. With `--propose`, the
+can also start it by hand on the default branch and set its `limit` input. A
+run started on another branch does nothing. With `--propose`, the
 command writes each new entry in a temporary directory outside the checkout,
 unless `--out` names a directory. For each entry, it pushes
 the branch `discover/<owner>/<repo>` with one commit that adds the two files
@@ -167,7 +168,8 @@ closes it.
 
 If you close a bot pull request without a merge, the bot does not propose
 that owner/repo name again. The bot also skips a repository whose bot pull
-request is still open. A renamed repository has a new name, so the bot can
+request is still open, and a plugin whose id an open bot pull request already
+adds. A renamed repository has a new name, so the bot can
 propose it again.
 
 If the push or the pull request fails for one entry, the command goes on to
@@ -258,7 +260,7 @@ To read the data from another directory and write the pages there, add
 read or parse the data file, or the file has no `plugins` list, it writes no
 page and exits with status 1.
 
-## The daily workflow
+## The daily build
 
 The `Build data` workflow runs `pnpm check`, `pnpm build`, and then
 `pnpm site` once a day, and you can also start it by hand. It keeps `dist/` as
