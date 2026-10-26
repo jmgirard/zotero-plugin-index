@@ -110,11 +110,11 @@ planned.
       records; in `src/build/cli.ts:35-43`, base the exit-1 rule on it.
 - [x] T4: In `src/build/cli.ts`, print the failure-name summary, the
       build-level line, and the `::warning::` line.
-- [ ] T5: Update README.md (around lines 60 and 336-340), CHANGELOG.md (edit
+- [x] T5: Update README.md (around lines 60 and 336-340), CHANGELOG.md (edit
       the Unreleased entry at line 48 and add the summary and warning),
       cairn/DESIGN.md (147, 314), and the comment at `build.yml:37`. Grep for
       "more than half" and "carry a failure" as a reviewer aid.
-- [ ] T6: Run the verify slot: `npx -y pnpm@12.15.0 test` and
+- [x] T6: Run the verify slot: `npx -y pnpm@12.15.0 test` and
       `npx -y pnpm@12.15.0 check`.
 
 ## Work log
@@ -137,6 +137,8 @@ planned.
 - 2026-10-26: T2 done: `ReadFailure` and the failed `readUpstream` result carry `buildLevel`; `buildLevelStatus(status, "github-api" | "download")` is exported; marks set at `request()`, `readText`, `readCapped`, the lookup failures in `host-guard.ts`, `get()`, and the XPI and `update.json` non-ok answers; `send()` left unmarked (not a build read). Four rows of the reader's failure table moved to a build-level table, plus an XPI 502 row. Reader, discover, issue, add-plugin, and propose tests: 283 passed.
 - 2026-10-26: T3 done: `buildData` returns `buildLevel` (record order), `unexpected-error` counts, and `cli.ts` exits 1 on more than half build-level. `tsc` clean; build tests 21 passed, 5 red on the summary lines that T4 adds.
 - 2026-10-26: T4 done: `cli.ts` prints `failed with <name>: <n>` lines sorted by name, the build-level line, and the `::warning::` line before `wrote`; build tests 26 passed. Planted `buildLevelStatus` returning true (copy and restore): reader tests went red on the 404 rows; restored file matches the commit.
+- 2026-10-26: T5 done: README (top paragraph and "Building the data", now listing the four build-level causes), CHANGELOG (M006 entry edited, new entry for the rule, summary, and warning), DESIGN (Function Families and Architecture), `build.yml:37` comment. Grep for "more than half", "carry a failure", "half of", and "deploys nothing" over README, CHANGELOG, DESIGN, `.github`, `site/src`, and `src`: every hit states the build-level rule or a site-build failure. The simple-english hook's pre-existing README:67 "validate" hit left alone.
+- 2026-10-26: T6 done: `pnpm test` 483 passed (14 files); `pnpm check` 17 entries, 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
