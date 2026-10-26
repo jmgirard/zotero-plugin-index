@@ -143,10 +143,13 @@ entries in another directory, add `--out <dir>`. The command prints a JSON
 report that names each repository that it wrote, refused, or skipped.
 
 The command also refuses a plugin that the bot cannot propose, with the
-failure name `not-proposable`. Examples are an id that is not a Mozilla add-on
-id, a repository name that git refuses as a branch name, and a value longer
-than `pnpm propose` accepts. `pnpm discover-issue` refuses such a plugin in the
-same way.
+failure name `not-proposable`. Some examples:
+
+- an id that is not a Mozilla add-on id
+- a repository name that git refuses as a branch name
+- a value longer than `pnpm propose` accepts
+
+`pnpm discover-issue` refuses such a plugin in the same way.
 
 The command keeps a state file, `.cache/discovery-state.json`. The file
 records each refused repository. A later run reads that repository again
