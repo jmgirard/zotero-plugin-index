@@ -93,9 +93,15 @@ To draft an entry from the GitHub repository of a plugin, run:
 pnpm add-plugin https://github.com/<owner>/<repo>
 ```
 
-The command reads the repository, its releases, the `manifest.json` in the
-newest release that has an `.xpi` file, and the `update.json` that the
-manifest names. Then it writes `plugins/<id>/meta.json` and
+The command reads the repository and its releases. It reads the
+`manifest.json` in the newest stable release that has an `.xpi` file, and the
+`update.json` that the manifest names. A stable release is a release that
+GitHub does not mark as a prerelease. If no stable release has an `.xpi`
+file, the command reads the newest release that has one. The stable release
+can fail to be a Zotero 7+ build: its `.xpi` file has no `manifest.json`, the
+manifest has no `applications.zotero.id`, or its `strict_max_version` is
+below 7. If a later release has an `.xpi` file, the command then reads the
+newest such release instead. Then it writes `plugins/<id>/meta.json` and
 `plugins/<id>/index.json`. To write the entry in another directory, add
 `--out <dir>`. The command does not replace an entry that already exists.
 
@@ -302,7 +308,9 @@ upstream facts in an `upstream` block and the overrides of the entry, with
 their reasons, in an `overrides` block. The schema for the file is
 [`schemas/plugins.v1.schema.json`](schemas/plugins.v1.schema.json). If the
 GitHub response for the repository says whether it is archived, the
-`upstream` block has an `archived` field, `true` or `false`.
+`upstream` block has an `archived` field, `true` or `false`. The `upstream`
+block also has a `prerelease` field, `true` or `false`. It says whether
+GitHub marks the release that the reader read as a prerelease.
 
 If the read of a plugin fails, its record has no `upstream` block. The
 record has a `failure` block with the failure name and a message. If the

@@ -142,10 +142,10 @@ declares.
       `site/src/pages/plugins/[id]/index.astro:62-65`. Add the
       `test/site.test.ts` tests of AC4 and give the site fixture data the
       three `prerelease` cases.
-- [ ] T5: Update the five sites of AC5 and add the `CHANGELOG.md` entry.
+- [x] T5: Update the five sites of AC5 and add the `CHANGELOG.md` entry.
       Update any bot-text test in `test/propose.test.ts` that quotes the old
       sentence.
-- [ ] T6: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
+- [x] T6: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates.
@@ -176,6 +176,8 @@ declares.
 - 2026-10-26: T2: `readRelease` now holds the manifest and update.json read, so the fallback can run it twice. `UpstreamFacts.prerelease` is optional in the type, to match the schema and older records. The reader always sets it.
 - 2026-10-26: T3: example/second-plugin's one release is now a prerelease in the build fixture. T1 to T3 share one commit, since the build tests fail between T2 and T3. `pnpm test` 437 passed; `pnpm check` 17 entries, 0 problems.
 - 2026-10-26: T4: the page puts " (prerelease)" after the publish date, so the value ends with it as AC4 says. The site fixture gives old-plugin `prerelease: true` and first-plugin `false`; the GUID record has none. The label test and the old-plugin mark test failed before the page change. `test/site.test.ts` 25 passed after it.
+- 2026-10-26: T5: the five AC5 sites now name the stable release first, and README.md and DESIGN.md state the fallback. CHANGELOG.md has a new Unreleased entry. README.md's data section names the `prerelease` field. DESIGN.md's Contract boundary "last release" now reads as the release the index read (corrected M014). No propose test quoted the old bot sentence. README.md:132's "checks" lint hit was there before this branch and stays.
+- 2026-10-26: T6: `pnpm test` 441 passed in 12 files; `pnpm check` 17 entries, 0 problems; the issue form parses with Ruby YAML.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote
