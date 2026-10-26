@@ -42,7 +42,7 @@ declares.
      insertion, removal, or reorder renumbers the labels and the Coverage
      lines together. -->
 
-- [ ] AC1: `readUpstream` reads the manifest of the newest non-draft release
+- [x] AC1: `readUpstream` reads the manifest of the newest non-draft release
       with an `.xpi` asset whose GitHub `prerelease` value is not `true`.
       "Newest" is by `published_at`. If no such release exists, it reads the
       newest non-draft release with an `.xpi`, as before. `releaseCount` still
@@ -52,7 +52,7 @@ declares.
       only prereleases gives the newest prerelease's version. A stable release
       and a prerelease with the same `published_at` give the stable release's
       version.
-- [ ] AC2: The stable release's read can fail with `no-manifest`,
+- [x] AC2: The stable release's read can fail with `no-manifest`,
       `no-zotero-id`, or `max-version-below-7`. If a release with an `.xpi`
       was published strictly later, `readUpstream` then reads the newest such
       release. It returns that release's facts, or that release's failure if
@@ -63,7 +63,7 @@ declares.
       fail, and the stable failure returned when no later release exists.
       Tests show `update-json-http-error` and `manifest-invalid` from the
       stable release returned with no request for the prerelease's XPI.
-- [ ] AC3: `UpstreamFacts` and the `upstream` block of
+- [x] AC3: `UpstreamFacts` and the `upstream` block of
       `schemas/plugins.v1.schema.json` gain an optional boolean `prerelease`.
       Its value is the GitHub `prerelease` flag of the release whose manifest
       was read, with `false` for any value other than `true`. So the reader
@@ -72,14 +72,14 @@ declares.
       prerelease read and `false` for a stable read. A test shows
       `checkOutput` reporting `/plugins/0/upstream/prerelease` for a
       non-boolean value.
-- [ ] AC4: The plugin page labels its release fact `Release read by the
+- [x] AC4: The plugin page labels its release fact `Release read by the
       index` in place of `Latest release with an .xpi`. If the record's
       `prerelease` is `true`, the value ends with ` (prerelease)`. Tests in
       `test/site.test.ts` show `<dt>Release read by the index</dt>` before
       `data-fact="latest-release"`. They show the mark for a prerelease
       record, and no mark for a record with `prerelease: false` or with no
       `prerelease`.
-- [ ] AC5: At plan time, `grep -rn -i 'newest release\|latest release\|release
+- [x] AC5: At plan time, `grep -rn -i 'newest release\|latest release\|release
       with an .xpi\|release that has an\|prerelease'` over README.md,
       CHANGELOG.md, cairn/DESIGN.md, src, site/src, .github, and schemas
       returned seven lines. Apart from the page label of AC4, they are
@@ -103,7 +103,7 @@ declares.
       In the live file, zotero-pdf-preview reads a prerelease and zotlit reads
       a stable release, unless a GitHub read at review time shows that their
       releases changed.
-- [ ] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
+- [x] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate; each acceptance criterion → the
@@ -193,3 +193,13 @@ declares.
      results, review findings + triage. EXEMPT from the 150-line cap (M55),
      as are the work log (D-046) and the decisions section (D-074); evidence
      never scrambles plan-owned content. -->
+
+Pass 1, 2026-10-26, on m014-stable-releases-first at 76946a9 plus a CHANGELOG.md re-wrap. `vitest run --reporter=verbose` 441 passed in 12 files; `pnpm test` (tsc, then Vitest) 441 passed.
+
+- AC1: `test/upstream.test.ts` passed "reads the stable release" (version 3.3.3, `prerelease` false, `releaseCount` 3 with the beta counted), "reads the newest prerelease when no release is stable" (3.4.0-beta.1), and "reads the stable release when the prerelease has the same publish date" (3.3.3). The `prerelease` absent and "true"-string cases read as stable.
+- AC2: passed "reads the prerelease when the stable release fails with" no-manifest, no-zotero-id, and max-version-below-7 (each 3.4.0-beta.1, `prerelease` true). Passed "returns %s when no release is later than the stable one" for the same three names. Passed "returns the prerelease's failure when both reads fail" (stable no-manifest, prerelease max-version-below-7, result max-version-below-7). Passed update-json-http-error and manifest-invalid "without reading the prerelease" (no request for the beta XPI).
+- AC3: `src/upstream/reader.ts:28` declares `prerelease?: boolean`, and `schemas/plugins.v1.schema.json:96` adds the boolean `prerelease` to `upstream`. `schemaVersion` is still `const: 1`. `test/build.test.ts` passed "writes the prerelease value that the reader read" (second-plugin true, better-notes false) and "reports a record whose prerelease value is not a boolean" (`/plugins/0/upstream/prerelease`).
+- AC4: `test/site.test.ts` passed "labels the release fact as the release the index read" (`<dt>Release read by the index</dt>` before `data-fact="latest-release"`). It passed the mark test for old-plugin (`prerelease: true`, "0.4.1, published 2024-07-01 (prerelease)"), first-plugin (`false`, no mark), and the GUID record (no field, no mark).
+- AC5: the plan's grep, rerun at head, shows README.md:97, CHANGELOG.md:11, cairn/DESIGN.md:72, src/discover/propose.ts:307, and .github/ISSUE_TEMPLATE/add-plugin.yml:9 each naming the newest stable release first. README.md:96-104 and cairn/DESIGN.md:72-79 state the fallback. CHANGELOG.md:94-108 is the new Unreleased entry: the rule, the `prerelease` field, and "fetch any saved copy of it again".
+- AC6: waits on the first deploying `build.yml` run after the merge.
+- AC7: `pnpm test` 441 passed (tsc clean); `pnpm check` checked 17 entries in plugins, 0 problems.
