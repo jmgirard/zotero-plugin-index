@@ -56,7 +56,7 @@ and "Bound the time of a discover run". The read-only read job → M011.
       central directory, keep the duplicate and size checks, inflate with `Inflate` in chunks of at most 64 KiB,
       and stop at the first output byte past the declared size. A stored entry keeps its current size check.
       Correct the comment above `unzipOne`.
-- [ ] T3: Add the CHANGELOG.md entry under Unreleased, and the DESIGN.md Architecture note beside the M005 text.
+- [x] T3: Add the CHANGELOG.md entry under Unreleased, and the DESIGN.md Architecture note beside the M005 text.
 - [ ] T4: At review, run `pnpm build` with `GITHUB_TOKEN` set on the default branch and on the branch back to back,
       and compare the `xpi-unreadable` records (AC3).
 
@@ -75,6 +75,8 @@ and "Bound the time of a discover run". The read-only read job → M011.
 - 2026-10-26: T1 failing-first on the old reader: both AC1 tests failed on time (1,976 ms and 1,877 ms against the 1 s bound), the AC2 one-byte-over test failed as `manifest-invalid`; the two AC2 read-as-before cases passed.
 - 2026-10-26: T2 choices: chunks of 16 KiB input (at most about 16 MB of output past the bound per push, given deflate's ratio limit near 1032:1); a central-directory walk that mirrors fflate's end-record, zip64, and header reads, shared with `zipEntryCount`; failure message "<name> in the XPI of <tag> inflates past the <n> bytes its zip declares"; the size check stays at the first match and the duplicate check at the second, as before.
 - 2026-10-26: T1+T2 in one checkpoint, because the T1 tests are red without T2. `pnpm test` 412 passed, `pnpm check` exit 0; the two 512 MiB reads take 67 ms and 50 ms.
+- 2026-10-26: T3: CHANGELOG.md Unreleased entry added after the M005 entry; DESIGN.md reader paragraph gains the M012 note, and its M005 sentence is corrected in place to name `unzipSync` in the past tense. `pnpm test` and `pnpm check` exit 0.
+- 2026-10-26: paused at the user's request after T3; next: claim audit (step 7), then hand off to review. T4 runs at review.
 
 ## Decisions
 
