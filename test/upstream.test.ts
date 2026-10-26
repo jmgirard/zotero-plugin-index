@@ -2,7 +2,7 @@ import { deflateRawSync, inflateRawSync } from "node:zlib";
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import type { Lookup } from "../src/upstream/host-guard.ts";
-import { readUpstream, zipEntryCount } from "../src/upstream/reader.ts";
+import { buildLevelStatus, readUpstream, zipEntryCount } from "../src/upstream/reader.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 
 const FIXTURE = "test/fixtures/upstream/better-notes.json";
@@ -267,10 +267,6 @@ describe("readUpstream", () => {
   // must hold, which shows the read reached the changed response.
   test.each<[string, (r: Responses) => void, string, string]>([
     ["the repo request returns 404", (r) => (r[REPO].status = 404), "github-http-error", "HTTP 404"],
-    ["the releases request returns 403", (r) => (r[RELEASES].status = 403), "github-http-error", "HTTP 403"],
-    ["a GitHub request cannot connect", (r) => (r[RELEASES_PAGE_2] = { error: "fetch failed" }), "request-failed", "fetch failed"],
-    ["a body read is cut off", (r) => (r[UPDATE] = { bodyError: "terminated" }), "request-failed", "terminated"],
-    ["the XPI body read is cut off", (r) => (r[XPI] = { bodyError: "terminated" }), "request-failed", "terminated"],
     ["the repo body is not JSON", (r) => (r[REPO] = { text: "<html>" }), "request-failed", "not JSON"],
     ["the repo body is not an object", (r) => (r[REPO] = { json: null }), "request-failed", "not an object"],
     ["the releases body is not a list", (r) => (r[RELEASES] = { json: {} }), "request-failed", "not a list"],
@@ -354,6 +350,18 @@ describe("readUpstream", () => {
   ])("fails when %s", async (_name, edit, failure, detail) => {
     const { result } = await read(edit);
     expect(result).toEqual({ ok: false, failure, message: expect.stringContaining(detail) });
+  });
+
+  // As above, for failures that point at the build, so the result carries buildLevel.
+  test.each<[string, (r: Responses) => void, string, string]>([
+    ["the releases request returns 403", (r) => (r[RELEASES].status = 403), "github-http-error", "HTTP 403"],
+    ["a GitHub request cannot connect", (r) => (r[RELEASES_PAGE_2] = { error: "fetch failed" }), "request-failed", "fetch failed"],
+    ["a body read is cut off", (r) => (r[UPDATE] = { bodyError: "terminated" }), "request-failed", "terminated"],
+    ["the XPI body read is cut off", (r) => (r[XPI] = { bodyError: "terminated" }), "request-failed", "terminated"],
+    ["the XPI download returns 502", (r) => (r[XPI] = { status: 502 }), "xpi-unreadable", "HTTP 502"],
+  ])("fails with buildLevel when %s", async (_name, edit, failure, detail) => {
+    const { result } = await read(edit);
+    expect(result).toEqual({ ok: false, failure, message: expect.stringContaining(detail), buildLevel: true });
   });
 
   test("fails with xpi-too-large and stops reading an XPI past 50 MiB", async () => {
@@ -741,7 +749,7 @@ describe("readUpstream", () => {
     ["returns no address", "empty.example", "no address"],
   ])("fails with request-failed and no request when the lookup %s", async (_name, host, detail) => {
     const { result, requests } = await readUpdateUrl(`http://${host}/update.json`, namedLookup);
-    expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining(detail) });
+    expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining(detail), buildLevel: true });
     expect(requests.at(-1)!.url).toBe(XPI);
   });
 
@@ -759,7 +767,7 @@ describe("readUpstream", () => {
         await vi.advanceTimersByTimeAsync(10_000);
       }
       const { result, requests } = await pending;
-      expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining("no answer after 60000 ms") });
+      expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining("no answer after 60000 ms"), buildLevel: true });
       expect(requests.at(-1)!.url).toBe(XPI);
     } finally {
       vi.useRealTimers();
@@ -840,4 +848,14 @@ describe("readUpstream", () => {
       expect(requests).toEqual([]);
     },
   );
+});
+
+describe("buildLevelStatus", () => {
+  test("counts 401 and 403 from the GitHub API, and 429 and 500 to 599 from any host", () => {
+    for (let status = 200; status <= 599; status++) {
+      const anyHost = status === 429 || status >= 500;
+      expect([status, buildLevelStatus(status, "github-api")]).toEqual([status, anyHost || status === 401 || status === 403]);
+      expect([status, buildLevelStatus(status, "download")]).toEqual([status, anyHost]);
+    }
+  });
 });

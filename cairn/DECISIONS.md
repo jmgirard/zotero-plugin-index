@@ -109,3 +109,19 @@ its scheduled and dispatched runs save caches in the default branch's scope. A
 job that a crafted file took over could save any key there. `ci.yml` keeps its
 dependency cache, because it deploys nothing and no check gates a merge. A
 later workflow that publishes or writes takes the same rule.
+
+### D-011: Withhold a deploy only for build-level failures, narrowing M006's rule
+
+2026-10-26, M017 review. M006 made `pnpm build` exit 1, so the daily build
+deploys nothing, when more than half of the records carry any failure, because
+so many failures usually come from the build. That rule also counted failures
+that stay for good, such as a fork, a deleted repo, or a release with no XPI,
+so an index where most plugins sat in such states would never deploy again.
+At the M017 plan question set the user chose to count only build-level
+failures, sorted by cause and HTTP status: an unexpected error, a request with
+no whole response, a GitHub API 401 or 403, and a 429 or 5xx from any host.
+The reader carries the mark beside the failure name, never in the published
+data, so the v1 schema (D-006, D-007) stays as it is. The cost is that a reader
+or schema regression that fails every record with a named failure, such as
+`xpi-unreadable` or `facts-invalid`, now deploys a site with no plugin data.
+Candidate row "Withhold deploys when all reads fail" holds the safety net.

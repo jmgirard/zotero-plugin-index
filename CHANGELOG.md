@@ -45,8 +45,9 @@
   `https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json`, with its
   schemas under `https://jmgirard.github.io/zotero-plugin-index/schemas/`.
   The schemas' `$id` values are now these URLs. `pnpm build` also writes the
-  schemas to `dist/schemas/`. If more than half of the records carry a
-  failure, `pnpm build` writes the file and exits with status 1. The daily
+  schemas to `dist/schemas/`. A build-level failure is a failure such as a
+  rate limit or a network error. If more than half of the records carry
+  one, `pnpm build` writes the file and exits with status 1. The daily
   build then deploys nothing.
 - The daily build publishes a website at
   `https://jmgirard.github.io/zotero-plugin-index/`. The home page lists every
@@ -125,3 +126,10 @@
   `Discover plugins` reads repositories that anyone can tag, and its runs can
   save caches that a run on the default branch restores. Thus the build job
   cannot restore a cache that such a job saved.
+- `pnpm build` counts only build-level failures toward its exit-1 rule.
+  "Building the data" in the README lists them. A 404, a fork, or a release
+  with no `.xpi` file no longer counts. Before, a build where most records
+  failed for such reasons deployed nothing. The command also prints the
+  number of records for each failure name and the number with a
+  build-level failure. If a record carries a build-level failure, it prints
+  a `::warning::` line, which GitHub Actions shows on the run.

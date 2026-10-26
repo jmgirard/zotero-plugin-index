@@ -34,8 +34,9 @@ jobs:
           node-version: 24
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
-      # Exits 1 when more than half of the records carry a failure. The steps below
-      # without an `if:` are then skipped, so nothing is deployed.
+      # Exits 1 when more than half of the records carry a build-level failure, such as
+      # a rate limit or a network error (README "Building the data" lists them). The
+      # steps below without an `if:` are then skipped, so nothing is deployed.
       - run: pnpm build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json" };
 import { buildData, checkOutput, writeData } from "../src/build/build.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
+import { DNS_FAIL_HOST, mixedFailures } from "./support/mixed-failures.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const TREE = resolve(ROOT, "test/fixtures/build/plugins");
@@ -17,8 +18,12 @@ const SECOND = "second-plugin@example.org";
 const FORKED = "forked-plugin@example.org";
 
 // buildData runs the reader's host check in this process, so each host resolves to one
-// public address without DNS, as the preload does for the spawned commands.
-vi.spyOn(dns.promises, "lookup").mockResolvedValue([{ address: "140.82.112.3", family: 4 }] as never);
+// public address without DNS, as the preload does for the spawned commands. The lookup of
+// DNS_FAIL_HOST fails.
+vi.spyOn(dns.promises, "lookup").mockImplementation((async (host: string) => {
+  if (host === DNS_FAIL_HOST) throw new Error(`getaddrinfo ENOTFOUND ${host}`);
+  return [{ address: "140.82.112.3", family: 4 }];
+}) as never);
 
 const temps: string[] = [];
 afterAll(() => {
@@ -148,40 +153,101 @@ function expectSchemaCopies(out: string) {
   }
 }
 
+// The lines from the first failure-name line through the build-level line.
+function summary(stdout: string): string[] {
+  const lines = stdout.trim().split("\n");
+  const start = lines.findIndex((line) => line.startsWith("failed with ") || line.startsWith("build-level failures: "));
+  const end = lines.findIndex((line) => line.startsWith("build-level failures: "));
+  return lines.slice(start, end + 1);
+}
+
+// A copy of TREE with only the given entries.
+function treeOf(...ids: string[]): string {
+  const tree = tempDir();
+  for (const id of ids) cpSync(join(TREE, id), join(tree, id), { recursive: true });
+  return tree;
+}
+
+const SECOND_UPDATE = "https://raw.githubusercontent.com/example/second-plugin/main/update.json";
+
 describe("pnpm build", () => {
-  test("names an error the reader does not expect unexpected-error, goes on, and exits 1 when 2 of 3 records fail", () => {
+  test("names an error the reader does not expect unexpected-error, goes on, and exits 1 when 2 of 3 records fail for build-level reasons", () => {
     // BETTER_NOTES is the first entry by name, so the other two are read after the error.
-    // With the fork, 2 of 3 records fail, so the build writes the file and exits 1.
     const recorded = responses();
     recorded["https://api.github.com/repos/windingwind/zotero-better-notes"] = { unexpected: "planted reader error" };
+    recorded[SECOND_UPDATE] = { status: 503, text: "Service Unavailable" };
     const out = tempDir();
     const result = pnpmBuild([TREE, "--out", out], writeFixture(recorded));
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain("2 of 3 records carry a failure, more than half");
+    expect(result.stderr).toContain("2 of 3 records carry a build-level failure, more than half");
+    expect(summary(result.stdout)).toEqual([
+      "failed with fork: 1",
+      "failed with unexpected-error: 1",
+      "failed with update-json-http-error: 1",
+      "build-level failures: 2 of 3 records",
+    ]);
+    expect(result.stdout).toContain("\n::warning::2 of 3 records carry a build-level failure");
     expectSchemaCopies(out);
     const output = readOutput(out);
     expect(output.plugins.map((plugin) => plugin.id).sort()).toEqual(readdirSync(TREE).sort());
     expect(output.plugins[0].id).toBe(BETTER_NOTES);
     expect(record(output, BETTER_NOTES)?.failure).toEqual({ name: "unexpected-error", message: "planted reader error" });
-    expect(record(output, SECOND)?.upstream?.id).toBe(SECOND);
+    expect(record(output, SECOND)?.failure?.name).toBe("update-json-http-error");
     expect(record(output, FORKED)?.failure?.name).toBe("fork");
   });
 
-  test("exits 0 when exactly half of the records carry a failure", () => {
-    // A fourth entry whose repo has no recorded response fails beside the fork: 2 of 4.
-    const tree = tempDir();
-    cpSync(TREE, tree, { recursive: true });
-    const missing = "missing-plugin@example.org";
-    cpSync(join(tree, SECOND), join(tree, missing), { recursive: true });
-    const meta = JSON.parse(readFileSync(join(tree, missing, "meta.json"), "utf8"));
-    writeFileSync(join(tree, missing, "meta.json"), JSON.stringify({ ...meta, id: missing, repoUrl: "https://github.com/example/missing-plugin" }));
+  test("exits 0 and warns when exactly half of the records fail for build-level reasons", () => {
+    const recorded = responses();
+    recorded[SECOND_UPDATE] = { status: 503, text: "Service Unavailable" };
     const out = tempDir();
-    const result = pnpmBuild([tree, "--out", out], writeFixture(responses()));
+    const result = pnpmBuild([treeOf(BETTER_NOTES, SECOND), "--out", out], writeFixture(recorded));
     expect(result.status).toBe(0);
     expect(result.stderr).not.toContain("more than half");
-    const output = readOutput(out);
-    expect(output.plugins.filter((plugin) => plugin.failure).map((plugin) => plugin.id).sort()).toEqual([FORKED, missing]);
+    expect(summary(result.stdout)).toEqual(["failed with update-json-http-error: 1", "build-level failures: 1 of 2 records"]);
+    expect(result.stdout).toContain("\n::warning::1 of 2 records carry a build-level failure");
     expectSchemaCopies(out);
+  });
+
+  test("exits 0 with no warning when every record fails for reasons that are not build-level", () => {
+    const recorded = responses();
+    delete recorded["https://api.github.com/repos/windingwind/zotero-better-notes"];
+    (recorded["https://api.github.com/repos/example/second-plugin"].json as { fork: boolean }).fork = true;
+    const out = tempDir();
+    const result = pnpmBuild([TREE, "--out", out], writeFixture(recorded));
+    expect(result.status).toBe(0);
+    expect(result.stderr).not.toContain("more than half");
+    expect(summary(result.stdout)).toEqual(["failed with fork: 2", "failed with github-http-error: 1", "build-level failures: 0 of 3 records"]);
+    expect(result.stdout).not.toContain("::warning::");
+    expect(readOutput(out).plugins.every((plugin) => plugin.failure)).toBe(true);
+  });
+
+  test("prints each failure message on one line, so upstream text cannot start a workflow command", () => {
+    const recorded = responses();
+    recorded["https://api.github.com/repos/windingwind/zotero-better-notes"] = { unexpected: "planted reader error" };
+    const xpi = recorded["https://github.com/example/second-plugin/releases/download/v1.0.0/second-plugin.xpi"].xpi!;
+    const manifest = xpi["manifest.json"] as { applications: { zotero: { update_url: string } } };
+    manifest.applications.zotero.update_url = `${SECOND_UPDATE}\n::stop-commands::planted`;
+    const result = pnpmBuild([TREE, "--out", tempDir()], writeFixture(recorded));
+    expect(result.stdout).toContain(`${SECOND}: update-json-http-error: the update.json at ${SECOND_UPDATE} ::stop-commands::planted`);
+    const commands = result.stdout.split("\n").filter((line) => line.startsWith("::"));
+    expect(commands).toEqual(["::warning::1 of 3 records carry a build-level failure"]);
+  });
+
+  test("prints no warning when only a fork fails", () => {
+    const result = pnpmBuild([TREE, "--out", tempDir()], writeFixture(responses()));
+    expect(result.status).toBe(0);
+    expect(summary(result.stdout)).toEqual(["failed with fork: 1", "build-level failures: 0 of 3 records"]);
+    expect(result.stdout).not.toContain("::warning::");
+  });
+
+  test("prints the build-level line, no failure-name line, and no warning when no record fails", () => {
+    const result = pnpmBuild([treeOf(BETTER_NOTES, SECOND), "--out", tempDir()], writeFixture(responses()));
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split("\n");
+    expect(lines.slice(-2, -1)).toEqual(["build-level failures: 0 of 2 records"]);
+    expect(lines.at(-1)).toMatch(/^wrote 2 records to /);
+    expect(result.stdout).not.toContain("failed with ");
+    expect(result.stdout).not.toContain("::warning::");
   });
 
   test("writes no file and exits 1 when an entry cannot be read", () => {
@@ -228,6 +294,32 @@ describe("buildData", () => {
     expect(await buildData(file, noFetch)).toEqual({ ok: false, problems: [expect.stringContaining(`cannot read ${file}`)] });
   });
 
+  describe("over entries that fail in each way", () => {
+    let result: Awaited<ReturnType<typeof buildData>>;
+    beforeAll(async () => {
+      const tree = tempDir();
+      result = await buildData(tree, fixtureFetch(mixedFailures(tree)).fetch, new Date("2026-10-26T00:00:00Z"));
+    });
+
+    test("names the records whose failure is build-level", () => {
+      if (!result.ok) throw new Error(result.problems.join("\n"));
+      expect(result.buildLevel).toEqual([
+        "api-403@example.org",
+        "api-body-error@example.org",
+        "api-reject@example.org",
+        "dns-fail@example.org",
+        "unexpected@example.org",
+        "update-503@example.org",
+        "xpi-reject@example.org",
+      ]);
+    });
+
+    test("writes the same file as before the build-level rule", () => {
+      if (!result.ok) throw new Error(result.problems.join("\n"));
+      expect(result.text).toBe(readFileSync(resolve(ROOT, "test/fixtures/build/mixed-failures.plugins.json"), "utf8"));
+    });
+  });
+
   test("records facts that the schema rejects as facts-invalid and goes on", async () => {
     const recorded = responses();
     const repo = recorded["https://api.github.com/repos/example/second-plugin"].json as Record<string, unknown>;
@@ -242,6 +334,7 @@ describe("buildData", () => {
       overrides: [],
     });
     expect(record(output, BETTER_NOTES)?.upstream?.id).toBe(BETTER_NOTES);
+    expect(result.buildLevel).toEqual([]);
   });
 });
 

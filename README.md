@@ -58,7 +58,9 @@ The index publishes its data file on GitHub Pages:
   <https://jmgirard.github.io/zotero-plugin-index/schemas/index.v1.schema.json>
 
 A daily build updates the data. If more than half of the records carry a
-failure, the build deploys nothing. If the site build fails, the build also
+build-level failure, such as a rate limit or a network error, the build
+deploys nothing. "Building the data" below says which failures are
+build-level. If the site build fails, the build also
 deploys nothing. The data from the last good build then stays in place. "Building the data" below describes the file. A breaking
 change to the file gets a new schema version under a new path, such as `v2/`.
 By this project's rule, a new optional field does not get a new schema
@@ -333,11 +335,28 @@ If the read of a plugin fails, its record has no `upstream` block. The
 record has a `failure` block with the failure name and a message. If the
 read stops with an error that the reader does not name, the failure name is
 `unexpected-error`. If the read gives facts that the schema rejects, the
-failure name is `facts-invalid`. The command still writes the file. If half
-of the records or fewer have a `failure` block, it exits with status 0. If
-more than half have one, the command prints how many and exits with status 1.
-So many failures usually come from the build, for example a bad token or a
-GitHub outage.
+failure name is `facts-invalid`. The command still writes the file.
+
+A build-level failure usually comes from the build, not from the plugin.
+A plugin's own download host that is down also gives one. These failures
+are build-level:
+
+- an `unexpected-error`,
+- a request that gets no whole response, such as a failed host lookup, a
+  network error, or a timeout,
+- an HTTP 401 or 403 answer from the GitHub API,
+- an HTTP 429 or 5xx answer from any host.
+
+Every other failure, a 404 included, belongs to the plugin. First, the
+command prints one line for each failed record. Next, it prints one line
+for each failure name, with the number of records that carry it. Then it
+prints the number of records with a build-level failure. If a record
+carries a build-level failure, the command also prints a `::warning::`
+line. GitHub Actions shows this line as a warning on the run. If more than
+half of the records carry a build-level failure, the command exits with
+status 1. If half of the records or fewer carry one, the command exits with
+status 0. That includes a build in which every record fails for a reason of
+its own.
 
 The command also writes copies of the two schemas to `dist/schemas/`.
 

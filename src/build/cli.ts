@@ -32,13 +32,24 @@ async function main(): Promise<number> {
     return 1;
   }
   const failed = built.data.plugins.filter((plugin) => plugin.failure);
-  for (const { id, failure } of failed) console.log(`${id}: ${failure!.name}: ${failure!.message}`);
+  // A message can hold upstream text, such as an update_url. Each goes on one line, so no
+  // part of it starts a line that GitHub Actions reads as a workflow command.
+  const oneLine = (text: string) => text.replace(/[\r\n]+/g, " ");
+  for (const { id, failure } of failed) console.log(`${id}: ${failure!.name}: ${oneLine(failure!.message)}`);
+  const counts = new Map<string, number>();
+  for (const { failure } of failed) counts.set(failure!.name, (counts.get(failure!.name) ?? 0) + 1);
+  for (const name of [...counts.keys()].sort()) console.log(`failed with ${name}: ${counts.get(name)}`);
   const total = built.data.plugins.length;
+  const buildLevel = built.buildLevel.length;
+  console.log(`build-level failures: ${buildLevel} of ${total} records`);
+  // GitHub Actions shows this line as a warning on the run.
+  if (buildLevel > 0) console.log(`::warning::${buildLevel} of ${total} records carry a build-level failure`);
   console.log(`wrote ${total} records to ${written.path}, ${failed.length} with a failed upstream read`);
-  // So many failures usually point at the build (a bad token, a GitHub outage), not at
-  // the plugins. Exit 1, so the daily build deploys nothing and the last good data stays.
-  if (failed.length * 2 > total) {
-    console.error(`${failed.length} of ${total} records carry a failure, more than half`);
+  // A build-level failure, such as a rate limit or a network error, usually points at the
+  // build, not at the plugin. When more than half of the records carry one, exit 1, so the daily
+  // build deploys nothing and the last good data stays.
+  if (buildLevel * 2 > total) {
+    console.error(`${buildLevel} of ${total} records carry a build-level failure, more than half`);
     return 1;
   }
   return 0;

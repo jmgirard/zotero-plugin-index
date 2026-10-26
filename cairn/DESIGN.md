@@ -144,8 +144,10 @@ exception is a report that is abuse.
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
-  It exits 1 when more than half of the records carry a failure. Added M003;
-  schemas and exit rule M006.
+  It exits 1 when more than half of the records carry a build-level failure,
+  as README "Building the data" defines it, and prints a summary of failure
+  names and a `::warning::` line for build-level failures. Added M003;
+  schemas and exit rule M006; build-level rule and summary M017.
 - Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
   home page and one page per record into `dist/`, or `<dir>`, from the data
   file there. `src/site/version.ts` holds the version and range functions
@@ -311,8 +313,11 @@ reused._
   `.github/workflows/build.yml` runs `pnpm check`, then the build, then
   `pnpm site` (M007), daily and on manual dispatch, and keeps `dist/` as a
   workflow artifact (M003). The build also copies both schemas to `dist/schemas/`, and it exits 1 after it
-  writes the file when more than half of the records carry a failure. The
-  workflow then uploads `dist/` as the Pages artifact, and a deploy job that
+  writes the file when more than half of the records carry a build-level
+  failure, as README "Building the data" defines it (M017). The reader
+  marks a failure build-level beside its name, and `buildData` returns the
+  marked ids outside the data, so the published file keeps its shape
+  (D-011). The workflow then uploads `dist/` as the Pages artifact, and a deploy job that
   needs the build job publishes it. A failed build deploys nothing, and the
   `github-pages` environment takes deploys from `main` only (M006).
   The build job of `build.yml` restores no Actions cache: the job sets

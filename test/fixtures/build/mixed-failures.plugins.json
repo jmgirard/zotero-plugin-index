@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-26T00:00:00.000Z",
+  "plugins": [
+    {
+      "id": "api-403@example.org",
+      "repoUrl": "https://github.com/example/api-403",
+      "failure": {
+        "name": "github-http-error",
+        "message": "GET https://api.github.com/repos/example/api-403 returned HTTP 403"
+      },
+      "overrides": []
+    },
+    {
+      "id": "api-404@example.org",
+      "repoUrl": "https://github.com/example/api-404",
+      "failure": {
+        "name": "github-http-error",
+        "message": "GET https://api.github.com/repos/example/api-404 returned HTTP 404"
+      },
+      "overrides": []
+    },
+    {
+      "id": "api-body-error@example.org",
+      "repoUrl": "https://github.com/example/api-body-error",
+      "failure": {
+        "name": "request-failed",
+        "message": "GET https://api.github.com/repos/example/api-body-error failed while reading the body: terminated"
+      },
+      "overrides": []
+    },
+    {
+      "id": "api-reject@example.org",
+      "repoUrl": "https://github.com/example/api-reject",
+      "failure": {
+        "name": "request-failed",
+        "message": "GET https://api.github.com/repos/example/api-reject failed: connect ECONNRESET"
+      },
+      "overrides": []
+    },
+    {
+      "id": "dns-fail@example.org",
+      "repoUrl": "https://github.com/example/dns-fail",
+      "failure": {
+        "name": "request-failed",
+        "message": "the lookup of dns-fail.example for https://dns-fail.example/plugin.xpi failed: getaddrinfo ENOTFOUND dns-fail.example"
+      },
+      "overrides": []
+    },
+    {
+      "id": "fork@example.org",
+      "repoUrl": "https://github.com/example/fork",
+      "failure": {
+        "name": "fork",
+        "message": "example/fork is a fork"
+      },
+      "overrides": []
+    },
+    {
+      "id": "passing@example.org",
+      "repoUrl": "https://github.com/example/passing",
+      "upstream": {
+        "id": "passing@example.org",
+        "name": "example/passing",
+        "version": "1.0.0",
+        "strictMinVersion": "7.0",
+        "strictMaxVersion": "8.*",
+        "updateUrl": "https://raw.githubusercontent.com/example/passing/main/update.json",
+        "updateHost": "raw.githubusercontent.com",
+        "repoUrl": "https://github.com/example/passing",
+        "repoCreatedAt": "2025-01-10T09:00:00Z",
+        "openIssues": 0,
+        "releaseCount": 1,
+        "latestReleaseDate": "2026-03-01T12:00:00Z",
+        "prerelease": false
+      },
+      "overrides": []
+    },
+    {
+      "id": "redirect-loop@example.org",
+      "repoUrl": "https://github.com/example/redirect-loop",
+      "failure": {
+        "name": "request-failed",
+        "message": "GET https://github.com/example/redirect-loop/releases/download/v1.0.0/plugin.xpi took more than 5 redirects"
+      },
+      "overrides": []
+    },
+    {
+      "id": "unexpected@example.org",
+      "repoUrl": "https://github.com/example/unexpected",
+      "failure": {
+        "name": "unexpected-error",
+        "message": "planted reader error"
+      },
+      "overrides": []
+    },
+    {
+      "id": "update-503@example.org",
+      "repoUrl": "https://github.com/example/update-503",
+      "failure": {
+        "name": "update-json-http-error",
+        "message": "the update.json at https://raw.githubusercontent.com/example/update-503/main/update.json returned HTTP 503"
+      },
+      "overrides": []
+    },
+    {
+      "id": "xpi-404@example.org",
+      "repoUrl": "https://github.com/example/xpi-404",
+      "failure": {
+        "name": "xpi-unreadable",
+        "message": "the XPI of v1.0.0 at https://github.com/example/xpi-404/releases/download/v1.0.0/plugin.xpi returned HTTP 404"
+      },
+      "overrides": []
+    },
+    {
+      "id": "xpi-reject@example.org",
+      "repoUrl": "https://github.com/example/xpi-reject",
+      "failure": {
+        "name": "request-failed",
+        "message": "GET https://github.com/example/xpi-reject/releases/download/v1.0.0/plugin.xpi failed: connect ECONNRESET"
+      },
+      "overrides": []
+    }
+  ]
+}

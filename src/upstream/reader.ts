@@ -53,7 +53,12 @@ export type Failure =
   | "update-json-missing-id"
   | "host-refused";
 
-export type UpstreamResult = { ok: true; facts: UpstreamFacts } | { ok: false; failure: Failure; message: string };
+// `buildLevel` marks a failure that usually points at the build rather than at the plugin: a
+// request with no whole response, or an answer that buildLevelStatus counts. The build
+// counts such failures to decide whether to deploy. It is not part of the published data.
+export type UpstreamResult =
+  | { ok: true; facts: UpstreamFacts }
+  | { ok: false; failure: Failure; message: string; buildLevel?: true };
 
 const API = "https://api.github.com";
 const FETCH_TIMEOUT_MS = 60_000;
@@ -65,14 +70,24 @@ export const UNZIPPED_MAX_BYTES = 1024 * 1024;
 
 export class ReadFailure extends Error {
   readonly failure: Failure;
-  constructor(failure: Failure, message: string) {
+  readonly buildLevel: boolean;
+  constructor(failure: Failure, message: string, buildLevel = false) {
     super(message);
     this.failure = failure;
+    this.buildLevel = buildLevel;
   }
 }
 
-function fail(failure: Failure, message: string): never {
-  throw new ReadFailure(failure, message);
+function fail(failure: Failure, message: string, buildLevel = false): never {
+  throw new ReadFailure(failure, message, buildLevel);
+}
+
+// Whether an HTTP error answer usually points at the build: a rate limit or a server error from
+// any host, or a refused token from the GitHub API. A 404 and the other answers point at
+// the plugin.
+export function buildLevelStatus(status: number, from: "github-api" | "download"): boolean {
+  if (status === 429 || (status >= 500 && status <= 599)) return true;
+  return from === "github-api" && (status === 401 || status === 403);
 }
 
 // Reads one GitHub repo. It never throws for a problem with the plugin: each one
@@ -87,7 +102,9 @@ export async function readUpstream(
   try {
     return { ok: true, facts: await read(repoUrl, fetch, downloader(fetch, lookup)) };
   } catch (error) {
-    if (error instanceof ReadFailure) return { ok: false, failure: error.failure, message: error.message };
+    if (error instanceof ReadFailure) {
+      return { ok: false, failure: error.failure, message: error.message, ...(error.buildLevel && { buildLevel: true }) };
+    }
     throw error;
   }
 }
@@ -258,7 +275,9 @@ export function githubClient(fetch: Fetch) {
   async function get(url: string): Promise<{ body: unknown; link: string | null }> {
     if (!URL.canParse(url) || new URL(url).origin !== API) fail("request-failed", `${url} is not on ${API}`);
     const response = await request(fetch, url, { headers });
-    if (!response.ok) fail("github-http-error", `GET ${url} returned HTTP ${response.status}`);
+    if (!response.ok) {
+      fail("github-http-error", `GET ${url} returned HTTP ${response.status}`, buildLevelStatus(response.status, "github-api"));
+    }
     const text = await readText(response, url);
     try {
       return { body: JSON.parse(text), link: response.headers.get("link") };
@@ -329,7 +348,7 @@ async function request(fetch: Fetch, url: string, init: RequestInit = {}): Promi
   try {
     return await fetch(url, { ...init, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
   } catch (error) {
-    fail("request-failed", `GET ${url} failed: ${(error as Error).message}`);
+    fail("request-failed", `GET ${url} failed: ${(error as Error).message}`, true);
   }
 }
 
@@ -337,7 +356,7 @@ async function readText(response: Response, url: string): Promise<string> {
   try {
     return await response.text();
   } catch (error) {
-    fail("request-failed", `GET ${url} failed while reading the body: ${(error as Error).message}`);
+    fail("request-failed", `GET ${url} failed while reading the body: ${(error as Error).message}`, true);
   }
 }
 
@@ -358,7 +377,7 @@ async function readCapped(response: Response, url: string, max: number, tooLarge
     }
   } catch (error) {
     if (error instanceof ReadFailure) throw error;
-    fail("request-failed", `GET ${url} failed while reading the body: ${(error as Error).message}`);
+    fail("request-failed", `GET ${url} failed while reading the body: ${(error as Error).message}`, true);
   }
   const bytes = new Uint8Array(total);
   let offset = 0;
@@ -385,7 +404,7 @@ function downloader(fetch: Fetch, lookup: Lookup): Download {
     let current = new URL(url);
     for (let redirects = 0; ; redirects++) {
       const refused = await refusal(current, lookup);
-      if (refused) fail(refused.failure, refused.message);
+      if (refused) fail(refused.failure, refused.message, refused.buildLevel);
       const response = await request(fetch, current.href, { redirect: "manual" });
       if (!REDIRECTS.includes(response.status)) return response;
       await response.body?.cancel().catch(() => {});
@@ -409,7 +428,9 @@ async function readManifest(
   tag: string,
 ): Promise<{ manifest: ManifestJson; messages: Messages }> {
   const response = await download(url);
-  if (!response.ok) fail("xpi-unreadable", `the XPI of ${tag} at ${url} returned HTTP ${response.status}`);
+  if (!response.ok) {
+    fail("xpi-unreadable", `the XPI of ${tag} at ${url} returned HTTP ${response.status}`, buildLevelStatus(response.status, "download"));
+  }
   const zip = await readCapped(response, url, XPI_MAX_BYTES, () =>
     fail("xpi-too-large", `the XPI of ${tag} at ${url} is larger than ${XPI_MAX_BYTES} bytes`),
   );
@@ -562,7 +583,10 @@ function unzipOne(zip: Uint8Array, name: string, tag: string): Uint8Array | unde
 
 async function checkUpdateJson(download: Download, url: string, id: string): Promise<void> {
   const response = await download(url);
-  if (!response.ok) fail("update-json-http-error", `the update.json at ${url} returned HTTP ${response.status}`);
+  if (!response.ok) {
+    const buildLevel = buildLevelStatus(response.status, "download");
+    fail("update-json-http-error", `the update.json at ${url} returned HTTP ${response.status}`, buildLevel);
+  }
   const bytes = await readCapped(response, url, UPDATE_JSON_MAX_BYTES, () =>
     fail("update-json-too-large", `the update.json at ${url} is larger than ${UPDATE_JSON_MAX_BYTES} bytes`),
   );
