@@ -54,7 +54,10 @@ shows each one separately.
 1. Discovery. A scheduled bot searches GitHub for repositories with the topic
    `zotero-plugin` or `zotero-addon`. In total, 400 and 109 repositories carry
    these topics (observed 2026-10-24). The bot opens a pull request for each
-   new candidate. A person can also paste one repository URL into an issue
+   new candidate that passes the inclusion bar, at most 5 a run, with the
+   result of `pnpm check` on the entry in its body. A bot pull request closed
+   without a merge keeps the bot from proposing that owner/repo name again
+   (M009). A person can also paste one repository URL into an issue
    form, and the bot drafts the entry. The maintainer approves each pull
    request.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
@@ -103,7 +106,8 @@ exception is a report that is abuse.
   `zotero-addon` topics, reads each repo that no entry names, and writes
   the entries of up to `limit` repos (5 by default) that pass the inclusion
   bar. It prints a JSON report of what it wrote, refused, and skipped.
-  Added M008.
+  Added M008. With `--propose`, it opens one pull request for each entry it
+  writes (M009).
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
@@ -191,6 +195,24 @@ reused._
   A failed search ends the run before any read and leaves the state file as
   it was. The report names, for each entry written, its version and declared
   range (M008).
+- `src/discover/propose.ts` runs discovery for `pnpm discover --propose`. It
+  first lists the index repo's pull requests (`state=all`, every page) and
+  puts in the skip set each repo whose `discover/<owner>/<repo>` pull request
+  from the index repo itself is open or closed without a merge. A merged
+  one's entry is in the index. For each entry written, it runs `pnpm check`
+  on a temporary directory that holds only that entry. Then it builds one
+  commit on top of the default branch with a temporary git index file,
+  `commit-tree`, and the `github-actions[bot]` identity, force-pushes it to
+  the branch, and sends one create-pull-request request whose body carries
+  the check's status and output. The checkout's branch and working tree do
+  not change. A failure for one entry is reported, and the run goes on and
+  exits 1 at the end. `githubClient` gains `post` for the request.
+  `.github/workflows/discover.yml` runs it daily and on dispatch with a
+  `limit` input, with `contents: write` and `pull-requests: write`, in the
+  `discover` concurrency group. It restores the state file from the newest
+  cache by prefix and saves it under a key with the run id, after a failed
+  run too. Pull requests opened with the built-in token start no CI run, so
+  the body carries the check result (M009).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request.
 - `src/build/` reads the entries, runs the upstream reader on each plugin in

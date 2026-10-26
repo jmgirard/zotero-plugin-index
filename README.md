@@ -125,6 +125,59 @@ GitHub limits the number of API requests per hour. If the `GITHUB_TOKEN`
 environment variable is set, the command sends it with each GitHub API
 request, which gives a higher limit.
 
+## Finding new plugins
+
+To search GitHub for plugins that the index does not list, run:
+
+```bash
+pnpm discover
+```
+
+The command searches for repositories with the topic `zotero-plugin` or
+`zotero-addon`. It leaves out each repository that an entry already names. It
+reads the other repositories in the same way as `pnpm add-plugin`, the newest
+pushed first. It writes the entries of at most 5 repositories that pass the
+inclusion bar under `plugins/`, and it reads at most 100 repositories. To
+change these numbers, add `--limit <n>` or `--budget <n>`. To write the
+entries in another directory, add `--out <dir>`. The command prints a JSON
+report that names each repository that it wrote, refused, or skipped.
+
+The command keeps a state file, `.cache/discovery-state.json`. The file
+records each refused repository, so a later run reads that repository again
+only after a new push or after 30 days. To use another file, add
+`--state <file>`.
+
+### Pull requests from the bot
+
+The `Discover plugins` workflow runs `pnpm discover --propose` once a day. You
+can also start it by hand and set its `limit` input. With `--propose`, the
+command writes each new entry in a temporary directory outside the checkout,
+unless `--out` names a directory. For each entry, it pushes
+the branch `discover/<owner>/<repo>` with one commit that adds the two files
+of the entry. Then it opens a pull request from that branch. A run opens at
+most 5 pull requests, or the number that `--limit` gives.
+
+The workflow uses the built-in `GITHUB_TOKEN`, and a pull request that this
+token opens starts no CI run. Thus the body of each pull request gives the
+exit status and the output of `pnpm check` on the new entry. The body also
+gives the repository URL, the plugin version, and the declared range of
+Zotero versions. The maintainer reviews each pull request and merges it or
+closes it.
+
+If you close a bot pull request without a merge, the bot does not propose
+that owner/repo name again. The bot also skips a repository whose bot pull
+request is still open. A renamed repository has a new name, so the bot can
+propose it again.
+
+If the push or the pull request fails for one entry, the command goes on to
+the next entry. At the end, it names each failed entry with its error and
+exits with status 1.
+
+The command reads the name of the index repository from the
+`GITHUB_REPOSITORY` environment variable, which GitHub Actions sets. The
+workflow needs the repository setting "Allow GitHub Actions to create and
+approve pull requests" under Settings > Actions > General.
+
 ## Checking entries
 
 To check every entry under `plugins/`, run:

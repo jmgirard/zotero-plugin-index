@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
@@ -78,10 +78,16 @@ function branch(remote: string, name: string) {
   };
 }
 
-const passed: CheckRunner = async (dir) => ({ status: 0, output: `checked 1 entries in ${dir}, 0 problems\n` });
+// The method, URL, and body of each request that a `pnpmDiscover` run logged.
+function logged(path: string): { method: string; url: string; body?: string }[] {
+  return readFileSync(path, "utf8")
+    .trim()
+    .split("\n")
+    .map((line) => JSON.parse(line));
+}
 
-describe("proposeRun", () => {
-  test("pushes one branch with one entry and sends one request for each entry, at most limit", async () => {
+describe("proposing pull requests", () => {
+  test("pnpm discover --propose pushes one branch with one entry and sends one request for each entry, at most 5 by default", () => {
     const { remote, work } = checkout();
     // An earlier run left this branch with another commit.
     git(work, "checkout", "--quiet", "-b", "discover/example/p7");
@@ -91,29 +97,22 @@ describe("proposeRun", () => {
     git(work, "push", "--quiet", "origin", "discover/example/p7");
     git(work, "checkout", "--quiet", "main");
 
-    const names = ["p1", "p2", "p3", "p4", "p5", "p6", "p7"];
-    const { fetch, requests } = fixtureFetch({
+    const requestLog = join(tempDir(), "requests.jsonl");
+    const responses: Responses = {
       ...indexRepo,
-      ...passing(names),
+      ...passing(["p1", "p2", "p3", "p4", "p5", "p6", "p7"]),
       [`POST ${PULLS}`]: { status: 201, json: { html_url: "https://github.com/example/index/pull/1" } },
+    };
+    const result = pnpmDiscover(["--propose", "--state", join(tempDir(), "state.json")], responses, work, {
+      GITHUB_REPOSITORY: "example/index",
+      ZPI_REQUESTS: requestLog,
     });
-    const result = await proposeRun({
-      root: tempDir(),
-      outDir: tempDir(),
-      fetch,
-      lookup: publicLookup,
-      state: {},
-      limit: 5,
-      budget: 100,
-      now: NOW,
-      indexRepo: "example/index",
-      gitDir: work,
-      check: passed,
-    });
-    if (!result.ok) throw new Error(result.message);
-    expect(result.failed).toEqual([]);
+    expect(result.stderr).toBe("");
+    expect(result.status).toBe(0);
 
-    const sent = requests.filter(({ method }) => method === "POST").map(({ url, body }) => ({ url, ...JSON.parse(body!) }));
+    const sent = logged(requestLog)
+      .filter(({ method }) => method === "POST")
+      .map(({ url, body }) => ({ url, ...JSON.parse(body!) }));
     const newest = ["p7", "p6", "p5", "p4", "p3"];
     expect(sent.map(({ url, head, base }) => [url, head, base])).toEqual(newest.map((name) => [PULLS, `discover/example/${name}`, "main"]));
     expect(git(remote, "for-each-ref", "--format=%(refname)", "refs/heads/discover").split("\n").sort()).toEqual(
@@ -209,13 +208,9 @@ describe("pnpm discover --propose failures", () => {
     expect(result.stderr).toContain(
       `- example/q2 (q2@example.org): POST ${PULLS} returned HTTP 422: Validation Failed; A pull request already exists`,
     );
-    expect(existsSync(requestLog)).toBe(true);
-    const sent = readFileSync(requestLog, "utf8")
-      .trim()
-      .split("\n")
-      .map((line) => JSON.parse(line))
+    const sent = logged(requestLog)
       .filter(({ method }) => method === "POST")
-      .map(({ body }) => JSON.parse(body).head);
+      .map(({ body }) => JSON.parse(body!).head);
     expect(sent).toEqual(["discover/example/q2", "discover/example/q1"]);
     expect(JSON.parse(result.stdout).proposed).toEqual([
       { repo: "example/q1", id: "q1@example.org", branch: "discover/example/q1", url: "https://github.com/example/index/pull/3" },
