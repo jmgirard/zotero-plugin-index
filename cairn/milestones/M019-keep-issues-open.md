@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M019: Keep issues open on a bot read failure
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — it changes how the bot answers "Add a plugin" issues on GitHub   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m019-keep-issues-open   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -85,7 +85,7 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
 
-- [ ] T1: Write the failing tests first in `test/issue.test.ts`: the six
+- [x] T1: Write the failing tests first in `test/issue.test.ts`: the six
       build-level cases of AC1, the thrown read of AC2, and the two 404 cases
       of AC3. `runIssue` (line ~52) gains a `lookup` option for the failed
       lookup case. Each test asserts the requests sent and the status.
@@ -113,6 +113,8 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
 - 2026-10-26: lessons used: 2026-10-25 (M001) pnpm via npx; 2026-10-25 (M003) a Proxy that throws to make the reader throw; 2026-10-25 (M004) the lookup stub; 2026-10-26 (M010) live issue-form test; 2026-10-26 (M018) joined-copy search.
 - 2026-10-26: collision check: absorbs candidate "Keep issues open on a bot read failure" in full; extends M010's issue answers and follows M017/M018's build-level mark (D-011, D-012), which no D-entry blocks; inbox has 0 open issues and 6 discovery-bot PRs, none overlapping.
 - 2026-10-26: criteria audit (full mode, fresh Opus reader): 8 findings, all taken — failure name form stated; reader's mark replaces a hand list of statuses; 403, failed-lookup, and update.json 404 cases added; status-1 wording tied to the tests; AC2 narrowed to a thrown `readUpstream`; AC4's phrase search replaced by the exact sentences; DESIGN line and issue form handled in T3.
+
+- 2026-10-26: T1: 9 issue-run tests and 1 handoff test added; the 7 open-issue cases fail on `result.status` 0 before the fix, the 2 404 cases and the handoff case pass (they pin behavior the fix keeps).
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->

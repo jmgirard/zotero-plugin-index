@@ -49,7 +49,11 @@ const opened: Responses = { [`POST ${PULLS}`]: { status: 201, json: { html_url: 
 // through a handoff written to disk, with a check that always passes, and returns the
 // write step's result, the requests the two sent other than GET, and the URLs they
 // fetched. `outDir` replaces the read step's output directory.
-async function runIssue(body: string, responses: Responses, options: { root?: string; outDir?: string; gitDir?: string } = {}) {
+async function runIssue(
+  body: string,
+  responses: Responses,
+  options: { root?: string; outDir?: string; gitDir?: string; lookup?: () => Promise<string[]> } = {},
+) {
   const { fetch, requests } = fixtureFetch(responses);
   const root = options.root ?? tempDir();
   const handoff = tempDir();
@@ -57,7 +61,7 @@ async function runIssue(body: string, responses: Responses, options: { root?: st
     root,
     outDir: options.outDir ?? entriesDir(handoff),
     fetch,
-    lookup: publicLookup,
+    lookup: options.lookup ?? publicLookup,
     indexRepo: "example/index",
     body,
   });
@@ -239,6 +243,50 @@ describe("an issue run's refusals with names the reader gives", () => {
     expect(result.status).toBe(0);
     expect(sent).toEqual([
       { method: "POST", url: COMMENTS, body: expect.stringContaining("`not-proposable`") },
+      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "not_planned" },
+    ]);
+  });
+});
+
+describe("an issue run's read failures that point at the bot", () => {
+  const ALPHA = "https://api.github.com/repos/example/alpha";
+  const UPDATE = "https://raw.githubusercontent.com/example/alpha/main/update.json";
+  const failingLookup = async (): Promise<string[]> => {
+    throw new Error("getaddrinfo ENOTFOUND");
+  };
+
+  test.each<[string, Responses, (() => Promise<string[]>) | undefined, string, string]>([
+    ["a GitHub API HTTP 429", { [ALPHA]: { status: 429, text: "slow down" } }, undefined, "github-http-error", "returned HTTP 429"],
+    ["a GitHub API HTTP 503", { [ALPHA]: { status: 503, text: "unavailable" } }, undefined, "github-http-error", "returned HTTP 503"],
+    ["a GitHub API HTTP 403", { [ALPHA]: { status: 403, text: "rate limited" } }, undefined, "github-http-error", "returned HTTP 403"],
+    ["an update.json HTTP 503", { [UPDATE]: { status: 503, text: "unavailable" } }, undefined, "update-json-http-error", "returned HTTP 503"],
+    ["a rejected fetch", { [ALPHA]: { error: "read ECONNRESET" } }, undefined, "request-failed", "read ECONNRESET"],
+    ["a failed host lookup", {}, failingLookup, "request-failed", "getaddrinfo ENOTFOUND"],
+    ["a read that throws", { [ALPHA]: { unexpected: "meta exploded" } }, undefined, "unexpected-error", "meta exploded"],
+  ])("comments the failure name and message, leaves the issue open, and returns 1 for %s", async (_name, change, lookup, failure, message) => {
+    const { result, sent } = await runIssue(
+      rendered("https://github.com/example/alpha"),
+      { ...indexRepo, ...pluginRepo("example/alpha", "alpha@example.org"), ...opened, ...change },
+      { lookup },
+    );
+    expect(result.status).toBe(1);
+    expect(sent).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringContaining(`could not finish`) }]);
+    expect(sent[0].body).toMatch(new RegExp(`\`${failure}\`: \`[^\`]*${message}`));
+  });
+
+  test.each([
+    ["a GitHub API HTTP 404", { [ALPHA]: { status: 404, text: "Not Found" } }, "github-http-error"],
+    ["an update.json HTTP 404", { [UPDATE]: { status: 404, text: "Not Found" } }, "update-json-http-error"],
+  ])("comments the failure name and closes the issue as not planned for %s", async (_name, change, failure) => {
+    const { result, sent } = await runIssue(rendered("https://github.com/example/alpha"), {
+      ...indexRepo,
+      ...pluginRepo("example/alpha", "alpha@example.org"),
+      ...opened,
+      ...change,
+    });
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([
+      { method: "POST", url: COMMENTS, body: expect.stringMatching(new RegExp(`no pull request.*\`${failure}\`.*returned HTTP 404`, "s")) },
       { method: "PATCH", url: ISSUE, state: "closed", state_reason: "not_planned" },
     ]);
   });
