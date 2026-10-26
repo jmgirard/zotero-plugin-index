@@ -133,8 +133,9 @@
   number of records for each failure name and the number with a
   build-level failure. If a record carries a build-level failure, it prints
   a `::warning::` line, which GitHub Actions shows on the run.
-- If every record carries a failure, whatever its name, `pnpm build` now
+- If every record carries a failure, build-level or not, `pnpm build` now
   exits with status 1 after it writes the file, and the daily build deploys
-  nothing. Before, a bug that failed every read with a named failure, such
-  as `facts-invalid`, deployed a site with no plugin data. The rule for
-  build-level failures stays as it was.
+  nothing. Before, the rule let a bug that fails every record for a reason
+  that is not build-level, such as `facts-invalid`, deploy. That site had no
+  upstream data for any record. The rule for build-level failures stays as
+  it was.
