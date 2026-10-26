@@ -97,6 +97,29 @@ export function declaredRange(record: RangeRecord): { min?: string; max?: string
   };
 }
 
+// The Zotero major versions that get a pill on the site. Add a major when Zotero ships it.
+export const ZOTERO_MAJORS = ["7", "8", "9", "10"];
+
+export type MajorSupport = "all" | "some" | "none";
+
+// How much of Zotero major N the declared range covers. A major counts as N.0 to N.9,
+// because authors write maxima such as 10.99.99 and minima such as 8.999 to mean all of
+// 10 and 9 or newer. Undefined for a record with a failure or with neither bound.
+export function majorSupport(record: RangeRecord, major: string): MajorSupport | undefined {
+  const { min, max } = declaredRange(record);
+  if (min === undefined && max === undefined) return undefined;
+  if (min !== undefined && max !== undefined && compareVersions(min, max) > 0) return "none";
+  const first = `${major}.0`;
+  const last = `${major}.9`;
+  const fromStart = min === undefined || compareVersions(min, first) <= 0;
+  const toEnd = max === undefined || compareVersions(max, last) >= 0;
+  if (fromStart && toEnd) return "all";
+  if ((max !== undefined && compareVersions(max, first) < 0) || (min !== undefined && compareVersions(min, last) > 0)) {
+    return "none";
+  }
+  return "some";
+}
+
 // Where a Zotero version falls against the record's declared range. The bounds themselves
 // are inside the range.
 export function rangeResult(zotero: string, record: RangeRecord): RangeResult {

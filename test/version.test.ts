@@ -2,8 +2,10 @@ import { describe, expect, test } from "vitest";
 import {
   appliedValue,
   compareVersions,
+  majorSupport,
   rangeResult,
   type RangeRecord,
+  ZOTERO_MAJORS,
   zoteroVersion,
 } from "../src/site/version.ts";
 
@@ -142,6 +144,52 @@ describe("rangeResult", () => {
     ]);
     expect(rangeResult("8.0.1", both)).toBe("inside");
     expect(rangeResult("8.0.1", { ...both, overrides: [...both.overrides].reverse() })).toBe("inside");
+  });
+});
+
+describe("majorSupport", () => {
+  test("ZOTERO_MAJORS lists Zotero 7 to 10", () => {
+    expect(ZOTERO_MAJORS).toEqual(["7", "8", "9", "10"]);
+  });
+
+  test.each([
+    [{ strictMinVersion: "8.0-beta.21", strictMaxVersion: "10.99.99" }, "7", "none"],
+    [{ strictMinVersion: "8.0-beta.21", strictMaxVersion: "10.99.99" }, "8", "all"],
+    [{ strictMinVersion: "8.0-beta.21", strictMaxVersion: "10.99.99" }, "9", "all"],
+    [{ strictMinVersion: "8.0-beta.21", strictMaxVersion: "10.99.99" }, "10", "all"],
+    [{ strictMinVersion: "8.999", strictMaxVersion: "10.0.*" }, "8", "none"],
+    [{ strictMinVersion: "8.999", strictMaxVersion: "10.0.*" }, "9", "all"],
+    [{ strictMinVersion: "8.999", strictMaxVersion: "10.0.*" }, "10", "some"],
+    [{ strictMinVersion: "6.999", strictMaxVersion: "7.0.*" }, "7", "some"],
+    [{ strictMinVersion: "6.999", strictMaxVersion: "7.0.*" }, "8", "none"],
+    [{ strictMinVersion: "8.0.1" }, "8", "some"],
+    [{ strictMinVersion: "8.0.1" }, "10", "all"],
+    [{ strictMaxVersion: "10.*" }, "7", "all"],
+    [{ strictMaxVersion: "10.9.9" }, "10", "all"],
+    [{ strictMinVersion: "8.5", strictMaxVersion: "8.2" }, "8", "none"],
+  ])("reads %j as %s for Zotero %s", (facts, major, support) => {
+    expect(majorSupport(record(facts), major)).toBe(support);
+  });
+
+  test("gives no result for a record with neither bound", () => {
+    expect(majorSupport(record({}), "8")).toBeUndefined();
+  });
+
+  test("gives no result for a record with a failure", () => {
+    const failed: RangeRecord = { failure: { name: "no-xpi-release", message: "no release" }, overrides: [] };
+    expect(majorSupport(failed, "8")).toBeUndefined();
+  });
+
+  test("reads the maximum after a strict_max_version override", () => {
+    const facts = { strictMinVersion: "7.0", strictMaxVersion: "7.*" };
+    expect(majorSupport(record(facts), "8")).toBe("none");
+    expect(majorSupport(record(facts, [{ field: "strict_max_version", value: "8.*" }]), "8")).toBe("all");
+  });
+
+  test("reads the minimum after a strict_min_version override", () => {
+    const facts = { strictMinVersion: "7.0", strictMaxVersion: "10.*" };
+    expect(majorSupport(record(facts), "8")).toBe("all");
+    expect(majorSupport(record(facts, [{ field: "strict_min_version", value: "9.0" }]), "8")).toBe("none");
   });
 });
 

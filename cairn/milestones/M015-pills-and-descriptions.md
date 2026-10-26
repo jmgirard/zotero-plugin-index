@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M015: Show version pills and descriptions
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — the public site's home page and plugin pages change   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m015-pills-and-descriptions   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -102,7 +102,7 @@ change to the published data or its schemas.
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits); substantive change is amend-via-gate. -->
 
-- [ ] T1: Tests first in `test/version.test.ts` for every AC1 case, then `ZOTERO_MAJORS` and
+- [x] T1: Tests first in `test/version.test.ts` for every AC1 case, then `ZOTERO_MAJORS` and
       `majorSupport` in `src/site/version.ts` beside `declaredRange`.
 - [ ] T2: Tests first in a new `test/description.test.ts` for every AC2 case, then
       `src/site/description.ts` with `shownDescription`, using `appliedValue` and the name rule of
@@ -144,6 +144,8 @@ change to the published data or its schemas.
 - 2026-10-26: criteria audit (full, Opus): 11 findings on the first draft, all taken: empty range and failure give no pills; real-data forms pinned as AC1 cases; inverted range is `none`; `ZOTERO_MAJORS` named; fixture gains the missing cases (T3); pill level visible, not hover-only; Details holds a named closed set and keeps the not-vetted line outside; AC6 covers every built file; the override-rewrite criterion dropped at the gate; DESIGN's stale script lines named; test-naming clauses moved to tasks.
 - 2026-10-26: plan committed while the second criteria audit (full, Opus) of the revised wording runs; its findings land in a follow-up docs commit before implement starts.
 - 2026-10-26: criteria audit 2 (full, Opus) of the revised wording: every AC1 and AC2 case checked against `compareVersions` and the word rule, all correct; 9 findings, all taken: AC1 gains a max-side `none` case and pinned min and max override cases; AC2 gains a non-applying override case and a `name` override case; AC3 keeps the "(archived)" text and `data-archived`, names the row element, and orders all items; AC5 covers the no-bound record and the releases link on a failure record, and skips absent items; AC6 adds the label's `for=` and text; AC4 names a visually hidden span.
+- 2026-10-26: implement started on branch m015-pills-and-descriptions, cut from main at a238ab9.
+- 2026-10-26: T1 done: `ZOTERO_MAJORS` and `majorSupport` in `src/site/version.ts`; 19 new tests in `test/version.test.ts` failed first, then passed.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
