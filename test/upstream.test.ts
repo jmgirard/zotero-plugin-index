@@ -59,8 +59,20 @@ describe("readUpstream", () => {
         openIssues: 15,
         releaseCount: 2,
         latestReleaseDate: "2026-08-24T13:25:16Z",
+        archived: false,
       },
     });
+  });
+
+  test.each<[string, (repo: Json) => void, boolean | undefined]>([
+    ["true", (repo) => (repo.archived = true), true],
+    ["absent", (repo) => delete repo.archived, undefined],
+    ["null", (repo) => (repo.archived = null), undefined],
+    ['the string "true"', (repo) => (repo.archived = "true"), undefined],
+  ])("reads a repo whose archived value is %s", async (_name, edit, archived) => {
+    const { result } = await read((r) => edit(r[REPO].json as Json));
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.facts.archived).toBe(archived);
   });
 
   test("sends GITHUB_TOKEN with each GitHub API request and with no other request", async () => {

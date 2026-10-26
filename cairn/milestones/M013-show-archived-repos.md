@@ -1,13 +1,13 @@
 # M013: Show whether a plugin repo is archived
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the published v1 data, the plugin pages, and the home list change.
-- **Branch/PR:** —
+- **Branch/PR:** m013-show-archived-repos
 
 ## Goal
 
@@ -65,10 +65,10 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 
 ## Tasks
 
-- [ ] T1: Tests first in `test/upstream.test.ts` for the five cases of AC1, with the recorded responses changed per
+- [x] T1: Tests first in `test/upstream.test.ts` for the five cases of AC1, with the recorded responses changed per
       case. Then add `archived?: boolean` to `UpstreamFacts` and `RepoJson`, and set it in `read`
       (`src/upstream/reader.ts:129-144`) only when `meta.archived` is a boolean.
-- [ ] T2: Add the optional boolean `archived` to the `upstream` definition of `schemas/plugins.v1.schema.json`
+- [x] T2: Add the optional boolean `archived` to the `upstream` definition of `schemas/plugins.v1.schema.json`
       (lines 81-96). Give one repo in `test/fixtures/build/responses.json` `"archived": true`. Add the build test
       and the `checkOutput` test of AC2 to `test/build.test.ts`.
 - [ ] T3: Add the "Archived on GitHub" `<dt>` and `<dd data-fact="archived">` to
@@ -96,6 +96,8 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 - 2026-10-26: plan gate chose an optional field in schema v1 over a v2 schema because readers that ignore unknown fields keep working; falsified by a consumer report of a validation failure on the new field.
 - 2026-10-26: collision check: no D-entry, archive summary, or candidate row covers archived repos. M002 set the fork refusal, which this keeps. About 9 of the roughly 510 topic-search repos are archived, and none of the listed plugins (observed 2026-10-26).
 - 2026-10-26: inbox sweep: issue #12 overlaps, since its PR #13 proposes an archived repo. It closes when the user merges PR #13, so it takes no Resolves slot. Bot PR #15 does not overlap and takes no disposition here.
+- 2026-10-26: started on branch m013-show-archived-repos, cut from main at eef203d.
+- 2026-10-26: T1, T2 done in one commit, since the reader's new field fails the build tests until the schema admits it. The better-notes fixture gains `"archived": false`, as GitHub returned on 2026-10-26, and the happy-path test expects it. The build fixture's example/second-plugin is archived. A planted `"type": "string"` in the schema failed both new build tests. `pnpm test`: 417 passed.
 
 ## Decisions
 

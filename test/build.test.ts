@@ -121,6 +121,12 @@ describe("pnpm build over the fixture tree", () => {
     }
   });
 
+  test("writes the archived value of each repo the reader read", () => {
+    const output = readOutput(out);
+    expect(record(output, SECOND)?.upstream?.archived).toBe(true);
+    expect(record(output, BETTER_NOTES)?.upstream?.archived).toBe(false);
+  });
+
   test("keeps an override apart from the upstream value it corrects", () => {
     const plugin = record(readOutput(out), BETTER_NOTES);
     expect(plugin?.overrides).toEqual([
@@ -255,6 +261,11 @@ describe("checkOutput", () => {
   test("reports a record that holds both upstream facts and a failure", () => {
     const problems = checkOutput(file({ ...base, upstream: facts, failure: { name: "fork", message: "" } }));
     expect(problems.some((problem) => problem.startsWith("/plugins/0 "))).toBe(true);
+  });
+
+  test("reports a record whose archived value is not a boolean", () => {
+    const problems = checkOutput(file({ ...base, upstream: { ...facts, archived: "true" } }));
+    expect(problems.some((problem) => problem.startsWith("/plugins/0/upstream/archived "))).toBe(true);
   });
 });
 
