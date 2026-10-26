@@ -148,6 +148,7 @@ planned.
 - 2026-10-26: implement complete after return 1; status set to review.
 - 2026-10-26: correction to the "implement chose" line above: `buildData` returns `buildLevel` in record order, not sorted; records follow entry order, which the listing sorts.
 - 2026-10-26: review pass 2: four lenses, 27 findings; 6 fix now (message on one line with a regression test, D-011, DESIGN rewrap, two test comments, this correction), 4 follow-up into new row "Withhold deploys when all reads fail", 17 rejected. Verify: 484 passed, 0 problems.
+- 2026-10-26: correction to the line above: the four lenses reported 22 findings (diff-bug 12, blame-history 6, prior-review 4, ripple 0): 5 fix now in 43176b9, 3 follow-up into row "Withhold deploys when all reads fail", 14 rejected.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
@@ -172,19 +173,19 @@ Pass 2, 2026-10-26, at 91af72f (level with origin/main), after review return 1.
 - AC1–AC5, AC7: code unchanged since pass 1 (T7 touched `cairn/DESIGN.md` only); `pnpm test` 483 passed and `pnpm check` 0 problems at 91af72f.
 - Gate: `cairn_validate.py` all checks passed.
 - spawned: diff-bug, blame-history, prior-review, ripple
-- diff-bug #1: a failure message holds upstream text (a raw `update_url`), so a newline in it can start a `::stop-commands::` line that hides the new `::warning::` or fakes annotations — fix now: `cli.ts` puts each message on one line; regression test planted `\n::stop-commands::planted` in an update_url (red before, green after)
+- diff-bug #1: a failure message holds upstream text (a raw `update_url`), so a newline in it can start a `::stop-commands::` line that hides the new `::warning::` or fakes annotations — fix now: `cli.ts` puts each message on one line; regression test planted `\n::stop-commands::planted` in an update_url (red before, green after), fixed 43176b9
 - diff-bug #2: a dead plugin domain's lookup failure counts as build-level every day — reject, planned change (AC1 "on any host"; README says so)
 - diff-bug #3: a GitHub API 200 with an HTML body is not build-level — follow-up: row "Withhold deploys when all reads fail"
 - diff-bug #4: a 403 from GitHub's release-asset host is not build-level — follow-up: row "Withhold deploys when all reads fail"
 - diff-bug #5: `buildLevel` is `boolean`, `true | undefined`, and `boolean | undefined` in different types — reject, style
-- diff-bug #6: the work log's "implement chose" line says sorted ids, the code keeps record order — fix now: correcting work-log line
-- diff-bug #7: the new DESIGN Architecture lines are not wrapped — fix now: rewrapped
+- diff-bug #6: the work log's "implement chose" line says sorted ids, the code keeps record order — fix now: correcting work-log line, fixed 43176b9
+- diff-bug #7: the new DESIGN Architecture lines are not wrapped — fix now: rewrapped, fixed 43176b9
 - diff-bug #8: the fork-only warning test runs the same path as the 404-and-forks test — reject, planned change (AC4 names a fork-only build)
 - diff-bug #9: the `buildLevelStatus` test's expectation restates the rule — reject, false: the expectation is the AC1 list stated apart from the code, and the planted always-true rule turned it red
-- diff-bug #10: the two "body cut off" rows reach the same `readCapped` catch — reject, false: the `update.json` row goes through `readCapped`, the GitHub rows through `readText`; both rows predate M017 and only moved tables
+- diff-bug #10: the two "body cut off" rows reach the same `readCapped` catch — reject, false: both rows reach the `readCapped` catch, but through different callers (`checkUpdateJson` and `readManifest`), and each row guards its caller; both rows predate M017 and only moved tables
 - diff-bug #11: mixed-failure cases repeat reader-table and CLI cases — reject, planned change (AC1 names each probe)
-- diff-bug #12: narrative comments at `test/build.test.ts:176-177` and `:214` — fix now: removed
-- blame-history #1: the build-level rule reverses M006's purpose with no D-entry; a reader or schema regression that fails every record with a named failure now deploys — fix now: D-011 records the decision and its cost; the safety net goes to new row "Withhold deploys when all reads fail"
+- diff-bug #12: narrative comments at `test/build.test.ts:176-177` and `:214` — fix now: removed, fixed 43176b9
+- blame-history #1: the build-level rule reverses M006's purpose with no D-entry; a reader or schema regression that fails every record with a named failure now deploys — fix now: D-011 records the decision and its cost; the safety net goes to new row "Withhold deploys when all reads fail", fixed 43176b9
 - blame-history #2: zip-structure `xpi-unreadable` failures are never build-level — follow-up: row "Withhold deploys when all reads fail"
 - blame-history #3: the M006 exit tests were replaced with no test of exit 1 for mostly non-build-level failures — reject, planned change (AC2: such a build exits 0)
 - blame-history #4: several repos answering 403 each count — reject, planned change (work log 2026-10-26 accepts the 403 rule)
