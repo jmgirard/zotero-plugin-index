@@ -304,7 +304,7 @@ export function body(entry: Written, checked: { status: number; output: string }
   const fence = "`".repeat(Math.max(3, ...[...checked.output.matchAll(/`+/g)].map(([run]) => run.length + 1)));
   const found = issue === undefined ? `found ${entry.repoUrl} by its GitHub topic` : `read ${entry.repoUrl} from issue #${issue}`;
   return [
-    `The discovery bot ${found} and drafted this entry from its newest stable release with an \`.xpi\` file, or from a later prerelease if that release is not a Zotero 7+ build.`,
+    `The discovery bot ${found} and drafted this entry from its newest stable release with an \`.xpi\` file, or from its newest prerelease if no stable release has one or that release is not a Zotero 7+ build.`,
     ...(issue === undefined ? [] : ["", `Closes #${issue}`]),
     "",
     `- Repo: ${entry.repoUrl}`,

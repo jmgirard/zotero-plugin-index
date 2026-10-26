@@ -94,10 +94,13 @@
 - The upstream reader reads the newest stable release that has an `.xpi`
   file, not the newest release. A stable release is one that GitHub does not
   mark as a prerelease. If no stable release has an `.xpi` file, the reader
-  reads the newest release that has one. The stable release can fail with
-  `no-manifest`, `no-zotero-id`, or `max-version-below-7`. If a later release
-  has an `.xpi` file, the reader then reads the newest such release instead. `pnpm add-plugin`, `pnpm build`, and `pnpm discover` use this
-  reader. The record's `upstream` block in `v1/plugins.json` now has a
+  reads the newest release that has one. If the stable release fails with
+  `no-manifest`, `no-zotero-id`, or `max-version-below-7`, the reader looks
+  for a later release with an `.xpi` file. If one exists, the reader reads
+  the newest such release instead. Other
+  failures of the stable release stay as they are. `pnpm add-plugin`,
+  `pnpm build`, `pnpm discover`, and `pnpm discover-issue` use this reader.
+  The record's `upstream` block in `v1/plugins.json` now has a
   `prerelease` field, `true` or `false`, for the release that the reader
   read. The schema stays at version 1. The schema rejects fields that it does
   not define, so fetch any saved copy of it again. The plugin page labels the

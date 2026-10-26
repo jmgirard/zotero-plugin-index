@@ -7,7 +7,9 @@ body:
     attributes:
       value: |
         A bot reads the repository and its newest stable release with an
-        `.xpi` file, or a prerelease if no stable release is a Zotero 7 build.
+        `.xpi` file. It reads the newest prerelease instead if no stable
+        release has an `.xpi` file, or if that stable release is not a
+        Zotero 7+ build and a newer prerelease has one.
         If the plugin passes the inclusion bar, the bot opens a pull request
         that adds its entry, and it comments the link here. If the plugin does
         not pass, or the index already has it, the bot comments the reason and

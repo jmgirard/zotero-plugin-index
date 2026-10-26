@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M014: Read stable releases before prereleases
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -178,6 +178,8 @@ declares.
 - 2026-10-26: T4: the page puts " (prerelease)" after the publish date, so the value ends with it as AC4 says. The site fixture gives old-plugin `prerelease: true` and first-plugin `false`; the GUID record has none. The label test and the old-plugin mark test failed before the page change. `test/site.test.ts` 25 passed after it.
 - 2026-10-26: T5: the five AC5 sites now name the stable release first, and README.md and DESIGN.md state the fallback. CHANGELOG.md has a new Unreleased entry. README.md's data section names the `prerelease` field. DESIGN.md's Contract boundary "last release" now reads as the release the index read (corrected M014). No propose test quoted the old bot sentence. README.md:132's "checks" lint hit was there before this branch and stays.
 - 2026-10-26: T6: `pnpm test` 441 passed in 12 files; `pnpm check` 17 entries, 0 problems; the issue form parses with Ruby YAML.
+- 2026-10-26: claim audit: 44 claims read, 4 corrected — .github/ISSUE_TEMPLATE/add-plugin.yml, src/discover/propose.ts, CHANGELOG.md (twice). The issue form and bot sentence now cover the no-stable case. The changelog names `pnpm discover-issue` and states the fallback as one condition. The re-read found all four true. `pnpm test` 441 passed after the fixes.
+- 2026-10-26: implement done; status review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote
