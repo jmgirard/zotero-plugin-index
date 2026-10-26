@@ -36,7 +36,7 @@ change to the published data or its schemas.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: `ZOTERO_MAJORS` in `src/site/version.ts` is `["7", "8", "9", "10"]`. `majorSupport(record, N)`
+- [x] AC1: `ZOTERO_MAJORS` in `src/site/version.ts` is `["7", "8", "9", "10"]`. `majorSupport(record, N)`
       reads the declared range after overrides (`declaredRange`) and returns `undefined` for a record
       with a failure or with neither bound; `"none"` when both bounds exist and the minimum is newer
       than the maximum; otherwise `"all"` when the minimum is absent or at most `N.0` and the maximum
@@ -49,7 +49,7 @@ change to the published data or its schemas.
       or no bound → `undefined`; upstream min `7.0` max `7.*` with a `strict_max_version` override
       `8.*` → `all` for 8 (`none` without it); upstream min `7.0` max `10.*` with a
       `strict_min_version` override `9.0` → `none` for 8 (`all` without it).
-- [ ] AC2: `shownDescription(record)` returns the `description` override's value when one applies.
+- [x] AC2: `shownDescription(record)` returns the `description` override's value when one applies.
       Otherwise it returns the upstream description, except `undefined` when that is absent, blank
       after trimming, or name-only. A description is name-only when its words are a subset of the
       displayed name's words, where words are the runs of Unicode letters and digits after lowercasing,
@@ -61,17 +61,17 @@ change to the published data or its schemas.
       upstream description with a `description` override → the override's value; the same with a
       `description` override for another plugin version → `undefined`; upstream name "Zotero OCR",
       description "OCR for Zotero", and a `name` override "Tesseract" → kept.
-- [ ] AC3: On the built home page, each record's row is the element carrying `data-plugin="<id>"`. It
+- [x] AC3: On the built home page, each record's row is the element carrying `data-plugin="<id>"`. It
       holds, in this order: the name link; the `<span data-archived>(archived)</span>` mark when
       `upstream.archived` is true; the `shownDescription` text when defined; and one of "Not read:
       <failure name>" for a failure, "No declared range" for no bound, or one pill per entry of
       `ZOTERO_MAJORS`, in that order, each with `data-major="N"` and `data-support` equal to
       `majorSupport` for that record and N. Absent elements are skipped; present ones keep this order.
-- [ ] AC4: Each pill shows its support level as visible text, not by color alone: the major number and
+- [x] AC4: Each pill shows its support level as visible text, not by color alone: the major number and
       a mark (✓ for `all`, ◐ for `some`, – for `none`). A visually hidden span inside the pill and
       the pill's `title` both read "Declares all of Zotero N", "Declares part of Zotero N. Declared
       range: <range text>", or "Does not declare Zotero N", by its `data-support`.
-- [ ] AC5: Each built plugin page shows, in this order: the name; the `shownDescription` text when
+- [x] AC5: Each built plugin page shows, in this order: the name; the `shownDescription` text when
       defined; the pills, "No declared range" for a record read with no bound, or the failure message;
       the declared range text when the record has a bound; the repository link; the releases link when
       the record has `upstream`; then one `<details>` element with no `open` attribute holding the id
@@ -79,10 +79,10 @@ change to the published data or its schemas.
       `update-host` that the record has, and the overrides table when the record has overrides. Absent
       elements are skipped; present ones keep this order. The footer's not-vetted line stays outside
       `<details>`.
-- [ ] AC6: No file under the site build's output directory contains `id="zotero-version"`,
+- [x] AC6: No file under the site build's output directory contains `id="zotero-version"`,
       `for="zotero-version"`, "Your Zotero version", `zotero-plugin-index:zotero-version`, or
       `data-result-for`.
-- [ ] AC7: `README.md` and `cairn/DESIGN.md` describe the pills, the description rule, and the
+- [x] AC7: `README.md` and `cairn/DESIGN.md` describe the pills, the description rule, and the
       Details section; DESIGN's site entries name `majorSupport` and `shownDescription` and no page
       script; a search of both files for "Your Zotero version", "local storage", and "one script"
       finds nothing; `CHANGELOG.md` has an Unreleased entry for the change; `pnpm test` and
@@ -160,3 +160,14 @@ change to the published data or its schemas.
 
 ## Review
 <!-- owner: review · exclusive. -->
+
+Sync: branch contains origin/main a238ab9; no merge needed. Copilot round off (no `# Copilot review:` line). Fresh run 2026-10-26: `pnpm test` 466 passed; verbose run of the three touched test files 115 passed.
+
+- AC1 evidence: `test/version.test.ts > majorSupport`: `ZOTERO_MAJORS lists Zotero 7 to 10`, all 14 listed input→result cases, `gives no result for a record with neither bound`, `gives no result for a record with a failure`, and both override cases (max `8.*` → all for 8, none without; min `9.0` → none for 8, all without) passed. Test titles corrected to "for Zotero N as <result>" order during review.
+- AC2 evidence: `test/description.test.ts > shownDescription`: 3 name-only cases hidden (Zotero OCR, Scite, PDF Preview), ZotLit and Jasminum kept, blank and missing hidden, applying override shown, override for another version ignored, `name` override "Tesseract" keeps "OCR for Zotero"; 10 passed.
+- AC3 evidence: `test/site.test.ts > the home page > shows the row of <id> with its parts in order` passed for all 6 fixture ids (failure, pills, archived, no bound, name-only description, description override); `the site fixture > holds each shape of row and page` passed; `marks only the archived plugin` passed.
+- AC4 evidence: the same row tests and the plugin page tests call `expectPills`, which checks visible `N ✓|◐|–`, `title`, and the visually hidden span against the three texts for every pill; fixture holds all three levels (fixture test).
+- AC5 evidence: `test/site.test.ts > the plugin page > shows the parts of <id> in order, with the minor facts in a closed Details section` passed for all 6 fixture ids: order, skipped absent parts, no `<details open`, id/facts/overrides inside `<details>`, not-vetted after `</details>`.
+- AC6 evidence: `test/site.test.ts > the built site > has no trace of the Zotero version field` passed over every file the build writes (more files than ids asserted), for all five strings.
+- AC7 evidence: grep counts 0 for "Your Zotero version", "local storage", "one script" in README.md and cairn/DESIGN.md; DESIGN lines 150–151 and 321–324 name `majorSupport`, `shownDescription`, and "pages carry no script"; README "The site" describes pills, the description rule, and Details; CHANGELOG Unreleased has the version-pill bullet; `pnpm test` 466 passed, `pnpm check` 17 entries, 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed; no DESIGN principle changed (Principles touched `—`), so `cairn_impact` skipped; generic profile names no toolchain checks.

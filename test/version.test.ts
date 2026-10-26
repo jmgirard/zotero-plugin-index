@@ -116,7 +116,7 @@ describe("majorSupport", () => {
     [{ strictMaxVersion: "10.*" }, "7", "all"],
     [{ strictMaxVersion: "10.9.9" }, "10", "all"],
     [{ strictMinVersion: "8.5", strictMaxVersion: "8.2" }, "8", "none"],
-  ])("reads %j as %s for Zotero %s", (facts, major, support) => {
+  ])("reads %j for Zotero %s as %s", (facts, major, support) => {
     expect(majorSupport(record(facts), major)).toBe(support);
   });
 
