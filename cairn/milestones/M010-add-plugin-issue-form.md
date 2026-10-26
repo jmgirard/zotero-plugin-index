@@ -1,6 +1,6 @@
 # M010: Take one repo URL from an issue form
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** M009
 - **Driving RR:** —
@@ -96,6 +96,9 @@ an edit to M009's CHANGELOG entry.
 - 2026-10-26: T4 done: `add-plugin-issue.yml`; `ruby -ryaml` reads 2 `run:` values, none with `${{` (a planted `echo "${{ github.event.issue.body }}"` reads as 1), `ISSUE_BODY` in `env:`, the trigger under key `true` (YAML 1.1 reads `on` as a boolean) as `issues: types: [opened]`, the label condition, group `discover` as in `discover.yml`, and the three permissions at the top level only.
 - 2026-10-26: two candidate rows added: "Keep issues open on a bot read failure" and "Answer issues whose run was canceled" (the shared concurrency group lets a newer pending run cancel an older one).
 - 2026-10-26: T5 done: README section "Proposing a plugin with an issue" under "Finding new plugins", and the issue form added to the end of M009's CHANGELOG entry; `pnpm test` 361 passed, `pnpm check` 0 problems.
+- 2026-10-26: claim audit: 63 claims read, 7 corrected — src/discover/issue.ts (status and header comments: transient read errors close the issue; which bot failures leave it open), README.md and CHANGELOG.md and add-plugin.yml (bot failures beyond the push leave the issue open; refusals, not every case, close it; the pending-run cancellation), add-plugin-issue.yml (label comment, now "write access" after the re-read; concurrency comment), test/issue.test.ts (runIssue comment); the re-read cleared 5 and sent back 1, fixed with the REST docs' push-access rule.
+- 2026-10-26: T6 is the post-merge live check, which `/milestone-review` runs after the merge, as M009's was; it needs the `add-plugin` label created first.
+- 2026-10-26: T1–T5 done, verify clean (`pnpm test` 361 passed, `pnpm check` 0 problems); status review.
 
 ## Decisions
 

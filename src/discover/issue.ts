@@ -46,7 +46,8 @@ export interface IssueRunOptions {
 }
 
 export interface IssueRunResult {
-  // 1 when the run could not open the pull request, or could not answer the issue.
+  // 1 when the bot itself failed (see `failed` below), or could not post the comment or
+  // close the issue. A refusal is 0.
   status: 0 | 1;
   // The comment the run posted or tried to post.
   comment: string;
@@ -54,11 +55,12 @@ export interface IssueRunResult {
 }
 
 // Answers one issue opened from add-plugin.yml. If the body names a repo that the index
-// or a bot pull request already has, the run reads nothing. If the parser, the reader,
-// or writeEntry refuses, the run closes the issue as not planned. If the run drafts the
-// entry, it opens a pull request that closes the issue when it merges. Each answer is a
-// comment on the issue. If the bot itself fails, the comment says so and the issue stays
-// open for a maintainer.
+// or a bot pull request already has, the run reads nothing. If the parser or draftEntry
+// refuses, the run closes the issue as not planned; that includes a GitHub request error
+// while the reader reads the repo. If the run drafts the entry, it opens a pull request
+// that closes the issue when it merges. Each answer is a comment on the issue. If the
+// bot cannot read the index, its pull requests, or the default branch, or the push or
+// the pull request fails, the comment says so and the issue stays open.
 export async function issueRun(options: IssueRunOptions): Promise<IssueRunResult> {
   const { root, fetch, indexRepo, issue } = options;
   const github = githubClient(fetch);

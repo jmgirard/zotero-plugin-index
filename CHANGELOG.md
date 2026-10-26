@@ -63,6 +63,6 @@
   plugin with the "Add a plugin" issue form, which takes the URL of the
   plugin's GitHub repository. If the plugin passes the inclusion bar, the bot
   opens a pull request and comments its link on the issue. The issue closes
-  when that pull request merges. In other cases, the bot comments the reason
-  and closes the issue. Examples are a plugin that does not pass, or a
-  repository that the index or a bot pull request already has.
+  when that pull request merges. If the plugin does not pass, the bot comments
+  the reason and closes the issue. It does the same for a repository that the
+  index or a bot pull request already has.

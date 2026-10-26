@@ -202,13 +202,20 @@ comments the link to the pull request on the issue.
 
 The bot can also find no URL in the issue body, fail to read the repository,
 or fail to write the entry. Then it comments the failure name and its message,
-and it closes the issue as not planned. If the push or the pull request fails, the bot comments
-the error and leaves the issue open, and the workflow run fails.
+and it closes the issue as not planned. A failed read includes a GitHub API
+error, such as a rate limit, while the bot reads the repository.
+
+The bot itself can fail. It can fail to read `plugins/`, its own pull
+requests, or the default branch, or the push or the pull request can fail.
+Then the bot comments the error and leaves the issue open, and the workflow
+run fails.
 
 The workflow passes the issue number and body to the command in the
 `ISSUE_NUMBER` and `ISSUE_BODY` environment variables. It runs in the
 concurrency group of `Discover plugins`, so the two workflows do not push at
-the same time.
+the same time. A concurrency group holds one running run and one pending run.
+A newer run cancels the pending run, and the issue of that run gets no
+answer.
 
 ## Checking entries
 

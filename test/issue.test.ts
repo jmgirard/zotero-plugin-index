@@ -45,7 +45,8 @@ const indexRepo: Responses = {
 const opened: Responses = { [`POST ${PULLS}`]: { status: 201, json: { html_url: "https://github.com/example/index/pull/9" } } };
 
 // Runs issueRun for issue 7 in-process against `responses`, with a check that always
-// passes, and returns its result and the requests it sent other than GET.
+// passes, and returns its result, the requests it sent other than GET, and the URLs it
+// fetched.
 async function runIssue(body: string, responses: Responses, options: { root?: string; outDir?: string; gitDir?: string } = {}) {
   const { fetch, requests } = fixtureFetch(responses);
   const result = await issueRun({

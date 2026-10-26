@@ -11,14 +11,16 @@ permissions:
   issues: write
 
 # The group that `Discover plugins` uses, so a run here and a discover run never push
-# the same branch at once.
+# the same branch at once. A group holds one running and one pending run, so a newer
+# run cancels a pending one, and that run's issue gets no answer.
 concurrency:
   group: discover
   cancel-in-progress: false
 
 jobs:
   add-plugin:
-    # Only issues opened from .github/ISSUE_TEMPLATE/add-plugin.yml carry this label.
+    # Issues opened from .github/ISSUE_TEMPLATE/add-plugin.yml carry this label. A user
+    # with write access can also set it when they open an issue.
     if: contains(github.event.issue.labels.*.name, 'add-plugin')
     runs-on: ubuntu-latest
     timeout-minutes: 15
