@@ -101,16 +101,19 @@ exception is a report that is abuse.
   API only (exported M008).
 - Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
   <dir>]` writes a new entry from the reader's facts. Added M002.
-- Discovery (`src/discover/`): `pnpm discover [--out <dir>] [--state
-  <file>] [--limit <n>] [--budget <n>] [--propose]` searches the `zotero-plugin` and
-  `zotero-addon` topics, reads each repo that no entry names, and writes
-  the entries of up to `limit` repos (5 by default) that pass the inclusion
-  bar. It prints a JSON report of what it wrote, refused, and skipped.
-  Added M008. With `--propose`, it opens one pull request for each entry it
-  writes (M009). `pnpm discover-issue` answers one issue opened from the
-  "Add a plugin" form: it reads `ISSUE_NUMBER`, `ISSUE_BODY`, and
-  `GITHUB_REPOSITORY` from the environment, and opens a pull request for the
-  repo URL in the body, or comments the reason and closes the issue (M010).
+- Discovery (`src/discover/`): `pnpm discover [--out <dir> | --handoff
+  <dir>] [--state <file>] [--limit <n>] [--budget <n>]` searches the
+  `zotero-plugin` and `zotero-addon` topics, reads each repo that no entry
+  names, and writes the entries of up to `limit` repos (5 by default) that
+  pass the inclusion bar. It prints a JSON report of what it wrote, refused,
+  and skipped. Added M008. With `--handoff <dir>`, it also skips the repos of
+  the bot pull requests and writes the entries and a `plan.json` into a
+  handoff for `pnpm propose` (M011). `pnpm discover-issue --handoff <dir>`
+  reads the "Add a plugin" form's repo URL from `ISSUE_BODY` and writes its
+  outcome into a handoff (M010, M011). `pnpm propose <dir> [--limit <n>]`
+  checks a handoff, then opens one pull request for each entry, or, with
+  `ISSUE_NUMBER` set, answers the issue: a pull request, or a comment with
+  the reason and a close (M009, M010, M011).
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
@@ -200,11 +203,29 @@ reused._
   A failed search ends the run before any read and leaves the state file as
   it was. The report names, for each entry written, its version and declared
   range (M008).
-- `src/discover/propose.ts` runs discovery for `pnpm discover --propose`. It
-  first lists the index repo's pull requests (`state=all`, every page) and
-  puts in the skip set each repo whose `discover/<owner>/<repo>` pull request
-  from the index repo itself is open or closed without a merge. A merged
-  one's entry is in the index. For each entry written, it runs `pnpm check`
+- Each bot workflow runs in two jobs (M011). The read job has only read
+  permissions and a checkout with `persist-credentials: false`. It reads the
+  repos that anyone can name and leaves a handoff as an artifact:
+  `plan.json` and `entries/<id>/` (`src/discover/handoff.ts`). The write job
+  holds the write permissions, runs only `pnpm install` and `pnpm propose`,
+  and reads no plugin repo. Neither job uses the dependency cache.
+  `readHandoff` treats the handoff as untrusted: it checks `plan.json`
+  against a schema with Ajv, each id against the Mozilla add-on id format,
+  each repo as a lowercase owner/repo whose `discover/` branch
+  `git check-ref-format` accepts and whose URL is its GitHub URL, the entry
+  count against the limit, and each entry directory for exactly the regular
+  files `meta.json` and `index.json`. Any failure refuses the whole handoff
+  before a request. The issue number comes from `ISSUE_NUMBER`, never from
+  the handoff. The write step reads the index and the bot pull requests again
+  and skips an entry that either now has. `propose` gives `git fetch` and
+  `git push` the token as an `http.https://github.com/.extraheader` through
+  `GIT_CONFIG_COUNT`, and `pnpmCheck` runs the check without `GITHUB_TOKEN`.
+- `src/discover/propose.ts` holds both steps of a discover run. The read step,
+  `discoverRead`, first lists the index repo's pull requests (`state=all`,
+  every page) and puts in the skip set each repo whose
+  `discover/<owner>/<repo>` pull request from the index repo itself is open
+  or closed without a merge. A merged one's entry is in the index. The write
+  step, `proposeHandoff`, runs `propose`: for each entry, it runs `pnpm check`
   on a temporary directory that holds only that entry. Then it builds one
   commit on top of the default branch with a temporary git index file,
   `commit-tree`, and the `github-actions[bot]` identity, force-pushes it to
@@ -216,20 +237,23 @@ reused._
   them adds. `githubClient` gains `post`, which fails on a redirect, and
   M010 adds `patch`, which shares that code.
   `.github/workflows/discover.yml` runs it daily and on dispatch on the
-  default branch only, with a `limit` input, with `contents: write` and `pull-requests: write`, in the
-  `discover` concurrency group. It restores the state file from the newest
-  cache by prefix and saves it under a key with the run id, after a failed
-  run too. Pull requests opened with the built-in token start no CI run, so
+  default branch only, with a `limit` input, in the `discover` concurrency
+  group. Its write job holds `contents: write` and `pull-requests: write`.
+  The read job restores the state file from the newest cache by prefix and
+  saves it under a key with the run id, after a failed run too. Pull requests opened with the built-in token start no CI run, so
   the body carries the check result (M009).
 - `.github/ISSUE_TEMPLATE/add-plugin.yml` is a form with one required input,
   `Repository URL`, that adds the label `add-plugin`.
-  `.github/workflows/add-plugin-issue.yml` runs `pnpm discover-issue` on
-  `issues: opened` when that label is set, with the issue body passed only
-  through `env:`, with `contents`, `pull-requests`, and `issues` write, in the
-  `discover` concurrency group. `src/discover/issue.ts` parses the body, checks
-  the entries and the bot pull requests by repo name before and after the
-  read, and opens the pull request through the same propose step, with
-  `Closes #<issue>` in its body (M010).
+  `.github/workflows/add-plugin-issue.yml` runs on `issues: opened` when that
+  label is set, in the `discover` concurrency group, with the issue body
+  passed only through `env:`. Its write job holds `contents`,
+  `pull-requests`, and `issues` write, and it also runs when the read job
+  failed, not when it was skipped; its download step may fail. In
+  `src/discover/issue.ts`, `issueRead` parses the body and checks the entries
+  and the bot pull requests by repo name before and after the read.
+  `issueAnswer` checks them again by repo and id, and opens the pull request
+  through the same propose step, with `Closes #<issue>` in its body (M010,
+  M011).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request, except those the built-in token makes, such as the
   discovery bot's (M009).

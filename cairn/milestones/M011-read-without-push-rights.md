@@ -105,7 +105,7 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
       and `LIMIT` in its `env`. The issue write job's `if:` and its download step follow AC5. The concurrency group
       `discover` stays at workflow level. Check AC1, AC4, and AC5 with `ruby -ryaml`, reading the trigger as
       `w[true]`.
-- [ ] T6: Update README (the discovery and "Proposing a plugin with an issue" sections), DESIGN.md (Function
+- [x] T6: Update README (the discovery and "Proposing a plugin with an issue" sections), DESIGN.md (Function
       Families, Architecture), and one CHANGELOG.md entry under Unreleased.
 - [ ] T7: Live check after the merge (review): give the user a link with `?template=add-plugin.yml&` and the URL
       input prefilled, run `gh workflow run discover.yml -f limit=1`, and read both runs' job logs (AC6).
@@ -135,6 +135,7 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 
 - 2026-10-26: T5: both workflows set `permissions: {}` and per-job maps; the read jobs also drop `cache: pnpm`, since a dependency cache a read job saves on the default branch would reach later jobs; `actions/download-artifact@v8` (the latest major, 2026-10-07) beside `upload-artifact@v7`; handoff artifacts kept 1 day.
 - 2026-10-26: T5 Ruby check (AC1, AC4, AC5 shapes) passes on the branch and reports 15 failures on main's two workflows.
+- 2026-10-26: T6: README ("Pull requests from the bot", "Proposing a plugin with an issue"), DESIGN.md (Function Families, Architecture), one CHANGELOG.md entry, and the preload comment updated; T7 is the live check after the merge, run by review.
 
 ## Decisions
 
