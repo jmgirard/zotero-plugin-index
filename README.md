@@ -181,6 +181,42 @@ The command reads the name of the index repository from the
 workflow needs the repository setting "Allow GitHub Actions to create and
 approve pull requests" under Settings > Actions > General.
 
+### Proposing a plugin with an issue
+
+To propose a plugin, open an issue with the "Add a plugin" form. Give the URL
+of the plugin's GitHub repository. The form adds the label `add-plugin` to the
+issue. If the repository has no such label, GitHub does not add it.
+
+When an issue with that label opens, the `Add a plugin from an issue` workflow
+runs `pnpm discover-issue`. The command reads the URL from the issue body. If
+an entry already names the repository, the bot comments the entry and closes
+the issue as completed. A bot pull request for the repository can be open, or
+closed without a merge. Then the bot comments its link and closes the issue as
+not planned. In these cases the bot does not read the repository.
+
+Otherwise, the bot reads the repository in the same way as `pnpm add-plugin`.
+If the plugin passes the inclusion bar, the bot opens a pull request in the
+same way as `pnpm discover --propose`. The body of the pull request contains
+`Closes #<issue>`. Thus a merge of the pull request closes the issue. The bot
+comments the link to the pull request on the issue.
+
+The bot can also find no URL in the issue body, fail to read the repository,
+or fail to write the entry. Then it comments the failure name and its message,
+and it closes the issue as not planned. A failed read includes a GitHub API
+error, such as a rate limit, while the bot reads the repository.
+
+The bot itself can fail. It can fail to read `plugins/`, its own pull
+requests, or the default branch, or the push or the pull request can fail.
+Then the bot comments the error and leaves the issue open, and the workflow
+run fails.
+
+The workflow passes the issue number and body to the command in the
+`ISSUE_NUMBER` and `ISSUE_BODY` environment variables. It runs in the
+concurrency group of `Discover plugins`, so the two workflows do not push at
+the same time. A concurrency group holds one running run and one pending run.
+A newer run cancels the pending run, and the issue of that run gets no
+answer.
+
 ## Checking entries
 
 To check every entry under `plugins/`, run:

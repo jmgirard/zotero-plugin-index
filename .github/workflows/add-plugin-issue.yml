@@ -1,0 +1,41 @@
+name: Add a plugin from an issue
+
+on:
+  issues:
+    types: [opened]
+
+# Pushes a discover/ branch, opens its pull request, and comments on or closes the issue.
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+# The group that `Discover plugins` uses, so a run here and a discover run never push
+# the same branch at once. A group holds one running and one pending run, so a newer
+# run cancels a pending one, and that run's issue gets no answer.
+concurrency:
+  group: discover
+  cancel-in-progress: false
+
+jobs:
+  add-plugin:
+    # Issues opened from .github/ISSUE_TEMPLATE/add-plugin.yml carry this label. A user
+    # with write access can also set it when they open an issue.
+    if: contains(github.event.issue.labels.*.name, 'add-plugin')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The issue body is text that anyone can write, so it reaches the command only
+      # through the environment, never through an expression in the script.
+      - run: pnpm discover-issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_BODY: ${{ github.event.issue.body }}

@@ -16,7 +16,8 @@ permissions:
   contents: write
   pull-requests: write
 
-# One run at a time, so two runs cannot propose the same plugin.
+# One run at a time, so two runs cannot propose the same plugin. `Add a plugin from
+# an issue` also pushes discover/ branches and runs in this group.
 concurrency:
   group: discover
   cancel-in-progress: false

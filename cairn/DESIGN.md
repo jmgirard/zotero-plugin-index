@@ -107,7 +107,10 @@ exception is a report that is abuse.
   the entries of up to `limit` repos (5 by default) that pass the inclusion
   bar. It prints a JSON report of what it wrote, refused, and skipped.
   Added M008. With `--propose`, it opens one pull request for each entry it
-  writes (M009).
+  writes (M009). `pnpm discover-issue` answers one issue opened from the
+  "Add a plugin" form: it reads `ISSUE_NUMBER`, `ISSUE_BODY`, and
+  `GITHUB_REPOSITORY` from the environment, and opens a pull request for the
+  repo URL in the body, or comments the reason and closes the issue (M010).
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
@@ -162,7 +165,8 @@ reused._
   zotero-plugin-registry at a pinned commit, checks the file against a pinned
   SHA-256, and caches it in the gitignored `.cache/`.
 - `src/upstream/` reads the GitHub API with plain fetch (its client's `post`
-  also creates the bot's pull requests, M009), unzips the release
+  also creates the bot's pull requests, M009, and comments on issues, and its
+  `patch` closes issues, M010), unzips the release
   XPI with fflate, and reads the `update.json` that the manifest names. The
   caller passes the fetch function, so the tests answer from recorded
   responses in `test/fixtures/upstream/` and `test/fixtures/build/`, and
@@ -209,13 +213,23 @@ reused._
   not change. A failure for one entry is reported, and the run goes on and
   exits 1 at the end. It also reads the files of each open bot pull request,
   and discovery refuses, without recording, a repo whose plugin id one of
-  them adds. `githubClient` gains `post`, which fails on a redirect.
+  them adds. `githubClient` gains `post`, which fails on a redirect, and
+  M010 adds `patch`, which shares that code.
   `.github/workflows/discover.yml` runs it daily and on dispatch on the
   default branch only, with a `limit` input, with `contents: write` and `pull-requests: write`, in the
   `discover` concurrency group. It restores the state file from the newest
   cache by prefix and saves it under a key with the run id, after a failed
   run too. Pull requests opened with the built-in token start no CI run, so
   the body carries the check result (M009).
+- `.github/ISSUE_TEMPLATE/add-plugin.yml` is a form with one required input,
+  `Repository URL`, that adds the label `add-plugin`.
+  `.github/workflows/add-plugin-issue.yml` runs `pnpm discover-issue` on
+  `issues: opened` when that label is set, with the issue body passed only
+  through `env:`, with `contents`, `pull-requests`, and `issues` write, in the
+  `discover` concurrency group. `src/discover/issue.ts` parses the body, checks
+  the entries and the bot pull requests by repo name before and after the
+  read, and opens the pull request through the same propose step, with
+  `Closes #<issue>` in its body (M010).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request, except those the built-in token makes, such as the
   discovery bot's (M009).
