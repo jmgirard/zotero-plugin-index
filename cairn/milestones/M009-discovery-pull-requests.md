@@ -1,13 +1,13 @@
 # M009: Open a pull request for each new plugin
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** M008
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the bot opens public pull requests that add entries to the published data
-- **Branch/PR:** —
+- **Branch/PR:** m009-discovery-pull-requests
 
 ## Goal
 
@@ -102,6 +102,10 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 - 2026-10-25: criteria audit (full mode, fresh Opus reader) returned 8 findings, all fixed: AC2's limit reads "`--limit`, 5 by default"; AC2 force-pushes the bot branch, because a branch left after a failed request would be rejected as a non-fast-forward on every later run; AC4 plants both failure points; AC3 counts five items and runs the check on a directory with only that entry, since `pnpm check` reads every entry under its root; AC5 names separate restore and save steps with `if: always()` and a run-id key, since cache keys cannot be overwritten; AC6 says "owner/repo name", since a renamed repo comes back; AC7 conditions on a run that writes an entry, and its recording act moved to T7.
 - 2026-10-25: plan gate chose force-pushing `discover/` branches over deleting the branch after a failed request, because a force-push also repairs a branch left by a run that was cut off; falsified by a person pushing their own commits to a `discover/` branch.
 - 2026-10-25: lessons used: 2026-10-25 (M006) Ruby YAML to parse a workflow; 2026-10-25 (M002) the fixture preload; 2026-10-25 (M002) `--dir` for pnpm from a temp dir; 2026-10-25 (M003) Vitest `hookTimeout`.
+- 2026-10-26: implement started; branch m009-discovery-pull-requests cut from main at e61a5f7.
+- 2026-10-26: implementation choice: the propose step builds each commit with git plumbing (a temporary index file, `commit-tree`, push of the commit to the branch ref), so it never checks out a branch or changes the working tree; the git directory is the caller's directory (`INIT_CWD`), as for other relative paths.
+- 2026-10-26: implementation choice: a pull request counts toward the skip set only when its head repo is the index repo itself, so a fork's pull request with a `discover/` branch cannot block a plugin.
+- 2026-10-26: implementation choice: with `--propose`, discovery writes entries to a temporary directory unless `--out` is given, the index repo comes from `GITHUB_REPOSITORY`, and the default branch from the repo's API record; `githubClient` gains a `post` method for the create request.
 
 ## Decisions
 
