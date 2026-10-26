@@ -28,7 +28,9 @@ export interface PluginsFile {
   plugins: PluginRecord[];
 }
 
-export type BuildResult = { ok: true; data: PluginsFile; text: string } | { ok: false; problems: string[] };
+// `buildLevel` lists the ids of the records whose failure points at the build, such as a
+// rate limit or a network error, in record order. It stays out of the data.
+export type BuildResult = { ok: true; data: PluginsFile; text: string; buildLevel: string[] } | { ok: false; problems: string[] };
 
 const ajv = new Ajv({ allErrors: true });
 const validateIndex = ajv.compile(indexSchema);
@@ -57,8 +59,11 @@ export async function buildData(root: string, fetch: Fetch, now = new Date()): P
   if (problems.length > 0) return { ok: false, problems };
 
   const plugins: PluginRecord[] = [];
+  const buildLevel: string[] = [];
   for (const { id, repoUrl, overrides } of entries) {
-    const record: PluginRecord = { id, repoUrl, ...(await readRecord(repoUrl, fetch)), overrides };
+    const { buildLevel: counts, ...read } = await readRecord(repoUrl, fetch);
+    if (counts) buildLevel.push(id);
+    const record: PluginRecord = { id, repoUrl, ...read, overrides };
     // Facts that the schema rejects, such as a repo body with no created_at, become this
     // record's failure, so one plugin cannot stop the whole file.
     const recordProblems = validateRecord(JSON.parse(JSON.stringify(record)))
@@ -75,7 +80,7 @@ export async function buildData(root: string, fetch: Fetch, now = new Date()): P
   // Check the file as written, where undefined fields are gone.
   const outputProblems = checkOutput(JSON.parse(text));
   if (outputProblems.length > 0) return { ok: false, problems: outputProblems.map((p) => `the output ${p}`) };
-  return { ok: true, data, text };
+  return { ok: true, data, text, buildLevel };
 }
 
 // The problems schemas/plugins.v1.schema.json finds in value, or none.
@@ -128,14 +133,19 @@ async function readEntry(dir: string): Promise<{ repoUrl: string; overrides: Ove
   return { repoUrl, overrides: (index.value as { overrides?: Override[] }).overrides ?? [] };
 }
 
-async function readRecord(repoUrl: string, fetch: Fetch): Promise<Pick<PluginRecord, "upstream" | "failure">> {
+async function readRecord(
+  repoUrl: string,
+  fetch: Fetch,
+): Promise<Pick<PluginRecord, "upstream" | "failure"> & { buildLevel?: boolean }> {
   try {
     const read = await readUpstream(repoUrl, fetch);
-    return read.ok ? { upstream: read.facts } : { failure: { name: read.failure, message: read.message } };
+    if (read.ok) return { upstream: read.facts };
+    return { failure: { name: read.failure, message: read.message }, buildLevel: read.buildLevel };
   } catch (error) {
     // The reader names each problem it knows. Anything else is a bug or a surprise, and
-    // it stays in this record so the other plugins still build.
-    return { failure: { name: "unexpected-error", message: error instanceof Error ? error.message : String(error) } };
+    // it stays in this record so the other plugins still build. It counts as build-level.
+    const message = error instanceof Error ? error.message : String(error);
+    return { failure: { name: "unexpected-error", message }, buildLevel: true };
   }
 }
 

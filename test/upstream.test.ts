@@ -267,10 +267,6 @@ describe("readUpstream", () => {
   // must hold, which shows the read reached the changed response.
   test.each<[string, (r: Responses) => void, string, string]>([
     ["the repo request returns 404", (r) => (r[REPO].status = 404), "github-http-error", "HTTP 404"],
-    ["the releases request returns 403", (r) => (r[RELEASES].status = 403), "github-http-error", "HTTP 403"],
-    ["a GitHub request cannot connect", (r) => (r[RELEASES_PAGE_2] = { error: "fetch failed" }), "request-failed", "fetch failed"],
-    ["a body read is cut off", (r) => (r[UPDATE] = { bodyError: "terminated" }), "request-failed", "terminated"],
-    ["the XPI body read is cut off", (r) => (r[XPI] = { bodyError: "terminated" }), "request-failed", "terminated"],
     ["the repo body is not JSON", (r) => (r[REPO] = { text: "<html>" }), "request-failed", "not JSON"],
     ["the repo body is not an object", (r) => (r[REPO] = { json: null }), "request-failed", "not an object"],
     ["the releases body is not a list", (r) => (r[RELEASES] = { json: {} }), "request-failed", "not a list"],
@@ -354,6 +350,18 @@ describe("readUpstream", () => {
   ])("fails when %s", async (_name, edit, failure, detail) => {
     const { result } = await read(edit);
     expect(result).toEqual({ ok: false, failure, message: expect.stringContaining(detail) });
+  });
+
+  // As above, for failures that point at the build, so the result carries buildLevel.
+  test.each<[string, (r: Responses) => void, string, string]>([
+    ["the releases request returns 403", (r) => (r[RELEASES].status = 403), "github-http-error", "HTTP 403"],
+    ["a GitHub request cannot connect", (r) => (r[RELEASES_PAGE_2] = { error: "fetch failed" }), "request-failed", "fetch failed"],
+    ["a body read is cut off", (r) => (r[UPDATE] = { bodyError: "terminated" }), "request-failed", "terminated"],
+    ["the XPI body read is cut off", (r) => (r[XPI] = { bodyError: "terminated" }), "request-failed", "terminated"],
+    ["the XPI download returns 502", (r) => (r[XPI] = { status: 502 }), "xpi-unreadable", "HTTP 502"],
+  ])("fails with buildLevel when %s", async (_name, edit, failure, detail) => {
+    const { result } = await read(edit);
+    expect(result).toEqual({ ok: false, failure, message: expect.stringContaining(detail), buildLevel: true });
   });
 
   test("fails with xpi-too-large and stops reading an XPI past 50 MiB", async () => {
@@ -741,7 +749,7 @@ describe("readUpstream", () => {
     ["returns no address", "empty.example", "no address"],
   ])("fails with request-failed and no request when the lookup %s", async (_name, host, detail) => {
     const { result, requests } = await readUpdateUrl(`http://${host}/update.json`, namedLookup);
-    expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining(detail) });
+    expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining(detail), buildLevel: true });
     expect(requests.at(-1)!.url).toBe(XPI);
   });
 

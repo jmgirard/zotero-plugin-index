@@ -38,7 +38,8 @@ const IPV6_RANGES: [string, number][] = [
   ["2001:db8::", 32],
 ];
 
-export type Refusal = { failure: "host-refused" | "request-failed"; message: string };
+// A failed lookup carries `buildLevel`, as a request with no response does in the reader.
+export type Refusal = { failure: "host-refused" | "request-failed"; message: string; buildLevel?: true };
 
 // Checks the host of `url` before a request. The host is the URL parser's, with
 // IPv6 brackets and one trailing dot removed. A name is refused when any address
@@ -58,10 +59,10 @@ export async function refusal(url: URL, lookup: Lookup): Promise<Refusal | undef
     addresses = await withTimeout(lookup(name), LOOKUP_TIMEOUT_MS);
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
-    return { failure: "request-failed", message: `the lookup of ${name} for ${url.href} failed: ${reason}` };
+    return { failure: "request-failed", message: `the lookup of ${name} for ${url.href} failed: ${reason}`, buildLevel: true };
   }
   if (addresses.length === 0) {
-    return { failure: "request-failed", message: `the lookup of ${name} for ${url.href} returned no address` };
+    return { failure: "request-failed", message: `the lookup of ${name} for ${url.href} returned no address`, buildLevel: true };
   }
   const blocked = addresses.find((address) => !net.isIP(address.replace(/%.*$/, "")) || isBlocked(address));
   return blocked !== undefined

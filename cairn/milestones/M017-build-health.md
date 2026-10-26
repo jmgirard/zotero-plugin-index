@@ -98,14 +98,14 @@ planned.
       `plugins.json` from the default-branch code as the AC5 golden file. Then
       write the failing tests for AC1 to AC4, and rewrite the two tests of the
       old rule (`test/build.test.ts:152`, `:170`).
-- [ ] T2: In `src/upstream/reader.ts`, carry a build-level mark on
+- [x] T2: In `src/upstream/reader.ts`, carry a build-level mark on
       `ReadFailure` and the `{ ok: false }` result, never by parsing
       `message`. Set it at `request()` (328), `readText` (336), `readCapped`
       (346), the lookup failures in `src/upstream/host-guard.ts:57-65`, the
       GitHub API non-ok answer in `get()` (261) for 401, 403, 429, and 5xx,
       and the download non-ok answers (XPI 412, `update.json` 565) for 429
       and 5xx. Add the status-rule test.
-- [ ] T3: In `src/build/build.ts`, mark `unexpected-error` in `readRecord`
+- [x] T3: In `src/build/build.ts`, mark `unexpected-error` in `readRecord`
       (131) and return the build-level count beside `data`, outside the
       records; in `src/build/cli.ts:35-43`, base the exit-1 rule on it.
 - [ ] T4: In `src/build/cli.ts`, print the failure-name summary, the
@@ -134,6 +134,8 @@ planned.
 - 2026-10-26: implement started on branch m017-build-health.
 - 2026-10-26: T1 done: `test/support/mixed-failures.ts` writes 12 entries (7 build-level causes, 4 others, 1 passing); golden `test/fixtures/build/mixed-failures.plugins.json` made by `buildData` on unchanged `src/` with a fixed date; new tests red for the right reason (no summary lines, no `buildLevel`, no `buildLevelStatus`), golden test green. The DNS-timeout reader test now expects the build-level mark.
 - 2026-10-26: implement chose: `buildData` returns `buildLevel` (sorted ids) beside `data`; summary lines read `failed with <name>: <n>` and `build-level failures: <n> of <total> records`; the warning reads `::warning::<n> of <total> records carry a build-level failure`.
+- 2026-10-26: T2 done: `ReadFailure` and the failed `readUpstream` result carry `buildLevel`; `buildLevelStatus(status, "github-api" | "download")` is exported; marks set at `request()`, `readText`, `readCapped`, the lookup failures in `host-guard.ts`, `get()`, and the XPI and `update.json` non-ok answers; `send()` left unmarked (not a build read). Four rows of the reader's failure table moved to a build-level table, plus an XPI 502 row. Reader, discover, issue, add-plugin, and propose tests: 283 passed.
+- 2026-10-26: T3 done: `buildData` returns `buildLevel` (record order), `unexpected-error` counts, and `cli.ts` exits 1 on more than half build-level. `tsc` clean; build tests 21 passed, 5 red on the summary lines that T4 adds.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

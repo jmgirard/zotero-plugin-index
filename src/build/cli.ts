@@ -35,10 +35,12 @@ async function main(): Promise<number> {
   for (const { id, failure } of failed) console.log(`${id}: ${failure!.name}: ${failure!.message}`);
   const total = built.data.plugins.length;
   console.log(`wrote ${total} records to ${written.path}, ${failed.length} with a failed upstream read`);
-  // So many failures usually point at the build (a bad token, a GitHub outage), not at
-  // the plugins. Exit 1, so the daily build deploys nothing and the last good data stays.
-  if (failed.length * 2 > total) {
-    console.error(`${failed.length} of ${total} records carry a failure, more than half`);
+  // A build-level failure, such as a rate limit or a network error, points at the build,
+  // not at the plugin. When more than half of the records carry one, exit 1, so the daily
+  // build deploys nothing and the last good data stays.
+  const buildLevel = built.buildLevel.length;
+  if (buildLevel * 2 > total) {
+    console.error(`${buildLevel} of ${total} records carry a build-level failure, more than half`);
     return 1;
   }
   return 0;
