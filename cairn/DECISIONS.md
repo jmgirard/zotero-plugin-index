@@ -48,3 +48,16 @@ beside the `actions/upload-artifact` that `build.yml` already uses. The user
 chose the action at the plan question set over `gh run download` with an
 `actions: read` permission, which adds no action but puts more script in the
 workflow.
+
+### D-006: List archived repos with an archived fact, added to schema v1 as an optional field
+
+2026-10-26, M013 plan. Bot PR #13 proposed a repo that its owner archived, and
+the inclusion bar did not say whether archived repos pass. The user chose at
+the plan question set to list them and show "archived" as a fact in the data,
+on the plugin page, and on the home list. The user rejected refusing archived
+repos like forks, and refusing only new ones. A person who has the plugin
+installed still needs its declared range. Inclusion is not a judgment of
+quality. Many abandoned plugins are never archived, so a refusal would not
+leave a list of maintained plugins. The data gains `archived` as an optional
+field of schema v1. An added optional field does not need a new schema
+version, because readers that ignore unknown fields keep working.

@@ -7,6 +7,7 @@ _Last hygiene check: 2026-10-26 (M012 done and archived; 1 row graduated; 1 less
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
+| M013 | Show whether a plugin repo is archived | planned | — | normal | milestones/M013-show-archived-repos.md |
 | M012 | Stop inflating past the declared size | done | — | normal | milestones/archive/M012-bound-unzip-output.md |
 | M010 | Take one repo URL from an issue form | done | M009 | normal | milestones/archive/M010-add-plugin-issue-form.md |
 | M011 | Read untrusted repos without push rights | done | — | high | milestones/archive/M011-read-without-push-rights.md |
