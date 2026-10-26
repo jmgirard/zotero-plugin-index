@@ -225,10 +225,11 @@ describe("an issue run's answers", () => {
 
 describe("an issue run's failures of the bot", () => {
   test.each([
-    ["the pull-request list fails", { [`${PULLS}?state=all&per_page=100`]: { status: 503, text: "unavailable" } }, "returned HTTP 503"],
-    ["the create request is refused", { [`POST ${PULLS}`]: { status: 422, json: { message: "Validation Failed" } } }, "returned HTTP 422: Validation Failed"],
-  ])("comments the error, leaves the issue open, and returns 1 when %s", async (_name, change, message) => {
-    const { result, sent } = await runIssue(rendered("https://github.com/example/alpha"), {
+    ["the pull-request list fails", { [`${PULLS}?state=all&per_page=100`]: { status: 503, text: "unavailable" } }, "returned HTTP 503", false],
+    ["the repo record has no default branch", { [INDEX]: { json: { full_name: "example/index" } } }, "returned no default_branch", false],
+    ["the create request is refused", { [`POST ${PULLS}`]: { status: 422, json: { message: "Validation Failed" } } }, "returned HTTP 422: Validation Failed", true],
+  ])("comments the error, leaves the issue open, and returns 1 when %s", async (_name, change, message, readsRepo) => {
+    const { result, sent, gets } = await runIssue(rendered("https://github.com/example/alpha"), {
       ...indexRepo,
       ...pluginRepo("example/alpha", "alpha@example.org"),
       ...opened,
@@ -241,6 +242,7 @@ describe("an issue run's failures of the bot", () => {
       body: expect.stringContaining(message),
     });
     expect(sent.some(({ method }) => method === "PATCH")).toBe(false);
+    expect(gets.some((url) => url.includes("/repos/example/alpha"))).toBe(readsRepo);
   });
 
   test("returns 1 when the comment request fails", async () => {

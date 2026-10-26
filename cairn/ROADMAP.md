@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-26 (M010 done and archived; 1 row graduated, 4 rows
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M011 | Read untrusted repos without push rights | in-progress | — | high | milestones/M011-read-without-push-rights.md |
+| M011 | Read untrusted repos without push rights | review | — | high | milestones/M011-read-without-push-rights.md |
 | M012 | Stop inflating past the declared size | planned | — | normal | milestones/M012-bound-unzip-output.md |
 | M008 | Find new plugin repos by topic search | done | — | high | milestones/archive/M008-topic-discovery.md |
 | M009 | Open a pull request for each new plugin | done | M008 | high | milestones/archive/M009-discovery-pull-requests.md |

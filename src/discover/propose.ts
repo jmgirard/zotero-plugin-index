@@ -71,12 +71,14 @@ export interface DiscoverReadOptions {
 
 // The read step of a discover run, which makes no GitHub write. It reads the index
 // repo's bot pull requests and runs discovery with each repo whose bot pull request is
-// open or was closed without a merge in the skip set. A failed pull-request read ends
-// the run before discovery reads.
+// open or was closed without a merge in the skip set. A failed read of the pull requests
+// or the default branch ends the run before discovery reads; the write step reads the
+// default branch again.
 export async function discoverRead(options: DiscoverReadOptions): Promise<DiscoverResult> {
   let pulls: BotPulls;
   try {
     pulls = await botPulls(options.fetch, options.indexRepo);
+    await defaultBranch(options.fetch, options.indexRepo);
   } catch (error) {
     if (error instanceof ReadFailure) return { ok: false, message: error.message };
     throw error;

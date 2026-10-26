@@ -1,6 +1,6 @@
 # M011: Read untrusted repos without push rights
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
@@ -72,12 +72,12 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 ## Coverage
 
 - AC1 → T1, T5
-- AC2 → T1, T2, T3
+- AC2 → T1, T2, T3, T8
 - AC3 → T2, T3
 - AC4 → T2, T4, T5
 - AC5 → T2, T5
 - AC6 → T5, T7
-- AC7 → T1, T2, T3, T4, T5, T6
+- AC7 → T1, T2, T3, T4, T5, T6, T8
 
 ## Tasks
 
@@ -109,6 +109,7 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
       Families, Architecture), and one CHANGELOG.md entry under Unreleased.
 - [ ] T7: Live check after the merge (review): give the user a link with `?template=add-plugin.yml&` and the URL
       input prefilled, run `gh workflow run discover.yml -f limit=1`, and read both runs' job logs (AC6).
+- [x] T8: Review return 1: read the default branch in `discoverRead` and `issueRead` too, so a missing default branch ends the read step before any repo read, as the one-step command did; restore the plan-commit test for it.
 
 ## Work log
 
@@ -140,6 +141,10 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 - 2026-10-26: claim audit: 105 claims read, 5 corrected — src/discover/propose.ts, src/discover/issue.ts, src/discover/issue-cli.ts, .github/workflows/add-plugin-issue.yml, .github/workflows/discover.yml, README.md, cairn/DESIGN.md, test/propose.test.ts, test/issue.test.ts; the reader's re-read found all 5 hold, and one comment rewrapped.
 - 2026-10-26: implement done; T1-T6 checked, `pnpm test` (393 tests) and `pnpm check` (14 entries, 0 problems) pass; T7 is the post-merge live check; status review.
 - 2026-10-26: review return 1: AC2 — the plan-commit case "ends the run before discovery reads when the repo record has no default branch" sent no search request; on the branch the read step searches and drafts and only the write step fails, so the requests differ; the read steps (`discoverRead`, `issueRead`) must also read the default branch and end before any repo read when it fails.
+- 2026-10-26: minor amendment: T8 added for review return 1; Coverage AC2 and AC7 gain T8.
+- 2026-10-26: T8: `discoverRead` and `issueRead` read the default branch after the pull requests; the plan-commit case is back as "the read step ends before discovery reads when the repo record has no default branch", the write-step test now runs `proposeHandoff` on a planted handoff, and the issue table gains the case with a check that the repo is not read; removing the two reads turned both new cases red; `pnpm test` 395 passed, `pnpm check` 0 problems.
+- 2026-10-26: claim audit: not rerun for T8, whose 3 changed comment lines go to the review's diff-bug lens; deviation from step 7 logged.
+- 2026-10-26: implement done again; status review.
 
 ## Decisions
 

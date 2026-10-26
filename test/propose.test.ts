@@ -211,24 +211,32 @@ describe("read and write step failures", () => {
     expect(posts).toEqual([]);
   });
 
-  test("the read step ends before discovery reads when the pull-request list fails", async () => {
-    const { read, requests } = await twoStep({
-      ...indexRepo,
-      ...passing(["alpha"]),
-      [`${PULLS}?state=all&per_page=100`]: { status: 503, text: "unavailable" },
-    });
-    expect(read).toEqual({ ok: false, message: expect.stringContaining("returned HTTP 503") });
+  test.each([
+    ["the pull-request list fails", { [`${PULLS}?state=all&per_page=100`]: { status: 503, text: "unavailable" } }, "returned HTTP 503"],
+    ["the repo record has no default branch", { [INDEX]: { json: { full_name: "example/index" } } }, "returned no default_branch"],
+  ])("the read step ends before discovery reads when %s", async (_name, change, message) => {
+    const { read, requests } = await twoStep({ ...indexRepo, ...passing(["alpha"]), ...change });
+    expect(read).toEqual({ ok: false, message: expect.stringContaining(message) });
     expect(requests.some(({ url }) => url.includes("/search/"))).toBe(false);
   });
 
   test("the write step ends before any push when the repo record has no default branch", async () => {
     const { remote, work } = checkout();
-    const { result, posts } = await twoStep(
-      { ...indexRepo, ...passing(["alpha"]), [INDEX]: { json: { full_name: "example/index" } } },
-      work,
-    );
+    const handoff = tempDir();
+    const entry = { repo: "example/alpha", repoUrl: "https://github.com/example/alpha", id: "alpha@example.org", version: "1.0" };
+    mkdirSync(join(entriesDir(handoff), entry.id), { recursive: true });
+    for (const file of ["meta.json", "index.json"]) writeFileSync(join(entriesDir(handoff), entry.id, file), "{}\n");
+    const { fetch, requests } = fixtureFetch({ ...indexRepo, [INDEX]: { json: { full_name: "example/index" } } });
+    const result = await proposeHandoff({
+      root: tempDir(),
+      fetch,
+      indexRepo: "example/index",
+      gitDir: work,
+      check: pnpmCheck,
+      entries: [{ ...entry, outcome: "written", dir: join(entriesDir(handoff), entry.id) }],
+    });
     expect(result).toEqual({ ok: false, message: expect.stringContaining("returned no default_branch") });
-    expect(posts).toEqual([]);
+    expect(requests.filter(({ method }) => method !== "GET")).toEqual([]);
     expect(git(remote, "for-each-ref", "refs/heads/discover")).toBe("");
   });
 

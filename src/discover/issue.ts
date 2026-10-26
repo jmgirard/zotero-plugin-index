@@ -48,8 +48,8 @@ export interface IssueReadOptions {
 // The read step of an issue run, which makes no GitHub write. If the body names a repo
 // that the index or a bot pull request already has, it reads nothing. If the parser or
 // draftEntry refuses, the outcome names the failure; that includes a GitHub request
-// error while the reader reads the repo. If the bot cannot read the index or its pull
-// requests, the outcome is `failed`.
+// error while the reader reads the repo. If the bot cannot read the index, its pull
+// requests, or the default branch, the outcome is `failed`.
 export async function issueRead(options: IssueReadOptions): Promise<IssueOutcome> {
   const { root, fetch, indexRepo } = options;
   const parsed = parseIssueBody(options.body);
@@ -63,6 +63,8 @@ export async function issueRead(options: IssueReadOptions): Promise<IssueOutcome
   let pulls: BotPulls;
   try {
     pulls = await botPulls(fetch, indexRepo);
+    // Read here too, so a failure ends the run before the repo is read.
+    await defaultBranch(fetch, indexRepo);
   } catch (error) {
     // Any error here is the bot's, so the issue gets an answer either way.
     return { outcome: "failed", message: (error as Error).message };
