@@ -6,8 +6,10 @@ const ROOT = resolve(import.meta.dirname, "..");
 const BUILD = resolve(ROOT, ".github/workflows/build.yml");
 
 // Each line of a workflow, with its YAML comment removed, that uses an actions/cache action
-// or sets a `cache` key, in block or flow form. GitHub reads action names and input names
-// without regard to case.
+// or sets a `cache` key, in block or flow form. GitHub hands an input to a JavaScript or
+// Docker action as an upper-case `INPUT_<NAME>` variable, so the key match ignores case.
+// The `uses` match ignores case too, as a precaution: GitHub's docs do not say how it
+// matches action names.
 function cacheLines(text: string): string[] {
   const uses = /uses\s*:\s*["']?actions\/cache(?:\/(?:restore|save))?@/i;
   const key = /(?:^|[\s{,])["']?cache["']?\s*:/i;
@@ -18,7 +20,7 @@ function cacheLines(text: string): string[] {
 }
 
 describe("build.yml", () => {
-  test("restores no Actions cache", () => {
+  test("has no cache step and no cache key", () => {
     expect(cacheLines(readFileSync(BUILD, "utf8"))).toEqual([]);
   });
 

@@ -1,6 +1,6 @@
 # M016: Restore no cache in the deploy build
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -83,6 +83,8 @@ as M011 left them, with no dependency cache. The discovery state cache stays, be
 - 2026-10-26: T3: `CHANGELOG.md` entry at the end of `## Unreleased` and the `build.yml` paragraph of DESIGN.md Architecture, both opening "The build job of `build.yml` restores no Actions cache".
 - 2026-10-26: T4: control: main run 40338224850, build job 121625450584, has 2 `Cache restored` lines. Branch dispatch run 40340509817 at a9e7ac1: build job 121633624337 success, 383 log lines, 0 `Cache restored` lines, "Cache mode: none" in Set up job; deploy job failed with "Branch "m016-no-build-cache" is not allowed to deploy to github-pages due to environment protection rules", as expected.
 - 2026-10-26: T5: verify clean at the branch head: 14 test files, 475 tests passed; `pnpm check` 17 entries, 0 problems.
+- 2026-10-26: claim audit: 17 claims read, 3 corrected — `.github/workflows/build.yml` (a planted store "would be restored into this build before `pnpm install`"), `test/workflows.test.ts` (case comment limited to the `INPUT_<NAME>` rule for JavaScript and Docker actions, the `uses` case match called a precaution; first test renamed "has no cache step and no cache key"). Re-read once: two held, the case comment took the reader's wording. Noted, not acted on: no test checks that `cache-mode: none` is present, which no criterion promises.
+- 2026-10-26: verify clean after the claim fixes (475 tests, 17 entries, 0 problems); status set to review.
 
 ## Decisions
 

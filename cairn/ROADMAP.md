@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-26 (M015 done and archived; no rows graduated or ad
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M016 | Restore no cache in the deploy build | in-progress | — | normal | milestones/M016-no-build-cache.md |
+| M016 | Restore no cache in the deploy build | review | — | normal | milestones/M016-no-build-cache.md |
 | M015 | Show version pills and descriptions | done | — | normal | milestones/archive/M015-pills-and-descriptions.md |
 | M014 | Read stable releases before prereleases | done | — | normal | milestones/archive/M014-stable-releases-first.md |
 | M013 | Show whether a plugin repo is archived | done | — | normal | milestones/archive/M013-show-archived-repos.md |

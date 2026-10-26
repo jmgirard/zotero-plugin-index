@@ -10,9 +10,9 @@ permissions:
 
 # No job here restores or saves an Actions cache. The read job of `Discover plugins` reads
 # repos that anyone can tag, and its scheduled and dispatched runs can save caches that a
-# run on the default branch restores. A dependency store planted there would run in this
-# build, which writes the site and data that Pages publishes. GitHub enforces this mode
-# with the job's cache token.
+# run on the default branch restores. A dependency store planted there would be restored
+# into this build before `pnpm install`, and this build writes the site and data that
+# Pages publishes. GitHub enforces this mode with the job's cache token.
 cache-mode: none
 
 # One run at a time on each branch. A run that starts while another runs waits for it,
