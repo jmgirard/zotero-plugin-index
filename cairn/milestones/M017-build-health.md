@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M017: Stop deploys only for build failures
 
-- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -38,7 +38,7 @@ planned.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: For the reads `pnpm build` makes, a failed read is build-level
+- [x] AC1: For the reads `pnpm build` makes, a failed read is build-level
       exactly when it ends in `unexpected-error`, when a request gets no whole
       response (the DNS lookup fails or times out, fetch rejects or times out,
       or the body stream errors, on any host), when the GitHub API answers
@@ -52,22 +52,22 @@ planned.
       a GitHub API 403, and a 503 from an `update.json` host; and as not
       build-level: a GitHub API 404, `fork`, a 404 from an XPI host, and a
       `request-failed` from too many redirects.
-- [ ] AC2: Once `pnpm build` has written the file, it exits 1 if and only if
+- [x] AC2: Once `pnpm build` has written the file, it exits 1 if and only if
       more than half of the records carry a build-level failure. Tests show 2
       of 3 build-level failures exiting 1, 1 of 2 exiting 0, and 3 of 3
       records failing with `fork` or a GitHub API 404 exiting 0.
-- [ ] AC3: Before its `wrote` line, `pnpm build` prints on stdout one line for
+- [x] AC3: Before its `wrote` line, `pnpm build` prints on stdout one line for
       each failure name that a record carries, sorted by name, with the number
       of records that carry it, then one line with the number of build-level
       failures out of all records (`0 of N` when no record failed). Tests
       assert these lines for a build whose records fail in more than one way
       and for a build with no failure.
-- [ ] AC4: When one or more records carry a build-level failure, `pnpm build`
+- [x] AC4: When one or more records carry a build-level failure, `pnpm build`
       prints on stdout a line that starts with `::warning::` and gives that
       number, whether it then exits 0 or 1. With no build-level failure it
       prints no `::warning::` line, also when records fail with `fork`. Tests
       cover an exit-0 build, an exit-1 build, and a `fork`-only build.
-- [ ] AC5: For the same recorded responses, `dist/v1/plugins.json` is
+- [x] AC5: For the same recorded responses, `dist/v1/plugins.json` is
       byte-identical to the default branch's output before this milestone,
       apart from `generatedAt`, on a fixture with both build-level and other
       failures.
@@ -76,7 +76,7 @@ planned.
       `.github/workflows/build.yml` each state that only build-level failures
       count toward the exit-1 rule, and each names what a build-level failure
       is or points to the README for it.
-- [ ] AC7: `pnpm test` and `pnpm check` pass.
+- [x] AC7: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate -->
@@ -141,9 +141,21 @@ planned.
 - 2026-10-26: T6 done: `pnpm test` 483 passed (14 files); `pnpm check` 17 entries, 0 problems.
 - 2026-10-26: claim audit: 36 claims read, 2 corrected — README.md, src/build/build.ts, src/build/cli.ts, src/upstream/reader.ts, test/build.test.ts ("points at the build" softened to "usually", since a plugin's own dead download host also counts; one test name made exact). The `::warning::` annotation claim matches GitHub's documented workflow command but is unobserved; the granted post-merge `Build data` run checks it. Verify re-run: 483 passed, 0 problems.
 - 2026-10-26: implement complete; status set to review.
+- 2026-10-26: review return 1: AC6 — the DESIGN.md Architecture paragraph (`cairn/DESIGN.md:315-318`) states the build-level exit rule but neither names what a build-level failure is nor points to the README for it.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
 
 ## Review
 <!-- owner: review · exclusive. -->
+
+Pass 1, 2026-10-26, on m017-build-health at e2a685a (level with origin/main 8f4c32f).
+
+- AC1: `buildData` test "names the records whose failure is build-level" passes with the exact list api-403, api-body-error, api-reject, dns-fail, unexpected, update-503, xpi-reject (the fixture's api-404, fork, xpi-404, redirect-loop, and passing entries absent); `buildLevelStatus` test over 200–599 for both sources passes; facts-invalid test asserts `buildLevel` `[]`; reader table "fails with buildLevel when …" (403, connect, body cut, XPI body cut, XPI 502) and lookup fail, no-address, and 60 s timeout tests pass with `buildLevel: true`. Marks set only at `request()`, `readText`, `readCapped`, `get()`, XPI and `update.json` non-ok, host-guard lookups, and build.ts `unexpected-error`.
+- AC2: CLI tests pass: 2 of 3 build-level exits 1 with "2 of 3 records carry a build-level failure, more than half"; 1 of 2 exits 0; 3 of 3 (404 and two forks) exits 0. `cli.ts` exits 1 only on `buildLevel * 2 > total`, after `writeData`.
+- AC3: CLI tests assert the sorted `failed with <name>: <n>` lines and `build-level failures: <n> of <total> records` for mixed failures and `0 of 2` with no failure-name line for no failures. Manual run on the 12-entry mixed tree printed the per-record lines, five sorted name lines, `build-level failures: 6 of 12 records`, the warning, then `wrote 12 records`.
+- AC4: CLI tests pass: `::warning::` line on the exit-1 build and the exit-0 1-of-2 build; none on the fork-only and the 404-and-forks builds.
+- AC5: "writes the same file as before the build-level rule" passes; the golden file's only commit is ebc6fb5, whose `src/` equals main's (`git diff main ebc6fb5 -- src` empty).
+- AC6: FAIL. README, CHANGELOG, DESIGN Function Families, and `build.yml:37` state the rule and define it or point to README. DESIGN Architecture (`cairn/DESIGN.md:315-318`) states the build-level rule but neither names what a build-level failure is nor points to README.
+- AC7: `pnpm test` 483 passed (14 files); `pnpm check` 17 entries, 0 problems.
+- Gate: `cairn_validate.py` all checks passed; profile consistency-gate: none (generic).
