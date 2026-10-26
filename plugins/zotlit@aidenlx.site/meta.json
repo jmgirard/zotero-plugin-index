@@ -1,0 +1,7 @@
+{
+  "id": "zotlit@aidenlx.site",
+  "name": "ZotLit",
+  "description": "Zotero companion plugin for ZotLit",
+  "repoUrl": "https://github.com/aidenlx/zotlit",
+  "updateUrl": "https://github.com/aidenlx/zotlit/releases/download/zotero-release/update-beta.json"
+}
