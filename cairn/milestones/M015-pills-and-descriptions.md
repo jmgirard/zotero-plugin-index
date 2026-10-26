@@ -171,3 +171,30 @@ Sync: branch contains origin/main a238ab9; no merge needed. Copilot round off (n
 - AC6 evidence: `test/site.test.ts > the built site > has no trace of the Zotero version field` passed over every file the build writes (more files than ids asserted), for all five strings.
 - AC7 evidence: grep counts 0 for "Your Zotero version", "local storage", "one script" in README.md and cairn/DESIGN.md; DESIGN lines 150–151 and 321–324 name `majorSupport`, `shownDescription`, and "pages carry no script"; README "The site" describes pills, the description rule, and Details; CHANGELOG Unreleased has the version-pill bullet; `pnpm test` 466 passed, `pnpm check` 17 entries, 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed; no DESIGN principle changed (Principles touched `—`), so `cairn_impact` skipped; generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: D-004's rationale still names the page script — fix now (D-009 annotates D-004), fixed 6be933d
+- diff-bug #2: pill tooltips do not show on touch screens — fix now (README says to open the plugin page, which shows the range), fixed 6be933d
+- diff-bug #3: pills run together for screen readers, and title repeats the hidden text — fix now for the run-on (`role="list"`/`listitem`), fixed 6be933d; the repeat is reject, planned change (AC4 requires both)
+- diff-bug #4: DESIGN says a description override always shows — fix now (applies only to the version read), fixed 6be933d
+- diff-bug #5: CHANGELOG puts the repository and releases links in Details — fix now, fixed 6be933d
+- diff-bug #6: a description with no letters or digits counts as name-only; "Zotero 7 plugin" is kept — reject, planned change (the AC2 word rule; such text says nothing about the plugin)
+- diff-bug #7: combining marks split words, so NFD and NFC spellings differ — fix now (NFC and `\p{M}`; new test failed on the old rule), fixed 6be933d
+- diff-bug #8: test expectations are built unescaped — fix now (tests escape expected text as Astro does), fixed 6be933d
+- diff-bug #9: `.visually-hidden` lacks margin/padding/border; long words can scroll the page — fix now (`overflow-wrap: anywhere` on body), fixed 6be933d
+- diff-bug #10: no `color-scheme` for dark mode controls — fix now, fixed 6be933d
+- diff-bug #11: the unsafe-URL fallback prints the URL while the link reads "Releases" — reject, style
+- diff-bug #12: LESSONS line 28 names `data-result-for` — fix now at post-merge hygiene (lesson trimmed)
+- blame-history #1: home rows no longer show range text — reject, planned change (AC3; the user chose pills)
+- blame-history #2: the archived fact moved into closed Details, against D-006's "on the plugin page" — fix now ("(archived)" after the page name, tested), fixed 6be933d
+- blame-history #3: the overrides table is collapsed — reject, planned change (AC5; the user chose Details)
+- blame-history #4: the repository link lost its label; the releases link reads "Releases" — reject, style
+- blame-history #5: `cairn/references/mozilla-toolkit-version.md` names a visitor's version — fix now, fixed 6be933d
+- prior-review #1: unescaped test expectations — fix now (same as diff-bug #8), fixed 6be933d
+- prior-review #2: README line over 80 columns — fix now, fixed 6be933d
+- prior-review #3: CHANGELOG line over 80 columns — fix now, fixed 6be933d
+- ripple #1: CHANGELOG says the page shows the declared range first — fix now, fixed 6be933d
+- ripple #2: the mozilla note names a visitor's version — fix now (same as blame-history #5), fixed 6be933d
+- ripple #3: DESIGN says each page shows checkable facts — reject, false (they are still on the page, in Details, which DESIGN states)
+- ripple #4: CHANGELOG says the page shows "Archived on GitHub" and the release label — reject, false (both are still on the page)
+- ripple #5: DESIGN's "reporter adds the Zotero version" — reject, false (it is about the planned report form)
+- Return floor: no finding shows a criterion failing or a load-bearing defect; no status change. After the fixes: `pnpm test` 467 passed, `pnpm check` 0 problems, `cairn_validate` all checks passed. Snapshot files changed: none.
