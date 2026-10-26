@@ -191,3 +191,20 @@ Pass 3 evidence on the branch at d7b0873, 2026-10-26, after review returns 1 and
 - AC1, AC4, AC5: the `ruby -ryaml` check passes again (the T9 upload `if:` and the discover write job's `if:` add no `run` step and name no token); the issue write job's `if:` and `continue-on-error` are unchanged.
 - AC2, AC3: the three test files pass again; AC3's plants are now 18 with the symbolic-link `entries`, and the new tests for a digit in a failure name, `not-proposable` in an issue run and in a mixed discover run, and a non-`ReadFailure` read pass.
 - AC7: `npx -y pnpm@12.15.0 test`: type check clean, Test Files 12 passed (12); Tests 401 passed (401); `npx -y pnpm@12.15.0 check`: checked 14 entries in plugins, 0 problems.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: a discover plan carried the search result's repo name and URL while `draftEntry` checked the reader's, so a renamed repo's old name could refuse the handoff — fix now: the written item carries the checked name and URL, fixed c48b43a
+- diff-bug #2: the discover write job ran, and failed at the download, after a read failure that left no plan — fix now: the read job outputs its upload's `artifact-id`, and the write job runs only when it is set, fixed c48b43a
+- diff-bug #3: on a re-run whose read attempt uploads nothing, the write side could download the earlier attempt's handoff — fix now: the issue download runs only when this attempt's `artifact-id` is set, fixed c48b43a
+- diff-bug #4: `entryProblem` named any `git check-ref-format` failure, a spawn failure included, an invalid branch, which the read step recorded — fix now: only exit status 1 is a refused name, and a thrown check is `unexpected-error`, not recorded, fixed c48b43a
+- diff-bug #5: an issue repo name that a bot branch or entry has but the handoff's repo shape refuses gave a `known` plan that `readHandoff` refuses — fix now: such a name is never `known`, and the read goes on to `not-proposable`, fixed c48b43a
+- diff-bug #6: `plannedProblem` called every schema failure "longer", and the length route had no test — fix now: the message names empty or longer, and a 600-character version test, fixed c48b43a
+- diff-bug #7: the message cut can split a surrogate pair — reject, edge: only a message whose 2,001st code unit starts a pair reaches it, and the effect is one replacement character; the comment cut on main does the same
+- blame-history #1: the discover write job turns red after a read failure without a plan — fix now, as diff-bug #2
+- blame-history #2: a git spawn failure is recorded as `not-proposable` for 30 days — fix now, as diff-bug #4
+- blame-history #3: the read-step cut splits by UTF-16 code units — reject, edge, as diff-bug #7
+- prior-review #1: a drafted `meta.json` over 64 KiB, from a long manifest description, passed the read-step check and refused the whole handoff — fix now: `plannedProblem` also checks the drafted directory's files, with a 70,000-character description test, fixed c48b43a (not floor-qualifying: no criterion fails, and the plugins it blocks need a manifest built to do it, so the agent judged it a fix on the branch)
+- prior-review #2: no test for the length cap or the "names no owner/repo" branch — fix now for the length cap, as diff-bug #6; reject for the other, false: the reader returns only GitHub repo URLs, so `repoName` always gives a name there
+- prior-review #3: the discover download has no `continue-on-error` — fix now, as diff-bug #2
+- ripple #1: row "Limit what an issue run can reach" still describes the pre-M011 job — fix now: it graduates at hygiene (pass 2)
+- ripple #2: DESIGN.md placed the open bot pull requests' file read in the write step alone — fix now: both steps named, fixed c48b43a
+- Pass-3 fixes: planting each back (no file check, no exit-code test, `known` without the shape test, the search name in the plan) turned 4 of the 5 new tests red; restored; `pnpm test` 406 passed, `pnpm check` 0 problems, the `ruby -ryaml` workflow check passes.
