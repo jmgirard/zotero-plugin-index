@@ -76,7 +76,7 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
       boolean. Add the `data-archived` marker after the name link in `site/src/pages/index.astro:22`. Give
       `test/fixtures/site/plugins.json` records of the four kinds, and add the AC3 and AC4 tests to
       `test/site.test.ts`.
-- [ ] T4: Edit README.md's inclusion bar and fact list. Edit DESIGN.md's Contract boundary fact list (lines 29-31),
+- [x] T4: Edit README.md's inclusion bar and fact list. Edit DESIGN.md's Contract boundary fact list (lines 29-31),
       its Data sources inclusion bar (lines 78-80), and its upstream reader and site architecture lines. Add a
       CHANGELOG.md Unreleased entry.
 - [ ] T5: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
@@ -99,6 +99,7 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 - 2026-10-26: started on branch m013-show-archived-repos, cut from main at eef203d.
 - 2026-10-26: T1, T2 done in one commit, since the reader's new field fails the build tests until the schema admits it. The better-notes fixture gains `"archived": false`, as GitHub returned on 2026-10-26, and the happy-path test expects it. The build fixture's example/second-plugin is archived. A planted `"type": "string"` in the schema failed both new build tests. `pnpm test`: 417 passed.
 - 2026-10-26: T3 done. The archived fact sits first in the facts list after Repository, and the home marker is a `<span data-archived>` after the name link. Site fixture: old-plugin archived, first-plugin not, the GUID plugin with no value, broken-plugin a failure. The three new tests failed before the template change. `pnpm test`: 421 passed. `pnpm check`: 16 entries, 0 problems.
+- 2026-10-26: T4 done. README.md states the listing and marker in "The site", the optional-field rule in "Using the data", the inclusion bar in "Adding a plugin", and the field in "Building the data". README.md has no single inclusion-bar section, so its statement sits beside the failure names. DESIGN.md: Contract boundary facts and API rule, Data sources bar, reader and site architecture lines. CHANGELOG.md: one Unreleased entry.
 
 ## Decisions
 

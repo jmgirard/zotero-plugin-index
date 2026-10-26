@@ -82,3 +82,10 @@
   sends any request. `pnpm discover --propose` is gone. If the write job
   cannot propose a plugin's entry, the read job refuses the plugin as
   `not-proposable`. Thus one such plugin does not stop the other pull requests.
+- The index lists plugins whose GitHub repository is archived and marks them.
+  The upstream reader reads GitHub's `archived` flag. Each record of
+  `v1/plugins.json` with an `upstream` block now has an `archived` field,
+  `true` or `false`, if the GitHub response gives one. The schema stays at
+  version 1, because a new optional field is not a breaking change. The
+  plugin page shows "Archived on GitHub: Yes" or "No", and the home page shows
+  "(archived)" after the name of an archived plugin.
