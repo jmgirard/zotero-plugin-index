@@ -59,4 +59,10 @@
   Zotero range, and the result of `pnpm check` on the entry. If a bot pull
   request is closed without a merge, the bot does not propose that
   repository again. `pnpm discover` runs the same search by hand and writes
-  the new entries to disk, with no pull request.
+  the new entries to disk, with no pull request. Anyone can also propose a
+  plugin with the "Add a plugin" issue form, which takes the URL of the
+  plugin's GitHub repository. If the plugin passes the inclusion bar, the bot
+  opens a pull request and comments its link on the issue. The issue closes
+  when that pull request merges. In other cases, the bot comments the reason
+  and closes the issue. Examples are a plugin that does not pass, or a
+  repository that the index or a bot pull request already has.

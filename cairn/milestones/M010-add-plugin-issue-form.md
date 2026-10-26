@@ -69,7 +69,7 @@ an edit to M009's CHANGELOG entry.
       request with `Closes #<issue>`, the comment, and the close.
 - [x] T4: Write `add-plugin-issue.yml` with the body in `env:` only and the `discover` concurrency group;
       check it with `ruby -ryaml`.
-- [ ] T5: Write the README text and edit M009's CHANGELOG entry; run the verify slot.
+- [x] T5: Write the README text and edit M009's CHANGELOG entry; run the verify slot.
 - [ ] T6: After the merge, ask the user to open one issue from the form (or open it at their yes), and record
       the issue and run URLs in the Review section.
 
@@ -95,6 +95,7 @@ an edit to M009's CHANGELOG entry.
 - 2026-10-26: AC3 as written closes the issue on any failed read, `github-http-error` and `request-failed` included, which a rate limit or outage can cause; followed as written, with a candidate row for leaving such issues open.
 - 2026-10-26: T4 done: `add-plugin-issue.yml`; `ruby -ryaml` reads 2 `run:` values, none with `${{` (a planted `echo "${{ github.event.issue.body }}"` reads as 1), `ISSUE_BODY` in `env:`, the trigger under key `true` (YAML 1.1 reads `on` as a boolean) as `issues: types: [opened]`, the label condition, group `discover` as in `discover.yml`, and the three permissions at the top level only.
 - 2026-10-26: two candidate rows added: "Keep issues open on a bot read failure" and "Answer issues whose run was canceled" (the shared concurrency group lets a newer pending run cancel an older one).
+- 2026-10-26: T5 done: README section "Proposing a plugin with an issue" under "Finding new plugins", and the issue form added to the end of M009's CHANGELOG entry; `pnpm test` 361 passed, `pnpm check` 0 problems.
 
 ## Decisions
 
