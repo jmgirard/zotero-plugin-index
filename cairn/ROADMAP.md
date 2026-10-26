@@ -1,23 +1,21 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-26 (M013 done and archived; 1 row added; 4 lessons marked used; M010 row pruned)_
+_Last hygiene check: 2026-10-26 (M014 done and archived; 1 row graduated, 2 added; 6 lessons marked used, 2 captured, 2 evicted; M011 row pruned)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M014 | Read stable releases before prereleases | review | — | normal | milestones/M014-stable-releases-first.md |
+| M014 | Read stable releases before prereleases | done | — | normal | milestones/archive/M014-stable-releases-first.md |
 | M013 | Show whether a plugin repo is archived | done | — | normal | milestones/archive/M013-show-archived-repos.md |
 | M012 | Stop inflating past the declared size | done | — | normal | milestones/archive/M012-bound-unzip-output.md |
-| M011 | Read untrusted repos without push rights | done | — | high | milestones/archive/M011-read-without-push-rights.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
 
 ## Candidates
 - Catch stray and unportable entry files: `pnpm check` skips a stray file under `plugins/` with exit 0, accepts directory names that break on Windows or collide by case, passes an override reason of only zero-width characters, passes two overrides for the same field and version, and reports a UTF-8 BOM as "not valid JSON" (M001 review); `pnpm add-plugin` also writes an id that differs only by case from an existing entry or is a reserved Windows name such as CON (M002 review); an entry id with `%` or a space fails the whole `pnpm site` build with NoMatchingStaticPathFound, which also stops the data deploy (M007 review); `pnpm discover` writes ids through the same `writeEntry` (M008 review) — added 2026-10-24 — M001, M002, M007, M008
 - Collect works and broken user reports: "Works" and "Broken" links open a prefilled issue form, and a bot adds the report to the data and closes the issue — added 2026-10-24 — cairn/DESIGN.md Data sources
-- Read stable releases before prereleases: the reader takes the manifest from the newest release with an `.xpi`, prereleases included, so wileyyugioh/zotmoov reads as prerelease 1.2.34 (observed 2026-10-25); prefer the newest stable release with an `.xpi` when one exists; `pnpm discover` drafts entries from the same read (M008 review) — added 2026-10-25 — M002, M008 — started M014
 - Warn when the daily build degrades: `pnpm build` prints no failure summary, still exits 0 and deploys when rate limits turn up to half of the reads into `github-http-error`, and a few hung hosts can push the job past its 30-minute limit so no artifact is kept; add a failure summary, a warning on partial failure, and a time budget per plugin (M003 review); narrowed 2026-10-25 by M006, which exits 1 when more than half of the records fail; `pnpm discover` has no time budget either (M008 review) — added 2026-10-25 — M003, M006, M008
 - Count only build failures for deploys: M006's rule counts every record with a `failure` toward its more-than-half exit, steady states such as `fork`, `no-release`, and `facts-invalid` included, so an index where most entries sit in such states never deploys; count build-level names such as `request-failed`, `github-http-error`, and `unexpected-error` only; see "Warn when the daily build degrades" (M006 review) — added 2026-10-25 — M006
 - Retry repos refused by a download error: `pnpm discover` keeps a refused repo's record for 30 days or until its next push, and that includes `update-json-http-error` and other failures that an HTTP 429 or 503 from a download host can cause, so one bad response hides a repo; treat download HTTP errors as not recorded, which changes the state rule M008 shipped (M008 review) — added 2026-10-25 — M008
