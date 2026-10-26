@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M014: Read stable releases before prereleases
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — the published v1 data and the plugin pages change   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m014-stable-releases-first   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -125,16 +125,16 @@ declares.
      cites; an insertion, removal, or reorder renumbers the labels and the
      Coverage lines together. -->
 
-- [ ] T1: Write the reader tests of AC1 and AC2 in `test/upstream.test.ts`
+- [x] T1: Write the reader tests of AC1 and AC2 in `test/upstream.test.ts`
       first, and see each new one fail. Build the release lists from the
       `test/fixtures/upstream/better-notes.json` responses, which hold a
       stable v3.3.3 and a prerelease. Add recorded XPIs for the second read.
-- [ ] T2: Change the release choice in `src/upstream/reader.ts:104-145`. Pick
+- [x] T2: Change the release choice in `src/upstream/reader.ts:104-145`. Pick
       the stable release, read it, and on one of the three failure names read
       the newest strictly later release. Keep `releaseCount` over all
       releases with an `.xpi`. Add `prerelease` to `ReleaseJson` and
       `UpstreamFacts`.
-- [ ] T3: Add `prerelease` to the `upstream` block of
+- [x] T3: Add `prerelease` to the `upstream` block of
       `schemas/plugins.v1.schema.json` with a description. Add the
       `test/build.test.ts` tests of AC3, with fixture responses that give one
       prerelease read.
@@ -171,6 +171,10 @@ declares.
 - 2026-10-26: criteria audit (full) returned 11 findings, 10 taken. Goal reworded to match AC1 and AC2. Ties, `releaseCount`, the both-fail case, both build values, `checkOutput`, and the label test added. AC2's other-failure promise narrowed to two tested names. AC5 grep widened and add-plugin.yml:9 added. AC6 now names failure records, the deploying run, and two moved plugins. AC7: no finding.
 - 2026-10-26: collision sweep: no D-entry covers prereleases. M002 and M008 shipped the newest-release rule and recorded this row. D-006 and D-007 allow the optional v1 field. Inbox: 0 open issues, and 1 open bot pull request with no overlap.
 - 2026-10-26: lessons used: 2026-10-25 (M001, used M013) pnpm via npx; 2026-10-25 (M002, used M011) fixture preload; 2026-10-25 (M002) template prerelease with no .xpi; 2026-10-25 (M006, used M013) Pages deploys from main only; 2026-10-25 (M007, used M013) match the data attribute form.
+- 2026-10-26: implement started on m014-stable-releases-first.
+- 2026-10-26: T1: 13 new reader tests; 11 failed before T2. The no-later-release cases and the both-fail case passed before T2, since the old rule also read the newest release there.
+- 2026-10-26: T2: `readRelease` now holds the manifest and update.json read, so the fallback can run it twice. `UpstreamFacts.prerelease` is optional in the type, to match the schema and older records. The reader always sets it.
+- 2026-10-26: T3: example/second-plugin's one release is now a prerelease in the build fixture. T1 to T3 share one commit, since the build tests fail between T2 and T3. `pnpm test` 437 passed; `pnpm check` 17 entries, 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote

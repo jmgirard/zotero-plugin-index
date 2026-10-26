@@ -23,6 +23,9 @@ export interface UpstreamFacts {
   releaseCount: number;
   // The publish date of the release whose manifest was read.
   latestReleaseDate: string;
+  // Whether GitHub marks the release whose manifest was read as a prerelease. The reader
+  // always sets it; records written before it existed have none.
+  prerelease?: boolean;
   // GitHub's archived flag, left out when the repo response has no boolean.
   archived?: boolean;
 }
@@ -112,9 +115,44 @@ async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<
     .filter((item) => item.xpi !== undefined)
     .sort((a, b) => Date.parse(b.release.published_at) - Date.parse(a.release.published_at));
   if (withXpi.length === 0) fail("no-xpi-release", `no release of ${meta.full_name} has an .xpi asset`);
-  const { release, xpi } = withXpi[0];
 
-  const { manifest, messages } = await readManifest(download, xpi!.browser_download_url, release.tag_name);
+  // The newest stable release, or the newest release when none is stable. If the stable
+  // release is not a Zotero 7+ build, the newest release published after it is read instead.
+  const stable = withXpi.find((item) => item.release.prerelease !== true) ?? withXpi[0];
+  const newest = withXpi[0];
+  let facts: ReleaseFacts;
+  try {
+    facts = await readRelease(download, stable.release, stable.xpi!);
+  } catch (error) {
+    const notZotero7 = error instanceof ReadFailure && NOT_ZOTERO_7.includes(error.failure);
+    if (!notZotero7 || !(Date.parse(newest.release.published_at) > Date.parse(stable.release.published_at))) throw error;
+    facts = await readRelease(download, newest.release, newest.xpi!);
+  }
+  const { release, ...manifestFacts } = facts;
+
+  return {
+    ...manifestFacts,
+    repoUrl: meta.html_url,
+    repoCreatedAt: meta.created_at,
+    openIssues: meta.open_issues_count,
+    releaseCount: withXpi.length,
+    latestReleaseDate: release.published_at,
+    prerelease: release.prerelease === true,
+    archived: typeof meta.archived === "boolean" ? meta.archived : undefined,
+  };
+}
+
+// The failures that show a release is not a Zotero 7+ build.
+const NOT_ZOTERO_7: Failure[] = ["no-manifest", "no-zotero-id", "max-version-below-7"];
+
+type ReleaseFacts = Pick<
+  UpstreamFacts,
+  "id" | "name" | "description" | "homepage" | "version" | "strictMinVersion" | "strictMaxVersion" | "updateUrl" | "updateHost"
+> & { release: ReleaseJson };
+
+// Reads the manifest of one release's XPI and checks the update.json it names.
+async function readRelease(download: Download, release: ReleaseJson, xpi: { browser_download_url: string }): Promise<ReleaseFacts> {
+  const { manifest, messages } = await readManifest(download, xpi.browser_download_url, release.tag_name);
   const zotero = manifest.applications?.zotero;
   const id = stringOrUndefined(zotero?.id);
   if (!id) fail("no-zotero-id", `the manifest of ${release.tag_name} has no applications.zotero.id`);
@@ -138,12 +176,7 @@ async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<
     strictMaxVersion,
     updateUrl,
     updateHost,
-    repoUrl: meta.html_url,
-    repoCreatedAt: meta.created_at,
-    openIssues: meta.open_issues_count,
-    releaseCount: withXpi.length,
-    latestReleaseDate: release.published_at,
-    archived: typeof meta.archived === "boolean" ? meta.archived : undefined,
+    release,
   };
 }
 
@@ -160,6 +193,7 @@ interface RepoJson {
 interface ReleaseJson {
   tag_name: string;
   draft: boolean;
+  prerelease?: unknown;
   published_at: string;
   assets: { name: string; browser_download_url: string }[];
 }

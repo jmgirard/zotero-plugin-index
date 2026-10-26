@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-26 (M013 done and archived; 1 row added; 4 lessons 
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M014 | Read stable releases before prereleases | planned | — | normal | milestones/M014-stable-releases-first.md |
+| M014 | Read stable releases before prereleases | in-progress | — | normal | milestones/M014-stable-releases-first.md |
 | M013 | Show whether a plugin repo is archived | done | — | normal | milestones/archive/M013-show-archived-repos.md |
 | M012 | Stop inflating past the declared size | done | — | normal | milestones/archive/M012-bound-unzip-output.md |
 | M011 | Read untrusted repos without push rights | done | — | high | milestones/archive/M011-read-without-push-rights.md |

@@ -125,6 +125,14 @@ describe("pnpm build over the fixture tree", () => {
     expect(record(readOutput(out), SECOND)?.upstream?.archived).toBe(true);
   });
 
+  test("writes the prerelease value that the reader read", () => {
+    const output = readOutput(out);
+    expect([record(output, SECOND)?.upstream?.prerelease, record(output, BETTER_NOTES)?.upstream?.prerelease]).toEqual([
+      true,
+      false,
+    ]);
+  });
+
   test("keeps an override apart from the upstream value it corrects", () => {
     const plugin = record(readOutput(out), BETTER_NOTES);
     expect(plugin?.overrides).toEqual([
@@ -264,6 +272,11 @@ describe("checkOutput", () => {
   test("reports a record whose archived value is not a boolean", () => {
     const problems = checkOutput(file({ ...base, upstream: { ...facts, archived: "true" } }));
     expect(problems.some((problem) => problem.startsWith("/plugins/0/upstream/archived "))).toBe(true);
+  });
+
+  test("reports a record whose prerelease value is not a boolean", () => {
+    const problems = checkOutput(file({ ...base, upstream: { ...facts, prerelease: "true" } }));
+    expect(problems.some((problem) => problem.startsWith("/plugins/0/upstream/prerelease "))).toBe(true);
   });
 });
 

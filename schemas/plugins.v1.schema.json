@@ -93,6 +93,10 @@
         "openIssues": { "description": "Open issues and pull requests in the repo.", "type": "integer", "minimum": 0 },
         "releaseCount": { "description": "Releases that carry an .xpi asset, drafts excluded.", "type": "integer", "minimum": 1 },
         "latestReleaseDate": { "description": "The publish date of the release whose manifest was read.", "type": "string" },
+        "prerelease": {
+          "description": "Whether GitHub marks the release whose manifest was read as a prerelease. The reader reads the newest stable release with an .xpi first, and a prerelease only when no stable release has an .xpi or the stable release is not a Zotero 7+ build.",
+          "type": "boolean"
+        },
         "archived": {
           "description": "Whether GitHub marks the repo archived. Absent when the GitHub response gives no boolean.",
           "type": "boolean"
