@@ -99,6 +99,8 @@ an edit to M009's CHANGELOG entry.
 - 2026-10-26: claim audit: 63 claims read, 7 corrected — src/discover/issue.ts (status and header comments: transient read errors close the issue; which bot failures leave it open), README.md and CHANGELOG.md and add-plugin.yml (bot failures beyond the push leave the issue open; refusals, not every case, close it; the pending-run cancellation), add-plugin-issue.yml (label comment, now "write access" after the re-read; concurrency comment), test/issue.test.ts (runIssue comment); the re-read cleared 5 and sent back 1, fixed with the REST docs' push-access rule.
 - 2026-10-26: T6 is the post-merge live check, which `/milestone-review` runs after the merge, as M009's was; it needs the `add-plugin` label created first.
 - 2026-10-26: T1–T5 done, verify clean (`pnpm test` 361 passed, `pnpm check` 0 problems); status review.
+- 2026-10-26: review: four-lens fan-out, 34 findings (14 fix now, 8 follow-up, 11 reject, 1 noted), no return; Review section lists each.
+- 2026-10-26: step-7 approval: m010-add-plugin-issue-form approved for merge, with the `add-plugin` label and one test issue for AC7 after it.
 
 ## Decisions
 
