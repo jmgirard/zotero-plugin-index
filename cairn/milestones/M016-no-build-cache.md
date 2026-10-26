@@ -57,11 +57,11 @@ as M011 left them, with no dependency cache. The discovery state cache stays, be
       and list each job's steps, their `uses:`, and their `with:` keys.
 - [x] T3: Add the `CHANGELOG.md` entry under `## Unreleased` and update the `build.yml` text in `cairn/DESIGN.md`
       Architecture, both in the AC4 wording.
-- [ ] T4: Push the branch and dispatch `build.yml` on it (`gh workflow run build.yml --ref <branch>`). Read the build
+- [x] T4: Push the branch and dispatch `build.yml` on it (`gh workflow run build.yml --ref <branch>`). Read the build
       job's result and its log only (`gh run view <id> --log --job <build-job-id>`). First run the same search over
       the newest `main` run's build log and see it find `Cache restored from key: node-cache-…`, so the search is not
       blind. If the build job fails on upstream reads outside this change, dispatch it again.
-- [ ] T5: Run the `verify` slot: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
+- [x] T5: Run the `verify` slot: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
 
 ## Work log
 
@@ -81,6 +81,8 @@ as M011 left them, with no dependency cache. The discovery state cache stays, be
 - 2026-10-26: T2: implementation choice: besides removing `cache: pnpm`, `build.yml` sets top-level `cache-mode: none`, so the token itself refuses a restore if a cache step comes back. ACs unchanged. Ruby parse: workflow `cache-mode: "none"`, no step `uses` actions/cache, and the only `with:` keys are `node-version`, `name`, `path`, `if-no-files-found`.
 - 2026-10-26: T1, T2: verify clean, 475 tests passed, `pnpm check` 17 entries, 0 problems.
 - 2026-10-26: T3: `CHANGELOG.md` entry at the end of `## Unreleased` and the `build.yml` paragraph of DESIGN.md Architecture, both opening "The build job of `build.yml` restores no Actions cache".
+- 2026-10-26: T4: control: main run 40338224850, build job 121625450584, has 2 `Cache restored` lines. Branch dispatch run 40340509817 at a9e7ac1: build job 121633624337 success, 383 log lines, 0 `Cache restored` lines, "Cache mode: none" in Set up job; deploy job failed with "Branch "m016-no-build-cache" is not allowed to deploy to github-pages due to environment protection rules", as expected.
+- 2026-10-26: T5: verify clean at the branch head: 14 test files, 475 tests passed; `pnpm check` 17 entries, 0 problems.
 
 ## Decisions
 
