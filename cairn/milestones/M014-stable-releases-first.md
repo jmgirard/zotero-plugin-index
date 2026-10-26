@@ -180,6 +180,7 @@ declares.
 - 2026-10-26: T6: `pnpm test` 441 passed in 12 files; `pnpm check` 17 entries, 0 problems; the issue form parses with Ruby YAML.
 - 2026-10-26: claim audit: 44 claims read, 4 corrected — .github/ISSUE_TEMPLATE/add-plugin.yml, src/discover/propose.ts, CHANGELOG.md (twice). The issue form and bot sentence now cover the no-stable case. The changelog names `pnpm discover-issue` and states the fallback as one condition. The re-read found all four true. `pnpm test` 441 passed after the fixes.
 - 2026-10-26: implement done; status review.
+- 2026-10-26: step-7 approval: m014-stable-releases-first approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote
