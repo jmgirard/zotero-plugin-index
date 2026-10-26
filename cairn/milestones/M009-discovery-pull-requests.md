@@ -55,7 +55,7 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 - [x] AC6: README describes what the bot proposes, how often, the default limit of 5, and that a closed bot
       pull request means the bot does not propose that owner/repo name again; CHANGELOG has one entry for the
       bot under `## Unreleased`. `pnpm test` and `pnpm check` pass.
-- [ ] AC7: After the merge, and after the user turns on the repo setting that lets Actions create pull
+- [x] AC7: After the merge, and after the user turns on the repo setting that lets Actions create pull
       requests, a dispatch of `discover.yml` on the default branch with `limit` 1 that writes an entry opens
       one pull request whose body carries the check output.
 
@@ -83,7 +83,7 @@ token. Reading stable releases before prereleases → candidate row "Read stable
       and save steps; check it with `ruby -ryaml` (Psych reads the `on:` key as `true`).
 - [x] T6: Write the README section, the CHANGELOG entry, and DESIGN.md's Data sources and Architecture text;
       run the verify slot.
-- [ ] T7: After the merge, ask the user to turn on the setting, dispatch with `limit` 1 (again with a larger
+- [x] T7: After the merge, ask the user to turn on the setting, dispatch with `limit` 1 (again with a larger
       budget if the run writes no entry), and record the run and pull request URLs in the Review section.
 
 ## Work log
@@ -164,4 +164,5 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 - ripple #7: `src/build/cli.ts` says "the daily job" — fix now, fixed 1e98226
 - 2026-10-26: one planted-defect run (pending-id check removed) also failed the AC4 test after more than 5 minutes; unplanted runs then passed 12 of 12 in 7.5 s and the full suite 346 of 346 twice, so it did not recur.
 - re-check after the fix-now work (2026-10-26): AC1's test now asserts `skipped` exactly (closed-pr, open-pr) and passed with the fixture's new files page for #11; a fresh `ruby -ryaml` parse shows AC5's items unchanged plus the job `if:`; `pnpm test` 346 passed; `pnpm check` 14 entries, 0 problems; `cairn_validate.py` all checks passed.
-- AC7: not yet run; it follows the merge, the user's setting change, and a `limit` 1 dispatch (T7).
+- 2026-10-26: merged PR #9 https://github.com/jmgirard/zotero-plugin-index/pull/9 as cee29e1 at 2026-10-26T09:51:11Z, after CI passed (2 checks).
+- AC7 evidence (2026-10-26): the user turned the setting on; `gh api …/actions/permissions/workflow` read `can_approve_pull_request_reviews` false before and true after. Dispatch of `discover.yml` on main with `limit` 1: run 40303090895 https://github.com/jmgirard/zotero-plugin-index/actions/runs/40303090895 succeeded and wrote one entry. It opened PR #10 https://github.com/jmgirard/zotero-plugin-index/pull/10 "Add aidenlx/zotlit" from `discover/aidenlx/zotlit`, author `app/github-actions`: one `github-actions[bot]` commit adding `plugins/zotlit@aidenlx.site/index.json` and `meta.json`; the body gives the repo URL, version 2.2.0-beta.1, strict_min_version 9.0 and strict_max_version 10.*, and "`pnpm check` on a directory with only this entry exited with status 0" with its output "checked 1 entries in /tmp/zpi-propose-uXBTC7/check-0, 0 problems". `gh pr checks 10` reports no checks. The run left 407 candidates unread.
