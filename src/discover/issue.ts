@@ -84,7 +84,11 @@ async function readOutcome(options: IssueReadOptions): Promise<IssueOutcome> {
   if (known(given)) return { outcome: "known", repo: given! };
 
   const drafted = await draftEntry(parsed.url, { ...options, ids: index.ids, pendingIds: pulls.ids });
-  if (!drafted.ok) return { outcome: "refused", failure: drafted.failure, message: drafted.message };
+  if (!drafted.ok) {
+    const { failure, message } = drafted;
+    // A rate limit or an outage says nothing about the plugin, so the issue stays open.
+    return drafted.buildLevel ? { outcome: "failed", failure, message } : { outcome: "refused", failure, message };
+  }
   // A renamed repo answers for its old name, and GitHub gives its new one. The reader
   // read the given URL, so it is a GitHub repo URL.
   const repo = repoName(drafted.repoUrl) ?? given!;
@@ -146,14 +150,15 @@ export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRun
   const quoted = (message: string) => code(message.length > MESSAGE_MAX ? `${message.slice(0, MESSAGE_MAX)}…` : message);
   const refuse = (name: string, message: string) =>
     answer(`The bot opened no pull request for this issue.\n\n\`${name}\`: ${quoted(message)}`, "not_planned");
-  const failed = (message: string) => {
+  const failed = (message: string, failure?: string) => {
     errors.push(message);
-    return answer(`The bot could not finish, so this issue stays open for a maintainer.\n\n${quoted(message)}`);
+    const named = failure ? `\`${failure}\`: ${quoted(message)}` : quoted(message);
+    return answer(`The bot could not finish, so this issue stays open for a maintainer.\n\n${named}`);
   };
 
   if (!read) return failed("the read step left no handoff");
   const { outcome } = read;
-  if (outcome.outcome === "failed") return failed(outcome.message);
+  if (outcome.outcome === "failed") return failed(outcome.message, outcome.failure);
   if (outcome.outcome === "refused") return refuse(outcome.failure, outcome.message);
   let index: Awaited<ReturnType<typeof indexed>>;
   try {

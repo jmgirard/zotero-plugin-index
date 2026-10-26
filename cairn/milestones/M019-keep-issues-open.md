@@ -89,7 +89,7 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
       build-level cases of AC1, the thrown read of AC2, and the two 404 cases
       of AC3. `runIssue` (line ~52) gains a `lookup` option for the failed
       lookup case. Each test asserts the requests sent and the status.
-- [ ] T2: In `src/discover/discover.ts` `draftEntry` (~line 167), carry the
+- [x] T2: In `src/discover/discover.ts` `draftEntry` (~line 167), carry the
       reader's `buildLevel` mark in the refusal, and mark the thrown-read
       `unexpected-error`. In `src/discover/issue.ts` `readOutcome` (~line 96),
       return `{ outcome: "failed" }` for such a refusal, its message opening
@@ -115,6 +115,7 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
 - 2026-10-26: criteria audit (full mode, fresh Opus reader): 8 findings, all taken — failure name form stated; reader's mark replaces a hand list of statuses; 403, failed-lookup, and update.json 404 cases added; status-1 wording tied to the tests; AC2 narrowed to a thrown `readUpstream`; AC4's phrase search replaced by the exact sentences; DESIGN line and issue form handled in T3.
 
 - 2026-10-26: T1: 9 issue-run tests and 1 handoff test added; the 7 open-issue cases fail on `result.status` 0 before the fix, the 2 404 cases and the handoff case pass (they pin behavior the fix keeps).
+- 2026-10-26: T2: `draftEntry` refusals carry `buildLevel` from the reader and on a thrown read; `readOutcome` turns those into `failed`, which gains an optional `failure` in the handoff schema (same name pattern as `refused`), so the comment shows the name in a code span then the message. Chose a schema field over folding the name into the message so the name keeps its own pattern check. `pnpm test` 496 passed, `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->
