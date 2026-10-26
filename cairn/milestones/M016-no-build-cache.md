@@ -55,7 +55,7 @@ as M011 left them, with no dependency cache. The discovery state cache stays, be
 - [x] T2: Remove `cache: pnpm` from the build job's `actions/setup-node` step (`build.yml:27-30`). Add a comment on
       why, written from a same-session read of GitHub's cache docs. Parse the file with `ruby -ryaml` (lesson M006)
       and list each job's steps, their `uses:`, and their `with:` keys.
-- [ ] T3: Add the `CHANGELOG.md` entry under `## Unreleased` and update the `build.yml` text in `cairn/DESIGN.md`
+- [x] T3: Add the `CHANGELOG.md` entry under `## Unreleased` and update the `build.yml` text in `cairn/DESIGN.md`
       Architecture, both in the AC4 wording.
 - [ ] T4: Push the branch and dispatch `build.yml` on it (`gh workflow run build.yml --ref <branch>`). Read the build
       job's result and its log only (`gh run view <id> --log --job <build-job-id>`). First run the same search over
@@ -80,6 +80,7 @@ as M011 left them, with no dependency cache. The discovery state cache stays, be
 - 2026-10-26: T2: GitHub's cache docs (cache-mode added to the docs 2026-09-10) say `schedule` and `workflow_dispatch` runs can save caches in the default branch's scope, `issues` runs get read-only cache access, and a `cache-mode` key, enforced by the job's cache token, limits a job's access. So the discover read job can still plant a cache, and the issue read job cannot. The plan's falsifier (GitHub scoping cache writes per job) half holds, but the discover read job must save its state cache, so the chosen fix stands.
 - 2026-10-26: T2: implementation choice: besides removing `cache: pnpm`, `build.yml` sets top-level `cache-mode: none`, so the token itself refuses a restore if a cache step comes back. ACs unchanged. Ruby parse: workflow `cache-mode: "none"`, no step `uses` actions/cache, and the only `with:` keys are `node-version`, `name`, `path`, `if-no-files-found`.
 - 2026-10-26: T1, T2: verify clean, 475 tests passed, `pnpm check` 17 entries, 0 problems.
+- 2026-10-26: T3: `CHANGELOG.md` entry at the end of `## Unreleased` and the `build.yml` paragraph of DESIGN.md Architecture, both opening "The build job of `build.yml` restores no Actions cache".
 
 ## Decisions
 
