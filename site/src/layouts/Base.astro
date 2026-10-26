@@ -16,16 +16,154 @@ const { generatedAt } = loadData();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <style is:global>
+      :root {
+        --text: #1d1d1f;
+        --muted: #5f6368;
+        --line: #e3e3e6;
+        --card: #ffffff;
+        --page: #f6f6f8;
+        --link: #0b57d0;
+        --all-bg: #e1f3e6;
+        --all-text: #136c2e;
+        --some-bg: #fdf0d5;
+        --some-text: #8a5300;
+        --none-bg: #eeeef0;
+        --none-text: #6b6b70;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --text: #ececf0;
+          --muted: #a4a4ab;
+          --line: #34343a;
+          --card: #1f1f24;
+          --page: #151518;
+          --link: #8ab4f8;
+          --all-bg: #183823;
+          --all-text: #8fdca5;
+          --some-bg: #3d2f12;
+          --some-text: #f2c46d;
+          --none-bg: #2a2a30;
+          --none-text: #9a9aa2;
+        }
+      }
       body {
         font-family: system-ui, sans-serif;
         line-height: 1.5;
         max-width: 50rem;
         margin: 0 auto;
         padding: 1rem;
+        color: var(--text);
+        background: var(--page);
+      }
+      a {
+        color: var(--link);
       }
       header {
-        border-bottom: 1px solid #ccc;
-        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 1rem;
+      }
+      header a {
+        color: var(--text);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .intro,
+      .range {
+        color: var(--muted);
+      }
+      .plugins {
+        list-style: none;
+        padding: 0;
+        display: grid;
+        gap: 0.75rem;
+      }
+      .plugin {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+      }
+      .plugin p {
+        margin: 0 0 0.5rem;
+      }
+      .plugin-name a {
+        font-size: 1.125rem;
+        font-weight: 600;
+      }
+      .description {
+        color: var(--text);
+      }
+      [data-archived] {
+        margin-left: 0.5rem;
+        font-size: 0.8125rem;
+        color: var(--muted);
+      }
+      .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.375rem;
+        margin: 0.5rem 0;
+      }
+      .pill {
+        display: inline-block;
+        min-width: 3rem;
+        padding: 0.125rem 0.625rem;
+        border-radius: 999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+      .pill[data-support="all"] {
+        background: var(--all-bg);
+        color: var(--all-text);
+      }
+      .pill[data-support="some"] {
+        background: var(--some-bg);
+        color: var(--some-text);
+      }
+      .pill[data-support="none"] {
+        background: var(--none-bg);
+        color: var(--none-text);
+      }
+      .status {
+        color: var(--muted);
+        font-size: 0.875rem;
+      }
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+      .links {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        overflow-wrap: anywhere;
+      }
+      details {
+        border-top: 1px solid var(--line);
+        margin-top: 1.5rem;
+        padding-top: 0.75rem;
+      }
+      summary {
+        cursor: pointer;
+        color: var(--muted);
+      }
+      dt {
+        font-weight: 600;
+        margin-top: 0.5rem;
+      }
+      dd {
+        margin-left: 0;
+      }
+      .table-wrap {
+        overflow-x: auto;
       }
       table {
         border-collapse: collapse;
@@ -35,30 +173,20 @@ const { generatedAt } = loadData();
       td {
         text-align: left;
         padding: 0.25rem 0.5rem;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--line);
         vertical-align: top;
       }
-      dt {
-        font-weight: bold;
-      }
-      .hint {
-        font-size: 0.875rem;
-        color: #555;
-        margin: 0.25rem 0 0;
-      }
       footer {
-        border-top: 1px solid #ccc;
+        border-top: 1px solid var(--line);
         margin-top: 2rem;
         font-size: 0.875rem;
+        color: var(--muted);
       }
     </style>
   </head>
   <body>
     <header>
       <p><a href={BASE}>Zotero plugin index</a></p>
-      <label for="zotero-version">Your Zotero version</label>
-      <input id="zotero-version" type="text" placeholder="for example 8.0.1" autocomplete="off" spellcheck="false" />
-      <p class="hint">In Zotero, open Help → About Zotero. On macOS, open Zotero → About Zotero.</p>
     </header>
     <main>
       <slot />
@@ -68,76 +196,5 @@ const { generatedAt } = loadData();
       <p>The build read each plugin's repository and releases on {day(generatedAt)}.</p>
       <p>Data file: <a href={`${BASE}v1/plugins.json`}>v1/plugins.json</a></p>
     </footer>
-    <script>
-      import { rangeResult, type RangeRecord, type RangeResult, zoteroVersion } from "../../../src/site/version.ts";
-
-      // The visitor's browser keeps the field's text under this key, so every page shows it.
-      // Other project sites share the jmgirard.github.io storage, so the key names the index.
-      const KEY = "zotero-plugin-index:zotero-version";
-      const MESSAGES: Record<RangeResult, (version: string) => string> = {
-        inside: (version) => `Zotero ${version} is inside the declared range.`,
-        below: (version) => `Zotero ${version} is older than the declared minimum.`,
-        above: (version) => `Zotero ${version} is newer than the declared maximum.`,
-        "no-range": (version) => `There is no declared range to compare with Zotero ${version}.`,
-      };
-
-      // Storage can be blocked, for example when the browser blocks site data; the field then
-      // still works on the page it was typed on. Undefined means storage cannot be read.
-      function stored(): string | undefined {
-        try {
-          return localStorage.getItem(KEY) ?? "";
-        } catch {
-          return undefined;
-        }
-      }
-
-      function store(version: string): void {
-        try {
-          if (version) localStorage.setItem(KEY, version);
-          else localStorage.removeItem(KEY);
-        } catch {}
-      }
-
-      function show(version: string): void {
-        for (const slot of document.querySelectorAll<HTMLElement>("[data-result-for]")) {
-          if (!version) {
-            slot.textContent = "";
-            delete slot.dataset.result;
-            continue;
-          }
-          const result = rangeResult(version, JSON.parse(slot.dataset.resultFor!) as RangeRecord);
-          slot.dataset.result = result;
-          slot.textContent = MESSAGES[result](version);
-        }
-      }
-
-      const field = document.querySelector<HTMLInputElement>("#zotero-version")!;
-      // The field keeps what the visitor typed; the results use the version read from it.
-      function refresh(): void {
-        const value = stored();
-        if (value === undefined) return;
-        field.value = value;
-        show(zoteroVersion(field.value));
-      }
-
-      // Text typed before this script ran is kept and stored.
-      if (field.value) {
-        store(field.value.trim());
-        show(zoteroVersion(field.value));
-      } else {
-        refresh();
-      }
-      field.addEventListener("input", () => {
-        store(field.value.trim());
-        show(zoteroVersion(field.value));
-      });
-      // A page restored by Back, or a change made in another tab, reads the stored value again.
-      window.addEventListener("pageshow", (event) => {
-        if (event.persisted) refresh();
-      });
-      window.addEventListener("storage", (event) => {
-        if (event.key === KEY || event.key === null) refresh();
-      });
-    </script>
   </body>
 </html>

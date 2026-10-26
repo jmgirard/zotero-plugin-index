@@ -107,16 +107,16 @@ change to the published data or its schemas.
 - [x] T2: Tests first in a new `test/description.test.ts` for every AC2 case, then
       `src/site/description.ts` with `shownDescription`, using `appliedValue` and the name rule of
       `displayName` (`site/src/data.ts`).
-- [ ] T3: Extend `test/fixtures/site/plugins.json`, valid against the v1 schema: a record with no
+- [x] T3: Extend `test/fixtures/site/plugins.json`, valid against the v1 schema: a record with no
       bound, one with only a minimum, one with a name-only description, and one with a `description`
       override. Rewrite the page and row tests in `test/site.test.ts` for AC3 and AC5 over every
       fixture record.
-- [ ] T4: Home page (`site/src/pages/index.astro`): a list of rows with name, description, Archived
+- [x] T4: Home page (`site/src/pages/index.astro`): a list of rows with name, description, Archived
       mark, and pills (a shared pill component under `site/src/components/`). Pill test for AC4 on
       each of the three levels.
-- [ ] T5: Plugin page (`site/src/pages/plugins/[id]/index.astro`): the AC5 order and the `<details>`
+- [x] T5: Plugin page (`site/src/pages/plugins/[id]/index.astro`): the AC5 order and the `<details>`
       section; keep each `data-fact` attribute.
-- [ ] T6: `site/src/layouts/Base.astro`: drop the version field, hint, and script; add the row and
+- [x] T6: `site/src/layouts/Base.astro`: drop the version field, hint, and script; add the row and
       pill styles with a `prefers-color-scheme: dark` block. Remove `zoteroVersion`, `rangeResult`,
       `rangeFields`, and their tests (`test/version.test.ts`, `test/site-data.test.ts`). Test for AC6
       over every file the build writes.
@@ -147,6 +147,10 @@ change to the published data or its schemas.
 - 2026-10-26: implement started on branch m015-pills-and-descriptions, cut from main at a238ab9.
 - 2026-10-26: T1 done: `ZOTERO_MAJORS` and `majorSupport` in `src/site/version.ts`; 19 new tests in `test/version.test.ts` failed first, then passed.
 - 2026-10-26: T2 done: `shownDescription` in `src/site/description.ts` computes the shown name itself (override, upstream name, or id) so `src/site/` does not import `site/src/data.ts`; 10 tests in `test/description.test.ts` failed first on the missing module, then passed.
+- 2026-10-26: T3 done: fixture gains `no-range-plugin` (no bound, name-only description) and `min-only-plugin` (min only, name-only description with a `description` override); a fixture test asserts each row and page shape exists; row and page tests run over every fixture id.
+- 2026-10-26: T4 done: home page is a `<ul class="plugins">` of `<li data-plugin>` rows; pills are `<span>`s in `<div class="pills">` so a row holds no nested `<li>`; shared `site/src/components/Support.astro` renders pills or the status line; all styles stay global in Base so Astro adds no scoped attributes to the exact markup the tests match.
+- 2026-10-26: T5 done: plugin page in the AC5 order; repository and releases are `<li data-fact>` links; the id becomes a `data-fact="id"` row inside `<details>`; the overrides table sits in a scrolling wrapper for narrow screens.
+- 2026-10-26: T6 done: version field, hint, and script removed from Base; `zoteroVersion`, `rangeResult`, `RangeResult`, `rangeFields` and their tests removed; the override-precedence cases that went through `rangeResult` now test `declaredRange` directly; AC6 test reads every file the build writes. Planted defects (`<details open>`, ◐ shown as ✓) turned 8 of 37 site tests red, then the files were restored from copies.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

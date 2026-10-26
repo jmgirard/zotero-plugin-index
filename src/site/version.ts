@@ -1,5 +1,5 @@
-// Version ordering for the site. Plain TypeScript with no imports, so both the tests and
-// the browser script can use it.
+// Version ordering and declared ranges for the site's templates. Plain TypeScript with no
+// imports.
 
 // One dot-separated part of a version, parsed as <number-a><string-b><number-c><string-d>.
 // A string that is absent is null; a present string can be empty (as string-b of "0-beta").
@@ -55,21 +55,12 @@ export function compareVersions(a: string, b: string): number {
   return 0;
 }
 
-// The Zotero version in what a visitor typed or pasted: the first run that starts with a
-// digit and ends at whitespace, a comma, a semicolon, a slash, or a parenthesis. So the
-// About Zotero text "Version 7.0.11 (64-bit)" reads as 7.0.11. Text with no digit gives "".
-export function zoteroVersion(input: string): string {
-  return /\d[^\s(),;/]*/.exec(input)?.[0] ?? "";
-}
-
 // The fields of a published record that the range reads.
 export interface RangeRecord {
   upstream?: { version: string; strictMinVersion?: string; strictMaxVersion?: string };
   failure?: unknown;
   overrides: { field: string; version?: string; value: string }[];
 }
-
-export type RangeResult = "below" | "above" | "inside" | "no-range";
 
 // The override that sets a field, if any. An override applies to a record that was read,
 // when it has no version or names the upstream version. The one that names the version
@@ -118,14 +109,4 @@ export function majorSupport(record: RangeRecord, major: string): MajorSupport |
     return "none";
   }
   return "some";
-}
-
-// Where a Zotero version falls against the record's declared range. The bounds themselves
-// are inside the range.
-export function rangeResult(zotero: string, record: RangeRecord): RangeResult {
-  const { min, max } = declaredRange(record);
-  if (min === undefined && max === undefined) return "no-range";
-  if (min !== undefined && compareVersions(zotero, min) < 0) return "below";
-  if (max !== undefined && compareVersions(zotero, max) > 0) return "above";
-  return "inside";
 }

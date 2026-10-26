@@ -1,33 +1,32 @@
 ---
+import Support from "../components/Support.astro";
 import Base from "../layouts/Base.astro";
-import { displayName, loadData, pluginHref, rangeFields, rangeText } from "../data.ts";
+import { displayName, loadData, pluginHref, shownDescription } from "../data.ts";
 
 const { plugins } = loadData();
 ---
 
 <Base title="Zotero plugin index">
   <h1>Zotero plugin index</h1>
-  <p>
-    Plugins for Zotero 7 and later. A plugin can declare the Zotero versions it supports. Enter your Zotero version
-    above to see where it falls in each declared range.
+  <p class="intro">
+    Plugins for Zotero 7 and later. The pills show the Zotero versions that each plugin declares it supports: ✓ all of
+    that version, ◐ part of it, – none of it. The index reads these ranges from each plugin and does not test them.
   </p>
-  <table>
-    <thead>
-      <tr><th>Plugin</th><th>Declared range</th><th>Your version</th></tr>
-    </thead>
-    <tbody>
-      {
-        plugins.map((record) => (
-          <tr data-plugin={record.id}>
-            <td>
+  <ul class="plugins">
+    {
+      plugins.map((record) => {
+        const description = shownDescription(record);
+        return (
+          <li class="plugin" data-plugin={record.id}>
+            <p class="plugin-name">
               <a href={pluginHref(record.id)}>{displayName(record)}</a>
               {record.upstream?.archived === true && <span data-archived>(archived)</span>}
-            </td>
-            <td>{record.failure ? `Not read: ${record.failure.name}` : rangeText(record)}</td>
-            <td><span data-result-for={rangeFields(record)} /></td>
-          </tr>
-        ))
-      }
-    </tbody>
-  </table>
+            </p>
+            {description && <p class="description" data-description>{description}</p>}
+            <Support record={record} />
+          </li>
+        );
+      })
+    }
+  </ul>
 </Base>

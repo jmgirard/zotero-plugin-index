@@ -84,6 +84,53 @@
         "latestReleaseDate": "2026-10-01T00:00:00Z"
       },
       "overrides": []
+    },
+    {
+      "id": "no-range-plugin@example.org",
+      "repoUrl": "https://github.com/example/no-range-plugin",
+      "upstream": {
+        "id": "no-range-plugin@example.org",
+        "name": "No Range Plugin",
+        "description": "No Range Plugin for Zotero",
+        "version": "1.0.0",
+        "updateUrl": "https://example.org/no-range-plugin/update.json",
+        "updateHost": "example.org",
+        "repoUrl": "https://github.com/example/no-range-plugin",
+        "repoCreatedAt": "2025-06-01T00:00:00Z",
+        "openIssues": 1,
+        "releaseCount": 2,
+        "latestReleaseDate": "2026-08-01T00:00:00Z",
+        "prerelease": false,
+        "archived": false
+      },
+      "overrides": []
+    },
+    {
+      "id": "min-only-plugin@example.org",
+      "repoUrl": "https://github.com/example/min-only-plugin",
+      "upstream": {
+        "id": "min-only-plugin@example.org",
+        "name": "Min Only Plugin",
+        "description": "Min Only Plugin",
+        "version": "2.1.0",
+        "strictMinVersion": "8.0.1",
+        "updateUrl": "https://example.org/min-only-plugin/update.json",
+        "updateHost": "example.org",
+        "repoUrl": "https://github.com/example/min-only-plugin",
+        "repoCreatedAt": "2024-02-02T00:00:00Z",
+        "openIssues": 4,
+        "releaseCount": 9,
+        "latestReleaseDate": "2026-09-15T00:00:00Z",
+        "prerelease": false,
+        "archived": false
+      },
+      "overrides": [
+        {
+          "field": "description",
+          "value": "Sorts attachments into folders.",
+          "reason": "The manifest description only repeats the plugin name."
+        }
+      ]
     }
   ]
 }

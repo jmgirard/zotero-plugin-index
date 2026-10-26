@@ -1,13 +1,15 @@
 ---
+import Support from "../../../components/Support.astro";
 import Base from "../../../layouts/Base.astro";
 import {
   day,
+  declaredRange,
   displayName,
   loadData,
   overrideUsed,
-  rangeFields,
   rangeText,
   safeHref,
+  shownDescription,
   upstreamValue,
   type PluginRecord,
 } from "../../../data.ts";
@@ -20,97 +22,106 @@ const { record } = Astro.props as { record: PluginRecord };
 const { upstream, failure, overrides } = record;
 const repoUrl = upstream?.repoUrl ?? record.repoUrl;
 const repoHref = safeHref(repoUrl);
+const description = shownDescription(record);
+const { min, max } = declaredRange(record);
 ---
 
 <Base title={`${displayName(record)}: Zotero plugin index`}>
   <h1>{displayName(record)}</h1>
-  <p><code>{record.id}</code></p>
+  {description && <p class="description" data-description>{description}</p>}
   {
-    upstream && (
-      <section>
-        <h2>Declared range</h2>
-        <p data-fact="declared-range">{rangeText(record)}</p>
-        <p><span data-result-for={rangeFields(record)} /></p>
-      </section>
+    failure ? (
+      <p data-fact="failure">
+        The last build could not read this plugin: <code>{failure.name}</code>: {failure.message}
+      </p>
+    ) : (
+      <Support record={record} />
     )
   }
   {
-    failure && (
-      <section>
-        <h2>Not read</h2>
-        <p data-fact="failure">
-          The last build could not read this plugin: <code>{failure.name}</code>: {failure.message}
-        </p>
-      </section>
+    (min !== undefined || max !== undefined) && (
+      <p class="range">
+        Declared range: <span data-fact="declared-range">{rangeText(record)}</span>
+      </p>
     )
   }
-  <h2>Facts</h2>
-  <dl>
-    <dt>Repository</dt>
-    <dd data-fact="repository">{repoHref ? <a href={repoHref}>{repoUrl}</a> : repoUrl}</dd>
+  <ul class="links">
+    <li data-fact="repository">{repoHref ? <a href={repoHref}>{repoUrl}</a> : repoUrl}</li>
     {
       upstream && (
-        <>
-          {typeof upstream.archived === "boolean" && (
-            <>
-              <dt>Archived on GitHub</dt>
-              <dd data-fact="archived">{upstream.archived ? "Yes" : "No"}</dd>
-            </>
-          )}
-          <dt>Repository created</dt>
-          <dd data-fact="repo-created">{day(upstream.repoCreatedAt)}</dd>
-          <dt>Release read by the index</dt>
-          <dd data-fact="latest-release">
-            {upstream.version}, published {day(upstream.latestReleaseDate)}
-            {upstream.prerelease === true && " (prerelease)"}
-          </dd>
-          <dt>Releases with an .xpi</dt>
-          <dd data-fact="release-count">{upstream.releaseCount}</dd>
-          <dt>Open issues and pull requests</dt>
-          <dd data-fact="open-issues">{upstream.openIssues}</dd>
-          <dt>Host of update.json</dt>
-          <dd data-fact="update-host">{upstream.updateHost}</dd>
-          <dt>Releases</dt>
-          <dd data-fact="releases">
-            {repoHref ? <a href={`${repoHref}/releases`}>{`${repoUrl}/releases`}</a> : `${repoUrl}/releases`}
-          </dd>
-        </>
+        <li data-fact="releases">
+          {repoHref ? <a href={`${repoHref}/releases`}>Releases</a> : `${repoUrl}/releases`}
+        </li>
       )
     }
-  </dl>
-  {
-    overrides.length > 0 && (
-      <section>
-        <h2>Overrides</h2>
-        <p>
-          The index corrects these upstream facts.
-          {upstream && ' An override marked "yes" under Used applies to the plugin version that the index read. The declared range above uses the strict_min_version and strict_max_version overrides marked "yes".'}
-        </p>
-        <table>
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Upstream value</th>
-              <th>Override value</th>
-              <th>For version</th>
-              <th>Used</th>
-              <th>Reason</th>
-            </tr>
-          </thead>
-          <tbody>
-            {overrides.map((override) => (
-              <tr data-override={override.field}>
-                <td><code>{override.field}</code></td>
-                <td>{upstreamValue(record, override.field) ?? "none"}</td>
-                <td>{override.value}</td>
-                <td>{override.version ?? "every version"}</td>
-                <td>{overrideUsed(record, override) ? "yes" : "no"}</td>
-                <td>{override.reason}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-    )
-  }
+  </ul>
+  <details>
+    <summary>Details</summary>
+    <dl>
+      <dt>Plugin id</dt>
+      <dd data-fact="id"><code>{record.id}</code></dd>
+      {
+        upstream && (
+          <>
+            {typeof upstream.archived === "boolean" && (
+              <>
+                <dt>Archived on GitHub</dt>
+                <dd data-fact="archived">{upstream.archived ? "Yes" : "No"}</dd>
+              </>
+            )}
+            <dt>Repository created</dt>
+            <dd data-fact="repo-created">{day(upstream.repoCreatedAt)}</dd>
+            <dt>Release read by the index</dt>
+            <dd data-fact="latest-release">
+              {upstream.version}, published {day(upstream.latestReleaseDate)}
+              {upstream.prerelease === true && " (prerelease)"}
+            </dd>
+            <dt>Releases with an .xpi</dt>
+            <dd data-fact="release-count">{upstream.releaseCount}</dd>
+            <dt>Open issues and pull requests</dt>
+            <dd data-fact="open-issues">{upstream.openIssues}</dd>
+            <dt>Host of update.json</dt>
+            <dd data-fact="update-host">{upstream.updateHost}</dd>
+          </>
+        )
+      }
+    </dl>
+    {
+      overrides.length > 0 && (
+        <section>
+          <h2>Overrides</h2>
+          <p>
+            The index corrects these upstream facts.
+            {upstream && ' An override marked "yes" under Used applies to the plugin version that the index read. The declared range above uses the strict_min_version and strict_max_version overrides marked "yes".'}
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>Upstream value</th>
+                  <th>Override value</th>
+                  <th>For version</th>
+                  <th>Used</th>
+                  <th>Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {overrides.map((override) => (
+                  <tr data-override={override.field}>
+                    <td><code>{override.field}</code></td>
+                    <td>{upstreamValue(record, override.field) ?? "none"}</td>
+                    <td>{override.value}</td>
+                    <td>{override.version ?? "every version"}</td>
+                    <td>{overrideUsed(record, override) ? "yes" : "no"}</td>
+                    <td>{override.reason}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )
+    }
+  </details>
 </Base>
