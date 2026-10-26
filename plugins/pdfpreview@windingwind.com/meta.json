@@ -1,0 +1,7 @@
+{
+  "id": "pdfpreview@windingwind.com",
+  "name": "Zotero PDF Preview",
+  "description": "PDF Preview for Zotero.",
+  "repoUrl": "https://github.com/windingwind/zotero-pdf-preview",
+  "updateUrl": "https://raw.githubusercontent.com/windingwind/zotero-pdf-preview/master/update.json"
+}
