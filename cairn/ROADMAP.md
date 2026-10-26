@@ -1,14 +1,13 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-26 (M011 done and archived; 1 row graduated, 2 rows reworded, 2 rows added; 1 lesson captured, 8 marked used; M008 row pruned)_
+_Last hygiene check: 2026-10-26 (M012 done and archived; 1 row graduated; 1 lesson retired, 1 captured, 6 marked used; M009 row pruned)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M012 | Stop inflating past the declared size | review | — | normal | milestones/M012-bound-unzip-output.md |
-| M009 | Open a pull request for each new plugin | done | M008 | high | milestones/archive/M009-discovery-pull-requests.md |
+| M012 | Stop inflating past the declared size | done | — | normal | milestones/archive/M012-bound-unzip-output.md |
 | M010 | Take one repo URL from an issue form | done | M009 | normal | milestones/archive/M010-add-plugin-issue-form.md |
 | M011 | Read untrusted repos without push rights | done | — | high | milestones/archive/M011-read-without-push-rights.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
@@ -20,7 +19,6 @@ _Last hygiene check: 2026-10-26 (M011 done and archived; 1 row graduated, 2 rows
 - Read stable releases before prereleases: the reader takes the manifest from the newest release with an `.xpi`, prereleases included, so wileyyugioh/zotmoov reads as prerelease 1.2.34 (observed 2026-10-25); prefer the newest stable release with an `.xpi` when one exists; `pnpm discover` drafts entries from the same read (M008 review) — added 2026-10-25 — M002, M008
 - Warn when the daily build degrades: `pnpm build` prints no failure summary, still exits 0 and deploys when rate limits turn up to half of the reads into `github-http-error`, and a few hung hosts can push the job past its 30-minute limit so no artifact is kept; add a failure summary, a warning on partial failure, and a time budget per plugin (M003 review); narrowed 2026-10-25 by M006, which exits 1 when more than half of the records fail; `pnpm discover` has no time budget either (M008 review) — added 2026-10-25 — M003, M006, M008
 - Count only build failures for deploys: M006's rule counts every record with a `failure` toward its more-than-half exit, steady states such as `fork`, `no-release`, and `facts-invalid` included, so an index where most entries sit in such states never deploys; count build-level names such as `request-failed`, `github-http-error`, and `unexpected-error` only; see "Warn when the daily build degrades" (M006 review) — added 2026-10-25 — M006
-- Stop inflating past the declared size: fflate 0.8.3 `unzipSync` decodes a deflate stream in full and only drops output past the declared `originalSize`, so a `manifest.json` within the 1 MiB caps whose stream inflates to about 1 GB holds an unzip for about 4 s, about 8 s with a second one in `messages.json` (102 KB inflating to 100 MB took 414 ms); bound the inflate by output, for example with fflate's streaming `Inflate`, and fix the `unzipOne` comment's input-bound claim; the time budget in "Warn when the daily build degrades" would also bound it (M005 review); `pnpm discover` reads up to 100 repos a run that anyone can tag (M008 review) — added 2026-10-25 — M004, M005, M008 — started M012
 - Retry repos refused by a download error: `pnpm discover` keeps a refused repo's record for 30 days or until its next push, and that includes `update-json-http-error` and other failures that an HTTP 429 or 503 from a download host can cause, so one bad response hides a repo; treat download HTTP errors as not recorded, which changes the state rule M008 shipped (M008 review) — added 2026-10-25 — M008
 - Stop retrying a failing bot pull request: `pnpm propose` records no failure of its push or create request, so a repo whose pull request body passes GitHub's size limit fails again each run, takes one of its slots, and fails the workflow daily; record such failures under the 30-day rule (M009 review); an issue run meets the same refused request and leaves its issue open with the error (M010 review); narrowed 2026-10-26 by M011, whose read step refuses and records as `not-proposable` a repo whose branch name git refuses — added 2026-10-26 — M009, M010, M011
 - Bound the time of a discover run: `discover.yml` stops at 30 minutes, and `pnpm discover` writes its state only at the end, so a run the limit kills saves the old state again and the next run reads the same first repos; its `git` and `pnpm check` spawns have no timeout; add a time budget that ends the reads early and writes the state; see "Warn when the daily build degrades" (M009 review) — added 2026-10-26 — M008, M009
