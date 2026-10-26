@@ -80,6 +80,7 @@ and "Bound the time of a discover run". The read-only read job → M011.
 - 2026-10-26: resumed by /milestone-implement; main has not moved since the cut, tree clean.
 - 2026-10-26: claim audit: 22 claims read, 1 corrected — CHANGELOG.md (the entry said the reader stops at the declared size; it checks after each 16 KiB of input, so it can inflate about 16 MiB first; reworded and re-read by the same reader).
 - 2026-10-26: all implement tasks done; T4 is the review-time build comparison for AC3, left for /milestone-review as the plan states. `pnpm test` and `pnpm check` exit 0. Status set to review.
+- 2026-10-26: step-7 approval: m012-bound-unzip-output approved for merge
 
 ## Decisions
 
