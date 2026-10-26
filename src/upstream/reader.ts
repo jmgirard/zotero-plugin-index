@@ -232,13 +232,13 @@ export function githubClient(fetch: Fetch) {
   // Sends `payload` as JSON. A refused request fails with GitHub's message and the
   // message of each error it lists, such as why a pull request cannot be created. A
   // redirect fails the request, so the payload is not sent to another host.
-  async function post(url: string, payload: unknown): Promise<unknown> {
+  async function send(method: "POST" | "PATCH", url: string, payload: unknown): Promise<unknown> {
     if (!URL.canParse(url) || new URL(url).origin !== API) fail("request-failed", `${url} is not on ${API}`);
     let response: Response;
     let text: string;
     try {
       response = await fetch(url, {
-        method: "POST",
+        method,
         headers: { ...headers, "content-type": "application/json" },
         body: JSON.stringify(payload),
         redirect: "error",
@@ -246,7 +246,7 @@ export function githubClient(fetch: Fetch) {
       });
       text = await response.text();
     } catch (error) {
-      fail("request-failed", `POST ${url} failed: ${(error as Error).message}`);
+      fail("request-failed", `${method} ${url} failed: ${(error as Error).message}`);
     }
     let body: { message?: unknown; errors?: { message?: unknown }[] } | undefined;
     try {
@@ -257,15 +257,16 @@ export function githubClient(fetch: Fetch) {
     if (!response.ok) {
       const messages = [body?.message, ...(Array.isArray(body?.errors) ? body.errors.map((error) => error?.message) : [])];
       const said = messages.filter((message) => typeof message === "string").join("; ");
-      fail("github-http-error", `POST ${url} returned HTTP ${response.status}${said ? `: ${said}` : ""}`);
+      fail("github-http-error", `${method} ${url} returned HTTP ${response.status}${said ? `: ${said}` : ""}`);
     }
-    if (body === undefined) fail("request-failed", `POST ${url} returned a body that is not JSON`);
+    if (body === undefined) fail("request-failed", `${method} ${url} returned a body that is not JSON`);
     return body;
   }
 
   return {
     get,
-    post,
+    post: (url: string, payload: unknown) => send("POST", url, payload),
+    patch: (url: string, payload: unknown) => send("PATCH", url, payload),
     json: async (url: string): Promise<unknown> => (await get(url)).body,
     // Follows the Link header's rel="next" and joins the pages' arrays. The token
     // goes only to the API host, and a page seen before ends the read.

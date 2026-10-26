@@ -65,7 +65,7 @@ an edit to M009's CHANGELOG entry.
 
 - [x] T1: Write `add-plugin.yml` and failing tests for AC1–AC4, with form bodies in the shape GitHub renders.
 - [x] T2: Implement the form-body parser.
-- [ ] T3: Implement the issue run on top of M009's propose step: the index and skip checks, the read, the pull
+- [x] T3: Implement the issue run on top of M009's propose step: the index and skip checks, the read, the pull
       request with `Closes #<issue>`, the comment, and the close.
 - [ ] T4: Write `add-plugin-issue.yml` with the body in `env:` only and the `discover` concurrency group;
       check it with `ruby -ryaml`.
@@ -90,6 +90,9 @@ an edit to M009's CHANGELOG entry.
 - 2026-10-26: decided the close reasons: `completed` when an entry already names the repo, `not_planned` for every other close.
 - 2026-10-26: the repo has no `add-plugin` label, and GitHub applies a form's label only when it exists; creating it is an outward action left for T6, at the user's yes.
 - 2026-10-26: T2 done: `parseIssueBody` in `src/discover/issue.ts`; its 6 tests pass; `issueRun` is a stub until T3.
+- 2026-10-26: T3 done: `issueRun` and `pnpm discover-issue` (`src/discover/issue-cli.ts`); `discover.ts` gains `draftEntry` (the one-repo read and write that `discover` now calls) and exports `indexed` and `repoName`; `propose.ts` exports `botPulls` (now with each skipped pull request's URL), `defaultBranch`, `propose`, and `code`, and `body` takes the issue number; `githubClient` gains `patch`. `pnpm test` 361 passed, `pnpm check` 0 problems; removing the pre-read index and pull-request check turns the three AC4 tests red.
+- 2026-10-26: decided that the run also checks the name GitHub gives after the read, so a renamed repo whose new name an entry or bot pull request has is answered the same way; and that a failed index, pull-request, or default-branch read counts as the bot's failure (comment, issue left open, exit 1).
+- 2026-10-26: AC3 as written closes the issue on any failed read, `github-http-error` and `request-failed` included, which a rate limit or outage can cause; followed as written, with a candidate row for leaving such issues open.
 
 ## Decisions
 

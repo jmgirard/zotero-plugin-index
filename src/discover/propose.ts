@@ -95,24 +95,37 @@ export async function proposeRun(options: ProposeRunOptions): Promise<ProposeRun
   return { ...result, proposed, failed };
 }
 
-// `skip` holds the lowercase owner/repo of each bot pull request that is open or was
-// closed without a merge. A merged one's entry is in the index, which discovery reads.
-// `ids` holds the lowercase plugin ids whose entry directories the open ones add, so
-// another repo with the same id is not proposed beside them. A pull request from a fork
-// is not the bot's, whatever its branch is named.
-async function botPulls(fetch: Fetch, indexRepo: string): Promise<{ skip: Set<string>; ids: Set<string> }> {
+export interface BotPulls {
+  // The lowercase owner/repo of each bot pull request that is open or was closed without
+  // a merge. A merged one's entry is in the index, which discovery reads.
+  skip: Set<string>;
+  // The same pull requests by owner/repo, with their URLs.
+  pulls: Map<string, { url: string; open: boolean }>;
+  // The lowercase plugin ids whose entry directories the open ones add, so another repo
+  // with the same id is not proposed beside them.
+  ids: Set<string>;
+}
+
+// A pull request from a fork is not the bot's, whatever its branch is named.
+export async function botPulls(fetch: Fetch, indexRepo: string): Promise<BotPulls> {
   const github = githubClient(fetch);
-  const pulls = (await github.pages(`${API}/repos/${indexRepo}/pulls?state=all&per_page=100`)) as PullJson[];
+  const list = (await github.pages(`${API}/repos/${indexRepo}/pulls?state=all&per_page=100`)) as PullJson[];
   const skip = new Set<string>();
+  const pulls = new Map<string, { url: string; open: boolean }>();
   const ids = new Set<string>();
-  for (const pull of pulls) {
+  for (const pull of list) {
     const ref = pull?.head?.ref;
     const headRepo = pull?.head?.repo?.full_name;
     if (typeof ref !== "string" || !ref.startsWith(PREFIX)) continue;
     if (typeof headRepo !== "string" || headRepo.toLowerCase() !== indexRepo.toLowerCase()) continue;
     const parts = ref.slice(PREFIX.length).split("/");
     if (parts.length !== 2 || !parts[0] || !parts[1]) continue;
-    if (pull.state === "open" || (pull.state === "closed" && !pull.merged_at)) skip.add(parts.join("/").toLowerCase());
+    if (pull.state === "open" || (pull.state === "closed" && !pull.merged_at)) {
+      const repo = parts.join("/").toLowerCase();
+      skip.add(repo);
+      const url = typeof pull.html_url === "string" ? pull.html_url : `https://github.com/${indexRepo}/pull/${pull.number}`;
+      pulls.set(repo, { url, open: pull.state === "open" });
+    }
     if (pull.state !== "open") continue;
     const files = (await github.pages(`${API}/repos/${indexRepo}/pulls/${pull.number}/files?per_page=100`)) as {
       filename?: unknown;
@@ -122,24 +135,25 @@ async function botPulls(fetch: Fetch, indexRepo: string): Promise<{ skip: Set<st
       if (id) ids.add(id.toLowerCase());
     }
   }
-  return { skip, ids };
+  return { skip, pulls, ids };
 }
 
 interface PullJson {
   number?: unknown;
   state?: unknown;
   merged_at?: unknown;
+  html_url?: unknown;
   head?: { ref?: unknown; repo?: { full_name?: unknown } | null };
 }
 
-async function defaultBranch(fetch: Fetch, indexRepo: string): Promise<string> {
+export async function defaultBranch(fetch: Fetch, indexRepo: string): Promise<string> {
   const url = `${API}/repos/${indexRepo}`;
   const repo = (await githubClient(fetch).json(url)) as { default_branch?: unknown } | null;
   if (typeof repo?.default_branch !== "string") throw new ReadFailure("request-failed", `GET ${url} returned no default_branch`);
   return repo.default_branch;
 }
 
-interface ProposeOptions {
+export interface ProposeOptions {
   fetch: Fetch;
   indexRepo: string;
   gitDir: string;
@@ -147,14 +161,16 @@ interface ProposeOptions {
   base: string;
   written: Written[];
   check: CheckRunner;
+  // The index repo's issue that asked for the entries, which their pull requests close.
+  issue?: number;
 }
 
 // For each entry, runs the check on a directory that holds only that entry, force-pushes
 // the branch `discover/<owner>/<repo>` with one commit on top of the default branch that
 // adds the entry's two files, and opens a pull request from it. The commits are built
 // with a temporary index file, so the checkout's working tree and branch do not change.
-async function propose(options: ProposeOptions): Promise<{ proposed: Proposed[]; failed: ProposeFailure[] }> {
-  const { fetch, indexRepo, gitDir, remote = "origin", base, written, check } = options;
+export async function propose(options: ProposeOptions): Promise<{ proposed: Proposed[]; failed: ProposeFailure[] }> {
+  const { fetch, indexRepo, gitDir, remote = "origin", base, written, check, issue } = options;
   const proposed: Proposed[] = [];
   const failed: ProposeFailure[] = [];
   if (written.length === 0) return { proposed, failed };
@@ -206,7 +222,7 @@ async function propose(options: ProposeOptions): Promise<{ proposed: Proposed[];
           title: `Add ${repo}`,
           head: branch,
           base,
-          body: body(entry, checked),
+          body: body(entry, checked, issue),
         })) as { html_url?: unknown };
         proposed.push({ repo, id, branch, url: typeof pull?.html_url === "string" ? pull.html_url : "" });
       } catch (error) {
@@ -220,12 +236,15 @@ async function propose(options: ProposeOptions): Promise<{ proposed: Proposed[];
 }
 
 // The pull request body. The manifest's values and the check output are in code spans
-// and a code block, so text in them cannot mention a GitHub user.
-export function body(entry: Written, checked: { status: number; output: string }): string {
+// and a code block, so text in them cannot mention a GitHub user. With `issue`, the body
+// says that issue asked for the entry, and closes it.
+export function body(entry: Written, checked: { status: number; output: string }, issue?: number): string {
   const declared = (value: string | undefined) => (value === undefined ? "not declared" : code(value));
   const fence = "`".repeat(Math.max(3, ...[...checked.output.matchAll(/`+/g)].map(([run]) => run.length + 1)));
+  const found = issue === undefined ? `found ${entry.repoUrl} by its GitHub topic` : `read ${entry.repoUrl} from issue #${issue}`;
   return [
-    `The discovery bot found ${entry.repoUrl} by its GitHub topic and drafted this entry from its newest release with an \`.xpi\` file.`,
+    `The discovery bot ${found} and drafted this entry from its newest release with an \`.xpi\` file.`,
+    ...(issue === undefined ? [] : ["", `Closes #${issue}`]),
     "",
     `- Repo: ${entry.repoUrl}`,
     `- Version: ${code(entry.version)}`,
@@ -237,12 +256,12 @@ export function body(entry: Written, checked: { status: number; output: string }
     checked.output.trimEnd(),
     fence,
     "",
-    "If this pull request is closed without a merge, the bot does not propose this repo again.",
+    "If this pull request is closed without a merge, the bot does not propose this repo again, from its topic or from an issue.",
   ].join("\n");
 }
 
 // Each run of whitespace becomes one space, since a blank line would end the code span.
-function code(text: string): string {
+export function code(text: string): string {
   const value = text.replace(/\s+/g, " ");
   const ticks = "`".repeat(Math.max(1, ...[...value.matchAll(/`+/g)].map(([run]) => run.length + 1)));
   return `${ticks} ${value} ${ticks}`;

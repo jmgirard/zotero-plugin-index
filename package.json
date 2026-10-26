@@ -13,6 +13,7 @@
     "build": "node src/build/cli.ts",
     "check": "node src/check/cli.ts",
     "discover": "node src/discover/cli.ts",
+    "discover-issue": "node src/discover/issue-cli.ts",
     "site": "node src/site/cli.ts",
     "test": "tsc --noEmit && vitest run"
   },

@@ -127,44 +127,66 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
       continue;
     }
 
-    const refuse = (failure: DiscoveryFailure, message: string, recorded = !NOT_RECORDED.has(failure)) => {
-      if (recorded) state[repo] = { pushedAt, failure, checkedAt: now.toISOString() };
+    const drafted = await draftEntry(repoUrl, { fetch, lookup, outDir, ids: index.ids, pendingIds: options.pendingIds });
+    if (!drafted.ok) {
+      const { failure, message } = drafted;
+      if (drafted.recorded) state[repo] = { pushedAt, failure, checkedAt: now.toISOString() };
       report.read.push({ repo, repoUrl, outcome: "refused", failure, message });
-    };
-    let read: Awaited<ReturnType<typeof readUpstream>>;
-    try {
-      read = await readUpstream(repoUrl, fetch, { lookup });
-    } catch (error) {
-      // A bug in the reader, not a fact about the repo; the run goes on.
-      refuse("unexpected-error", `reading ${repoUrl} threw: ${(error as Error).message}`);
       continue;
     }
-    if (!read.ok) {
-      refuse(read.failure, read.message);
-      continue;
-    }
-    const { id, version, strictMinVersion, strictMaxVersion } = read.facts;
-    // Entry directories may be in another place than outDir, so writeEntry cannot see them.
-    if (index.ids.has(id.toLowerCase())) {
-      refuse("entry-exists", `the index already has an entry for the id ${id}`);
-      continue;
-    }
-    if (options.pendingIds?.has(id.toLowerCase())) {
-      refuse("entry-exists", `an open pull request already adds an entry for the id ${id}`, false);
-      continue;
-    }
-    const entry = await writeEntry(outDir, read.facts);
-    if (!entry.ok) {
-      // An existing directory in outDir, or a failed write, is about outDir, not the repo.
-      refuse(entry.failure, entry.message, entry.failure === "unsafe-id");
-      continue;
-    }
+    const { id, dir, version, strictMinVersion, strictMaxVersion } = drafted;
     delete state[repo];
     index.ids.add(id.toLowerCase());
     written++;
-    report.read.push({ repo, repoUrl, outcome: "written", id, dir: entry.dir, version, strictMinVersion, strictMaxVersion });
+    report.read.push({ repo, repoUrl, outcome: "written", id, dir, version, strictMinVersion, strictMaxVersion });
   }
   return { ok: true, state, report };
+}
+
+export type Drafted =
+  | { ok: true; id: string; dir: string; repoUrl: string; version: string; strictMinVersion?: string; strictMaxVersion?: string }
+  // `recorded` is false for a refusal that says nothing about the repo.
+  | { ok: false; failure: DiscoveryFailure; message: string; recorded: boolean };
+
+export interface DraftOptions {
+  fetch: Fetch;
+  lookup?: Lookup;
+  outDir: string;
+  // The lowercase plugin ids of the index's entries, and of the entries that open pull
+  // requests add.
+  ids: Set<string>;
+  pendingIds?: Set<string>;
+}
+
+// Reads one repo and writes its entry to outDir, unless the index or an open pull
+// request already has its plugin id. `repoUrl` in the result is the URL GitHub gives
+// for the repo.
+export async function draftEntry(repoUrl: string, options: DraftOptions): Promise<Drafted> {
+  const { fetch, lookup, outDir, ids, pendingIds } = options;
+  const refuse = (failure: DiscoveryFailure, message: string, recorded = !NOT_RECORDED.has(failure)): Drafted => ({
+    ok: false,
+    failure,
+    message,
+    recorded,
+  });
+  let read: Awaited<ReturnType<typeof readUpstream>>;
+  try {
+    read = await readUpstream(repoUrl, fetch, { lookup });
+  } catch (error) {
+    // A bug in the reader, not a fact about the repo.
+    return refuse("unexpected-error", `reading ${repoUrl} threw: ${(error as Error).message}`);
+  }
+  if (!read.ok) return refuse(read.failure, read.message);
+  const { id, version, strictMinVersion, strictMaxVersion } = read.facts;
+  // Entry directories may be in another place than outDir, so writeEntry cannot see them.
+  if (ids.has(id.toLowerCase())) return refuse("entry-exists", `the index already has an entry for the id ${id}`);
+  if (pendingIds?.has(id.toLowerCase())) {
+    return refuse("entry-exists", `an open pull request already adds an entry for the id ${id}`, false);
+  }
+  const entry = await writeEntry(outDir, read.facts);
+  // An existing directory in outDir, or a failed write, is about outDir, not the repo.
+  if (!entry.ok) return refuse(entry.failure, entry.message, entry.failure === "unsafe-id");
+  return { ok: true, id, dir: entry.dir, repoUrl: read.facts.repoUrl, version, strictMinVersion, strictMaxVersion };
 }
 
 interface SearchItem {
@@ -214,18 +236,18 @@ async function search(fetch: Fetch, warnings: string[]): Promise<Candidate[]> {
   return [...found.values()].sort((a, b) => Date.parse(b.pushedAt) - Date.parse(a.pushedAt) || a.repo.localeCompare(b.repo));
 }
 
-// The lowercase owner/repo names and plugin ids of the entries under root. An entry
-// whose meta.json cannot be read still counts by its directory name, which is its id;
-// `pnpm check` reports such entries.
-async function indexed(root: string): Promise<{ repos: Set<string>; ids: Set<string> }> {
-  const repos = new Set<string>();
+// The plugin ids of the entries under root by their lowercase owner/repo names, and the
+// lowercase ids. An entry whose meta.json cannot be read still counts by its directory
+// name, which is its id; `pnpm check` reports such entries.
+export async function indexed(root: string): Promise<{ repos: Map<string, string>; ids: Set<string> }> {
+  const repos = new Map<string, string>();
   const ids = new Set<string>();
   for (const { name } of await listEntries(root)) {
     ids.add(name.toLowerCase());
     try {
       const meta = JSON.parse(await readFile(join(root, name, "meta.json"), "utf8"));
       const repo = repoName(meta?.repoUrl);
-      if (repo) repos.add(repo);
+      if (repo) repos.set(repo, name);
     } catch {
       // Not readable, so only the id counts.
     }
@@ -233,7 +255,8 @@ async function indexed(root: string): Promise<{ repos: Set<string>; ids: Set<str
   return { repos, ids };
 }
 
-function repoName(url: unknown): string | undefined {
+// The lowercase owner/repo of a URL, from the first two parts of its path, on any host.
+export function repoName(url: unknown): string | undefined {
   if (typeof url !== "string" || !URL.canParse(url)) return undefined;
   const [owner, repo] = new URL(url).pathname.split("/").filter(Boolean);
   return owner && repo ? `${owner}/${repo.replace(/\.git$/, "")}`.toLowerCase() : undefined;
