@@ -1,13 +1,13 @@
 # M016: Restore no cache in the deploy build
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the build job writes the site and data that Pages publishes
-- **Branch/PR:** —
+- **Branch/PR:** m016-no-build-cache
 
 ## Goal
 
@@ -48,11 +48,11 @@ as M011 left them, with no dependency cache. The discovery state cache stays, be
 
 ## Tasks
 
-- [ ] T1: Add `test/workflows.test.ts`: read `.github/workflows/build.yml`, drop comments, and fail on each AC2 form
+- [x] T1: Add `test/workflows.test.ts`: read `.github/workflows/build.yml`, drop comments, and fail on each AC2 form
       (not on `package-manager-cache` or `cache-dependency-path`). See it fail on the current file, naming the
       `cache: pnpm` line. Then plant each other AC2 form in turn in a copy of the fixed file and see each fail.
       Restore from a copy, never `git checkout` (lesson M010).
-- [ ] T2: Remove `cache: pnpm` from the build job's `actions/setup-node` step (`build.yml:27-30`). Add a comment on
+- [x] T2: Remove `cache: pnpm` from the build job's `actions/setup-node` step (`build.yml:27-30`). Add a comment on
       why, written from a same-session read of GitHub's cache docs. Parse the file with `ruby -ryaml` (lesson M006)
       and list each job's steps, their `uses:`, and their `with:` keys.
 - [ ] T3: Add the `CHANGELOG.md` entry under `## Unreleased` and update the `build.yml` text in `cairn/DESIGN.md`
@@ -75,6 +75,11 @@ as M011 left them, with no dependency cache. The discovery state cache stays, be
 - 2026-10-26: criteria audit (full mode, Opus reader): 8 findings, 6 taken. AC1 split into the file property (AC1) and the test's listed forms (AC2), the Ruby parse moved to T2, AC3 narrowed to a case-sensitive search of the build job's log for `Cache restored`, AC4 given one wording, T4 allows a re-dispatch. No finding on verify, coverage, or false hits from the tool-cache line.
 - 2026-10-26: plan decided one `CHANGELOG.md` entry, as M011 had for its workflow change; tests limited to the AC2 forms.
 - 2026-10-26: lessons used: 2026-10-25 (M001) pnpm through npx; 2026-10-25 (M006) Pages deploys from main only; 2026-10-25 (M006) parse workflows with Ruby's YAML; 2026-10-26 (M010) plant a defect from a copy.
+- 2026-10-26: implement started on branch `m016-no-build-cache`, cut from main at 83c17ec.
+- 2026-10-26: T1: `test/workflows.test.ts` failed on main's `build.yml`, naming `cache: pnpm`. With the fix in place, planted flow `{cache: pnpm}`, `actions/cache@v6`, `ACTIONS/CACHE/RESTORE@v6`, and `Actions/Cache/Save@v6` each failed it on its own line; restored from a copy. The test also holds one case per form and a case for `package-manager-cache`, `cache-dependency-path`, and a comment.
+- 2026-10-26: T2: GitHub's cache docs (cache-mode added to the docs 2026-09-10) say `schedule` and `workflow_dispatch` runs can save caches in the default branch's scope, `issues` runs get read-only cache access, and a `cache-mode` key, enforced by the job's cache token, limits a job's access. So the discover read job can still plant a cache, and the issue read job cannot. The plan's falsifier (GitHub scoping cache writes per job) half holds, but the discover read job must save its state cache, so the chosen fix stands.
+- 2026-10-26: T2: implementation choice: besides removing `cache: pnpm`, `build.yml` sets top-level `cache-mode: none`, so the token itself refuses a restore if a cache step comes back. ACs unchanged. Ruby parse: workflow `cache-mode: "none"`, no step `uses` actions/cache, and the only `with:` keys are `node-version`, `name`, `path`, `if-no-files-found`.
+- 2026-10-26: T1, T2: verify clean, 475 tests passed, `pnpm check` 17 entries, 0 problems.
 
 ## Decisions
 
