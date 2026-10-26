@@ -152,6 +152,7 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 - 2026-10-26: implement done again; status review.
 - 2026-10-26: step-7 approval: m011-read-without-push-rights approved for merge
 - 2026-10-26: PR #14 merged 2026-10-26T11:14:07Z as 682d6d1 after CI passed (2 checks); AC6 waits on the live check: one `Discover plugins` dispatch with limit 1, and one issue the user submits from a prefilled "Add a plugin" link.
+- 2026-10-26: AC6 discover half: `gh workflow run discover.yml -f limit=1` run 40313601247 succeeded; job `read` logs "GITHUB_TOKEN Permissions" `Contents: read`, `PullRequests: read`, job `write` `Contents: write`, `PullRequests: write`; the write job opened PR #15 (noedgeai/doc2xzoteroplugin) from `discover/noedgeai/doc2xzoteroplugin`. The issue half waits on the user's issue for retorquere/zotero-better-bibtex.
 
 ## Decisions
 
