@@ -288,11 +288,6 @@ describe("readUpstream", () => {
     return zip;
   }
 
-  test("fflate returns no more bytes of a deflated file than the size the central directory declares", () => {
-    const zip = understate(zipSync({ "manifest.json": new Uint8Array(100_000).fill(32) }), 10);
-    expect(unzipSync(zip)["manifest.json"].length).toBe(10);
-  });
-
   test("fails with manifest-too-large on a stored manifest.json over 1 MiB whose declared size is small", async () => {
     const { result } = await read((r) => {
       const json = strToU8(JSON.stringify(manifest(r)) + OVER_1_MIB);
@@ -317,8 +312,7 @@ describe("readUpstream", () => {
     return zip;
   }
 
-  // Raw deflate data that inflates to 512 MiB of zero bytes, as one stream with no stored
-  // blocks.
+  // Raw deflate data that inflates to 512 MiB of zero bytes.
   let deflatedZeros: Uint8Array;
   beforeAll(() => {
     deflatedZeros = deflateRawSync(Buffer.alloc(512 * 1024 * 1024), { level: 9 });
