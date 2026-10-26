@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-26 (M017 done and archived; 1 row graduated, 1 narr
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M018 | Withhold deploys when every record fails | planned | — | normal | milestones/M018-every-record-fails.md |
+| M018 | Withhold deploys when every record fails | in-progress | — | normal | milestones/M018-every-record-fails.md |
 | M017 | Stop deploys only for build failures | done | — | normal | milestones/archive/M017-build-health.md |
 | M016 | Restore no cache in the deploy build | done | — | normal | milestones/archive/M016-no-build-cache.md |
 | M015 | Show version pills and descriptions | done | — | normal | milestones/archive/M015-pills-and-descriptions.md |

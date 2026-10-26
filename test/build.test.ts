@@ -180,6 +180,7 @@ describe("pnpm build", () => {
     const result = pnpmBuild([TREE, "--out", out], writeFixture(recorded));
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("2 of 3 records carry a build-level failure, more than half");
+    expect(result.stderr).toContain("all 3 records carry a failure");
     expect(summary(result.stdout)).toEqual([
       "failed with fork: 1",
       "failed with unexpected-error: 1",
@@ -208,17 +209,45 @@ describe("pnpm build", () => {
     expectSchemaCopies(out);
   });
 
-  test("exits 0 with no warning when every record fails for reasons that are not build-level", () => {
+  test("exits 1 with no warning when every record fails for reasons that are not build-level", () => {
     const recorded = responses();
     delete recorded["https://api.github.com/repos/windingwind/zotero-better-notes"];
-    (recorded["https://api.github.com/repos/example/second-plugin"].json as { fork: boolean }).fork = true;
+    delete (recorded["https://api.github.com/repos/example/second-plugin"].json as { created_at?: string }).created_at;
     const out = tempDir();
     const result = pnpmBuild([TREE, "--out", out], writeFixture(recorded));
-    expect(result.status).toBe(0);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("all 3 records carry a failure");
     expect(result.stderr).not.toContain("more than half");
-    expect(summary(result.stdout)).toEqual(["failed with fork: 2", "failed with github-http-error: 1", "build-level failures: 0 of 3 records"]);
+    expect(summary(result.stdout)).toEqual([
+      "failed with facts-invalid: 1",
+      "failed with fork: 1",
+      "failed with github-http-error: 1",
+      "build-level failures: 0 of 3 records",
+    ]);
     expect(result.stdout).not.toContain("::warning::");
     expect(readOutput(out).plugins.every((plugin) => plugin.failure)).toBe(true);
+  });
+
+  test("exits 0 while one record has no failure, though the others fail", () => {
+    const recorded = responses();
+    (recorded["https://api.github.com/repos/example/second-plugin"].json as { fork: boolean }).fork = true;
+    const result = pnpmBuild([TREE, "--out", tempDir()], writeFixture(recorded));
+    expect(result.status).toBe(0);
+    expect(result.stderr).not.toContain("records carry a failure");
+    expect(summary(result.stdout)).toEqual(["failed with fork: 2", "build-level failures: 0 of 3 records"]);
+  });
+
+  test("exits 1 when 2 of 3 records fail for build-level reasons and one has no failure", () => {
+    // The copy has the same repo as SECOND, so both read the 503.
+    const tree = treeOf(BETTER_NOTES, SECOND);
+    cpSync(join(TREE, SECOND), join(tree, "second-copy@example.org"), { recursive: true });
+    const recorded = responses();
+    recorded[SECOND_UPDATE] = { status: 503, text: "Service Unavailable" };
+    const result = pnpmBuild([tree, "--out", tempDir()], writeFixture(recorded));
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("2 of 3 records carry a build-level failure, more than half");
+    expect(result.stderr).not.toContain("records carry a failure");
+    expect(summary(result.stdout)).toEqual(["failed with update-json-http-error: 2", "build-level failures: 2 of 3 records"]);
   });
 
   test("prints each failure message on one line, so upstream text cannot start a workflow command", () => {
