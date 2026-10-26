@@ -45,8 +45,10 @@ change to the published data or its schemas.
       min `8.0-beta.21` max `10.99.99` → `all` for 8, 9, 10 and `none` for 7; min `8.999` max
       `10.0.*` → `none` for 8, `all` for 9, `some` for 10; min `6.999` max `7.0.*` → `some` for 7;
       min `8.0.1` → `some` for 8, `all` for 10; max `10.*` alone → `all` for 7; max `10.9.9` → `all`
-      for 10; min `8.5` max `8.2` → `none` for 8; a failure or no bound → `undefined`; and a
-      `strict_max_version` override that changes a result.
+      for 10; min `8.5` max `8.2` → `none` for 8; min `6.999` max `7.0.*` → `none` for 8; a failure
+      or no bound → `undefined`; upstream min `7.0` max `7.*` with a `strict_max_version` override
+      `8.*` → `all` for 8 (`none` without it); upstream min `7.0` max `10.*` with a
+      `strict_min_version` override `9.0` → `none` for 8 (`all` without it).
 - [ ] AC2: `shownDescription(record)` returns the `description` override's value when one applies.
       Otherwise it returns the upstream description, except `undefined` when that is absent, blank
       after trimming, or name-only. A description is name-only when its words are a subset of the
@@ -56,24 +58,30 @@ change to the published data or its schemas.
       `undefined`; "Scite Zotero Plugin (V7+)", same text → `undefined`; "Zotero PDF Preview", "PDF
       Preview for Zotero." → `undefined`; "ZotLit", "Zotero companion plugin for ZotLit" → kept;
       "Jasminum", "一个简单的 Zotero 中文插件" → kept; a blank description → `undefined`; a name-only
-      upstream description with a `description` override → the override's value.
-- [ ] AC3: On the built home page, each record's row holds its name link, its `shownDescription` text
-      when that is defined, an "Archived" mark when `upstream.archived` is true, and then one of:
-      for a failure, "Not read: <failure name>"; for no bound, "No declared range"; otherwise one pill
-      per entry of `ZOTERO_MAJORS`, in that order, each with `data-major="N"` and `data-support` equal
-      to `majorSupport` for that record and N.
+      upstream description with a `description` override → the override's value; the same with a
+      `description` override for another plugin version → `undefined`; upstream name "Zotero OCR",
+      description "OCR for Zotero", and a `name` override "Tesseract" → kept.
+- [ ] AC3: On the built home page, each record's row is the element carrying `data-plugin="<id>"`. It
+      holds, in this order: the name link; the `<span data-archived>(archived)</span>` mark when
+      `upstream.archived` is true; the `shownDescription` text when defined; and one of "Not read:
+      <failure name>" for a failure, "No declared range" for no bound, or one pill per entry of
+      `ZOTERO_MAJORS`, in that order, each with `data-major="N"` and `data-support` equal to
+      `majorSupport` for that record and N. Absent elements are skipped; present ones keep this order.
 - [ ] AC4: Each pill shows its support level as visible text, not by color alone: the major number and
-      a mark (✓ for `all`, ◐ for `some`, – for `none`). Its accessible text and its `title` read
-      "Declares all of Zotero N", "Declares part of Zotero N. Declared range: <range text>", or "Does
-      not declare Zotero N", by its `data-support`.
+      a mark (✓ for `all`, ◐ for `some`, – for `none`). A visually hidden span inside the pill and
+      the pill's `title` both read "Declares all of Zotero N", "Declares part of Zotero N. Declared
+      range: <range text>", or "Does not declare Zotero N", by its `data-support`.
 - [ ] AC5: Each built plugin page shows, in this order: the name; the `shownDescription` text when
-      defined; the pills or the failure message; the declared range text when the record has a bound;
-      the repository and releases links; then one `<details>` element with no `open` attribute holding
-      the id line, the facts `archived`, `repo-created`, `latest-release`, `release-count`,
-      `open-issues`, and `update-host` that the record has, and the overrides table when the record has
-      overrides. The footer's not-vetted line stays outside `<details>`.
+      defined; the pills, "No declared range" for a record read with no bound, or the failure message;
+      the declared range text when the record has a bound; the repository link; the releases link when
+      the record has `upstream`; then one `<details>` element with no `open` attribute holding the id
+      line, the facts `archived`, `repo-created`, `latest-release`, `release-count`, `open-issues`, and
+      `update-host` that the record has, and the overrides table when the record has overrides. Absent
+      elements are skipped; present ones keep this order. The footer's not-vetted line stays outside
+      `<details>`.
 - [ ] AC6: No file under the site build's output directory contains `id="zotero-version"`,
-      `zotero-plugin-index:zotero-version`, or `data-result-for`.
+      `for="zotero-version"`, "Your Zotero version", `zotero-plugin-index:zotero-version`, or
+      `data-result-for`.
 - [ ] AC7: `README.md` and `cairn/DESIGN.md` describe the pills, the description rule, and the
       Details section; DESIGN's site entries name `majorSupport` and `shownDescription` and no page
       script; a search of both files for "Your Zotero version", "local storage", and "one script"
@@ -135,6 +143,7 @@ change to the published data or its schemas.
 - 2026-10-26: agent decision: a `description` override skips the name-only rule, since the index wrote it on purpose.
 - 2026-10-26: criteria audit (full, Opus): 11 findings on the first draft, all taken: empty range and failure give no pills; real-data forms pinned as AC1 cases; inverted range is `none`; `ZOTERO_MAJORS` named; fixture gains the missing cases (T3); pill level visible, not hover-only; Details holds a named closed set and keeps the not-vetted line outside; AC6 covers every built file; the override-rewrite criterion dropped at the gate; DESIGN's stale script lines named; test-naming clauses moved to tasks.
 - 2026-10-26: plan committed while the second criteria audit (full, Opus) of the revised wording runs; its findings land in a follow-up docs commit before implement starts.
+- 2026-10-26: criteria audit 2 (full, Opus) of the revised wording: every AC1 and AC2 case checked against `compareVersions` and the word rule, all correct; 9 findings, all taken: AC1 gains a max-side `none` case and pinned min and max override cases; AC2 gains a non-applying override case and a `name` override case; AC3 keeps the "(archived)" text and `data-archived`, names the row element, and orders all items; AC5 covers the no-bound record and the releases link on a failure record, and skips absent items; AC6 adds the label's `for=` and text; AC4 names a visually hidden span.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
