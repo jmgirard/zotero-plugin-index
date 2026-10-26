@@ -1,0 +1,8 @@
+{
+  "id": "zotero-llm@github.com.yilewang",
+  "name": "llm-for-zotero",
+  "description": "AI research agent rooted in your Zotero library",
+  "homepage": "https://github.com/yilewang/llm-for-zotero#readme",
+  "repoUrl": "https://github.com/yilewang/llm-for-zotero",
+  "updateUrl": "https://github.com/yilewang/llm-for-zotero/releases/download/release/update.json"
+}
