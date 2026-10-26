@@ -229,8 +229,41 @@ export function githubClient(fetch: Fetch) {
     }
   }
 
+  // Sends `payload` as JSON. A refused request fails with GitHub's message and the
+  // message of each error it lists, such as why a pull request cannot be created.
+  async function post(url: string, payload: unknown): Promise<unknown> {
+    if (!URL.canParse(url) || new URL(url).origin !== API) fail("request-failed", `${url} is not on ${API}`);
+    let response: Response;
+    let text: string;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        headers: { ...headers, "content-type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+      text = await response.text();
+    } catch (error) {
+      fail("request-failed", `POST ${url} failed: ${(error as Error).message}`);
+    }
+    let body: { message?: unknown; errors?: { message?: unknown }[] } | undefined;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      // Reported below.
+    }
+    if (!response.ok) {
+      const messages = [body?.message, ...(Array.isArray(body?.errors) ? body.errors.map((error) => error?.message) : [])];
+      const said = messages.filter((message) => typeof message === "string").join("; ");
+      fail("github-http-error", `POST ${url} returned HTTP ${response.status}${said ? `: ${said}` : ""}`);
+    }
+    if (body === undefined) fail("request-failed", `POST ${url} returned a body that is not JSON`);
+    return body;
+  }
+
   return {
     get,
+    post,
     json: async (url: string): Promise<unknown> => (await get(url)).body,
     // Follows the Link header's rel="next" and joins the pages' arrays. The token
     // goes only to the API host, and a page seen before ends the read.

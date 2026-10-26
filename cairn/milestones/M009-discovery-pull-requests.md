@@ -71,11 +71,11 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 
 ## Tasks
 
-- [ ] T1: Record a pull-request list fixture with open, closed-unmerged, and merged `discover/` heads, and write
+- [x] T1: Record a pull-request list fixture with open, closed-unmerged, and merged `discover/` heads, and write
       the failing skip-set test.
 - [ ] T2: Write failing propose tests against a temporary git repo with a bare remote and a fake GitHub API
       fetch, for AC2–AC4.
-- [ ] T3: Implement the pull-request list read (paginated, `state=all`) and the skip set.
+- [x] T3: Implement the pull-request list read (paginated, `state=all`) and the skip set.
 - [ ] T4: Implement the propose step: branch, commit as `github-actions[bot]`, push, `pnpm check` on the entry,
       the body, the limit, and per-entry failures.
 - [ ] T5: Write `.github/workflows/discover.yml`: a schedule at another hour than `build.yml`, dispatch with
@@ -106,6 +106,8 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 - 2026-10-26: implementation choice: the propose step builds each commit with git plumbing (a temporary index file, `commit-tree`, push of the commit to the branch ref), so it never checks out a branch or changes the working tree; the git directory is the caller's directory (`INIT_CWD`), as for other relative paths.
 - 2026-10-26: implementation choice: a pull request counts toward the skip set only when its head repo is the index repo itself, so a fork's pull request with a `discover/` branch cannot block a plugin.
 - 2026-10-26: implementation choice: with `--propose`, discovery writes entries to a temporary directory unless `--out` is given, the index repo comes from `GITHUB_REPOSITORY`, and the default branch from the repo's API record; `githubClient` gains a `post` method for the create request.
+- 2026-10-26: minor amendment: each failing-test task is checked off in the same commit as the task that makes it pass (T1 with T3, T2 with T4), so no checkpoint carries a red suite.
+- 2026-10-26: T1, T3: `test/fixtures/discover/pulls.json` (two pages) and the `pnpm discover --propose` skip test, red first on the unknown flag; `skipSet` and `proposeRun` in `src/discover/propose.ts`, `--propose` in the CLI; a planted defect (closed-unmerged not skipped) turned the test red; verify green (335 tests, 14 entries).
 
 ## Decisions
 
