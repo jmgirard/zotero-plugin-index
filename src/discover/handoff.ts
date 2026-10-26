@@ -15,6 +15,9 @@ export const ENTRIES_DIR = "entries";
 const ENTRY_FILES = ["index.json", "meta.json"];
 // More than an entry file the bot writes needs, and small enough to read at once.
 const FILE_MAX_BYTES = 64 * 1024;
+// The most characters of a message that an issue comment quotes. The read step cuts a
+// message to one more than this, so the comment still marks the cut.
+export const MESSAGE_MAX = 2000;
 
 export interface PlannedEntry {
   repo: string;
@@ -71,10 +74,18 @@ const validatePlan = new Ajv({ allErrors: true }).compile({
     issue("entry", { entry: entrySchema }),
     issue("known", { repo: text(200) }),
     // The failure name goes into a code span as it is, so it has no backtick or space.
-    issue("refused", { failure: { type: "string", pattern: "^[a-z][a-z-]{0,59}$" }, message: text(100_000) }),
-    issue("failed", { message: text(100_000) }),
+    issue("refused", { failure: { type: "string", pattern: "^[a-z0-9][a-z0-9-]{0,59}$" }, message: text(MESSAGE_MAX + 1) }),
+    issue("failed", { message: text(MESSAGE_MAX + 1) }),
   ],
 });
+const validateEntry = new Ajv({ allErrors: true }).compile(entrySchema);
+
+// Returns why `readHandoff` would refuse a handoff with this entry, or undefined. The
+// read step checks each entry it drafts, so an entry of its own never refuses a handoff.
+export async function plannedProblem(entry: PlannedEntry): Promise<string | undefined> {
+  if (!validateEntry(JSON.parse(JSON.stringify(entry)))) return "a field is longer than the handoff allows";
+  return entryProblem(entry);
+}
 
 // Writes `plan.json` into `dir`. The read step has already drafted the entries into
 // `entriesDir(dir)`.
@@ -138,6 +149,7 @@ export async function readHandoff(dir: string, kind: Plan["kind"], limit: number
   const root = entriesDir(dir);
   let names: string[] = [];
   try {
+    if (!(await lstat(root)).isDirectory()) return refuse(`${ENTRIES_DIR} is not a directory`);
     names = await readdir(root);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") return refuse(`cannot read ${ENTRIES_DIR}: ${(error as Error).message}`);

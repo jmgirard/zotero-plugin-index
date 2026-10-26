@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
@@ -117,6 +117,16 @@ describe("pnpm propose refuses a handoff it cannot trust, with no request and no
         symlinkSync("/etc/hosts", join(dir, "entries", ALPHA.id, "meta.json"));
       },
       /meta.json is not a regular file/,
+    ],
+    [
+      "an entries directory that is a symbolic link",
+      (dir) => {
+        const elsewhere = tempDir();
+        rmSync(join(elsewhere), { recursive: true });
+        renameSync(join(dir, "entries"), elsewhere);
+        symlinkSync(elsewhere, join(dir, "entries"));
+      },
+      /entries is not a directory/,
     ],
     [
       "an entry directory that is a symbolic link",

@@ -2,12 +2,10 @@ import { rm } from "node:fs/promises";
 import type { Lookup } from "../upstream/host-guard.ts";
 import { type Fetch, githubClient } from "../upstream/reader.ts";
 import { draftEntry, indexed, repoName } from "./discover.ts";
-import { type IssueOutcome, planned } from "./handoff.ts";
+import { type IssueOutcome, MESSAGE_MAX, planned } from "./handoff.ts";
 import { type BotPulls, botPulls, type CheckRunner, code, defaultBranch, propose, type Written } from "./propose.ts";
 
 const API = "https://api.github.com";
-// The most characters of a message that a comment quotes.
-const MESSAGE_MAX = 2000;
 
 // The label of the URL input in .github/ISSUE_TEMPLATE/add-plugin.yml. GitHub writes each
 // input of a form into the issue body as a level-3 heading with the label, then the value.
@@ -50,7 +48,17 @@ export interface IssueReadOptions {
 // draftEntry refuses, the outcome names the failure; that includes a GitHub request
 // error while the reader reads the repo. If the bot cannot read the index, its pull
 // requests, or the default branch, the outcome is `failed`.
+// A message is cut to what a comment quotes, so a long one cannot make the handoff too
+// large for the write step.
 export async function issueRead(options: IssueReadOptions): Promise<IssueOutcome> {
+  const outcome = await readOutcome(options);
+  if (outcome.outcome === "refused" || outcome.outcome === "failed") {
+    return { ...outcome, message: outcome.message.slice(0, MESSAGE_MAX + 1) || "no message" };
+  }
+  return outcome;
+}
+
+async function readOutcome(options: IssueReadOptions): Promise<IssueOutcome> {
   const { root, fetch, indexRepo } = options;
   const parsed = parseIssueBody(options.body);
   if (!parsed.ok) return { outcome: "refused", failure: parsed.problem, message: parsed.message };

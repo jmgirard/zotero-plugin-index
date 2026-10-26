@@ -74,4 +74,6 @@
   plan into a directory. The write job runs `pnpm propose <dir>`, which
   pushes the branches, opens the pull requests, and answers the issue.
   `pnpm propose` refuses a handoff that does not pass its checks, before it
-  sends any request. `pnpm discover --propose` is gone.
+  sends any request. `pnpm discover --propose` is gone. The read job refuses,
+  with the failure name `not-proposable`, a plugin whose entry the write job
+  would refuse, so one such plugin does not stop the other pull requests.

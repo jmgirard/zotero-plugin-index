@@ -215,7 +215,10 @@ reused._
   `git check-ref-format` accepts and whose URL is its GitHub URL, the entry
   count against the limit, and each entry directory for exactly the regular
   files `meta.json` and `index.json`. Any failure refuses the whole handoff
-  before a request. The issue number comes from `ISSUE_NUMBER`, never from
+  before a request. So that one plugin cannot refuse a run's handoff,
+  `draftEntry` runs the same entry checks (`plannedProblem`) after it writes
+  an entry, and refuses a failing one as `not-proposable`, a recorded failure.
+  The read step cuts each issue message to 2,001 characters. The issue number comes from `ISSUE_NUMBER`, never from
   the handoff. The write step reads the bot pull requests again, and the
   index in its own checkout, which is the commit the read job saw, and skips
   an entry that either has. `propose` gives `git fetch` and

@@ -42,12 +42,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_BODY: ${{ github.event.issue.body }}
+      # Also after a failed step that left a plan, such as a failed state write. A re-run
+      # replaces the first attempt's handoff.
       - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && hashFiles('handoff/plan.json') != '' }}
         with:
           name: handoff
           path: handoff/
           if-no-files-found: error
           retention-days: 1
+          overwrite: true
 
   write:
     needs: read

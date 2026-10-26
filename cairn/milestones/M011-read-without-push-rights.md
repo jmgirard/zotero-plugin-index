@@ -1,6 +1,6 @@
 # M011: Read untrusted repos without push rights
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
@@ -72,12 +72,12 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 ## Coverage
 
 - AC1 → T1, T5
-- AC2 → T1, T2, T3, T8
-- AC3 → T2, T3
+- AC2 → T1, T2, T3, T8, T9
+- AC3 → T2, T3, T9
 - AC4 → T2, T4, T5
 - AC5 → T2, T5
 - AC6 → T5, T7
-- AC7 → T1, T2, T3, T4, T5, T6, T8
+- AC7 → T1, T2, T3, T4, T5, T6, T8, T9
 
 ## Tasks
 
@@ -110,6 +110,7 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 - [ ] T7: Live check after the merge (review): give the user a link with `?template=add-plugin.yml&` and the URL
       input prefilled, run `gh workflow run discover.yml -f limit=1`, and read both runs' job logs (AC6).
 - [x] T8: Review return 1: read the default branch in `discoverRead` and `issueRead` too, so a missing default branch ends the read step before any repo read, as the one-step command did; restore the plan-commit test for it.
+- [x] T9: Review return 2: allow digits in the plan's failure names; have `draftEntry` refuse, as the recorded failure `not-proposable`, a drafted entry that `readHandoff` would refuse; cut read-step messages to what a comment quotes; refuse an `entries` that is not a directory; upload the handoff whenever `plan.json` exists, with `overwrite: true`, and run the discover write job whenever the read job ran; add the tests and reword the three candidate rows the review named.
 
 ## Work log
 
@@ -146,6 +147,9 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 - 2026-10-26: claim audit: not rerun for T8, whose 3 changed comment lines go to the review's diff-bug lens; deviation from step 7 logged.
 - 2026-10-26: implement done again; status review.
 - 2026-10-26: review return 2: AC2 — the handoff schema's failure-name pattern refuses `max-version-below-7`, so that issue gets no answer; and a load-bearing defect — a drafted entry that `readHandoff` refuses (an id outside the Mozilla format, a repo whose branch name git refuses, a field over its length cap) refuses the whole discover handoff on every run. Fix-now list with them: message cut in the read step, `entries` symlink check, upload on `plan.json` and write job on a ran read job, `overwrite: true`, a non-`ReadFailure` test row, and three candidate rows reworded (Review section).
+- 2026-10-26: minor amendment: T9 added for review return 2; Coverage AC2, AC3, and AC7 gain T9.
+- 2026-10-26: T9: failure-name pattern `^[a-z0-9][a-z0-9-]{0,59}$`; `plannedProblem` in `handoff.ts` (the entry schema and checks) runs in `draftEntry` after `writeEntry`, which removes the entry and refuses `not-proposable` (recorded), so `unsafe-id` keeps its name; `issueRead` cuts messages to 2,001 characters; `readHandoff` refuses an `entries` that is not a directory; both uploads run on `plan.json` with `overwrite: true`, and the discover write job runs unless the read job was skipped or the run canceled; tests for a digit in a failure name, two `not-proposable` issue cases, a mixed discover run, a non-`ReadFailure` read, and a symlinked `entries`; three rows reworded and two follow-up rows added; README, CHANGELOG, DESIGN. Planting the old pattern, skipping the new check, and skipping the `entries` check turned the 5 new tests red. `pnpm test` 401 passed.
+- 2026-10-26: implement done again; status review.
 
 ## Decisions
 

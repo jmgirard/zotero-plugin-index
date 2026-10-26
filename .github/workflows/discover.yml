@@ -61,15 +61,22 @@ jobs:
         with:
           path: .cache/discovery-state.json
           key: discovery-state-${{ github.run_id }}-${{ github.run_attempt }}
+      # Also after a failed step that left a plan, such as a failed state write. A re-run
+      # replaces the first attempt's handoff.
       - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && hashFiles('handoff/plan.json') != '' }}
         with:
           name: handoff
           path: handoff/
           if-no-files-found: error
           retention-days: 1
+          overwrite: true
 
   write:
     needs: read
+    # Also after a failed read job, whose plan the write step can still propose; not when
+    # the read job was skipped.
+    if: ${{ !cancelled() && needs.read.result != 'skipped' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:

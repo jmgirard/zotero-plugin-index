@@ -196,6 +196,36 @@ describe("proposing pull requests", () => {
   });
 });
 
+describe("an entry the write step would refuse", () => {
+  test("is refused and recorded by the read step, so the rest of the run is proposed", async () => {
+    const { work } = checkout();
+    const { read, result, posts } = await twoStep(
+      {
+        ...indexRepo,
+        ...searched([
+          ["example/good", "2026-10-01T00:00:00Z"],
+          ["example/no-at", "2026-10-02T00:00:00Z"],
+          ["example/.dot", "2026-10-03T00:00:00Z"],
+        ]),
+        ...pluginRepo("example/good", "good@example.org"),
+        ...pluginRepo("example/no-at", "plugin-no-at"),
+        ...pluginRepo("example/.dot", "dot@example.org"),
+        [`POST ${PULLS}`]: { status: 201, json: { html_url: "https://github.com/example/index/pull/1" } },
+      },
+      work,
+    );
+    if (!read.ok || !result?.ok) throw new Error(JSON.stringify({ read, result }));
+    const refused = read.report.read.filter((item) => item.outcome === "refused");
+    expect(refused.map((item) => [item.repo, item.outcome === "refused" && item.failure])).toEqual([
+      ["example/.dot", "not-proposable"],
+      ["example/no-at", "not-proposable"],
+    ]);
+    expect(Object.keys(read.state).sort()).toEqual(["example/.dot", "example/no-at"]);
+    expect(result.proposed.map(({ repo }) => repo)).toEqual(["example/good"]);
+    expect(posts).toHaveLength(1);
+  });
+});
+
 describe("read and write step failures", () => {
   test("the read step refuses, without recording, a repo whose plugin id an open bot pull request adds", async () => {
     const { read, posts } = await twoStep({
