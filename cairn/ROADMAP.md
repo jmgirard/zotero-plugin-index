@@ -1,18 +1,17 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-25 (M007 done and archived, live site checked; 1 row graduated, 1 row extended; 3 lessons captured, 6 marked used; M004 row pruned)_
+_Last hygiene check: 2026-10-26 (M008 done and archived; 1 row added, 4 rows extended; 2 lessons captured, 7 marked used; M005 row pruned)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M008 | Find new plugin repos by topic search | review | — | high | milestones/M008-topic-discovery.md |
+| M008 | Find new plugin repos by topic search | done | — | high | milestones/archive/M008-topic-discovery.md |
 | M009 | Open a pull request for each new plugin | planned | M008 | high | milestones/M009-discovery-pull-requests.md |
 | M010 | Take one repo URL from an issue form | planned | M009 | normal | milestones/M010-add-plugin-issue-form.md |
 | M007 | Build the plugin site | done | M006 | high | milestones/archive/M007-plugin-site.md |
 | M006 | Publish the data on Pages | done | — | high | milestones/archive/M006-data-on-pages.md |
-| M005 | Refuse zips that claim too many entries | done | — | high | milestones/archive/M005-zip-entry-limits.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
 
