@@ -7,7 +7,7 @@
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — issue openers and the bot's pull requests depend on the bot workflows' answers
-- **Branch/PR:** m011-read-without-push-rights
+- **Branch/PR:** m011-read-without-push-rights, https://github.com/jmgirard/zotero-plugin-index/pull/14
 
 ## Goal
 
@@ -151,6 +151,7 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 - 2026-10-26: T9: failure-name pattern `^[a-z0-9][a-z0-9-]{0,59}$`; `plannedProblem` in `handoff.ts` (the entry schema and checks) runs in `draftEntry` after `writeEntry`, which removes the entry and refuses `not-proposable` (recorded), so `unsafe-id` keeps its name; `issueRead` cuts messages to 2,001 characters; `readHandoff` refuses an `entries` that is not a directory; both uploads run on `plan.json` with `overwrite: true`, and the discover write job runs unless the read job was skipped or the run canceled; tests for a digit in a failure name, two `not-proposable` issue cases, a mixed discover run, a non-`ReadFailure` read, and a symlinked `entries`; three rows reworded and two follow-up rows added; README, CHANGELOG, DESIGN. Planting the old pattern, skipping the new check, and skipping the `entries` check turned the 5 new tests red. `pnpm test` 401 passed.
 - 2026-10-26: implement done again; status review.
 - 2026-10-26: step-7 approval: m011-read-without-push-rights approved for merge
+- 2026-10-26: PR #14 merged 2026-10-26T11:14:07Z as 682d6d1 after CI passed (2 checks); AC6 waits on the live check: one `Discover plugins` dispatch with limit 1, and one issue the user submits from a prefilled "Add a plugin" link.
 
 ## Decisions
 
