@@ -45,7 +45,7 @@ export function loadFixture(path: string): Fixture {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
-// A fetch that answers from `responses` by exact URL and records each request.
+// A fetch that answers from `responses` by the keys above and records each request.
 // `onRequest` sees each request as it is made.
 export function fixtureFetch(responses: Responses, onRequest?: (seen: SeenRequest) => void) {
   const requests: SeenRequest[] = [];

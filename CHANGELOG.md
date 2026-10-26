@@ -53,7 +53,8 @@
 - A bot finds new plugins. Once a day, the `Discover plugins` workflow
   searches GitHub for repositories with the topic `zotero-plugin` or
   `zotero-addon` that no entry names. It opens one pull request for each
-  new entry that passes the inclusion bar, at most 5 for each run. Each pull
+  new entry that passes the inclusion bar, at most 5 for each daily run. A
+  run started by hand can set another limit. Each pull
   request body gives the repository URL, the plugin version, the declared
   Zotero range, and the result of `pnpm check` on the entry. If a bot pull
   request is closed without a merge, the bot does not propose that

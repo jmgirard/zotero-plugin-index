@@ -176,6 +176,14 @@ describe("proposing pull requests", () => {
     expect(sent).toContain("exited with status 1");
     expect(sent).toContain(`\`\`\`\`\n${output}\`\`\`\``);
   });
+
+  test("the body keeps a manifest value with a blank line inside one code span", () => {
+    const sent = body(
+      { repo: "example/x", repoUrl: "https://github.com/example/x", outcome: "written", id: "x@example.org", dir: "/tmp/x", version: "2.0\n\n@someone" },
+      { status: 0, output: "checked 1 entries in /tmp/x, 0 problems\n" },
+    );
+    expect(sent).toContain("- Version: ` 2.0 @someone `\n");
+  });
 });
 
 describe("pnpm discover --propose failures", () => {

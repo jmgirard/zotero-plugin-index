@@ -11,7 +11,8 @@ import { type DiscoveryState, discover, type ReadItem, type Report } from "./dis
 const API = "https://api.github.com";
 // The bot's branches are `discover/<owner>/<repo>`, lowercase.
 const PREFIX = "discover/";
-// The identity GitHub shows for commits made with the built-in Actions token.
+// The github-actions[bot] account's name and noreply email, so GitHub links the commits
+// to that account.
 const BOT = { name: "github-actions[bot]", email: "41898282+github-actions[bot]@users.noreply.github.com" };
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, "../..");
@@ -226,7 +227,9 @@ export function body(entry: Written, checked: { status: number; output: string }
   ].join("\n");
 }
 
-function code(value: string): string {
+// Each run of whitespace becomes one space, since a blank line would end the code span.
+function code(text: string): string {
+  const value = text.replace(/\s+/g, " ");
   const ticks = "`".repeat(Math.max(1, ...[...value.matchAll(/`+/g)].map(([run]) => run.length + 1)));
   return `${ticks} ${value} ${ticks}`;
 }

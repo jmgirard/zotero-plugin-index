@@ -143,8 +143,9 @@ entries in another directory, add `--out <dir>`. The command prints a JSON
 report that names each repository that it wrote, refused, or skipped.
 
 The command keeps a state file, `.cache/discovery-state.json`. The file
-records each refused repository, so a later run reads that repository again
-only after a new push or after 30 days. To use another file, add
+records each repository refused for a reason about the repository itself. A
+later run reads that repository again only after a new push or after 30 days. A repository refused for another reason, such as a rate limit or a
+network error, is read again on the next run. To use another file, add
 `--state <file>`.
 
 ### Pull requests from the bot

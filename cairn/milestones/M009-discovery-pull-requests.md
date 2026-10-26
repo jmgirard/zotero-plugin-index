@@ -1,6 +1,6 @@
 # M009: Open a pull request for each new plugin
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** M008
 - **Driving RR:** —
@@ -112,6 +112,8 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 - 2026-10-26: implementation choice: the propose step runs the check before it pushes, so a check that cannot run leaves no branch; `pnpmCheck` lives in `propose.ts` so tests run the real one.
 - 2026-10-26: T5: `.github/workflows/discover.yml` at 14:43 UTC (build.yml runs at 06:17), `actions/cache/restore@v6` and `save@v6` (v6.1.0 is the newest release, read with `gh api`), cache key carries `run_id` and `run_attempt` so a re-run does not collide; the limit reaches the command through an env var, `inputs.limit || 5`; a `ruby -ryaml` parse shows the schedule, the `limit` input (default 5), the two permissions, the `discover` group, the 30-minute limit, and the restore and save steps.
 - 2026-10-26: T6: README "Finding new plugins" (with `pnpm discover` itself, which M008 left to this milestone) and "Pull requests from the bot"; one CHANGELOG entry; DESIGN Data sources, Function Families, and an Architecture bullet. The AC2 test moved to `pnpm discover --propose` with no `--limit`, because the in-process run passed the limit and so did not test the default of 5; a planted default of 6 turned it red; verify green (339 tests, 14 entries).
+- 2026-10-26: claim audit: 65 claims read, 5 corrected — CHANGELOG.md, README.md, src/discover/cli.ts, src/discover/propose.ts (2); the false one was a defect: a manifest value with a blank line ended its code span in the pull request body, so `code()` now collapses whitespace, with a test that fails without it; the same reader re-read the five and found all true.
+- 2026-10-26: T7 is the post-merge live dispatch, left for /milestone-review; status set to review; verify green (340 tests, 14 entries).
 
 ## Decisions
 

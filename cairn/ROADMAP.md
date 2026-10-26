@@ -8,7 +8,7 @@ _Last hygiene check: 2026-10-26 (M008 done and archived; 1 row added, 4 rows ext
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
 | M008 | Find new plugin repos by topic search | done | — | high | milestones/archive/M008-topic-discovery.md |
-| M009 | Open a pull request for each new plugin | in-progress | M008 | high | milestones/M009-discovery-pull-requests.md |
+| M009 | Open a pull request for each new plugin | review | M008 | high | milestones/M009-discovery-pull-requests.md |
 | M010 | Take one repo URL from an issue form | planned | M009 | normal | milestones/M010-add-plugin-issue-form.md |
 | M007 | Build the plugin site | done | M006 | high | milestones/archive/M007-plugin-site.md |
 | M006 | Publish the data on Pages | done | — | high | milestones/archive/M006-data-on-pages.md |

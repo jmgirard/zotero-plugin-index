@@ -72,8 +72,8 @@ async function main(): Promise<number> {
       console.error(`${result.message}\nwrote no entry and left ${statePath} as it was`);
       return 1;
     }
-    // The report names the entries already on disk, so it is printed before the state
-    // write, which can still fail.
+    // The report names the entries already written and the pull requests already opened,
+    // so it is printed before the state write, which can still fail.
     result.report.warnings.unshift(...warnings);
     const { proposed, failed = [] } = result;
     console.log(JSON.stringify(proposed ? { ...result.report, proposed } : result.report, null, 2));
