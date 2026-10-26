@@ -1,16 +1,15 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-26 (M015 done and archived; no rows graduated or added; 4 lessons marked used, 1 corrected, 1 retired, 1 captured; M012 row pruned)_
+_Last hygiene check: 2026-10-26 (M016 done and archived; 1 row graduated, 1 added; 4 lessons marked used, none captured; M013 row pruned)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M016 | Restore no cache in the deploy build | review | — | normal | milestones/M016-no-build-cache.md |
+| M016 | Restore no cache in the deploy build | done | — | normal | milestones/archive/M016-no-build-cache.md |
 | M015 | Show version pills and descriptions | done | — | normal | milestones/archive/M015-pills-and-descriptions.md |
 | M014 | Read stable releases before prereleases | done | — | normal | milestones/archive/M014-stable-releases-first.md |
-| M013 | Show whether a plugin repo is archived | done | — | normal | milestones/archive/M013-show-archived-repos.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
 
@@ -24,7 +23,6 @@ _Last hygiene check: 2026-10-26 (M015 done and archived; no rows graduated or ad
 - Bound the time of a discover run: `discover.yml` stops at 30 minutes, and `pnpm discover` writes its state only at the end, so a run the limit kills saves the old state again and the next run reads the same first repos; its `git` and `pnpm check` spawns have no timeout; add a time budget that ends the reads early and writes the state; see "Warn when the daily build degrades" (M009 review) — added 2026-10-26 — M008, M009
 - Keep issues open on a bot read failure: `pnpm propose` closes an issue as not planned on any failed read in its read step, `github-http-error` and `request-failed` included, which a rate limit or a GitHub outage can cause; leave such an issue open with its comment, as for a failed push; `unexpected-error` from the reader closes it the same way (M010, M010 review) — added 2026-10-26 — M010
 - Answer issues whose run was canceled: `add-plugin-issue.yml` shares the `discover` concurrency group, and GitHub's docs say a new pending run in a group cancels the one already pending, so an issue opened while another run waits can get no comment; rerun such issues, for example from a scheduled sweep of unanswered `add-plugin` issues; an issue run can also cancel a pending scheduled `Discover plugins` run, so many issues can hold off discovery (M010, M010 review) — added 2026-10-26 — M010
-- Keep read jobs from writing the cache: the read jobs of `discover.yml` and `add-plugin-issue.yml` can save Actions cache entries after they read repos that anyone names, and `build.yml` restores its `cache: pnpm` entry from the default branch's cache, so a read job that a crafted file took over could plant a dependency store; drop `cache: pnpm` from `build.yml` or keep caches out of the read jobs (M011 review) — added 2026-10-26 — M011 — started M016
 - Check the index at the push base: `pnpm propose` checks the index in its checkout, the commit the read job saw, but builds each commit on the newest default branch, so an entry merged during the run can be proposed again; read `plugins/` at the fetched base commit (M011 review) — added 2026-10-26 — M011
 - Let old v1 schemas accept new fields: the v1 `upstream` block keeps `additionalProperties: false`, so a saved copy of the schema rejects each optional field that D-006 lets v1 gain; allowing unknown fields would let old copies accept later additions, but it changes what the schema checks; see "Keep the v1 data when v2 ships" (M013 review) — added 2026-10-26 — M013, D-007
 - [low] Check the restored discovery state: the discover read job restores `discovery-state-` by prefix from the default branch's cache in the same job that reads repos anyone can tag, so a job that a crafted repo took over could save a state entry that hides repos from later runs for up to 30 days; check the restored state's shape or keep the state outside the cache (M016 review) — added 2026-10-26 — M009, M016
