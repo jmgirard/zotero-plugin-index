@@ -47,22 +47,22 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: In an issue run, when the reader's read of the named repo fails
+- [x] AC1: In an issue run, when the reader's read of the named repo fails
       with a failure that the reader marks build-level, the bot comments that
       it could not finish, with the failure name in a code span followed by
       the message, sends no close request, and the run's status is 1, so
       `pnpm propose` exits 1. Tests in `test/issue.test.ts` show this for a
       GitHub API HTTP 429, a GitHub API HTTP 503, a GitHub API HTTP 403, an
       `update.json` HTTP 503, a rejected fetch, and a failed host lookup.
-- [ ] AC2: In an issue run, when `readUpstream` throws while reading the
+- [x] AC2: In an issue run, when `readUpstream` throws while reading the
       repo (`unexpected-error`), the bot answers as in AC1: the comment, no
       close request, and status 1. A test in `test/issue.test.ts` shows this.
-- [ ] AC3: In an issue run, a reader failure that is not build-level still
+- [x] AC3: In an issue run, a reader failure that is not build-level still
       gets its failure name in the comment and closes the issue as not
       planned. New tests show this for a GitHub API HTTP 404 and an
       `update.json` HTTP 404, and the refusal tests that `test/issue.test.ts`
       holds today pass unchanged.
-- [ ] AC4: README's "Proposing a plugin with an issue" section, the
+- [x] AC4: README's "Proposing a plugin with an issue" section, the
       `CHANGELOG.md` Unreleased entry for the issue form, and the comments on
       `issueRead` and `issueAnswer` in `src/discover/issue.ts` each say that
       a reader failure marked build-level, or an error thrown while reading
@@ -71,7 +71,7 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
       the bot reads the repository." and the `issueRead` comment's "that
       includes a GitHub request error while the reader reads the repo" are
       gone.
-- [ ] AC5: `pnpm test` (type check, then Vitest) and `pnpm check` pass.
+- [x] AC5: `pnpm test` (type check, then Vitest) and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate -->
@@ -138,3 +138,12 @@ Pass 1 (2026-10-26), branch m019-keep-issues-open at 707ad5f, main not moved.
 - AC3: the GitHub API 404 and update.json 404 tests pass (comment names the failure, PATCH not_planned, status 0). `git diff main...HEAD -- test/issue.test.ts` removes only the `runIssue` signature line and its `lookup:` line; every earlier refusal test passes unchanged.
 - AC4: FAIL. README (joined copy) and the CHANGELOG entry say the issue stays open and the run fails, and the `issueAnswer` comment says so; the `issueRead` comment does not. Both removed sentences: 0 hits in joined copies. Returned to implement (review return 1).
 - AC5: `pnpm test` 14 files, 496 passed; `pnpm check` 17 entries, 0 problems.
+
+Pass 2 (2026-10-26), branch at ad995d6, main not moved; T5 changed only the `issueRead` comment since pass 1.
+
+- AC1: fresh `pnpm test` 496 passed, the six build-level cases among them, unchanged since pass 1's verbose run and planted-defect check.
+- AC2: same run; "a read that throws" passes (status 1, `unexpected-error` in the comment, no PATCH).
+- AC3: same run; both 404 tests pass (PATCH not_planned), and every refusal test that main holds passes unchanged (diff removes only the `runIssue` signature and `lookup:` lines).
+- AC4: joined copies: README's issue section says a build-level read failure leaves the issue open and the run fails; the CHANGELOG entry says the bot "leaves the issue open, and the workflow run fails"; the `issueRead` comment now reads "the outcome is `failed` with the failure name, so the write step leaves the issue open and the run fails"; the `issueAnswer` comment says "the comment says so and the issue stays open, and the status is 1". Both removed sentences: 0 hits.
+- AC5: `pnpm test` 14 files, 496 passed; `pnpm check` 17 entries, 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed; no principle changed, so no `cairn_impact`; the generic profile names no toolchain checks.
