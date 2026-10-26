@@ -104,7 +104,7 @@ change to the published data or its schemas.
 
 - [x] T1: Tests first in `test/version.test.ts` for every AC1 case, then `ZOTERO_MAJORS` and
       `majorSupport` in `src/site/version.ts` beside `declaredRange`.
-- [ ] T2: Tests first in a new `test/description.test.ts` for every AC2 case, then
+- [x] T2: Tests first in a new `test/description.test.ts` for every AC2 case, then
       `src/site/description.ts` with `shownDescription`, using `appliedValue` and the name rule of
       `displayName` (`site/src/data.ts`).
 - [ ] T3: Extend `test/fixtures/site/plugins.json`, valid against the v1 schema: a record with no
@@ -146,6 +146,7 @@ change to the published data or its schemas.
 - 2026-10-26: criteria audit 2 (full, Opus) of the revised wording: every AC1 and AC2 case checked against `compareVersions` and the word rule, all correct; 9 findings, all taken: AC1 gains a max-side `none` case and pinned min and max override cases; AC2 gains a non-applying override case and a `name` override case; AC3 keeps the "(archived)" text and `data-archived`, names the row element, and orders all items; AC5 covers the no-bound record and the releases link on a failure record, and skips absent items; AC6 adds the label's `for=` and text; AC4 names a visually hidden span.
 - 2026-10-26: implement started on branch m015-pills-and-descriptions, cut from main at a238ab9.
 - 2026-10-26: T1 done: `ZOTERO_MAJORS` and `majorSupport` in `src/site/version.ts`; 19 new tests in `test/version.test.ts` failed first, then passed.
+- 2026-10-26: T2 done: `shownDescription` in `src/site/description.ts` computes the shown name itself (override, upstream name, or id) so `src/site/` does not import `site/src/data.ts`; 10 tests in `test/description.test.ts` failed first on the missing module, then passed.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
