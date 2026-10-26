@@ -21,6 +21,10 @@ describe("shownDescription", () => {
     expect(shownDescription(record(name, description))).toBe(description);
   });
 
+  test("hides a name-only description whose accents use another Unicode form", () => {
+    expect(shownDescription(record("Café Notes", "Café Notes for Zotero"))).toBeUndefined();
+  });
+
   test("hides a blank description", () => {
     expect(shownDescription(record("Zotero OCR", "  \n"))).toBeUndefined();
   });

@@ -89,3 +89,11 @@ D-007. For some plugins the change moves the values of existing v1 fields,
 such as `version` and `latestReleaseDate`. This is not a breaking change,
 because each field still describes the release whose manifest was read, as
 the v1 schema says, and the record keeps its shape.
+
+### D-009: The pages carry no script, annotating D-004
+
+2026-10-26, M015 review. D-004 chose Astro partly because "the version check
+stays one small script". At the M015 plan question set the user chose version
+pills over the typed Zotero version field, so M015 removes the field and its
+script. The pages now carry no script. The choice of Astro stands: it still
+writes plain HTML from TypeScript templates and sends no browser framework.

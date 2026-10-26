@@ -17,6 +17,7 @@ const { generatedAt } = loadData();
     <title>{title}</title>
     <style is:global>
       :root {
+        color-scheme: light dark;
         --text: #1d1d1f;
         --muted: #5f6368;
         --line: #e3e3e6;
@@ -54,6 +55,7 @@ const { generatedAt } = loadData();
         padding: 1rem;
         color: var(--text);
         background: var(--page);
+        overflow-wrap: anywhere;
       }
       a {
         color: var(--link);
@@ -134,6 +136,9 @@ const { generatedAt } = loadData();
         position: absolute;
         width: 1px;
         height: 1px;
+        margin: -1px;
+        padding: 0;
+        border: 0;
         overflow: hidden;
         clip: rect(0 0 0 0);
         white-space: nowrap;
@@ -144,7 +149,6 @@ const { generatedAt } = loadData();
         display: flex;
         flex-wrap: wrap;
         gap: 1rem;
-        overflow-wrap: anywhere;
       }
       details {
         border-top: 1px solid var(--line);

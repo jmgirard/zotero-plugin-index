@@ -12,13 +12,13 @@ pill for each Zotero major version from 7 to 10. A pill shows how much of
 that version the plugin's declared range covers. A check mark (✓) means all
 of it, a half circle (◐) means part of it, and a dash means none of it. Hold
 the pointer over a pill to read its meaning and, for a half circle, the
+declared range. On a touch screen, open the plugin's page to read its
 declared range. A pill counts Zotero N as the versions from N.0 to N.9.
 Plugin authors often write a maximum such as 10.99.99 to mean every Zotero 10
 release. They also write a minimum such as 8.999 to mean Zotero 9 and newer.
-The
-declared range uses the overrides that apply to the plugin version that the
-index read. The site does not test plugins. The pills show what each plugin
-declares.
+The declared range uses the overrides that apply to the plugin version that
+the index read. The site does not test plugins. The pills show what each
+plugin declares.
 
 A plugin with no declared range shows "No declared range" in place of the
 pills. If the last build failed to read a plugin, its row shows the failure.
@@ -27,9 +27,9 @@ The description comes from the plugin's manifest. If the manifest has no
 description, if it is blank, or if it only repeats the plugin's name, the
 site shows no description. The site checks for a repeated name this way. It
 takes the words of the description and of the name. It leaves out "zotero",
-"plugin", "addon", "add", "on", "extension", "for", "a", "an", and "the". If every word of the
-description that is left is also a word of the name, the description only
-repeats the name. For example, "Zotero Plugin for OCR" only repeats the name
+"plugin", "addon", "add", "on", "extension", "for", "a", "an", and "the". If
+every word of the description that is left is also a word of the name, the
+description only repeats the name. For example, "Zotero Plugin for OCR" only repeats the name
 "Zotero OCR". A `description` override that applies to the plugin version
 that the index read replaces the manifest description. The name check does
 not apply to an override.

@@ -27,7 +27,7 @@ const { min, max } = declaredRange(record);
 ---
 
 <Base title={`${displayName(record)}: Zotero plugin index`}>
-  <h1>{displayName(record)}</h1>
+  <h1>{displayName(record)}{upstream?.archived === true && <span data-archived>(archived)</span>}</h1>
   {description && <p class="description" data-description>{description}</p>}
   {
     failure ? (

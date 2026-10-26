@@ -12,8 +12,11 @@ export interface DescriptionRecord {
 // Words that say nothing about what a plugin does, left out before the name comparison.
 const FILLER = new Set(["zotero", "plugin", "addon", "add", "on", "extension", "for", "a", "an", "the"]);
 
+// NFC first, so a name and a description that spell the same accented word in different
+// Unicode forms give the same word; combining marks stay inside their word.
 function words(text: string): Set<string> {
-  return new Set((text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).filter((word) => !FILLER.has(word)));
+  const runs = text.normalize("NFC").toLowerCase().match(/[\p{L}\p{M}\p{N}]+/gu) ?? [];
+  return new Set(runs.filter((word) => !FILLER.has(word)));
 }
 
 // The description override when one applies. Otherwise the upstream description, unless it

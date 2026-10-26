@@ -108,6 +108,11 @@ const page = (id: string) => readFileSync(join(out, "plugins", id, "index.html")
 const home = () => readFileSync(join(out, "index.html"), "utf8");
 const records = (fixture as unknown as PluginsFile).plugins;
 
+// Text as Astro writes it into the page.
+function escaped(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
 function hasBound(record: PluginRecord): boolean {
   const { min, max } = declaredRange(record);
   return min !== undefined || max !== undefined;
@@ -124,7 +129,7 @@ function expectInOrder(html: string, markers: string[]): void {
 }
 
 const PILL =
-  /<span class="pill" data-major="([^"]+)" data-support="([^"]+)" title="([^"]*)"><span aria-hidden="true">([^<]*)<\/span><span class="visually-hidden">([^<]*)<\/span><\/span>/g;
+  /<span class="pill" role="listitem" data-major="([^"]+)" data-support="([^"]+)" title="([^"]*)"><span aria-hidden="true">([^<]*)<\/span><span class="visually-hidden">([^<]*)<\/span><\/span>/g;
 
 function pills(html: string) {
   return [...html.matchAll(PILL)].map(([, major, support, title, visible, hidden]) => ({ major, support, title, visible, hidden }));
@@ -169,9 +174,10 @@ describe("the plugin page", () => {
     const html = page(id);
     const description = shownDescription(record);
     const support = record.failure ? 'data-fact="failure"' : hasBound(record) ? 'class="pills"' : 'data-status="no-range"';
+    const archived = record.upstream?.archived === true ? "<span data-archived>(archived)</span>" : "";
     expectInOrder(html, [
-      "<h1>",
-      ...(description ? [`<p class="description" data-description>${description}</p>`] : []),
+      `<h1>${escaped(displayName(record))}${archived}</h1>`,
+      ...(description ? [`<p class="description" data-description>${escaped(description)}</p>`] : []),
       support,
       ...(hasBound(record) ? ['data-fact="declared-range"'] : []),
       'data-fact="repository"',
@@ -287,9 +293,9 @@ describe("the home page", () => {
     const description = shownDescription(record);
     const status = record.failure ? `Not read: ${record.failure.name}` : hasBound(record) ? 'class="pills"' : "No declared range";
     expectInOrder(html, [
-      `<a href="${pluginHref(id)}">${displayName(record)}</a>`,
+      `<a href="${escaped(pluginHref(id))}">${escaped(displayName(record))}</a>`,
       ...(archived ? ["<span data-archived>(archived)</span>"] : []),
-      ...(description ? [`<p class="description" data-description>${description}</p>`] : []),
+      ...(description ? [`<p class="description" data-description>${escaped(description)}</p>`] : []),
       status,
     ]);
     if (!archived) expect(html).not.toContain("data-archived");

@@ -45,7 +45,9 @@ version in `ZOTERO_MAJORS` (7 to 10). A pill states how much of that major the
 declared range covers, counting Zotero N as N.0 to N.9: all, part, or none.
 The pills show only the declared range, so they are not a combined verdict.
 The site shows the manifest description unless it is blank or only repeats
-the plugin's name; a `description` override always shows (M015).
+the plugin's name; a `description` override that applies to the version the
+index read always shows (M015). An archived plugin's page also shows
+"(archived)" after its name, outside the Details section (M015 review).
 
 The index runs on GitHub only: GitHub Actions, GitHub Pages, and GitHub
 issues. It has no server, no database, and no paid service. Thus every

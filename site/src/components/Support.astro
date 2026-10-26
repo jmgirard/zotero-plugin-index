@@ -29,9 +29,9 @@ const pills = ZOTERO_MAJORS.flatMap((major) => {
   ) : pills.length === 0 ? (
     <p class="status" data-status="no-range">No declared range</p>
   ) : (
-    <div class="pills">
+    <div class="pills" role="list">
       {pills.map(({ major, support, text }) => (
-        <span class="pill" data-major={major} data-support={support} title={text}>
+        <span class="pill" role="listitem" data-major={major} data-support={support} title={text}>
           <span aria-hidden="true">
             {major} {MARKS[support]}
           </span>

@@ -50,11 +50,9 @@
   build then deploys nothing.
 - The daily build publishes a website at
   `https://jmgirard.github.io/zotero-plugin-index/`. The home page lists every
-  plugin. Each plugin has a page that shows its declared range of Zotero
-  versions first. If the build failed to read a plugin, its page shows the
-  failure in that place. The entry on version pills below describes what the
-  pages show. `pnpm site` builds the pages into `dist/` beside the data. If
-  `pnpm site` fails, the daily build deploys nothing.
+  plugin. Each plugin has a page. The entry on version pills below describes
+  what the pages show. `pnpm site` builds the pages into `dist/` beside the
+  data. If `pnpm site` fails, the daily build deploys nothing.
 - A bot finds new plugins. Once a day, the `Discover plugins` workflow
   searches GitHub for repositories with the topic `zotero-plugin` or
   `zotero-addon` that no entry names. It opens one pull request for each
@@ -112,10 +110,12 @@
   plugin with no declared range shows "No declared range" instead, and a
   plugin that the build failed to read shows its failure. If the declared
   range covers all of that version, the pill shows a check mark (✓). A half
-  circle (◐) means part of it, and a dash means none of it. A pill counts Zotero N
-  as the versions from N.0 to N.9. The "Your Zotero version" field and the
-  local storage that kept its value are gone. If the manifest description is
-  blank or only repeats the plugin's name, the site shows no description. A
-  `description` override still replaces it. Each plugin page puts the plugin
-  id, the repository and release facts, and the overrides in a closed
-  "Details" section.
+  circle (◐) means part of it, and a dash means none of it. A pill counts
+  Zotero N as the versions from N.0 to N.9. The "Your Zotero version" field
+  and the local storage that kept its value are gone. If the manifest
+  description is blank or only repeats the plugin's name, the site shows no
+  description. A `description` override still replaces it. Each plugin page
+  shows its repository and releases links under the declared range. It puts
+  the plugin id, the repository and release facts such as the release count,
+  and the overrides in a closed "Details" section. An archived plugin shows
+  "(archived)" after its name on its page too.
