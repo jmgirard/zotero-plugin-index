@@ -1,0 +1,44 @@
+{
+  "source": "Written by hand for the discover tests, in the shape of GitHub's repository search: two pages for topic:zotero-plugin and one for topic:zotero-addon, with example/both under both topics. The tests add each repo's responses from test/support/plugin-repo.ts.",
+  "repoUrl": "",
+  "responses": {
+    "https://api.github.com/search/repositories?q=topic%3Azotero-plugin&sort=updated&order=desc&per_page=100": {
+      "headers": {
+        "link": "<https://api.github.com/search/repositories?q=topic%3Azotero-plugin&sort=updated&order=desc&per_page=100&page=2>; rel=\"next\", <https://api.github.com/search/repositories?q=topic%3Azotero-plugin&sort=updated&order=desc&per_page=100&page=2>; rel=\"last\""
+      },
+      "json": {
+        "total_count": 5,
+        "incomplete_results": false,
+        "items": [
+          { "full_name": "example/alpha", "html_url": "https://github.com/example/alpha", "pushed_at": "2026-10-20T10:00:00Z", "fork": false },
+          { "full_name": "Example/Second-Plugin", "html_url": "https://github.com/Example/Second-Plugin", "pushed_at": "2026-10-19T10:00:00Z", "fork": false },
+          { "full_name": "example/skipped", "html_url": "https://github.com/example/skipped", "pushed_at": "2026-10-18T10:00:00Z", "fork": false }
+        ]
+      }
+    },
+    "https://api.github.com/search/repositories?q=topic%3Azotero-plugin&sort=updated&order=desc&per_page=100&page=2": {
+      "headers": {
+        "link": "<https://api.github.com/search/repositories?q=topic%3Azotero-plugin&sort=updated&order=desc&per_page=100&page=1>; rel=\"prev\", <https://api.github.com/search/repositories?q=topic%3Azotero-plugin&sort=updated&order=desc&per_page=100&page=1>; rel=\"first\""
+      },
+      "json": {
+        "total_count": 5,
+        "incomplete_results": false,
+        "items": [
+          { "full_name": "example/no-release", "html_url": "https://github.com/example/no-release", "pushed_at": "2026-10-17T10:00:00Z", "fork": false },
+          { "full_name": "example/both", "html_url": "https://github.com/example/both", "pushed_at": "2026-10-16T10:00:00Z", "fork": false }
+        ]
+      }
+    },
+    "https://api.github.com/search/repositories?q=topic%3Azotero-addon&sort=updated&order=desc&per_page=100": {
+      "json": {
+        "total_count": 3,
+        "incomplete_results": false,
+        "items": [
+          { "full_name": "example/both", "html_url": "https://github.com/example/both", "pushed_at": "2026-10-16T10:00:00Z", "fork": false },
+          { "full_name": "example/clash", "html_url": "https://github.com/example/clash", "pushed_at": "2026-10-15T10:00:00Z", "fork": false },
+          { "full_name": "example/unsafe", "html_url": "https://github.com/example/unsafe", "pushed_at": "2026-10-14T10:00:00Z", "fork": false }
+        ]
+      }
+    }
+  }
+}

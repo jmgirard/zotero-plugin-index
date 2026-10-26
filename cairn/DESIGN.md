@@ -93,9 +93,17 @@ exception is a report that is abuse.
 - Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch, {
   lookup })` returns the facts of one GitHub repo, or one named
   inclusion-bar failure. The optional `lookup` resolves download hosts for
-  the host check (M004). Added M002.
+  the host check (M004). Added M002. `githubClient(fetch)` makes its GitHub
+  API requests and refuses a URL on another host, so the token goes to the
+  API only (exported M008).
 - Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
   <dir>]` writes a new entry from the reader's facts. Added M002.
+- Discovery (`src/discover/`): `pnpm discover [--out <dir>] [--state
+  <file>] [--limit <n>] [--budget <n>]` searches the `zotero-plugin` and
+  `zotero-addon` topics, reads each repo that no entry names, and writes
+  the entries of up to `limit` repos (5 by default) that pass the inclusion
+  bar. It prints a JSON report of what it wrote, refused, and skipped.
+  Added M008.
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
@@ -152,7 +160,9 @@ reused._
 - `src/upstream/` reads the GitHub API with plain fetch, unzips the release
   XPI with fflate, and reads the `update.json` that the manifest names. The
   caller passes the fetch function, so the tests answer from recorded
-  responses in `test/fixtures/upstream/` and `test/fixtures/build/`.
+  responses in `test/fixtures/upstream/` and `test/fixtures/build/`, and
+  the discovery tests from `test/fixtures/discover/` and the repos that
+  `test/support/plugin-repo.ts` builds (M008).
   The reader caps the XPI at 50 MiB, each unzipped file at 1 MiB, and the
   `update.json` at 1 MiB. `src/upstream/host-guard.ts` refuses a download
   host in a loopback, private, or reserved range, by its literal address or
@@ -164,6 +174,23 @@ reused._
   `messages.json`, the read also fails with `xpi-unreadable`. fflate loops
   over the claimed count and unzips each matching entry, so without these
   checks either zip holds the build's CPU (M005).
+- `src/discover/` pages through GitHub's repository search for each topic
+  with the reader's GitHub client, which `src/upstream/reader.ts` exports.
+  The search is sorted by last update, so pages do not shift between
+  requests. It joins
+  the two result lists by lowercase owner/repo and reads the newest pushed
+  repos first, at most `budget` (100 by default) per run. It leaves out
+  each repo whose owner/repo, ignoring case, an entry's `repoUrl` names,
+  and it refuses a plugin id that an entry directory already has. A state
+  file, `.cache/discovery-state.json` by default, keeps each refused repo's
+  `pushed_at` and failure, and only for repos that the search found and
+  the index lacks. A later run reads that repo again when its `pushed_at`
+  changed or the record is 30 days old. A `github-http-error`,
+  `request-failed`, or `unexpected-error` result is not kept, nor a write
+  refused by the output directory (`entry-exists` there, `write-failed`).
+  A failed search ends the run before any read and leaves the state file as
+  it was. The report names, for each entry written, its version and declared
+  range (M008).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request.
 - `src/build/` reads the entries, runs the upstream reader on each plugin in
