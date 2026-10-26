@@ -1,0 +1,8 @@
+{
+  "id": "support@noedgeai.com",
+  "name": "Doc2X AI文档翻译解析插件",
+  "description": "在 Zotero 中用 Doc2X AI 翻译和解析 PDF：保留排版翻译、双语对照，或解析为 Markdown 笔记。",
+  "homepage": "https://doc2x.noedgeai.com",
+  "repoUrl": "https://github.com/NoEdgeAI/Doc2XZoteroPlugin",
+  "updateUrl": "https://github.com/NoEdgeAI/Doc2XZoteroPlugin/releases/download/release/update.json"
+}
