@@ -7,7 +7,7 @@
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the published v1 data, the plugin pages, and the home list change.
-- **Branch/PR:** m013-show-archived-repos
+- **Branch/PR:** m013-show-archived-repos, https://github.com/jmgirard/zotero-plugin-index/pull/19
 
 ## Goal
 
@@ -47,7 +47,7 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
       finds three statements. (a) README.md and the inclusion bar in DESIGN.md's Data sources section admit archived
       repos. (b) README.md and DESIGN.md's Contract boundary fact list say that the v1 data, the plugin page, and the
       home list show the archived state. (c) CHANGELOG.md's Unreleased section has an entry for the change.
-- [ ] AC6: After the merge, one `build.yml` run dispatched on the default branch deploys the site. The deployed
+- [x] AC6: After the merge, one `build.yml` run dispatched on the default branch deploys the site. The deployed
       `v1/plugins.json` has at least one record with a boolean `archived`. The deployed page of that plugin has a
       `data-fact="archived"` element. The deployed `schemas/plugins.v1.schema.json` defines `archived` in its
       `upstream` block.
@@ -80,7 +80,7 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
       its Data sources inclusion bar (lines 78-80), and its upstream reader and site architecture lines. Add a
       CHANGELOG.md Unreleased entry.
 - [x] T5: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
-- [ ] T6: After the merge, dispatch `build.yml` on the default branch once. Read the deployed data, one archived-fact
+- [x] T6: After the merge, dispatch `build.yml` on the default branch once. Read the deployed data, one archived-fact
       page, and the deployed schema.
 
 ## Work log
@@ -116,6 +116,7 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 - AC4 evidence (2026-10-26): "marks the name of each archived plugin and no other" passed: among every `<tr data-plugin>` row of the fixture's four records, only old-plugin has the `(archived)` span after its name link in the same cell, and the page has one `data-archived` in all.
 - AC5 evidence (2026-10-26): `grep -n -i archived README.md cairn/DESIGN.md CHANGELOG.md` read line by line. (a) README.md:105 and DESIGN.md:84-85 admit archived repos at the inclusion bar. (b) README.md:17-19 (page and home list) and README.md:304-305 (data); DESIGN.md:31-34 Contract boundary list names page, home list, and data. (c) CHANGELOG.md:85-93, under Unreleased.
 - AC6: post-merge live check, run at step 9 under the user's question-set grant.
+- AC6 evidence (2026-10-26): PR #19 merged 2026-10-26T13:00:31Z as 767dc93. `build.yml` run 40326984284, dispatched on main at 767dc93, ended build success and deploy success. The deployed `v1/plugins.json` (generatedAt 2026-10-26T13:00:59.839Z) has 16 records, all with an upstream block and a boolean `archived`, none `true`. The deployed page of Knowledge4Zotero@windingwind.com has `<dt>Archived on GitHub</dt><dd data-fact="archived">No</dd>`. The deployed schema defines `archived` as a boolean in its upstream block.
 - AC7 evidence (2026-10-26): `pnpm test` 12 files, 421 passed; `pnpm check` 16 entries, 0 problems.
 - Consistency gate (2026-10-26): `cairn_validate.py` exit 0, all checks passed. No principle changed, so no impact report. The generic profile names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
