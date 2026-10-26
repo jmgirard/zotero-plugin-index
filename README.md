@@ -276,9 +276,10 @@ same way as for `Discover plugins`. The body of the pull request contains
 `Closes #<issue>`. Thus a merge of the pull request closes the issue. The bot
 comments the link to the pull request on the issue.
 
-The bot can also find no URL in the issue body, fail to read the repository,
-or fail to write the entry. Then it comments the failure name and its message,
-and it closes the issue as not planned. A failed read includes a GitHub API
+The bot can also find no URL in the issue body, or fail to write the entry.
+Its read of the repository can also fail for a reason that is not
+build-level. Then it comments the failure name and its message, and it
+closes the issue as not planned. A failed read includes a GitHub API
 answer of HTTP 404, which a repository that does not exist or is private
 gives. An `unexpected-error` from the check of the written entry also closes
 the issue, as a failed write does.
@@ -290,9 +291,8 @@ read `plugins/`, its own pull requests, or the default branch, or the push or
 the pull request can fail. The first job can also fail and leave no handoff.
 Then the bot comments the error and leaves the issue open, and the workflow
 run fails. If the read of the repository failed, the comment also gives the
-failure name. If `pnpm propose`
-refuses the handoff, the bot does not answer the issue, and the workflow run
-fails.
+failure name. If `pnpm propose` refuses the handoff, the bot does not answer
+the issue, and the workflow run fails.
 
 The first job gets the issue body in the `ISSUE_BODY` environment variable.
 The second job gets the issue number in `ISSUE_NUMBER`. The workflow runs in the
