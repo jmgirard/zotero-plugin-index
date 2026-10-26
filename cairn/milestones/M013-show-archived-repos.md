@@ -1,6 +1,6 @@
 # M013: Show whether a plugin repo is archived
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -102,6 +102,7 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 - 2026-10-26: T4 done. README.md states the listing and marker in "The site", the optional-field rule in "Using the data", the inclusion bar in "Adding a plugin", and the field in "Building the data". README.md has no single inclusion-bar section, so its statement sits beside the failure names. DESIGN.md: Contract boundary facts and API rule, Data sources bar, reader and site architecture lines. CHANGELOG.md: one Unreleased entry.
 - 2026-10-26: T5 done. `pnpm test`: 421 passed. `pnpm check`: 16 entries, 0 problems.
 - 2026-10-26: claim audit: 25 claims read, 3 corrected — README.md, CHANGELOG.md. The optional-field rule is now stated as the project's rule, with a note to fetch a saved schema copy again. The CHANGELOG page claim is now conditional on an `archived` value. "Its owner" became "someone with admin access". The fourth flag, the better-notes fixture's read date, holds: the read ran in this session.
+- 2026-10-26: implement done, status review. T6 is the post-merge live check and runs at review, as the plan placed it.
 
 ## Decisions
 
