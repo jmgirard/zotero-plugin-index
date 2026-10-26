@@ -29,30 +29,30 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 
 ## Acceptance criteria
 
-- [ ] AC1: Given a recorded pull-request list that holds one open, one closed-unmerged, and one merged pull
+- [x] AC1: Given a recorded pull-request list that holds one open, one closed-unmerged, and one merged pull
       request with `discover/<owner>/<repo>` head branches, `pnpm discover --propose` puts the first two repos
       in the skip set and does not read them; a test asserts both repos are skipped and absent from the reads.
-- [ ] AC2: For each entry that discovery writes, the propose step force-pushes the branch
+- [x] AC2: For each entry that discovery writes, the propose step force-pushes the branch
       `discover/<owner>/<repo>`, whose one commit on top of the default branch adds `plugins/<id>/meta.json`
       and `plugins/<id>/index.json` and no other path, so a branch of that name left by an earlier run is
       replaced. It then sends one create-pull-request request with that head and the default branch as base.
       A run sends at most `--limit` such requests, 5 by default. A test in a temporary git repo with a bare
       remote and a fake pull-request API runs 7 passing repos, one of whose branches already exists on the
       remote with another commit, and asserts 5 requests, the 5 branches, and each branch's changed paths.
-- [ ] AC3: Each pull request body names the repo URL, the plugin version, the declared Zotero range, and the
+- [x] AC3: Each pull request body names the repo URL, the plugin version, the declared Zotero range, and the
       exit status and the full output of `pnpm check` run on a directory that holds only that entry; a test
       asserts these five items in the body sent for a fixture entry.
-- [ ] AC4: When the push or the pull-request request fails for one entry, the run goes on to the next entry
+- [x] AC4: When the push or the pull-request request fails for one entry, the run goes on to the next entry
       and then exits 1 with a message naming each failed entry and its error. A test with 3 entries fails the
       push for the first and the request for the second, and asserts the exit code, both names and errors in
       the message, and the request sent for the third.
-- [ ] AC5: `.github/workflows/discover.yml` runs on a daily schedule and on `workflow_dispatch` with a `limit`
+- [x] AC5: `.github/workflows/discover.yml` runs on a daily schedule and on `workflow_dispatch` with a `limit`
       input that defaults to 5, grants `contents: write` and `pull-requests: write` and no other permission,
       names the concurrency group `discover`, and passes `GITHUB_TOKEN` to the run. An
       `actions/cache/restore` step with `restore-keys` on a fixed prefix comes before the run, and an
       `actions/cache/save` step with `if: always()` and a key that contains `github.run_id` comes after it; a
       parse of the file with Ruby's YAML shows each of these.
-- [ ] AC6: README describes what the bot proposes, how often, the default limit of 5, and that a closed bot
+- [x] AC6: README describes what the bot proposes, how often, the default limit of 5, and that a closed bot
       pull request means the bot does not propose that owner/repo name again; CHANGELOG has one entry for the
       bot under `## Unreleased`. `pnpm test` and `pnpm check` pass.
 - [ ] AC7: After the merge, and after the user turns on the repo setting that lets Actions create pull
@@ -118,3 +118,13 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 ## Decisions
 
 ## Review
+
+- 2026-10-26: sync: origin/main at e61a5f7, the branch's merge base, so no merge was needed. Copilot round off (no header line in `cairn/PROFILE.md`).
+- AC1 evidence (2026-10-26): `test/propose.test.ts` "does not read a repo whose bot pull request is open or was closed without a merge" passed. It runs `pnpm discover --propose` against `test/fixtures/discover/pulls.json` (open, closed-unmerged on page 2, merged, fork, and non-discover heads) and asserts `example/open-pr` and `example/closed-pr` are `in-skip-set` and absent from `read`, while `example/merged-pr` and `example/fork-pr` are read. A planted defect (closed-unmerged not skipped) turned it red at implement.
+- AC2 evidence (2026-10-26): "pnpm discover --propose pushes one branch with one entry and sends one request for each entry, at most 5 by default" passed. A temp checkout with a bare remote and 7 passing repos, run with no `--limit`; `discover/example/p7` was pre-pushed with a stray commit. Asserted: 5 POSTs to `/repos/example/index/pulls` with heads p7..p3 and base `main`; exactly those 5 `refs/heads/discover/*` on the remote; each branch's parent is `main` and its diff is the entry's `index.json` and `meta.json` only; the checkout stays on `main` with a clean status. Planted defects (no `--force`; default limit 6) each turned it red.
+- AC3 evidence (2026-10-26): "puts the repo URL, version, declared range, and the check's status and output in the body" passed: the real `pnpm check` ran once, on a directory whose output reads "checked 1 entries in …, 0 problems", and the sent body holds `- Repo: https://github.com/example/alpha`, the version ` 1.0.0 `, `strict_min_version ` 7.0 `, strict_max_version ` 8.* ``, "exited with status 0", and that output verbatim in a fence. Two `body` tests also passed: a failed check (status 1, output with a backtick run, a fence of 4) with a missing max bound ("not declared"), and a version with a blank line kept in one code span.
+- AC4 evidence (2026-10-26): "goes on past a failed push and a refused request, then exits 1 naming both" passed: `pnpm discover --propose` with 3 entries, a pre-receive hook refusing `discover/example/q3`, and a 422 for the first request. Exit 1; stderr names `example/q3 (q3@example.org): git push failed: … refused by the test hook` and `example/q2 (q2@example.org): POST …/pulls returned HTTP 422: Validation Failed; A pull request already exists`; the request log shows POSTs for q2 then q1, and `proposed` lists q1. A planted stop at the first failure turned it red.
+- AC5 evidence (2026-10-26): `ruby -ryaml` parse of `.github/workflows/discover.yml`: `on` (read as `true`) has `schedule` cron `43 14 * * *` and `workflow_dispatch` input `limit` with default 5; `permissions` is exactly `contents: write`, `pull-requests: write`; concurrency group `discover`; the run step's env has `GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}`; `actions/cache/restore@v6` with `restore-keys: discovery-state-` comes before the run, and `actions/cache/save@v6` with `if: always()` and key `discovery-state-${{ github.run_id }}-${{ github.run_attempt }}` after it.
+- AC6 evidence (2026-10-26): README "Pull requests from the bot" (README.md:151) says what the bot proposes, "once a day", "A run opens at most 5 pull requests, or the number that `--limit` gives" (:158-159), and "If you close a bot pull request without a merge, the bot does not propose that owner/repo name again" (:168-169). CHANGELOG has one bot entry, CHANGELOG.md:53, under its only heading `## Unreleased`. `pnpm test` 340 passed; `pnpm check` 14 entries, 0 problems.
+- consistency gate (2026-10-26): `cairn_validate.py` exit 0, all checks passed; no DESIGN principle changed, so no `cairn_impact` run; the generic profile names no toolchain checks.
+- AC7: not yet run; it follows the merge, the user's setting change, and a `limit` 1 dispatch (T7).
