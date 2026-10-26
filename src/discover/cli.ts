@@ -1,10 +1,9 @@
-import { spawn } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import process, { argv } from "node:process";
 import { type DiscoveryState, discover, type Report } from "./discover.ts";
-import { type CheckRunner, type ProposeFailure, type Proposed, proposeRun } from "./propose.ts";
+import { type ProposeFailure, type Proposed, pnpmCheck, proposeRun } from "./propose.ts";
 
 const USAGE = "usage: pnpm discover [--out <dir>] [--state <file>] [--limit <n>] [--budget <n>] [--propose]";
 const OPTIONS = ["--out", "--state", "--limit", "--budget"];
@@ -102,21 +101,6 @@ async function main(): Promise<number> {
 function count(value: string): number | undefined {
   return /^[1-9]\d*$/.test(value) ? Number(value) : undefined;
 }
-
-// Runs `pnpm check <dir>` with the pnpm that runs this command, and returns its exit
-// status and its output, stderr after stdout.
-const pnpmCheck: CheckRunner = (dir) =>
-  new Promise((resolveCheck, reject) => {
-    const child = spawn(process.env.npm_execpath ?? "pnpm", ["--silent", "--dir", PACKAGE_ROOT, "check", dir], {
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    let stdout = "";
-    let stderr = "";
-    child.stdout.on("data", (chunk) => (stdout += chunk));
-    child.stderr.on("data", (chunk) => (stderr += chunk));
-    child.on("error", reject);
-    child.on("close", (code) => resolveCheck({ status: code ?? 1, output: stdout + stderr }));
-  });
 
 // A missing state file is an empty state. So is one that is not a JSON object, with a
 // warning: the state only saves reads, so losing it costs reads, not entries. A file

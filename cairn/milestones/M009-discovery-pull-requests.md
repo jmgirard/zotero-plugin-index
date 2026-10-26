@@ -73,10 +73,10 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 
 - [x] T1: Record a pull-request list fixture with open, closed-unmerged, and merged `discover/` heads, and write
       the failing skip-set test.
-- [ ] T2: Write failing propose tests against a temporary git repo with a bare remote and a fake GitHub API
+- [x] T2: Write failing propose tests against a temporary git repo with a bare remote and a fake GitHub API
       fetch, for AC2–AC4.
 - [x] T3: Implement the pull-request list read (paginated, `state=all`) and the skip set.
-- [ ] T4: Implement the propose step: branch, commit as `github-actions[bot]`, push, `pnpm check` on the entry,
+- [x] T4: Implement the propose step: branch, commit as `github-actions[bot]`, push, `pnpm check` on the entry,
       the body, the limit, and per-entry failures.
 - [ ] T5: Write `.github/workflows/discover.yml`: a schedule at another hour than `build.yml`, dispatch with
       `limit`, the two permissions, the `discover` concurrency group, a 30-minute limit, and the cache restore
@@ -108,6 +108,8 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 - 2026-10-26: implementation choice: with `--propose`, discovery writes entries to a temporary directory unless `--out` is given, the index repo comes from `GITHUB_REPOSITORY`, and the default branch from the repo's API record; `githubClient` gains a `post` method for the create request.
 - 2026-10-26: minor amendment: each failing-test task is checked off in the same commit as the task that makes it pass (T1 with T3, T2 with T4), so no checkpoint carries a red suite.
 - 2026-10-26: T1, T3: `test/fixtures/discover/pulls.json` (two pages) and the `pnpm discover --propose` skip test, red first on the unknown flag; `skipSet` and `proposeRun` in `src/discover/propose.ts`, `--propose` in the CLI; a planted defect (closed-unmerged not skipped) turned the test red; verify green (335 tests, 14 entries).
+- 2026-10-26: T2, T4: the propose code landed with T3, so T2's tests were not red first; instead planted defects (push without `--force`; stop at the first failed entry) each turned one test red. Tests in `test/propose.test.ts` for AC2 (in-process, 7 repos, pre-existing branch), AC3 (real `pnpm check` plus a `body` case with a failed check), AC4 (`pnpm discover --propose` with a pre-receive hook and a 422); the fixture fetch answers `<METHOD> <url> #<n>` keys and the preload logs requests to `ZPI_REQUESTS`; verify green (339 tests, 14 entries).
+- 2026-10-26: implementation choice: the propose step runs the check before it pushes, so a check that cannot run leaves no branch; `pnpmCheck` lives in `propose.ts` so tests run the real one.
 
 ## Decisions
 

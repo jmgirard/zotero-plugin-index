@@ -1,7 +1,7 @@
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { cp, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import process from "node:process";
 import { promisify } from "node:util";
 import type { Lookup } from "../upstream/host-guard.ts";
@@ -14,12 +14,29 @@ const PREFIX = "discover/";
 // The identity GitHub shows for commits made with the built-in Actions token.
 const BOT = { name: "github-actions[bot]", email: "41898282+github-actions[bot]@users.noreply.github.com" };
 
+const PACKAGE_ROOT = resolve(import.meta.dirname, "../..");
+
 const run = promisify(execFile);
 
 export type Written = Extract<ReadItem, { outcome: "written" }>;
 
 // Runs `pnpm check` on a directory and returns its exit status and output.
 export type CheckRunner = (dir: string) => Promise<{ status: number; output: string }>;
+
+// Runs `pnpm check <dir>` with the pnpm that runs this command, and returns its exit
+// status and its output, stderr after stdout.
+export const pnpmCheck: CheckRunner = (dir) =>
+  new Promise((resolveCheck, reject) => {
+    const child = spawn(process.env.npm_execpath ?? "pnpm", ["--silent", "--dir", PACKAGE_ROOT, "check", dir], {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => (stdout += chunk));
+    child.stderr.on("data", (chunk) => (stderr += chunk));
+    child.on("error", reject);
+    child.on("close", (code) => resolveCheck({ status: code ?? 1, output: stdout + stderr }));
+  });
 
 export interface Proposed {
   repo: string;
