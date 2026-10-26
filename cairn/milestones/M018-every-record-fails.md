@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M018: Withhold deploys when every record fails
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -156,6 +156,7 @@ D-012 is written by this plan, not by the milestone.
 - 2026-10-26: T2 done: `src/build/cli.ts` prints each bar's stderr line that holds and returns 1 when either holds; `build.ts` and `schemas/` untouched. `pnpm test` 486 passed, `pnpm check` 17 entries, 0 problems.
 - 2026-10-26: T3 done: the AC4 phrase is in the cli.ts comment (rewrapped onto one line), the build.yml comment, both README paragraphs, both DESIGN entries, and a new CHANGELOG entry; line-joined searches find neither old README sentence; `git diff main...HEAD -- schemas src/build/build.ts` is empty. README line 68's "validate" is an older style-hook hit, left alone as outside this change. `pnpm test` 486 passed, `pnpm check` clean, cairn_validate passed.
 - 2026-10-26: claim audit: 20 claims read, 2 corrected — CHANGELOG.md (the "before" sentence stated a risk as past fact, said "no plugin data" where records keep their ids, and contrasted "named" with build-level failures; "whatever its name" became "build-level or not"). The reader also noted that the 2-of-3 test's exit 1 no longer separates the two bars; the AC3 test covers the build-level bar alone.
+- 2026-10-26: T1-T3 done, verify clean; status set to review. T4 runs after the merge.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote
