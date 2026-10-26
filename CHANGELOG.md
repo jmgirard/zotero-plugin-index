@@ -37,9 +37,9 @@
   for more than 3 minutes.
 - A `manifest.json` or default-locale `messages.json` whose deflate data
   inflates past the unzipped size that the zip declares fails with
-  `xpi-unreadable`. The reader stops inflating once the output passes that
-  size. Before, it decoded the whole stream, however far the stream ran past
-  that size.
+  `xpi-unreadable`. The reader inflates the data 16 KiB of input at a time
+  and stops after the first 16 KiB whose output passes that size. Before, it
+  decoded the whole stream, however far the stream ran past that size.
 - The daily build publishes the data on GitHub Pages at
   `https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json`, with its
   schemas under `https://jmgirard.github.io/zotero-plugin-index/schemas/`.

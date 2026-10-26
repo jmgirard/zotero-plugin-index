@@ -1,6 +1,6 @@
 # M012: Stop inflating past the declared size
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -77,6 +77,9 @@ and "Bound the time of a discover run". The read-only read job → M011.
 - 2026-10-26: T1+T2 in one checkpoint, because the T1 tests are red without T2. `pnpm test` 412 passed, `pnpm check` exit 0; the two 512 MiB reads take 67 ms and 50 ms.
 - 2026-10-26: T3: CHANGELOG.md Unreleased entry added after the M005 entry; DESIGN.md reader paragraph gains the M012 note, and its M005 sentence is corrected in place to name `unzipSync` in the past tense. `pnpm test` and `pnpm check` exit 0.
 - 2026-10-26: paused at the user's request after T3; next: claim audit (step 7), then hand off to review. T4 runs at review.
+- 2026-10-26: resumed by /milestone-implement; main has not moved since the cut, tree clean.
+- 2026-10-26: claim audit: 22 claims read, 1 corrected — CHANGELOG.md (the entry said the reader stops at the declared size; it checks after each 16 KiB of input, so it can inflate about 16 MiB first; reworded and re-read by the same reader).
+- 2026-10-26: all implement tasks done; T4 is the review-time build comparison for AC3, left for /milestone-review as the plan states. `pnpm test` and `pnpm check` exit 0. Status set to review.
 
 ## Decisions
 
