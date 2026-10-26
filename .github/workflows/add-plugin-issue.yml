@@ -6,7 +6,7 @@ on:
 
 # Each job sets its own permissions. The read job reads the repo that the issue names, so
 # it cannot write; the write job pushes, opens the pull request, and answers the issue
-# from the read job's handoff, and reads no repo itself.
+# from the read job's handoff, and reads no plugin repo itself.
 permissions: {}
 
 # The group that `Discover plugins` uses, so a run here and a discover run never push

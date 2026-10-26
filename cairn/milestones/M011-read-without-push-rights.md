@@ -136,6 +136,7 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 - 2026-10-26: T5: both workflows set `permissions: {}` and per-job maps; the read jobs also drop `cache: pnpm`, since a dependency cache a read job saves on the default branch would reach later jobs; `actions/download-artifact@v8` (the latest major, 2026-10-07) beside `upload-artifact@v7`; handoff artifacts kept 1 day.
 - 2026-10-26: T5 Ruby check (AC1, AC4, AC5 shapes) passes on the branch and reports 15 failures on main's two workflows.
 - 2026-10-26: T6: README ("Pull requests from the bot", "Proposing a plugin with an issue"), DESIGN.md (Function Families, Architecture), one CHANGELOG.md entry, and the preload comment updated; T7 is the live check after the merge, run by review.
+- 2026-10-26: claim audit pass found 5 false or misleading claims of about 105 (the write step's index re-check reads its own checkout, not a fresher index; "reads no repo" in both workflows; the README refusal list read as complete; the issue CLI's exit-1 comment; the issue run's limit of 1); all 5 corrected in comments, README, DESIGN.md, and two test names; the same reader's re-read is pending.
 
 ## Decisions
 

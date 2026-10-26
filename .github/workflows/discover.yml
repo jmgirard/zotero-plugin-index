@@ -12,7 +12,7 @@ on:
 
 # Each job sets its own permissions. The read job reads repos that anyone can tag, so it
 # cannot write; the write job pushes the discover/ branches and opens their pull requests
-# from the read job's handoff, and reads no repo itself. A pull request opened with this
+# from the read job's handoff, and reads no plugin repo itself. A pull request opened with this
 # token starts no workflow run, so its body carries the check result.
 permissions: {}
 

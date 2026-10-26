@@ -253,8 +253,8 @@ describe("read and write step failures", () => {
   });
 });
 
-describe("the write step checks the index and the bot pull requests again", () => {
-  test("skips, with no push or request, an entry whose repo an entry now names or whose id an open bot pull request now adds", async () => {
+describe("the write step checks the bot pull requests again and the index in its checkout", () => {
+  test("skips, with no push or request, an entry whose repo an entry names or whose id an open bot pull request adds", async () => {
     const { remote, work } = checkout();
     const handoff = tempDir();
     for (const [repo, id] of [

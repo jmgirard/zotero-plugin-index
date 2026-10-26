@@ -358,7 +358,7 @@ describe("the write step of an issue run", () => {
     return { result, sent };
   }
 
-  test("answers as today, with no push, when an entry named the repo after the read step", async () => {
+  test("answers as today, with no push, when an entry in the write step's checkout names the repo", async () => {
     const dir = tempDir();
     const { result, sent } = await answer(
       {

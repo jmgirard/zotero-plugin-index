@@ -169,18 +169,19 @@ gives.
 
 The first job reads files that anyone can write, so `pnpm propose` does not
 trust the handoff. It refuses the whole handoff, and pushes nothing and sends
-no request, in these cases:
+no request, in cases such as these:
 
 - `plan.json` does not match its schema.
 - An id is not a Mozilla add-on id.
 - A repository name is not a lowercase owner/repo that makes a valid branch
   name.
-- The handoff holds more entries than the limit.
+- The handoff holds more entries than the limit, which is 1 for an issue
+  run.
 - An entry directory holds anything other than the regular files `meta.json`
   and `index.json`.
 
-Before it pushes, the command reads the index and the bot
-pull requests again, and it skips an entry that one of them now has. It gives
+Before it pushes, the command reads the bot pull requests again, and the
+index in its checkout. It skips an entry that one of them has. It gives
 the token to git only in git's environment, and `pnpm check` gets no token.
 
 The workflow uses the built-in `GITHUB_TOKEN`, and a pull request that this

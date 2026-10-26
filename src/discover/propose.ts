@@ -107,9 +107,10 @@ export type ProposeHandoffResult =
   | { ok: true; proposed: Proposed[]; failed: ProposeFailure[]; skipped: SkippedEntry[] }
   | { ok: false; message: string };
 
-// The write step of a discover run. It checks the index and the bot pull requests again
-// by repo and plugin id, since they can change while the read step runs, and opens one
-// pull request for each entry neither has. A failed read of the index, the pull
+// The write step of a discover run. It checks the bot pull requests again by repo and
+// plugin id, since they can change while the read step runs, and the index in its
+// checkout, which is the commit the read step saw. It opens one pull request for each
+// entry neither has. A failed read of the index, the pull
 // requests, or the default branch ends the run before any push; a failure for one entry
 // is reported, and the run goes on.
 export async function proposeHandoff(options: ProposeHandoffOptions): Promise<ProposeHandoffResult> {

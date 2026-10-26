@@ -216,8 +216,9 @@ reused._
   count against the limit, and each entry directory for exactly the regular
   files `meta.json` and `index.json`. Any failure refuses the whole handoff
   before a request. The issue number comes from `ISSUE_NUMBER`, never from
-  the handoff. The write step reads the index and the bot pull requests again
-  and skips an entry that either now has. `propose` gives `git fetch` and
+  the handoff. The write step reads the bot pull requests again, and the
+  index in its own checkout, which is the commit the read job saw, and skips
+  an entry that either has. `propose` gives `git fetch` and
   `git push` the token as an `http.https://github.com/.extraheader` through
   `GIT_CONFIG_COUNT`, and `pnpmCheck` runs the check without `GITHUB_TOKEN`.
 - `src/discover/propose.ts` holds both steps of a discover run. The read step,

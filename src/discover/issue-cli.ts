@@ -9,8 +9,8 @@ const PACKAGE_ROOT = resolve(import.meta.dirname, "../..");
 // The read step of an issue run. It writes the outcome and any drafted entry into the
 // handoff for `pnpm propose`, and makes no GitHub write. The issue's body comes from the
 // environment, so the workflow passes it through `env:` and never writes it into a shell
-// script. A refusal or a failed read is an outcome in the handoff, so the command exits
-// 1 only when it cannot write the handoff.
+// script. A refusal or a failed read is an outcome in the handoff, so once its arguments
+// and environment pass, the command exits 1 only when it cannot write the handoff.
 async function main(): Promise<number> {
   const indexRepo = process.env.GITHUB_REPOSITORY ?? "";
   const args = argv.slice(2);
