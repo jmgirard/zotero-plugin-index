@@ -1,0 +1,7 @@
+{
+  "id": "better-bibtex@iris-advies.com",
+  "name": "Better BibTeX for Zotero",
+  "description": "Make Zotero useful for us LaTeX holdouts.",
+  "repoUrl": "https://github.com/retorquere/zotero-better-bibtex",
+  "updateUrl": "https://github.com/retorquere/zotero-better-bibtex/releases/download/release/updates.json"
+}
