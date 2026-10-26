@@ -27,8 +27,12 @@ host, mirror, or re-serve plugin files (XPI files). It does not review plugin
 code, and it does not endorse plugins.
 
 Each plugin page shows facts that a reader can check. These facts are the
-declared range of Zotero versions, source availability, repository age, last
+declared range of Zotero versions, source availability, whether GitHub marks
+the repository archived (when GitHub's response says), repository age, last
 release, release count, open issues, and the host of the `update.json` file.
+The home list marks an
+archived plugin with "(archived)" after its name, and the data carries the
+same `archived` fact (M013).
 The page also shows each override beside the upstream value it corrects
 (M007). Each page says that the index does not vet the plugins it lists.
 
@@ -38,7 +42,10 @@ contributor needs a GitHub account.
 
 The generated JSON data is a public API at a stable URL, with a schema
 version. A breaking change gets a new schema version. The old version stays
-available for a transition period. The URL is
+available for a transition period. A new optional field is not a breaking
+change, and it stays in the current version (D-006, D-007). The v1 schema
+rejects fields it does not define, so a consumer that validates against a
+saved copy must fetch the schema again after such a change. The URL is
 `https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json`, and the
 schemas are under `https://jmgirard.github.io/zotero-plugin-index/schemas/`,
 each schema's `$id` being its own URL (M006).
@@ -77,7 +84,9 @@ shows each one separately.
 
 Inclusion bar: a public repository, a Zotero 7+ manifest, and at least one
 release with a readable `update.json`. The bot checks all three, and it
-refuses forks (corrected M002). The maintainer removes spam. Inclusion is not a judgment of
+refuses forks (corrected M002). An archived repository passes the bar, and
+the index shows that it is archived (D-006, M013). The maintainer removes
+spam. Inclusion is not a judgment of
 quality. The index does not list plugins for Zotero 5 or 6.
 
 Once user reports exist, a page whose declared compatibility and user reports
@@ -175,6 +184,8 @@ reused._
   responses in `test/fixtures/upstream/` and `test/fixtures/build/`, and
   the discovery tests from `test/fixtures/discover/` and the repos that
   `test/support/plugin-repo.ts` builds (M008).
+  The reader copies the repo response's `archived` value into its facts only
+  when it is a boolean (M013).
   The reader caps the XPI at 50 MiB, each unzipped file at 1 MiB, and the
   `update.json` at 1 MiB. `src/upstream/host-guard.ts` refuses a download
   host in a loopback, private, or reserved range, by its literal address or
@@ -295,7 +306,9 @@ reused._
   Astro's `import.meta.env.BASE_URL`. `build.yml` runs `pnpm site` after the
   build, so a failed site build also deploys nothing. `tsconfig.json` includes
   `site/`, so `pnpm test` type-checks its `.ts` files; the `.astro` templates
-  are compiled by Astro without a type check (M007).
+  are compiled by Astro without a type check (M007). A plugin page shows the
+  "Archived on GitHub" fact only for a record whose `archived` is a boolean,
+  and the home list's `data-archived` marker only for `archived: true` (M013).
 
 ## Known issues
 

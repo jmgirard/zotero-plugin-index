@@ -23,6 +23,8 @@ export interface UpstreamFacts {
   releaseCount: number;
   // The publish date of the release whose manifest was read.
   latestReleaseDate: string;
+  // GitHub's archived flag, left out when the repo response has no boolean.
+  archived?: boolean;
 }
 
 // Each way a repo can fail the inclusion bar or fail to be read.
@@ -141,6 +143,7 @@ async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<
     openIssues: meta.open_issues_count,
     releaseCount: withXpi.length,
     latestReleaseDate: release.published_at,
+    archived: typeof meta.archived === "boolean" ? meta.archived : undefined,
   };
 }
 
@@ -149,6 +152,7 @@ interface RepoJson {
   html_url: string;
   private: boolean;
   fork: boolean;
+  archived?: unknown;
   created_at: string;
   open_issues_count: number;
 }

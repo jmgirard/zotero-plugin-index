@@ -19,7 +19,10 @@ const { plugins } = loadData();
       {
         plugins.map((record) => (
           <tr data-plugin={record.id}>
-            <td><a href={pluginHref(record.id)}>{displayName(record)}</a></td>
+            <td>
+              <a href={pluginHref(record.id)}>{displayName(record)}</a>
+              {record.upstream?.archived === true && <span data-archived>(archived)</span>}
+            </td>
             <td>{record.failure ? `Not read: ${record.failure.name}` : rangeText(record)}</td>
             <td><span data-result-for={rangeFields(record)} /></td>
           </tr>

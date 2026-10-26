@@ -102,7 +102,7 @@ function fact(html: string, name: string): string | undefined {
 
 describe("the plugin page", () => {
   const page = (id: string) => readFileSync(join(out, "plugins", id, "index.html"), "utf8");
-  const FACTS = ["repository", "repo-created", "latest-release", "release-count", "open-issues", "update-host", "releases"];
+  const FACTS = ["repository", "archived", "repo-created", "latest-release", "release-count", "open-issues", "update-host", "releases"];
 
   test("puts the declared range and the version field before the other facts", () => {
     const html = page("first-plugin@example.org");
@@ -153,6 +153,18 @@ describe("the plugin page", () => {
     expect(html).not.toMatch(/\sdata-result-for="/);
     expect(html).toContain("<h1>broken-plugin@example.org</h1>");
   });
+
+  test.each([
+    ["old-plugin@example.org", "Yes"],
+    ["first-plugin@example.org", "No"],
+  ])("shows whether the repo of %s is archived", (id, text) => {
+    expect(page(id)).toMatch(/<dt>Archived on GitHub<\/dt>\s*<dd data-fact="archived">/);
+    expect(fact(page(id), "archived")).toBe(text);
+  });
+
+  test("shows no archived fact when the record has no archived value", () => {
+    expect(page("{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}")).not.toMatch(/\sdata-fact="archived"/);
+  });
 });
 
 describe("the home page", () => {
@@ -168,6 +180,15 @@ describe("the home page", () => {
   test("names the failure of a record that was not read", () => {
     const row = /<tr data-plugin="broken-plugin@example\.org">(.*?)<\/tr>/.exec(readFileSync(join(out, "index.html"), "utf8"));
     expect(row?.[1]).toContain("<td>Not read: no-xpi-release</td>");
+  });
+
+  test("marks the name of each archived plugin and no other", () => {
+    const html = readFileSync(join(out, "index.html"), "utf8");
+    const marked = [...html.matchAll(/<tr data-plugin="([^"]+)">(.*?)<\/tr>/g)]
+      .filter((row) => /<td><a [^>]*>[^<]*<\/a>\s*<span data-archived[^>]*>\(archived\)<\/span><\/td>/.test(row[2]!))
+      .map((row) => row[1]);
+    expect(marked).toEqual(["old-plugin@example.org"]);
+    expect(html.match(/\sdata-archived/g)).toHaveLength(1);
   });
 });
 

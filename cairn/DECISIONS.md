@@ -61,3 +61,15 @@ quality. Many abandoned plugins are never archived, so a refusal would not
 leave a list of maintained plugins. The data gains `archived` as an optional
 field of schema v1. An added optional field does not need a new schema
 version, because readers that ignore unknown fields keep working.
+
+### D-007: D-006 supersedes M003's rule that a v1 file never changes shape
+
+2026-10-26, M013 review. The M003 review recorded a milestone-local decision:
+the v1 schema stays strict (`additionalProperties: false`), and adding a field
+means `plugins.v2`. D-006 adds `archived` to v1 without naming that rule, and
+its reason covers only readers that ignore unknown fields. The v1 schema stays
+strict, so a consumer that validates against a saved copy of it rejects the
+new data until it fetches the schema again. The user chose the optional v1
+field at the M013 plan question set with that cost stated, so D-006 stands
+and replaces the M003 rule. The README and the changelog tell consumers to
+fetch the schema again.

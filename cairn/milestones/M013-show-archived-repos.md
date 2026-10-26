@@ -1,13 +1,13 @@
 # M013: Show whether a plugin repo is archived
 
-- **Status:** planned
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the published v1 data, the plugin pages, and the home list change.
-- **Branch/PR:** —
+- **Branch/PR:** m013-show-archived-repos
 
 ## Goal
 
@@ -26,24 +26,24 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 
 ## Acceptance criteria
 
-- [ ] AC1: `readUpstream` copies GitHub's `archived` value into its facts only when it is `true` or `false`. For a
+- [x] AC1: `readUpstream` copies GitHub's `archived` value into its facts only when it is `true` or `false`. For a
       recorded repo response with `"archived": true`, it returns `ok: true` and `facts.archived` is `true`. With
       `"archived": false`, `facts.archived` is `false`. With no `archived` key, with `null`, or with the string
       `"true"`, it returns `ok: true` and `facts.archived` is `undefined`. `test/upstream.test.ts` runs these five
       cases against recorded responses.
-- [ ] AC2: `schemas/plugins.v1.schema.json` admits an optional boolean `archived` in the `upstream` block, as D-006
+- [x] AC2: `schemas/plugins.v1.schema.json` admits an optional boolean `archived` in the `upstream` block, as D-006
       allows, and its `schemaVersion` const stays 1. `test/build.test.ts` shows that `pnpm build` writes
       `archived: true` into the record of a plugin whose repo response has `"archived": true`. It also shows that
       `checkOutput` reports a record whose `archived` is the string `"true"`.
-- [ ] AC3: A plugin page whose record's upstream block has `archived: true` has a `<dt>` "Archived on GitHub"
+- [x] AC3: A plugin page whose record's upstream block has `archived: true` has a `<dt>` "Archived on GitHub"
       followed by `<dd data-fact="archived">` whose text is "Yes". With `archived: false` the text is "No". A page
       whose record's upstream block has no `archived` value has no `data-fact="archived"` element.
       `test/site.test.ts` checks the three cases against the site fixture.
-- [ ] AC4: On the home page, each plugin whose record has `archived: true` shows "(archived)" in a `data-archived`
+- [x] AC4: On the home page, each plugin whose record has `archived: true` shows "(archived)" in a `data-archived`
       element after its name link, in the same table cell. No other record has a `data-archived` element.
       `test/site.test.ts` checks every record of the site fixture. The fixture holds records with `archived: true`,
       `archived: false`, no `archived` value, and a failure.
-- [ ] AC5: The reviewer reads each line that `grep -n -i archived README.md cairn/DESIGN.md CHANGELOG.md` returns and
+- [x] AC5: The reviewer reads each line that `grep -n -i archived README.md cairn/DESIGN.md CHANGELOG.md` returns and
       finds three statements. (a) README.md and the inclusion bar in DESIGN.md's Data sources section admit archived
       repos. (b) README.md and DESIGN.md's Contract boundary fact list say that the v1 data, the plugin page, and the
       home list show the archived state. (c) CHANGELOG.md's Unreleased section has an entry for the change.
@@ -51,7 +51,7 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
       `v1/plugins.json` has at least one record with a boolean `archived`. The deployed page of that plugin has a
       `data-fact="archived"` element. The deployed `schemas/plugins.v1.schema.json` defines `archived` in its
       `upstream` block.
-- [ ] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
+- [x] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -65,21 +65,21 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 
 ## Tasks
 
-- [ ] T1: Tests first in `test/upstream.test.ts` for the five cases of AC1, with the recorded responses changed per
+- [x] T1: Tests first in `test/upstream.test.ts` for the five cases of AC1, with the recorded responses changed per
       case. Then add `archived?: boolean` to `UpstreamFacts` and `RepoJson`, and set it in `read`
       (`src/upstream/reader.ts:129-144`) only when `meta.archived` is a boolean.
-- [ ] T2: Add the optional boolean `archived` to the `upstream` definition of `schemas/plugins.v1.schema.json`
+- [x] T2: Add the optional boolean `archived` to the `upstream` definition of `schemas/plugins.v1.schema.json`
       (lines 81-96). Give one repo in `test/fixtures/build/responses.json` `"archived": true`. Add the build test
       and the `checkOutput` test of AC2 to `test/build.test.ts`.
-- [ ] T3: Add the "Archived on GitHub" `<dt>` and `<dd data-fact="archived">` to
+- [x] T3: Add the "Archived on GitHub" `<dt>` and `<dd data-fact="archived">` to
       `site/src/pages/plugins/[id]/index.astro` (facts list, lines 49-65), shown only when `upstream.archived` is a
       boolean. Add the `data-archived` marker after the name link in `site/src/pages/index.astro:22`. Give
       `test/fixtures/site/plugins.json` records of the four kinds, and add the AC3 and AC4 tests to
       `test/site.test.ts`.
-- [ ] T4: Edit README.md's inclusion bar and fact list. Edit DESIGN.md's Contract boundary fact list (lines 29-31),
+- [x] T4: Edit README.md's inclusion bar and fact list. Edit DESIGN.md's Contract boundary fact list (lines 29-31),
       its Data sources inclusion bar (lines 78-80), and its upstream reader and site architecture lines. Add a
       CHANGELOG.md Unreleased entry.
-- [ ] T5: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
+- [x] T5: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
 - [ ] T6: After the merge, dispatch `build.yml` on the default branch once. Read the deployed data, one archived-fact
       page, and the deployed schema.
 
@@ -96,7 +96,41 @@ link it carries shows GitHub's archived banner. Merging PR #13 is the user's act
 - 2026-10-26: plan gate chose an optional field in schema v1 over a v2 schema because readers that ignore unknown fields keep working; falsified by a consumer report of a validation failure on the new field.
 - 2026-10-26: collision check: no D-entry, archive summary, or candidate row covers archived repos. M002 set the fork refusal, which this keeps. About 9 of the roughly 510 topic-search repos are archived, and none of the listed plugins (observed 2026-10-26).
 - 2026-10-26: inbox sweep: issue #12 overlaps, since its PR #13 proposes an archived repo. It closes when the user merges PR #13, so it takes no Resolves slot. Bot PR #15 does not overlap and takes no disposition here.
+- 2026-10-26: started on branch m013-show-archived-repos, cut from main at eef203d.
+- 2026-10-26: T1, T2 done in one commit, since the reader's new field fails the build tests until the schema admits it. The better-notes fixture gains `"archived": false`, as GitHub returned on 2026-10-26, and the happy-path test expects it. The build fixture's example/second-plugin is archived. A planted `"type": "string"` in the schema failed both new build tests. `pnpm test`: 417 passed.
+- 2026-10-26: T3 done. The archived fact sits first in the facts list after Repository, and the home marker is a `<span data-archived>` after the name link. Site fixture: old-plugin archived, first-plugin not, the GUID plugin with no value, broken-plugin a failure. The three new tests failed before the template change. `pnpm test`: 421 passed. `pnpm check`: 16 entries, 0 problems.
+- 2026-10-26: T4 done. README.md states the listing and marker in "The site", the optional-field rule in "Using the data", the inclusion bar in "Adding a plugin", and the field in "Building the data". README.md has no single inclusion-bar section, so its statement sits beside the failure names. DESIGN.md: Contract boundary facts and API rule, Data sources bar, reader and site architecture lines. CHANGELOG.md: one Unreleased entry.
+- 2026-10-26: T5 done. `pnpm test`: 421 passed. `pnpm check`: 16 entries, 0 problems.
+- 2026-10-26: claim audit: 25 claims read, 3 corrected — README.md, CHANGELOG.md. The optional-field rule is now stated as the project's rule, with a note to fetch a saved schema copy again. The CHANGELOG page claim is now conditional on an `archived` value. "Its owner" became "someone with admin access". The fourth flag, the better-notes fixture's read date, holds: the read ran in this session.
+- 2026-10-26: implement done, status review. T6 is the post-merge live check and runs at review, as the plan placed it.
+- 2026-10-26: step-7 approval: m013-show-archived-repos approved for merge
 
 ## Decisions
 
 ## Review
+
+- Sync: origin/main had not moved since the branch was cut; no merge needed. Copilot round off (no header line).
+- AC1 evidence (2026-10-26): `vitest run test/upstream.test.ts -t archived` passed 4 (true, absent, null, the string "true"); the happy-path test "returns the facts of a plugin that meets the bar" passed with `archived: false` in its exact `toEqual`. All read `ok: true`.
+- AC2 evidence (2026-10-26): the schema's `upstream` properties hold `archived` with type boolean, not in `required`; `schemaVersion` const is 1. Build tests "writes the archived value of each repo the reader read" (second-plugin true, better-notes false) and "reports a record whose archived value is not a boolean" (`/plugins/0/upstream/archived`) passed. A planted `"type": "string"` failed both (implement work log).
+- AC3 evidence (2026-10-26): site tests passed for old-plugin ("Yes") and first-plugin ("No"), each matching `<dt>Archived on GitHub</dt>` then `<dd data-fact="archived">`, and the GUID plugin with no value has no `data-fact="archived"`.
+- AC4 evidence (2026-10-26): "marks the name of each archived plugin and no other" passed: among every `<tr data-plugin>` row of the fixture's four records, only old-plugin has the `(archived)` span after its name link in the same cell, and the page has one `data-archived` in all.
+- AC5 evidence (2026-10-26): `grep -n -i archived README.md cairn/DESIGN.md CHANGELOG.md` read line by line. (a) README.md:105 and DESIGN.md:84-85 admit archived repos at the inclusion bar. (b) README.md:17-19 (page and home list) and README.md:304-305 (data); DESIGN.md:31-34 Contract boundary list names page, home list, and data. (c) CHANGELOG.md:85-93, under Unreleased.
+- AC6: post-merge live check, run at step 9 under the user's question-set grant.
+- AC7 evidence (2026-10-26): `pnpm test` 12 files, 421 passed; `pnpm check` 16 entries, 0 problems.
+- Consistency gate (2026-10-26): `cairn_validate.py` exit 0, all checks passed. No principle changed, so no impact report. The generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- prior-review #1: the diff adds a field to v1, which reverses M003's milestone-local rule that a v1 file never changes shape and adding a field means `plugins.v2`; D-006 does not name it — fix now: D-007 records that D-006 replaces the M003 rule and that strict validators must fetch the schema again; DESIGN.md says so, fixed 0a43b96. The plan's collision check missed the M003 rule because it read D-entries, not archived milestone decisions.
+- blame-history #1: D-006's reason ("readers that ignore unknown fields keep working") does not hold for readers that validate against a saved strict v1 schema — fix now: same fix as prior-review #1, fixed 0a43b96. Follow-up row "Let old v1 schemas accept new fields" holds the schema loosening.
+- diff-bug #1: DESIGN.md's Contract boundary list states the archived fact without its condition — fix now: "(when GitHub's response says)", fixed 0a43b96.
+- ripple #1: same as diff-bug #1 — fix now, fixed 0a43b96.
+- diff-bug #2: README.md's "Archived on GitHub: Yes" reads as literal output, but the page uses a dt/dd pair with no colon — fix now: reworded as the fact and its value, fixed 0a43b96.
+- prior-review #2: README.md:106 ran to 83 columns, against M007's 80-column wrap finding — fix now: rewrapped, fixed 0a43b96.
+- ripple #3: the site ordering test's fact list omits `archived`, so its place after the declared range is untested — fix now: added to the list, fixed 0a43b96.
+- diff-bug #4: the build test's `false` assertion repeats the copy path of the `true` assertion, and the upstream happy path already covers `false` — fix now: dropped, fixed 0a43b96.
+- diff-bug #3: the absent, null, and "true" reader cases take the same `typeof` branch — reject (planned change): AC1 names all three, and each fails a different wrong implementation (`??`, truthiness, `Boolean()`).
+- diff-bug #5: the dt/dd pattern is checked for both the Yes and No pages — reject (planned change): AC3 names the pair for each value.
+- diff-bug #6: a count follows the exact row check on the home page — reject (false): the count also catches a stray `data-archived` outside the rows, so it is not weaker.
+- ripple #2: discovery's 5-a-run cap now covers archived repos, and no text says so — reject (false): the cap applies to every repo that passes the bar, and no text disagrees.
+- blame-history #2: the better-notes fixture note names two dates — reject (false): both dates are true; the `archived` value was read from GitHub on 2026-10-26 in this session.
+- blame-history #3: the home-row regexes need each `<tr>` on one line, and the new `<td>` spans several source lines — reject (false): Astro emits the row on one line; the AC4 test passed and failed before the template change.
+- Re-verify after fixes (2026-10-26): `pnpm test` 421 passed; `pnpm check` 0 problems; `cairn_validate.py` all passed. AC2's build evidence now rests on the `true` case alone, which AC2 names.

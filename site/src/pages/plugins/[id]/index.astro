@@ -51,6 +51,12 @@ const repoHref = safeHref(repoUrl);
     {
       upstream && (
         <>
+          {typeof upstream.archived === "boolean" && (
+            <>
+              <dt>Archived on GitHub</dt>
+              <dd data-fact="archived">{upstream.archived ? "Yes" : "No"}</dd>
+            </>
+          )}
           <dt>Repository created</dt>
           <dd data-fact="repo-created">{day(upstream.repoCreatedAt)}</dd>
           <dt>Latest release with an .xpi</dt>

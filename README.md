@@ -14,6 +14,11 @@ range first, then facts about the repository and its releases, then the
 overrides of the index for that plugin. If the last build failed to read a
 plugin, its page shows the failure in place of the declared range.
 
+The index lists a plugin whose GitHub repository is archived. Its row on the
+home page shows "(archived)" after its name, and its page shows the fact
+"Archived on GitHub" with the value "Yes". GitHub makes an archived repository read-only until someone
+with admin access to it unarchives it.
+
 To compare your Zotero version with each declared range, enter it in the
 "Your Zotero version" field at the top of any page. You can also paste the
 version line from About Zotero, such as "Version 7.0.11 (64-bit)". The site
@@ -39,6 +44,9 @@ A daily build updates the data. If more than half of the records carry a
 failure, the build deploys nothing. If the site build fails, the build also
 deploys nothing. The data from the last good build then stays in place. "Building the data" below describes the file. A breaking
 change to the file gets a new schema version under a new path, such as `v2/`.
+By this project's rule, a new optional field does not get a new schema
+version. The schema rejects fields that it does not define. If you validate
+against a saved copy of the schema, fetch it again after such a change.
 
 ## Plugin entries
 
@@ -94,8 +102,9 @@ manifest names. Then it writes `plugins/<id>/meta.json` and
 If the plugin does not meet the inclusion bar, or the command cannot read one
 of these files, the command writes no file. It prints the name of the failure
 and a message, then exits with status 1. Two failure names are `fork` and
-`no-xpi-release`. The `Failure` type in `src/upstream/reader.ts` lists each
-failure name for reading a plugin. The `WriteResult` type in
+`no-xpi-release`. An archived repository passes the inclusion bar, so the
+command writes its entry. The `Failure` type in `src/upstream/reader.ts`
+lists each failure name for reading a plugin. The `WriteResult` type in
 `src/add-plugin/add-plugin.ts` adds `entry-exists`, `unsafe-id`, and
 `write-failed`.
 
@@ -291,7 +300,9 @@ GitHub in the same way as `pnpm add-plugin`. It writes one file,
 `generatedAt` time, and one record for each entry. Each record keeps the
 upstream facts in an `upstream` block and the overrides of the entry, with
 their reasons, in an `overrides` block. The schema for the file is
-[`schemas/plugins.v1.schema.json`](schemas/plugins.v1.schema.json).
+[`schemas/plugins.v1.schema.json`](schemas/plugins.v1.schema.json). If the
+GitHub response for the repository says whether it is archived, the
+`upstream` block has an `archived` field, `true` or `false`.
 
 If the read of a plugin fails, its record has no `upstream` block. The
 record has a `failure` block with the failure name and a message. If the
