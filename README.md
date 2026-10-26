@@ -112,6 +112,10 @@ host, and what it unzips from the XPI:
 - An XPI whose zip has more than one entry named `manifest.json`, or more
   than one entry named the `messages.json` of the default locale, fails
   with `xpi-unreadable`.
+- A `manifest.json`, or the `messages.json` of the default locale, whose
+  deflate data inflates past the unzipped size that the zip declares fails
+  with `xpi-unreadable`. The command inflates 16 KiB of that data at a time
+  and stops after the first 16 KiB whose output passes that size.
 
 Before the command requests the XPI, the `update.json`, or a redirect target,
 it checks the host. The read fails with `host-refused` for `localhost` and

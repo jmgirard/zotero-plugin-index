@@ -183,9 +183,16 @@ reused._
   more entries than its length can hold, at 46 bytes for each entry, the
   read fails with `xpi-unreadable`. If the zip has more than one entry named
   `manifest.json`, or more than one named the default locale's
-  `messages.json`, the read also fails with `xpi-unreadable`. fflate loops
-  over the claimed count and unzips each matching entry, so without these
-  checks either zip holds the build's CPU (M005).
+  `messages.json`, the read also fails with `xpi-unreadable`. fflate's
+  `unzipSync` loops over the claimed count and unzips each matching entry,
+  so without these checks either zip held the build's CPU (M005, corrected
+  M012).
+  The reader finds each file from the central directory, read as `unzipSync`
+  reads it, and loops over the claimed count. It inflates a deflated file
+  with fflate's streaming `Inflate`, 16 KiB of input at a time. It fails with
+  `xpi-unreadable` once the output passes the unzipped size that the zip
+  declares, because `unzipSync` decodes the whole stream however far it runs
+  past that size (M012).
 - `src/discover/` pages through GitHub's repository search for each topic
   with the reader's GitHub client, which `src/upstream/reader.ts` exports.
   The search is sorted by last update, so pages do not shift between

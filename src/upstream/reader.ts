@@ -1,5 +1,5 @@
 import process from "node:process";
-import { strFromU8, unzipSync } from "fflate";
+import { Inflate, strFromU8 } from "fflate";
 import { type Lookup, refusal, systemLookup } from "./host-guard.ts";
 
 export type Fetch = (url: string, init?: RequestInit) => Promise<Response>;
@@ -405,48 +405,117 @@ async function readManifest(
 // The smallest central-directory header: its fixed part, with no name, extra field, or comment.
 const CENTRAL_HEADER_MIN_BYTES = 46;
 
-// Returns the entry count that bounds fflate 0.8.3's unzipSync loop, or undefined when it
-// finds no end record. It copies how unzipSync finds the end record and the zip64 end
-// record (node_modules/fflate/esm/index.mjs:2670), and like fflate reads bytes past the
-// end of the zip as 0. unzipSync calls the filter once for each entry, so a 98-byte zip64
-// file that claims 2^32 - 1 entries holds the CPU for minutes.
-export function zipEntryCount(zip: Uint8Array): number | undefined {
-  const u16 = (i: number) => (zip[i] ?? 0) | ((zip[i + 1] ?? 0) << 8);
-  const u32 = (i: number) => (u16(i) | (u16(i + 2) << 16)) >>> 0;
+// Little-endian reads that, like fflate, read bytes past the end of the zip as 0.
+const u16 = (zip: Uint8Array, i: number) => (zip[i] ?? 0) | ((zip[i + 1] ?? 0) << 8);
+const u32 = (zip: Uint8Array, i: number) => (u16(zip, i) | (u16(zip, i + 2) << 16)) >>> 0;
+const u64 = (zip: Uint8Array, i: number) => u32(zip, i) + u32(zip, i + 4) * 2 ** 32;
+
+// Finds the central directory the way fflate 0.8.3's unzipSync does
+// (node_modules/fflate/esm/index.mjs:2670), from the end record and the zip64 end record,
+// or returns undefined when it finds no end record.
+function centralDirectory(zip: Uint8Array): { count: number; offset: number; zip64: boolean } | undefined {
   let end = zip.length - 22;
-  while (u32(end) !== 0x06054b50) {
+  while (u32(zip, end) !== 0x06054b50) {
     if (!end || zip.length - end > 65558) return undefined;
     end--;
   }
-  const count = u16(end + 8);
-  if (!count) return 0;
-  if (u32(end - 20) !== 0x07064b50) return count;
-  const record = u32(end - 12);
-  return u32(record) === 0x06064b50 ? u32(record + 32) : count;
+  const count = u16(zip, end + 8);
+  if (!count) return { count: 0, offset: 0, zip64: false };
+  if (u32(zip, end - 20) === 0x07064b50) {
+    const record = u32(zip, end - 12);
+    if (u32(zip, record) === 0x06064b50) return { count: u32(zip, record + 32), offset: u32(zip, record + 48), zip64: true };
+  }
+  return { count, offset: u32(zip, end + 16), zip64: false };
 }
 
-// Unzips the one file `name`, or returns undefined when the zip lacks it, and fails when
-// the zip holds more than one entry named `name`. fflate 0.8.3 inflates a deflated file
-// into a buffer of the size the central directory declares and drops output past it, but
-// it decodes the whole stream; it returns a stored file at its compressed size (observed
-// 2026-10-25). Refusing a declared or compressed size over the cap bounds the file to
-// UNZIPPED_MAX_BYTES and the compressed input it decodes to that much.
+// Returns the entry count that bounds the loop over the central directory in zipEntry,
+// or undefined when it finds no end record. The loop reads one header for each entry the
+// count claims, so readManifest refuses a count that the zip's bytes cannot hold.
+export function zipEntryCount(zip: Uint8Array): number | undefined {
+  return centralDirectory(zip)?.count;
+}
+
+// The compressed size, unzipped size, and local header offset of a central-directory
+// header, with the zip64 extra field read as fflate 0.8.3 reads it.
+function zip64Sizes(zip: Uint8Array, header: number, zip64: boolean): [number, number, number] {
+  const sizes = [u32(zip, header + 20), u32(zip, header + 24), u32(zip, header + 42)];
+  const [size, originalSize, offset] = sizes.map((value) => value === 0xffffffff);
+  if (!zip64 || !(size || originalSize || offset)) return sizes as [number, number, number];
+  const extra = header + 46 + u16(zip, header + 28);
+  const extraEnd = extra + u16(zip, header + 30);
+  for (let field = extra; field + 4 < extraEnd; field += 4 + u16(zip, field + 2)) {
+    if (u16(zip, field) !== 1) continue;
+    const at = (index: number) => u64(zip, field + 4 + 8 * index);
+    return [
+      size ? at(+originalSize) : sizes[0],
+      originalSize ? at(0) : sizes[1],
+      offset ? at(+originalSize + +size) : sizes[2],
+    ];
+  }
+  throw new Error("invalid zip data");
+}
+
+interface ZipEntry {
+  compression: number;
+  size: number;
+  originalSize: number;
+  // Where the file data starts, after the local header.
+  start: number;
+}
+
+// Finds the one entry `name` the way fflate 0.8.3's unzipSync reads the central
+// directory, or returns undefined when the zip lacks it. It fails when the zip holds more
+// than one entry named `name`, or when its declared or compressed size is over the cap.
+function zipEntry(zip: Uint8Array, name: string, tag: string): ZipEntry | undefined {
+  const directory = centralDirectory(zip);
+  if (!directory) throw new Error("invalid zip data");
+  let entry: ZipEntry | undefined;
+  for (let i = 0, header = directory.offset; i < directory.count; i++) {
+    const nameEnd = header + 46 + u16(zip, header + 28);
+    const fileName = strFromU8(zip.subarray(header + 46, nameEnd), !(u16(zip, header + 8) & 2048));
+    const [size, originalSize, offset] = zip64Sizes(zip, header, directory.zip64);
+    if (fileName === name) {
+      if (entry) fail("xpi-unreadable", `the XPI of ${tag} holds more than one ${name}`);
+      if (originalSize > UNZIPPED_MAX_BYTES || size > UNZIPPED_MAX_BYTES) {
+        fail("manifest-too-large", `${name} in the XPI of ${tag} is larger than ${UNZIPPED_MAX_BYTES} bytes`);
+      }
+      const start = offset + 30 + u16(zip, offset + 26) + u16(zip, offset + 28);
+      entry = { compression: u16(zip, header + 10), size, originalSize, start };
+    }
+    header = nameEnd + u16(zip, header + 30) + u16(zip, header + 32);
+  }
+  return entry;
+}
+
+const INFLATE_CHUNK_BYTES = 16 * 1024;
+
+// Unzips the one file `name`, or returns undefined when the zip lacks it. fflate 0.8.3's
+// unzipSync decodes the whole stream of a deflated file, however far its output runs past
+// the size the central directory declares (observed 2026-10-25), so this inflates the file
+// INFLATE_CHUNK_BYTES of input at a time and fails once the output passes that size. It
+// returns a stored file at its compressed size, as unzipSync does.
 function unzipOne(zip: Uint8Array, name: string, tag: string): Uint8Array | undefined {
-  // unzipSync unzips each entry the filter accepts, so a zip that repeats `name` would
-  // inflate up to UNZIPPED_MAX_BYTES once for each copy.
-  let found = false;
   try {
-    return unzipSync(zip, {
-      filter: (file) => {
-        if (file.name !== name) return false;
-        if (found) fail("xpi-unreadable", `the XPI of ${tag} holds more than one ${name}`);
-        found = true;
-        if (file.originalSize > UNZIPPED_MAX_BYTES || file.size > UNZIPPED_MAX_BYTES) {
-          fail("manifest-too-large", `${name} in the XPI of ${tag} is larger than ${UNZIPPED_MAX_BYTES} bytes`);
-        }
-        return true;
-      },
-    })[name];
+    const entry = zipEntry(zip, name, tag);
+    if (!entry) return undefined;
+    const data = zip.subarray(entry.start, entry.start + entry.size);
+    if (entry.compression === 0) return data.slice();
+    if (entry.compression !== 8) throw new Error(`unknown compression type ${entry.compression}`);
+    const out = new Uint8Array(entry.originalSize);
+    let length = 0;
+    const inflate = new Inflate((chunk) => {
+      if (length + chunk.length > out.length) {
+        fail("xpi-unreadable", `${name} in the XPI of ${tag} inflates past the ${out.length} bytes its zip declares`);
+      }
+      out.set(chunk, length);
+      length += chunk.length;
+    });
+    let at = 0;
+    do {
+      inflate.push(data.subarray(at, at + INFLATE_CHUNK_BYTES), at + INFLATE_CHUNK_BYTES >= data.length);
+      at += INFLATE_CHUNK_BYTES;
+    } while (at < data.length);
+    return out.subarray(0, length);
   } catch (error) {
     if (error instanceof ReadFailure) throw error;
     fail("xpi-unreadable", `the XPI of ${tag} is not a readable zip: ${(error as Error).message}`);
