@@ -108,7 +108,7 @@ planned.
 - [x] T3: In `src/build/build.ts`, mark `unexpected-error` in `readRecord`
       (131) and return the build-level count beside `data`, outside the
       records; in `src/build/cli.ts:35-43`, base the exit-1 rule on it.
-- [ ] T4: In `src/build/cli.ts`, print the failure-name summary, the
+- [x] T4: In `src/build/cli.ts`, print the failure-name summary, the
       build-level line, and the `::warning::` line.
 - [ ] T5: Update README.md (around lines 60 and 336-340), CHANGELOG.md (edit
       the Unreleased entry at line 48 and add the summary and warning),
@@ -136,6 +136,7 @@ planned.
 - 2026-10-26: implement chose: `buildData` returns `buildLevel` (sorted ids) beside `data`; summary lines read `failed with <name>: <n>` and `build-level failures: <n> of <total> records`; the warning reads `::warning::<n> of <total> records carry a build-level failure`.
 - 2026-10-26: T2 done: `ReadFailure` and the failed `readUpstream` result carry `buildLevel`; `buildLevelStatus(status, "github-api" | "download")` is exported; marks set at `request()`, `readText`, `readCapped`, the lookup failures in `host-guard.ts`, `get()`, and the XPI and `update.json` non-ok answers; `send()` left unmarked (not a build read). Four rows of the reader's failure table moved to a build-level table, plus an XPI 502 row. Reader, discover, issue, add-plugin, and propose tests: 283 passed.
 - 2026-10-26: T3 done: `buildData` returns `buildLevel` (record order), `unexpected-error` counts, and `cli.ts` exits 1 on more than half build-level. `tsc` clean; build tests 21 passed, 5 red on the summary lines that T4 adds.
+- 2026-10-26: T4 done: `cli.ts` prints `failed with <name>: <n>` lines sorted by name, the build-level line, and the `::warning::` line before `wrote`; build tests 26 passed. Planted `buildLevelStatus` returning true (copy and restore): reader tests went red on the 404 rows; restored file matches the commit.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
