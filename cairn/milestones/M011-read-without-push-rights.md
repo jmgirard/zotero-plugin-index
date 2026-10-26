@@ -33,18 +33,18 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 
 ## Acceptance criteria
 
-- [ ] AC1: In `.github/workflows/add-plugin-issue.yml` and `.github/workflows/discover.yml`, parsed with Ruby's YAML,
+- [x] AC1: In `.github/workflows/add-plugin-issue.yml` and `.github/workflows/discover.yml`, parsed with Ruby's YAML,
       each job whose steps run `pnpm discover` or `pnpm discover-issue` sets its own `permissions` map with no value
       other than `read` or `none`, and its `actions/checkout` step sets `persist-credentials: false`. In each job
       whose effective permissions (its own map, else the workflow's, `write-all` counting) include `write`, the
       only `run` steps are `pnpm install --frozen-lockfile` and one `pnpm propose` step.
-- [ ] AC2: For each case in `test/propose.test.ts` and `test/issue.test.ts` at the plan commit that asserts a GitHub
+- [x] AC2: For each case in `test/propose.test.ts` and `test/issue.test.ts` at the plan commit that asserts a GitHub
       request, an issue comment or close, or a pushed commit tree, the read command (`pnpm discover --handoff <dir>`
       or `pnpm discover-issue --handoff <dir>`) followed by `pnpm propose <dir>` gives the same requests (method,
       URL, and body, with the temporary path in the check output replaced), comments, closes (state and reason), and
       trees as the one-step command gives on that commit. A bot failure in the read step reaches `pnpm propose` in
       the handoff, so its comment stays as it is today.
-- [ ] AC3: `pnpm propose` names a refusal and sends no push and no POST or PATCH request for each of these planted
+- [x] AC3: `pnpm propose` names a refusal and sends no push and no POST or PATCH request for each of these planted
       handoffs in a test: a plan file that does not match its schema, or that names an issue number (the issue
       number comes only from `ISSUE_NUMBER`); an entry id that is not a Mozilla add-on id (a GUID in braces, or
       `[A-Za-z0-9-._]*@[A-Za-z0-9-._]+`), one with `/` or `..` included; a repo that is not a lowercase
@@ -53,13 +53,13 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
       link (one named `meta.json` included), or a file other than `meta.json` and `index.json`. A repo or id that
       an entry or an open bot pull request already has gets no push, and an issue run answers it as it does today.
       A message from the handoff reaches an issue comment only inside a code span (a test with `@someone` in it).
-- [ ] AC4: In the write job of both workflows, the `actions/checkout` step sets `persist-credentials: false`,
+- [x] AC4: In the write job of both workflows, the `actions/checkout` step sets `persist-credentials: false`,
       `actions/setup-node` has no `cache` key, and no step but the `pnpm propose` step names `secrets.GITHUB_TOKEN`
       or `github.token` in its `env` or `with` (Ruby parse). A test runs `propose` with `GITHUB_TOKEN` set against
       a local bare remote, and finds the token in no git config file that `git config --list --show-origin` reads
       in the checkout, in no argument of a `git` command it ran, and not in the environment of the `pnpm check` it
       ran.
-- [ ] AC5: In the issue workflow, the write job runs when the read job failed and not when it was skipped (its `if:`
+- [x] AC5: In the issue workflow, the write job runs when the read job failed and not when it was skipped (its `if:`
       holds `always()` and `needs.<read job>.result != 'skipped'`), and its download step does not fail the job
       when no handoff exists (Ruby parse). `pnpm propose`, given the issue number and no handoff, comments that the
       bot could not finish, leaves the issue open, and exits 1 (test).
@@ -67,7 +67,7 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
       pull request or a refusal comment), and a dispatched `Discover plugins` run with `limit` 1 ends with both
       jobs green; each run's job logs show `Contents: read` for the read job and `Contents: write` for the write
       job in the "GITHUB_TOKEN Permissions" group.
-- [ ] AC7: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
+- [x] AC7: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
 
 ## Coverage
 
@@ -149,3 +149,13 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 ## Decisions
 
 ## Review
+
+Evidence on the branch at 3fa8346, 2026-10-26; main had not moved (`git rev-list HEAD..origin/main` 0).
+- AC1: `ruby -ryaml` check over both workflows: top-level `permissions: {}` in each; the jobs that run `pnpm discover --handoff` and `pnpm discover-issue --handoff` (`read` in each file) set `contents: read, pull-requests: read` and their checkout sets `persist-credentials: false`; the jobs with a `write` value (`write` in each) have exactly the `run` steps `pnpm install --frozen-lockfile` and one `pnpm propose handoff …`. The same check reports 15 failures on main's two workflows.
+- AC2: every plan-commit (8f5feaf) case in `test/propose.test.ts` and `test/issue.test.ts` that asserts a request, comment, close, or pushed tree has a two-step counterpart that passes (61 tests in those files and `test/handoff.test.ts`): the push-5-of-7 run (`pnpm discover --handoff` then `pnpm propose`: same POST heads and base, same 5 refs, each one commit on main adding the two files, checkout untouched); the body contents; the open-PR id refusal with no POST; the two read-step ends before any search (pull list 503, no default_branch, restored by T8); every-entry `git fetch failed`; the non-JSON create answer; the refused push plus 422 run (same stderr lines, POST heads q2 then q1, `proposed` q1); every issue case through `issueRead`, a handoff on disk, `readHandoff`, and `issueAnswer` with the same comments, PATCH bodies, and exit codes; the CLI push failure with its one comment. Bodies are compared by content (`toContain`), so the check output's temporary path is not compared.
+- AC3: `test/handoff.test.ts` runs `pnpm propose` in a checkout with a pushable remote on 17 planted handoffs: an undefined field, a JSON string, an `issue` field, a failure name with a backtick, the ids `alpha`, `a/b@example.org`, and `..`, the repos `Example/Alpha` and `example/alpha/x`, the branch `discover/example/.alpha`, a repo URL for another repo, 2 entries with `--limit 1`, a second entry directory for an issue, a subdirectory, an extra file, a symbolic-link `meta.json`, and a symbolic-link entry directory. Each exits 1 with `refused the handoff: <reason>`, logs no non-GET request, and leaves no `refs/heads/discover` ref; the trusted control pushes `discover/example/alpha` and sends one POST. `proposeHandoff` skips with no request or ref an entry whose repo the index names (`in-index`) or whose id an open bot PR adds (`in-bot-pull`); `issueAnswer` answers an entry whose repo the checkout's index names with the M010 comment and a `completed` close and no push; a handoff message `see @someone\n\n@other` reaches the comment as `` ` see @someone @other ` `` and no `@` stays outside code spans.
+- AC4: `ruby -ryaml`: each write job's checkout sets `persist-credentials: false`, its `actions/setup-node` has `node-version` only, and only its `pnpm propose` step names `secrets.GITHUB_TOKEN` (no `github.token` anywhere). Test "the token" runs the two steps with `GITHUB_TOKEN` set, a logging `git` shim, and a logging `pnpm`, against a local bare remote: the push succeeds, its line carries `key=http.https://github.com/.extraheader`, and neither the token nor its base64 header appears in any logged git argument or in `git config --list --show-origin`; the check's environment holds no token. Passing the full environment to the check, and dropping the push's environment config, each turned it red (implement).
+- AC5: `ruby -ryaml`: the issue write job has `needs: read` and `if: always() && needs.read.result != 'skipped'`, and its `actions/download-artifact@v8` step has `continue-on-error: true`. Test "comments that the bot could not finish …": `pnpm propose` on a missing directory with `ISSUE_NUMBER=7` exits 1, and its only non-GET request is the comment "The bot could not finish, so this issue stays open …` the read step left no handoff `"; no PATCH.
+- AC6: owed after the merge (T7); not verified yet.
+- AC7: `npx -y pnpm@12.15.0 test`: type check clean, Test Files 12 passed (12); Tests 395 passed (395); `npx -y pnpm@12.15.0 check`: checked 14 entries in plugins, 0 problems.
+- Gate: `cairn_validate.py` exit 0, all checks passed; no DESIGN principle changed, so no `cairn_impact`; the generic profile's consistency-gate names no toolchain checks.
