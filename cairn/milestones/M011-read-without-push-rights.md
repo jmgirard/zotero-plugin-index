@@ -1,13 +1,13 @@
 # M011: Read untrusted repos without push rights
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — issue openers and the bot's pull requests depend on the bot workflows' answers
-- **Branch/PR:** —
+- **Branch/PR:** m011-read-without-push-rights
 
 ## Goal
 
@@ -125,6 +125,7 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 - 2026-10-26: criteria audit (full): 5 findings on these criteria, all taken: AC1 names the only commands a write job may run; AC2 covers only cases that assert requests, comments, or trees, with the check output's path replaced; AC3 uses Mozilla's add-on id format (the registry schema has no id pattern) and adds hostile-value plants; AC4 names `secrets.GITHUB_TOKEN`/`github.token` in `env`/`with`, every git config file, and the check child's environment; AC5 skips unlabeled issues and tolerates a missing handoff. AC6 and AC7: no finding.
 - 2026-10-26: inbox sweep: 1 open issue (#12) and 2 bot pull requests (#10, #13), no overlap.
 - 2026-10-26: collision check: absorbs candidate "Limit what an issue run can reach"; extends M009 and M010 (archived); D-001 to D-004 do not conflict.
+- 2026-10-26: implement started on branch m011-read-without-push-rights; paused before T1 code at the user's request to discuss whether the split is worth its cost.
 
 ## Decisions
 
