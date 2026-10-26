@@ -1,6 +1,6 @@
 # M011: Read untrusted repos without push rights
 
-- **Status:** review
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
@@ -145,6 +145,7 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 - 2026-10-26: T8: `discoverRead` and `issueRead` read the default branch after the pull requests; the plan-commit case is back as "the read step ends before discovery reads when the repo record has no default branch", the write-step test now runs `proposeHandoff` on a planted handoff, and the issue table gains the case with a check that the repo is not read; removing the two reads turned both new cases red; `pnpm test` 395 passed, `pnpm check` 0 problems.
 - 2026-10-26: claim audit: not rerun for T8, whose 3 changed comment lines go to the review's diff-bug lens; deviation from step 7 logged.
 - 2026-10-26: implement done again; status review.
+- 2026-10-26: review return 2: AC2 — the handoff schema's failure-name pattern refuses `max-version-below-7`, so that issue gets no answer; and a load-bearing defect — a drafted entry that `readHandoff` refuses (an id outside the Mozilla format, a repo whose branch name git refuses, a field over its length cap) refuses the whole discover handoff on every run. Fix-now list with them: message cut in the read step, `entries` symlink check, upload on `plan.json` and write job on a ran read job, `overwrite: true`, a non-`ReadFailure` test row, and three candidate rows reworded (Review section).
 
 ## Decisions
 
@@ -159,3 +160,25 @@ Evidence on the branch at 3fa8346, 2026-10-26; main had not moved (`git rev-list
 - AC6: owed after the merge (T7); not verified yet.
 - AC7: `npx -y pnpm@12.15.0 test`: type check clean, Test Files 12 passed (12); Tests 395 passed (395); `npx -y pnpm@12.15.0 check`: checked 14 entries in plugins, 0 problems.
 - Gate: `cairn_validate.py` exit 0, all checks passed; no DESIGN principle changed, so no `cairn_impact`; the generic profile's consistency-gate names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the plan's failure-name pattern `^[a-z][a-z-]{0,59}$` refuses the reader's `max-version-below-7`, so such an issue gets no answer where main commented and closed it (AC2) — fix now, floor return 2
+- diff-bug #2: the read step drafts entries the write step refuses (an id `SAFE_ID` accepts and `ADDON_ID` refuses, a repo like `owner/.x` or `owner/x.lock`), and one such entry refuses the whole handoff on every scheduled run — fix now, floor return 2 (load-bearing: it stops all discovery)
+- diff-bug #3: with `always()`, the issue write job runs after a canceled read job and posts "could not finish" — reject, planned change: AC5 names `always()`, and the comment is true
+- diff-bug #4: a `not-github-repo` message holding a long URL line of control characters can push `plan.json` past its size bound for an issue run — fix now: the read step cuts each message to the 2,000 characters a comment quotes
+- diff-bug #5: the discover read job keeps cache-save rights after the XPI reader, so a process that took it over could save a cache entry that `build.yml`'s `cache: pnpm` restores — follow-up, new row "Keep read jobs from writing the cache" (main's one job had the same reach)
+- diff-bug #6: the `entries` directory itself is followed if it is a symbolic link — fix now: `readHandoff` refuses an `entries` that is not a directory
+- diff-bug #7: the write step checks the index at the run's commit but builds on the newest default branch, so an id merged during the run can be proposed again — follow-up, new row "Check the index at the push base" (on main the window was shorter, not absent)
+- diff-bug #8: a failed state write now skips the handoff upload and drops the run's pull requests, where main opened them first — fix now: the upload runs whenever `plan.json` exists and the write job whenever the read job ran
+- diff-bug #9: a re-run's second upload of the name `handoff` may conflict with the first attempt's — fix now: `overwrite: true` on both uploads
+- diff-bug #10: `if (read.plan.kind !== "discover") return 1` cannot run — reject, style: it narrows the type
+- diff-bug (c): "capital letters" and "three parts", and the extra-field and JSON-string plans, run the same check — reject, planned change: AC3 names both forms of each
+- blame-history #1: `ADDON_ID` is stricter than `SAFE_ID` — fix now, as diff-bug #2
+- blame-history #2: a refused issue handoff leaves the issue unanswered — reject, planned change: AC3 requires no POST for a refused handoff; with diff-bug #2 fixed, a read step that is not taken over writes no refused handoff
+- blame-history #3: a failed state write drops the pull requests — fix now, as diff-bug #8
+- blame-history #4: no test covers an error other than `ReadFailure` from the read step's pull-request read — fix now: a test row with an unexpected response
+- blame-history #5: version and range strings over 500 characters refuse the whole handoff — fix now, as diff-bug #2
+- prior-review #1: one bad branch name refuses the whole run, against M009's "a failure for one entry is reported, and the run goes on" — fix now, as diff-bug #2
+- prior-review #2: a refused issue handoff gets no comment, against M010's answered-issue fix — reject, planned change, as blame-history #2
+- ripple #1: row "Limit what an issue run can reach" describes the pre-M011 job — fix now: the row graduates at hygiene
+- ripple #2: row "Stop retrying a failing bot pull request" names `pnpm discover --propose` and a push by `pnpm discover-issue` — fix now: the row is reworded to the new commands, and its branch-name part narrows once diff-bug #2's fix records such repos
+- ripple #3: row "Keep issues open on a bot read failure" names `pnpm discover-issue` as the command that closes — fix now: reworded to `pnpm propose`
