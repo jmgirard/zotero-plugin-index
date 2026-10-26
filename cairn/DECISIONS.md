@@ -38,3 +38,13 @@ without JavaScript and the version check stays one small script. The user
 chose a framework at the plan question set over a TypeScript script that
 writes HTML with no new package, which gives templates and routing. Any
 further package, such as `@astrojs/check`, takes its own approval.
+
+### D-005: Hand the bot's read results to its write job with actions/download-artifact
+
+2026-10-26, M011 plan. The bot workflows read untrusted repos in a job with
+read-only permissions and push from a second job, so the second job needs the
+first job's output. The write job fetches it with `actions/download-artifact`,
+beside the `actions/upload-artifact` that `build.yml` already uses. The user
+chose the action at the plan question set over `gh run download` with an
+`actions: read` permission, which adds no action but puts more script in the
+workflow.
