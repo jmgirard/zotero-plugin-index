@@ -124,7 +124,8 @@ export async function botPulls(fetch: Fetch, indexRepo: string): Promise<BotPull
       const repo = parts.join("/").toLowerCase();
       skip.add(repo);
       const url = typeof pull.html_url === "string" ? pull.html_url : `https://github.com/${indexRepo}/pull/${pull.number}`;
-      pulls.set(repo, { url, open: pull.state === "open" });
+      // An open one wins over a closed one for the same repo, whatever the list order.
+      if (!pulls.get(repo)?.open) pulls.set(repo, { url, open: pull.state === "open" });
     }
     if (pull.state !== "open") continue;
     const files = (await github.pages(`${API}/repos/${indexRepo}/pulls/${pull.number}/files?per_page=100`)) as {

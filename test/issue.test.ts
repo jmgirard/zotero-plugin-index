@@ -173,6 +173,87 @@ describe("issueRun", () => {
   });
 });
 
+describe("issueRun answers", () => {
+  test("names the open bot pull request when a closed one for the same repo comes after it in the list", async () => {
+    const pull = (number: number, state: string) => ({
+      number,
+      state,
+      merged_at: null,
+      html_url: `https://github.com/example/index/pull/${number}`,
+      head: { ref: "discover/example/twice", repo: { full_name: "example/index" } },
+    });
+    const { sent } = await runIssue(rendered("https://github.com/example/twice"), {
+      ...indexRepo,
+      [`${PULLS}?state=all&per_page=100`]: { json: [pull(20, "open"), pull(5, "closed")] },
+      [`${PULLS}/20/files?per_page=100`]: { json: [] },
+    });
+    expect(sent[0].body).toBe("The bot already proposed this repo in https://github.com/example/index/pull/20.");
+  });
+
+  test("names the branch when the create request's answer has no URL", async () => {
+    const { result, sent } = await runIssue(rendered("https://github.com/example/alpha"), {
+      ...indexRepo,
+      ...pluginRepo("example/alpha", "alpha@example.org"),
+      [`POST ${PULLS}`]: { status: 201, json: {} },
+    });
+    expect(result.status).toBe(0);
+    expect(sent.at(-1)!.body).toContain("a pull request from the branch `discover/example/alpha`");
+  });
+
+  test("cuts a long message short, so the comment stays under GitHub's limit", async () => {
+    const { result, sent } = await runIssue(rendered(`https://gitlab.com/${"x".repeat(70_000)}`), indexRepo);
+    expect(result.status).toBe(0);
+    expect(sent[0].body).toContain("`not-github-repo`");
+    expect(sent[0].body.length).toBeLessThan(3000);
+    expect(sent[1]).toMatchObject({ method: "PATCH", state_reason: "not_planned" });
+  });
+});
+
+describe("issueRun failures of the bot", () => {
+  test.each([
+    ["the pull-request list fails", { [`${PULLS}?state=all&per_page=100`]: { status: 503, text: "unavailable" } }, "returned HTTP 503"],
+    ["the create request is refused", { [`POST ${PULLS}`]: { status: 422, json: { message: "Validation Failed" } } }, "returned HTTP 422: Validation Failed"],
+  ])("comments the error, leaves the issue open, and returns 1 when %s", async (_name, change, message) => {
+    const { result, sent } = await runIssue(rendered("https://github.com/example/alpha"), {
+      ...indexRepo,
+      ...pluginRepo("example/alpha", "alpha@example.org"),
+      ...opened,
+      ...change,
+    });
+    expect(result).toMatchObject({ status: 1, errors: [expect.stringContaining(message)] });
+    expect(sent.at(-1)).toEqual({
+      method: "POST",
+      url: COMMENTS,
+      body: expect.stringContaining(message),
+    });
+    expect(sent.some(({ method }) => method === "PATCH")).toBe(false);
+  });
+
+  test("returns 1 when the comment request fails", async () => {
+    const { result } = await runIssue(rendered("_No response_"), { ...indexRepo, [`POST ${COMMENTS}`]: { status: 403, json: { message: "Forbidden" } } });
+    expect(result).toMatchObject({ status: 1, errors: [`POST ${COMMENTS} returned HTTP 403: Forbidden`] });
+  });
+
+  test("answers for the name GitHub gives when the repo was renamed", async () => {
+    // example/old-name now reads as example/second-plugin, which an entry names; the
+    // manifest's id differs from the entry's, so only the name check refuses it.
+    const renamed = pluginRepo("example/second-plugin", "renamed@example.org");
+    const { result, sent } = await runIssue(
+      rendered("https://github.com/example/old-name"),
+      {
+        ...indexRepo,
+        ...Object.fromEntries(Object.entries(renamed).map(([url, response]) => [url.replace("/repos/example/second-plugin", "/repos/example/old-name"), response])),
+      },
+      { root: TREE },
+    );
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([
+      { method: "POST", url: COMMENTS, body: expect.stringContaining("plugins/second-plugin@example.org/") },
+      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "completed" },
+    ]);
+  });
+});
+
 // As in the discover tests, the preload answers the command's requests from `responses`.
 function pnpmIssue(responses: Responses, cwd: string, env: Record<string, string>) {
   const pnpmPath = process.env.npm_execpath;
@@ -207,9 +288,13 @@ describe("pnpm discover-issue", () => {
     expect(sent).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(/git push failed: .*refused by the test hook/s) }]);
   });
 
-  test("prints the usage when ISSUE_NUMBER is not a number", () => {
-    const result = pnpmIssue({}, tempDir(), { GITHUB_REPOSITORY: "example/index", ISSUE_NUMBER: "x", ISSUE_BODY: "" });
+  test.each([
+    ["ISSUE_NUMBER is not a number", { GITHUB_REPOSITORY: "example/index", ISSUE_NUMBER: "x" }, "ISSUE_NUMBER must be the number of an issue"],
+    ["GITHUB_REPOSITORY does not name a repo", { GITHUB_REPOSITORY: "example", ISSUE_NUMBER: "7" }, "GITHUB_REPOSITORY must name the index repo"],
+  ])("prints the usage when %s", (_name, env, message) => {
+    const result = pnpmIssue({}, tempDir(), { ...env, ISSUE_BODY: "" });
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain("ISSUE_NUMBER");
+    expect(result.stderr).toContain(message);
+    expect(result.stdout).toBe("");
   });
 });

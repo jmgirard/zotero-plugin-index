@@ -1,9 +1,11 @@
 import type { Lookup } from "../upstream/host-guard.ts";
-import { type Fetch, githubClient, ReadFailure } from "../upstream/reader.ts";
+import { type Fetch, githubClient } from "../upstream/reader.ts";
 import { draftEntry, indexed, repoName } from "./discover.ts";
 import { type BotPulls, botPulls, type CheckRunner, code, defaultBranch, propose, type Written } from "./propose.ts";
 
 const API = "https://api.github.com";
+// The most characters of a message that a comment quotes.
+const MESSAGE_MAX = 2000;
 
 // The label of the URL input in .github/ISSUE_TEMPLATE/add-plugin.yml. GitHub writes each
 // input of a form into the issue body as a level-3 heading with the label, then the value.
@@ -75,12 +77,14 @@ export async function issueRun(options: IssueRunOptions): Promise<IssueRunResult
     }
     return { status: errors.length > 0 ? 1 : 0, comment, errors };
   };
-  // The messages can hold text from the issue, so they go in code spans.
+  // The messages can hold text from the issue, so they go in code spans, cut short so
+  // the comment stays far below GitHub's limit of 65,536 characters.
+  const quoted = (message: string) => code(message.length > MESSAGE_MAX ? `${message.slice(0, MESSAGE_MAX)}…` : message);
   const refuse = (name: string, message: string) =>
-    answer(`The bot opened no pull request for this issue.\n\n\`${name}\`: ${code(message)}`, "not_planned");
+    answer(`The bot opened no pull request for this issue.\n\n\`${name}\`: ${quoted(message)}`, "not_planned");
   const failed = (message: string) => {
     errors.push(message);
-    return answer(`The bot could not finish, so this issue stays open for a maintainer.\n\n${code(message)}`);
+    return answer(`The bot could not finish, so this issue stays open for a maintainer.\n\n${quoted(message)}`);
   };
   // The entry or the bot pull request that already has the repo `name`.
   const known = (name: string | undefined) => {
@@ -110,8 +114,8 @@ export async function issueRun(options: IssueRunOptions): Promise<IssueRunResult
     pulls = await botPulls(fetch, indexRepo);
     base = await defaultBranch(fetch, indexRepo);
   } catch (error) {
-    if (error instanceof ReadFailure) return failed(error.message);
-    throw error;
+    // Any error here is the bot's, so the issue gets an answer either way.
+    return failed((error as Error).message);
   }
   const given = await known(githubRepo(parsed.url));
   if (given) return given;
@@ -128,7 +132,10 @@ export async function issueRun(options: IssueRunOptions): Promise<IssueRunResult
   const written: Written = { repo, repoUrl, outcome: "written", id, dir, version, strictMinVersion, strictMaxVersion };
   const result = await propose({ ...options, base, written: [written] });
   if (result.failed.length > 0) return failed(result.failed[0].message);
-  return answer(`The bot opened ${result.proposed[0].url}. This issue closes when that pull request merges.`);
+  const { url, branch } = result.proposed[0];
+  // The create request's answer can lack the URL; the branch still names the pull request.
+  const opened = url || `a pull request from the branch \`${branch}\``;
+  return answer(`The bot opened ${opened}. This issue closes when that pull request merges.`);
 }
 
 // The lowercase owner/repo of a URL on github.com, which the reader would read.
