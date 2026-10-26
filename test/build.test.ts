@@ -121,10 +121,8 @@ describe("pnpm build over the fixture tree", () => {
     }
   });
 
-  test("writes the archived value of each repo the reader read", () => {
-    const output = readOutput(out);
-    expect(record(output, SECOND)?.upstream?.archived).toBe(true);
-    expect(record(output, BETTER_NOTES)?.upstream?.archived).toBe(false);
+  test("writes the archived value that the reader read", () => {
+    expect(record(readOutput(out), SECOND)?.upstream?.archived).toBe(true);
   });
 
   test("keeps an override apart from the upstream value it corrects", () => {

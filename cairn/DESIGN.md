@@ -28,8 +28,9 @@ code, and it does not endorse plugins.
 
 Each plugin page shows facts that a reader can check. These facts are the
 declared range of Zotero versions, source availability, whether GitHub marks
-the repository archived, repository age, last release, release count, open
-issues, and the host of the `update.json` file. The home list marks an
+the repository archived (when GitHub's response says), repository age, last
+release, release count, open issues, and the host of the `update.json` file.
+The home list marks an
 archived plugin with "(archived)" after its name, and the data carries the
 same `archived` fact (M013).
 The page also shows each override beside the upstream value it corrects
@@ -42,7 +43,9 @@ contributor needs a GitHub account.
 The generated JSON data is a public API at a stable URL, with a schema
 version. A breaking change gets a new schema version. The old version stays
 available for a transition period. A new optional field is not a breaking
-change, and it stays in the current version (D-006). The URL is
+change, and it stays in the current version (D-006, D-007). The v1 schema
+rejects fields it does not define, so a consumer that validates against a
+saved copy must fetch the schema again after such a change. The URL is
 `https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json`, and the
 schemas are under `https://jmgirard.github.io/zotero-plugin-index/schemas/`,
 each schema's `$id` being its own URL (M006).

@@ -102,7 +102,7 @@ function fact(html: string, name: string): string | undefined {
 
 describe("the plugin page", () => {
   const page = (id: string) => readFileSync(join(out, "plugins", id, "index.html"), "utf8");
-  const FACTS = ["repository", "repo-created", "latest-release", "release-count", "open-issues", "update-host", "releases"];
+  const FACTS = ["repository", "archived", "repo-created", "latest-release", "release-count", "open-issues", "update-host", "releases"];
 
   test("puts the declared range and the version field before the other facts", () => {
     const html = page("first-plugin@example.org");

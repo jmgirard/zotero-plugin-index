@@ -15,8 +15,8 @@ overrides of the index for that plugin. If the last build failed to read a
 plugin, its page shows the failure in place of the declared range.
 
 The index lists a plugin whose GitHub repository is archived. Its row on the
-home page shows "(archived)" after its name, and its page shows "Archived on
-GitHub: Yes". GitHub makes an archived repository read-only until someone
+home page shows "(archived)" after its name, and its page shows the fact
+"Archived on GitHub" with the value "Yes". GitHub makes an archived repository read-only until someone
 with admin access to it unarchives it.
 
 To compare your Zotero version with each declared range, enter it in the
@@ -103,8 +103,8 @@ If the plugin does not meet the inclusion bar, or the command cannot read one
 of these files, the command writes no file. It prints the name of the failure
 and a message, then exits with status 1. Two failure names are `fork` and
 `no-xpi-release`. An archived repository passes the inclusion bar, so the
-command writes its entry. The `Failure` type in `src/upstream/reader.ts` lists each
-failure name for reading a plugin. The `WriteResult` type in
+command writes its entry. The `Failure` type in `src/upstream/reader.ts`
+lists each failure name for reading a plugin. The `WriteResult` type in
 `src/add-plugin/add-plugin.ts` adds `entry-exists`, `unsafe-id`, and
 `write-failed`.
 
