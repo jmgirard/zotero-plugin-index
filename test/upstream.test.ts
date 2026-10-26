@@ -12,6 +12,7 @@ const RELEASES = `${REPO}/releases?per_page=100`;
 const RELEASES_PAGE_2 = "https://api.github.com/repositories/486255787/releases?per_page=100&page=2";
 const XPI = "https://github.com/windingwind/zotero-better-notes/releases/download/v3.3.3/better-notes-for-zotero.xpi";
 const UPDATE = "https://github.com/windingwind/zotero-better-notes/releases/download/release/update.json";
+const BETA_XPI = "https://github.com/windingwind/zotero-better-notes/releases/download/v3.4.0-beta.1/better-notes-for-zotero.xpi";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -59,6 +60,7 @@ describe("readUpstream", () => {
         openIssues: 15,
         releaseCount: 2,
         latestReleaseDate: "2026-08-24T13:25:16Z",
+        prerelease: false,
         archived: false,
       },
     });
@@ -122,7 +124,7 @@ describe("readUpstream", () => {
     expect(result.ok && result.facts.name).toBeUndefined();
   });
 
-  test("reads the newest published release with an .xpi, whatever the list order", async () => {
+  test("reads the newest published stable release with an .xpi, whatever the list order", async () => {
     const { result } = await read((r) => {
       const [stable, beta] = r[RELEASES].json as Json[];
       const draft = {
@@ -143,6 +145,116 @@ describe("readUpstream", () => {
       releases.unshift(null as unknown as Json);
     });
     expect(result.ok && [result.facts.version, result.facts.releaseCount]).toEqual(["3.3.3", 1]);
+  });
+
+  describe("with a prerelease published after the stable release", () => {
+    const BETA_DATE = "2026-09-01T00:00:00Z";
+
+    // Adds a prerelease v3.4.0-beta.1 with its own XPI to the recorded responses.
+    function addBeta(r: Responses, publishedAt = BETA_DATE) {
+      (r[RELEASES].json as Json[]).unshift({
+        tag_name: "v3.4.0-beta.1",
+        draft: false,
+        prerelease: true,
+        published_at: publishedAt,
+        assets: [{ name: "better-notes-for-zotero.xpi", browser_download_url: BETA_XPI }],
+      });
+      r[BETA_XPI] = { xpi: { "manifest.json": { ...structuredClone(manifest(r)), version: "3.4.0-beta.1" } } };
+    }
+
+    function betaManifest(r: Responses): Json {
+      return r[BETA_XPI].xpi!["manifest.json"] as Json;
+    }
+
+    function readsBeta(requests: { url: string }[]) {
+      return requests.some((q) => q.url === BETA_XPI);
+    }
+
+    test("reads the stable release", async () => {
+      const { result, requests } = await read((r) => addBeta(r));
+      expect(result.ok && [result.facts.version, result.facts.prerelease, result.facts.releaseCount]).toEqual([
+        "3.3.3",
+        false,
+        3,
+      ]);
+      expect(readsBeta(requests)).toBe(false);
+    });
+
+    test("reads the newest prerelease when no release is stable", async () => {
+      const { result } = await read((r) => {
+        addBeta(r);
+        for (const release of [...(r[RELEASES].json as Json[]), ...(r[RELEASES_PAGE_2].json as Json[])]) release.prerelease = true;
+      });
+      expect(result.ok && [result.facts.version, result.facts.prerelease, result.facts.latestReleaseDate]).toEqual([
+        "3.4.0-beta.1",
+        true,
+        BETA_DATE,
+      ]);
+    });
+
+    test("reads the stable release when the prerelease has the same publish date", async () => {
+      const { result } = await read((r) => addBeta(r, "2026-08-24T13:25:16Z"));
+      expect(result.ok && result.facts.version).toBe("3.3.3");
+    });
+
+    test('reads a release whose prerelease value is the string "true" as stable', async () => {
+      const { result } = await read((r) => {
+        addBeta(r);
+        (r[RELEASES].json as Json[])[1].prerelease = "true";
+      });
+      expect(result.ok && [result.facts.version, result.facts.prerelease]).toEqual(["3.3.3", false]);
+    });
+
+    const notZotero7: [string, (m: Json, r: Responses) => void][] = [
+      ["no-manifest", (_m, r) => (r[XPI] = { xpi: { "install.rdf": "" } })],
+      ["no-zotero-id", (m) => delete m.applications.zotero.id],
+      ["max-version-below-7", (m) => (m.applications.zotero.strict_max_version = "6.*")],
+    ];
+
+    test.each(notZotero7)("reads the prerelease when the stable release fails with %s", async (_name, edit) => {
+      const { result } = await read((r) => {
+        addBeta(r);
+        edit(manifest(r), r);
+      });
+      expect(result.ok && [result.facts.version, result.facts.prerelease, result.facts.latestReleaseDate]).toEqual([
+        "3.4.0-beta.1",
+        true,
+        BETA_DATE,
+      ]);
+    });
+
+    test.each<[string, (r: Responses) => void]>([
+      ["no prerelease", () => {}],
+      ["a prerelease with the same publish date", (r) => addBeta(r, "2026-08-24T13:25:16Z")],
+    ])("returns the stable failure, reading its XPI once, when %s is later", async (_name, edit) => {
+      const { result, requests } = await read((r) => {
+        edit(r);
+        r[XPI] = { xpi: { "install.rdf": "" } };
+      });
+      expect(result).toEqual({ ok: false, failure: "no-manifest", message: expect.stringContaining("v3.3.3") });
+      expect(requests.filter((q) => q.url.endsWith(".xpi")).map((q) => q.url)).toEqual([XPI]);
+    });
+
+    test("returns the prerelease's failure when both reads fail", async () => {
+      const { result } = await read((r) => {
+        addBeta(r);
+        r[XPI] = { xpi: { "install.rdf": "" } };
+        betaManifest(r).applications.zotero.strict_max_version = "6.5";
+      });
+      expect(result).toEqual({ ok: false, failure: "max-version-below-7", message: expect.stringContaining("6.5") });
+    });
+
+    test.each<[string, (r: Responses) => void]>([
+      ["update-json-http-error", (r) => (r[UPDATE] = { status: 404 })],
+      ["manifest-invalid", (r) => delete manifest(r).version],
+    ])("returns %s from the stable release without reading the prerelease", async (failure, edit) => {
+      const { result, requests } = await read((r) => {
+        addBeta(r);
+        edit(r);
+      });
+      expect(result).toEqual({ ok: false, failure, message: expect.any(String) });
+      expect(readsBeta(requests)).toBe(false);
+    });
   });
 
   test.each(["7.0", "*", undefined])("passes a strict_max_version of %j", async (max) => {

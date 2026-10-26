@@ -59,9 +59,10 @@ const repoHref = safeHref(repoUrl);
           )}
           <dt>Repository created</dt>
           <dd data-fact="repo-created">{day(upstream.repoCreatedAt)}</dd>
-          <dt>Latest release with an .xpi</dt>
+          <dt>Release read by the index</dt>
           <dd data-fact="latest-release">
             {upstream.version}, published {day(upstream.latestReleaseDate)}
+            {upstream.prerelease === true && " (prerelease)"}
           </dd>
           <dt>Releases with an .xpi</dt>
           <dd data-fact="release-count">{upstream.releaseCount}</dd>

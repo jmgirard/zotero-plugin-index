@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-26 (M013 done and archived; 1 row added; 4 lessons 
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M014 | Read stable releases before prereleases | planned | — | normal | milestones/M014-stable-releases-first.md |
+| M014 | Read stable releases before prereleases | review | — | normal | milestones/M014-stable-releases-first.md |
 | M013 | Show whether a plugin repo is archived | done | — | normal | milestones/archive/M013-show-archived-repos.md |
 | M012 | Stop inflating past the declared size | done | — | normal | milestones/archive/M012-bound-unzip-output.md |
 | M011 | Read untrusted repos without push rights | done | — | high | milestones/archive/M011-read-without-push-rights.md |
@@ -30,6 +30,8 @@ _Last hygiene check: 2026-10-26 (M013 done and archived; 1 row added; 4 lessons 
 - Let old v1 schemas accept new fields: the v1 `upstream` block keeps `additionalProperties: false`, so a saved copy of the schema rejects each optional field that D-006 lets v1 gain; allowing unknown fields would let old copies accept later additions, but it changes what the schema checks; see "Keep the v1 data when v2 ships" (M013 review) — added 2026-10-26 — M013, D-007
 - [low] Close the issue when its pull request closes: an issue whose bot pull request is closed without a merge stays open, though the bot's comment said it closes when that pull request merges (M010 review) — added 2026-10-26 — M010
 - [low] Block more IPv6 ranges in the host check: the M004 host check lets through ::ffff:0:0:0/96 (SIIT), 64:ff9b:1::/48 (local NAT64), 100::/64, 2001::/23 (Teredo included), fec0::/10, 3fff::/20, 5f00::/16, and 192.88.99.0/24; the translated ones reach a private address only on a NAT64 or SIIT network (M004 review) — added 2026-10-25 — M004
+- [low] Order releases with bad dates safely: the reader sorts releases by `Date.parse(published_at)`, and an invalid date gives NaN, which leaves the sort order undefined, so "newest" and the stable pick can name the wrong release; GitHub gives a valid date for each published release, and no test covers it (M014 review) — added 2026-10-26 — M014
+- [low] State the bar for the release read: DESIGN.md says the inclusion bar needs "at least one release with a readable `update.json`", but the reader checks only the release it reads, so a plugin is refused when that release fails and another release passes (M014 review) — added 2026-10-26 — M014
 - [parked] Check addresses when the reader connects: M004 checks the reader's own DNS answer before each download, and DNS can answer differently when fetch connects (rebinding); check the address at connect time, which needs the undici package and a decision entry; promote on evidence that the build publishes response bodies or that a rebinding answer reaches a service on the runner — added 2026-10-25 — M004
 - [parked] Test plugins load in headless Zotero: a CI job installs each listed plugin into a headless Zotero and records whether it loads, shown as its own source beside declared ranges and reports; promote when the data pipeline and user reports ship — added 2026-10-24 — cairn/DESIGN.md Data sources
 - [parked] Keep the v1 data when v2 ships: each Pages deploy replaces the whole site, so a build that moves to `plugins.v2` must keep writing `v1/plugins.json` and its schema for the transition period DESIGN.md promises; promote when a v2 schema is planned (M006 review) — added 2026-10-25 — M006, cairn/DESIGN.md Contract boundary

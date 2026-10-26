@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M014: Read stable releases before prereleases
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — the published v1 data and the plugin pages change   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m014-stable-releases-first   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -42,7 +42,7 @@ declares.
      insertion, removal, or reorder renumbers the labels and the Coverage
      lines together. -->
 
-- [ ] AC1: `readUpstream` reads the manifest of the newest non-draft release
+- [x] AC1: `readUpstream` reads the manifest of the newest non-draft release
       with an `.xpi` asset whose GitHub `prerelease` value is not `true`.
       "Newest" is by `published_at`. If no such release exists, it reads the
       newest non-draft release with an `.xpi`, as before. `releaseCount` still
@@ -52,7 +52,7 @@ declares.
       only prereleases gives the newest prerelease's version. A stable release
       and a prerelease with the same `published_at` give the stable release's
       version.
-- [ ] AC2: The stable release's read can fail with `no-manifest`,
+- [x] AC2: The stable release's read can fail with `no-manifest`,
       `no-zotero-id`, or `max-version-below-7`. If a release with an `.xpi`
       was published strictly later, `readUpstream` then reads the newest such
       release. It returns that release's facts, or that release's failure if
@@ -63,7 +63,7 @@ declares.
       fail, and the stable failure returned when no later release exists.
       Tests show `update-json-http-error` and `manifest-invalid` from the
       stable release returned with no request for the prerelease's XPI.
-- [ ] AC3: `UpstreamFacts` and the `upstream` block of
+- [x] AC3: `UpstreamFacts` and the `upstream` block of
       `schemas/plugins.v1.schema.json` gain an optional boolean `prerelease`.
       Its value is the GitHub `prerelease` flag of the release whose manifest
       was read, with `false` for any value other than `true`. So the reader
@@ -72,14 +72,14 @@ declares.
       prerelease read and `false` for a stable read. A test shows
       `checkOutput` reporting `/plugins/0/upstream/prerelease` for a
       non-boolean value.
-- [ ] AC4: The plugin page labels its release fact `Release read by the
+- [x] AC4: The plugin page labels its release fact `Release read by the
       index` in place of `Latest release with an .xpi`. If the record's
       `prerelease` is `true`, the value ends with ` (prerelease)`. Tests in
       `test/site.test.ts` show `<dt>Release read by the index</dt>` before
       `data-fact="latest-release"`. They show the mark for a prerelease
       record, and no mark for a record with `prerelease: false` or with no
       `prerelease`.
-- [ ] AC5: At plan time, `grep -rn -i 'newest release\|latest release\|release
+- [x] AC5: At plan time, `grep -rn -i 'newest release\|latest release\|release
       with an .xpi\|release that has an\|prerelease'` over README.md,
       CHANGELOG.md, cairn/DESIGN.md, src, site/src, .github, and schemas
       returned seven lines. Apart from the page label of AC4, they are
@@ -103,7 +103,7 @@ declares.
       In the live file, zotero-pdf-preview reads a prerelease and zotlit reads
       a stable release, unless a GitHub read at review time shows that their
       releases changed.
-- [ ] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
+- [x] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate; each acceptance criterion → the
@@ -125,27 +125,27 @@ declares.
      cites; an insertion, removal, or reorder renumbers the labels and the
      Coverage lines together. -->
 
-- [ ] T1: Write the reader tests of AC1 and AC2 in `test/upstream.test.ts`
+- [x] T1: Write the reader tests of AC1 and AC2 in `test/upstream.test.ts`
       first, and see each new one fail. Build the release lists from the
       `test/fixtures/upstream/better-notes.json` responses, which hold a
       stable v3.3.3 and a prerelease. Add recorded XPIs for the second read.
-- [ ] T2: Change the release choice in `src/upstream/reader.ts:104-145`. Pick
+- [x] T2: Change the release choice in `src/upstream/reader.ts:104-145`. Pick
       the stable release, read it, and on one of the three failure names read
       the newest strictly later release. Keep `releaseCount` over all
       releases with an `.xpi`. Add `prerelease` to `ReleaseJson` and
       `UpstreamFacts`.
-- [ ] T3: Add `prerelease` to the `upstream` block of
+- [x] T3: Add `prerelease` to the `upstream` block of
       `schemas/plugins.v1.schema.json` with a description. Add the
       `test/build.test.ts` tests of AC3, with fixture responses that give one
       prerelease read.
-- [ ] T4: Change the label and add the mark in
+- [x] T4: Change the label and add the mark in
       `site/src/pages/plugins/[id]/index.astro:62-65`. Add the
       `test/site.test.ts` tests of AC4 and give the site fixture data the
       three `prerelease` cases.
-- [ ] T5: Update the five sites of AC5 and add the `CHANGELOG.md` entry.
+- [x] T5: Update the five sites of AC5 and add the `CHANGELOG.md` entry.
       Update any bot-text test in `test/propose.test.ts` that quotes the old
       sentence.
-- [ ] T6: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
+- [x] T6: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates.
@@ -171,6 +171,16 @@ declares.
 - 2026-10-26: criteria audit (full) returned 11 findings, 10 taken. Goal reworded to match AC1 and AC2. Ties, `releaseCount`, the both-fail case, both build values, `checkOutput`, and the label test added. AC2's other-failure promise narrowed to two tested names. AC5 grep widened and add-plugin.yml:9 added. AC6 now names failure records, the deploying run, and two moved plugins. AC7: no finding.
 - 2026-10-26: collision sweep: no D-entry covers prereleases. M002 and M008 shipped the newest-release rule and recorded this row. D-006 and D-007 allow the optional v1 field. Inbox: 0 open issues, and 1 open bot pull request with no overlap.
 - 2026-10-26: lessons used: 2026-10-25 (M001, used M013) pnpm via npx; 2026-10-25 (M002, used M011) fixture preload; 2026-10-25 (M002) template prerelease with no .xpi; 2026-10-25 (M006, used M013) Pages deploys from main only; 2026-10-25 (M007, used M013) match the data attribute form.
+- 2026-10-26: implement started on m014-stable-releases-first.
+- 2026-10-26: T1: 13 new reader tests; 11 failed before T2. The no-later-release cases and the both-fail case passed before T2, since the old rule also read the newest release there.
+- 2026-10-26: T2: `readRelease` now holds the manifest and update.json read, so the fallback can run it twice. `UpstreamFacts.prerelease` is optional in the type, to match the schema and older records. The reader always sets it.
+- 2026-10-26: T3: example/second-plugin's one release is now a prerelease in the build fixture. T1 to T3 share one commit, since the build tests fail between T2 and T3. `pnpm test` 437 passed; `pnpm check` 17 entries, 0 problems.
+- 2026-10-26: T4: the page puts " (prerelease)" after the publish date, so the value ends with it as AC4 says. The site fixture gives old-plugin `prerelease: true` and first-plugin `false`; the GUID record has none. The label test and the old-plugin mark test failed before the page change. `test/site.test.ts` 25 passed after it.
+- 2026-10-26: T5: the five AC5 sites now name the stable release first, and README.md and DESIGN.md state the fallback. CHANGELOG.md has a new Unreleased entry. README.md's data section names the `prerelease` field. DESIGN.md's Contract boundary "last release" now reads as the release the index read (corrected M014). No propose test quoted the old bot sentence. README.md:132's "checks" lint hit was there before this branch and stays.
+- 2026-10-26: T6: `pnpm test` 441 passed in 12 files; `pnpm check` 17 entries, 0 problems; the issue form parses with Ruby YAML.
+- 2026-10-26: claim audit: 44 claims read, 4 corrected — .github/ISSUE_TEMPLATE/add-plugin.yml, src/discover/propose.ts, CHANGELOG.md (twice). The issue form and bot sentence now cover the no-stable case. The changelog names `pnpm discover-issue` and states the fallback as one condition. The re-read found all four true. `pnpm test` 441 passed after the fixes.
+- 2026-10-26: implement done; status review.
+- 2026-10-26: step-7 approval: m014-stable-releases-first approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote
@@ -179,8 +189,49 @@ declares.
      Entries carry their rationale; the counterweight `decisions format`
      advisory watches for pasted output, not for entry length (D-075). -->
 
+- 2026-10-26 (review): promoted to D-008. The stable-first rule with its fallback replaces M002's prereleases-included rule, and the moved values of existing v1 fields are not a breaking change.
+
 ## Review
 <!-- owner: review · exclusive; evidence per criterion, consistency-gate
      results, review findings + triage. EXEMPT from the 150-line cap (M55),
      as are the work log (D-046) and the decisions section (D-074); evidence
      never scrambles plan-owned content. -->
+
+Pass 1, 2026-10-26, on m014-stable-releases-first at 76946a9 plus a CHANGELOG.md re-wrap. `vitest run --reporter=verbose` 441 passed in 12 files; `pnpm test` (tsc, then Vitest) 441 passed.
+
+- AC1: `test/upstream.test.ts` passed "reads the stable release" (version 3.3.3, `prerelease` false, `releaseCount` 3 with the beta counted), "reads the newest prerelease when no release is stable" (3.4.0-beta.1), and "reads the stable release when the prerelease has the same publish date" (3.3.3). The `prerelease` absent and "true"-string cases read as stable.
+- AC2: passed "reads the prerelease when the stable release fails with" no-manifest, no-zotero-id, and max-version-below-7 (each 3.4.0-beta.1, `prerelease` true). Passed "returns %s when no release is later than the stable one" for the same three names. Passed "returns the prerelease's failure when both reads fail" (stable no-manifest, prerelease max-version-below-7, result max-version-below-7). Passed update-json-http-error and manifest-invalid "without reading the prerelease" (no request for the beta XPI).
+- AC3: `src/upstream/reader.ts:28` declares `prerelease?: boolean`, and `schemas/plugins.v1.schema.json:96` adds the boolean `prerelease` to `upstream`. `schemaVersion` is still `const: 1`. `test/build.test.ts` passed "writes the prerelease value that the reader read" (second-plugin true, better-notes false) and "reports a record whose prerelease value is not a boolean" (`/plugins/0/upstream/prerelease`).
+- AC4: `test/site.test.ts` passed "labels the release fact as the release the index read" (`<dt>Release read by the index</dt>` before `data-fact="latest-release"`). It passed the mark test for old-plugin (`prerelease: true`, "0.4.1, published 2024-07-01 (prerelease)"), first-plugin (`false`, no mark), and the GUID record (no field, no mark).
+- AC5: the plan's grep, rerun at head, shows README.md:97, CHANGELOG.md:11, cairn/DESIGN.md:72, src/discover/propose.ts:307, and .github/ISSUE_TEMPLATE/add-plugin.yml:9 each naming the newest stable release first. README.md:96-104 and cairn/DESIGN.md:72-79 state the fallback. CHANGELOG.md:94-108 is the new Unreleased entry: the rule, the `prerelease` field, and "fetch any saved copy of it again".
+- AC6: waits on the first deploying `build.yml` run after the merge.
+- AC7: `pnpm test` 441 passed (tsc clean); `pnpm check` checked 17 entries in plugins, 0 problems.
+- gate: `cairn_validate.py` all checks passed. No principle changed, so no impact report. The generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple.
+- diff-bug #1: the strict "later" check had no test, and `>=` would read the stable XPI twice with the same result — fix now, fixed e5d96c4 (a same-date case and a one-XPI-request check; a planted `>=` failed both).
+- diff-bug #2: a listed plugin can newly fail when its older stable release fails with a name outside the three — reject, planned change (AC2). A local `pnpm build` against live GitHub on 2026-10-26 wrote 17 records with 0 failures.
+- diff-bug #3: when both reads fail, only the prerelease's failure comes back — reject, planned change (AC2).
+- diff-bug #4: an invalid `published_at` gives NaN and an undefined sort order — follow-up, row "Order releases with bad dates safely" (pre-existing sort).
+- diff-bug #5: the no-later-release check that beta.5 is never requested holds whatever the fallback does — fix now, fixed e5d96c4 (it now asserts the XPI requests are exactly the stable XPI once).
+- diff-bug #6: `prerelease` could be required on the reader's return type — reject, style.
+- diff-bug #7: the "absent" prerelease case and the three-name no-later loop repeat one code path — fix now, fixed e5d96c4 (one string case, one failure name).
+- diff-bug #8: the first-plugin page case repeats the label test's page read — reject, planned change (AC4 names three cases).
+- diff-bug #9: the build fixture lost a second stable read — reject, false: better-notes is read from a stable release.
+- diff-bug #10: the bot body states the rule, not which release was read — reject, planned change (AC5 asks the site to state the rule).
+- diff-bug #11: `latestReleaseDate` can hold an older stable date — reject, planned change (the v1 name stays; its description is accurate).
+- blame-history #1: existing v1 fields now describe a different release, and no record says this is not breaking — fix now, fixed e5d96c4 (D-008).
+- blame-history #2: DESIGN.md's bar says "at least one release" with a readable update.json, but the reader checks one release — follow-up, row "State the bar for the release read" (pre-existing since M002).
+- blame-history #3: M002's "prereleases included" outcome is reversed with no D-entry — fix now, fixed e5d96c4 (D-008).
+- blame-history #4: a Zotero 6-only plugin can report the prerelease's failure name — reject, planned change (AC2).
+- blame-history #5: `latestReleaseDate` and `data-fact="latest-release"` keep "latest" — reject, planned change (v1 name frozen; the label changed per AC4).
+- blame-history #6: the bot sentence and schema description leave out "later" — reject, false: the bot text appears only after a read that passed, and the schema's "only when" states a necessary condition, as the claim audit read.
+- blame-history #7: second-plugin now runs the prerelease path in the archived build test — reject, false: that test asserts `archived`, which the release choice does not touch.
+- blame-history #8: the fallback adds a second download for affected plugins — reject, planned change (the user chose the fallback; M004 caps hold per download).
+- prior-review #1: a second optional field under the strict v1 `upstream` block, as the row "Let old v1 schemas accept new fields" names — reject, planned change (chosen at the gate with that cost stated; CHANGELOG tells consumers to fetch the schema).
+- prior-review #2: `addBeta` builds the prerelease XPI in the test, not from a recording — reject, false: it is a recorded-response `xpi` entry, and the tests check release choice, not manifest shape.
+- prior-review #3: the fallback adds time to `pnpm build` and `pnpm discover` — reject, planned change (one more download for one listed plugin today).
+- prior-review #4: second-plugin is now prerelease-only — reject, false: intended, and its fixture source says so.
+- prior-review #5: the bot body grows by about 130 characters — reject, false: the body stays far below GitHub's 65,536-character limit.
+- ripple #1: test/upstream.test.ts:127's title states the removed rule — fix now, fixed e5d96c4.
+- snapshot: no changed snapshot files.
+- verify after fixes: `pnpm test` 439 passed.

@@ -8,10 +8,11 @@
   each file is valid against its schema, that the `meta.json` id equals the
   directory name, and that each override reason contains text.
 - `pnpm add-plugin <github-url>` drafts an entry from the GitHub repository of
-  a plugin. It reads the manifest in the newest release that has an `.xpi`
-  file. It writes `meta.json` and `index.json` under `plugins/<id>/`, or under
-  the directory that `--out <dir>` names. If the plugin does not meet the
-  inclusion bar, the command writes no file and prints the failure name.
+  a plugin. It reads the manifest in the newest stable release that has an
+  `.xpi` file, as the entry on prereleases below says. It writes `meta.json`
+  and `index.json` under `plugins/<id>/`, or under the directory that
+  `--out <dir>` names. If the plugin does not meet the inclusion bar, the
+  command writes no file and prints the failure name.
 - The index lists its first 14 plugins.
 - `pnpm build` writes the data file `dist/v1/plugins.json`, valid against
   `schemas/plugins.v1.schema.json` (`schemaVersion` 1). Each entry gets one
@@ -91,3 +92,18 @@
   any saved copy of it again. If the record has an `archived` value, the
   plugin page shows "Archived on GitHub" with "Yes" or "No". The home page
   shows "(archived)" after the name of an archived plugin.
+- The upstream reader reads the newest stable release that has an `.xpi`
+  file, not the newest release. A stable release is one that GitHub does not
+  mark as a prerelease. If no stable release has an `.xpi` file, the reader
+  reads the newest release that has one. If the stable release fails with
+  `no-manifest`, `no-zotero-id`, or `max-version-below-7`, the reader looks
+  for a later release with an `.xpi` file. If one exists, the reader reads
+  the newest such release instead. Other
+  failures of the stable release stay as they are. `pnpm add-plugin`,
+  `pnpm build`, `pnpm discover`, and `pnpm discover-issue` use this reader.
+  The record's `upstream` block in `v1/plugins.json` now has a
+  `prerelease` field, `true` or `false`, for the release that the reader
+  read. The schema stays at version 1. The schema rejects fields that it does
+  not define, so fetch any saved copy of it again. The plugin page labels the
+  release fact "Release read by the index". If the reader read a prerelease,
+  the page shows "(prerelease)" after the publish date.

@@ -28,6 +28,7 @@
         "openIssues": 12,
         "releaseCount": 27,
         "latestReleaseDate": "2026-09-30T18:04:11Z",
+        "prerelease": false,
         "archived": false
       },
       "overrides": [
@@ -60,6 +61,7 @@
         "openIssues": 3,
         "releaseCount": 5,
         "latestReleaseDate": "2024-07-01T08:30:00Z",
+        "prerelease": true,
         "archived": true
       },
       "overrides": []

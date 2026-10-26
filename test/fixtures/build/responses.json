@@ -1,5 +1,5 @@
 {
-  "source": "Written by hand for the build tests: example/second-plugin passes the inclusion bar and is archived, and example/forked-plugin is a fork. The build tests add the responses of test/fixtures/upstream/better-notes.json.",
+  "source": "Written by hand for the build tests: example/second-plugin passes the inclusion bar, is archived, and has only a prerelease, and example/forked-plugin is a fork. The build tests add the responses of test/fixtures/upstream/better-notes.json.",
   "repoUrl": "https://github.com/example/second-plugin",
   "responses": {
     "https://api.github.com/repos/example/second-plugin": {
@@ -17,7 +17,7 @@
         {
           "tag_name": "v1.0.0",
           "draft": false,
-          "prerelease": false,
+          "prerelease": true,
           "published_at": "2026-03-01T12:00:00Z",
           "assets": [
             {

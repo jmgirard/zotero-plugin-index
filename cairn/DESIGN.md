@@ -28,8 +28,9 @@ code, and it does not endorse plugins.
 
 Each plugin page shows facts that a reader can check. These facts are the
 declared range of Zotero versions, source availability, whether GitHub marks
-the repository archived (when GitHub's response says), repository age, last
-release, release count, open issues, and the host of the `update.json` file.
+the repository archived (when GitHub's response says), repository age, the
+release the index read and whether it is a prerelease (corrected M014),
+release count, open issues, and the host of the `update.json` file.
 The home list marks an
 archived plugin with "(archived)" after its name, and the data carries the
 same `archived` fact (M013).
@@ -68,9 +69,14 @@ shows each one separately.
    form, and the bot drafts the entry. The maintainer approves each pull
    request.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
-   `manifest.json` in the newest release that has an `.xpi` file
-   (prereleases included), and the `update.json` that the manifest names
-   (corrected M002). These files
+   `manifest.json` in the newest stable release that has an `.xpi` file,
+   and the `update.json` that the manifest names (corrected M002, M014). A
+   stable release is one that GitHub does not mark as a prerelease. If no
+   stable release has an `.xpi` file, the bot reads the newest release that
+   has one. If the stable release is not a Zotero 7+ build (`no-manifest`,
+   `no-zotero-id`, or `max-version-below-7`), the bot reads the newest later
+   release instead, when one has an `.xpi` file. The data's `prerelease`
+   fact says whether the release read is a prerelease. These files
    are the source of truth for the name, the description, the versions, and
    the declared compatibility (`strict_min_version`, `strict_max_version`).
 3. Overrides. An override in the index corrects a fact that the author cannot
