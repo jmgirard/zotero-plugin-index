@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M019: Keep issues open on a bot read failure
 
-- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -119,9 +119,18 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
 - 2026-10-26: T3: README issue section, CHANGELOG issue-form entry, `issueRead`/`issueAnswer` comments, and DESIGN's Discovery line updated; README points at "Building the data" for the build-level list instead of repeating it. Joined-copy search finds 0 of both removed sentences. The simple-english lint flags README line 68 ("validate"), text this branch does not touch; left as is.
 - 2026-10-26: T4: `pnpm test` 496 passed (14 files), `pnpm check` 17 entries, 0 problems.
 - 2026-10-26: claim audit: 22 claims read, 3 corrected — src/discover/discover.ts, src/discover/handoff.ts, README.md (re-read once: all true; README sentence moved to the paragraph on issues that close).
+- 2026-10-26: review return 1: AC4 fails as written — the `issueRead` comment in `src/discover/issue.ts` (lines 46-52) says a build-level or thrown read gives the `failed` outcome but does not say that this leaves the issue open and fails the run.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->
 
 ## Review
 <!-- owner: review · exclusive -->
+
+Pass 1 (2026-10-26), branch m019-keep-issues-open at 707ad5f, main not moved.
+
+- AC1: fresh `pnpm exec vitest run test/issue.test.ts --reporter=verbose` — the six cases (GitHub API 429, 503, 403; update.json 503; rejected fetch; failed host lookup) pass, each asserting status 1, one comment POST naming the failure in a code span then the message, and no PATCH. Planted defect (decide by `failure.endsWith("http-error")`, restored from a copy) failed the two 404 tests, so the tests separate the mark from the name. Exit code: `propose-cli.ts` sets `process.exitCode` from the status, and the existing CLI test "exits 1 when the push fails" passes.
+- AC2: "a read that throws" (fixture `unexpected` on the repo record) passes: status 1, comment with `unexpected-error`, no PATCH.
+- AC3: the GitHub API 404 and update.json 404 tests pass (comment names the failure, PATCH not_planned, status 0). `git diff main...HEAD -- test/issue.test.ts` removes only the `runIssue` signature line and its `lookup:` line; every earlier refusal test passes unchanged.
+- AC4: FAIL. README (joined copy) and the CHANGELOG entry say the issue stays open and the run fails, and the `issueAnswer` comment says so; the `issueRead` comment does not. Both removed sentences: 0 hits in joined copies. Returned to implement (review return 1).
+- AC5: `pnpm test` 14 files, 496 passed; `pnpm check` 17 entries, 0 problems.
