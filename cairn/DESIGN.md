@@ -140,7 +140,9 @@ exception is a report that is abuse.
   outcome into a handoff (M010, M011). `pnpm propose <dir> [--limit <n>]`
   checks a handoff, then opens one pull request for each entry, or, with
   `ISSUE_NUMBER` set, answers the issue: a pull request, or a comment with
-  the reason and a close (M009, M010, M011).
+  the reason and a close (M009, M010, M011). A read of the repo that stops
+  with a build-level failure, or throws, gets a comment and leaves the issue
+  open (M019).
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.

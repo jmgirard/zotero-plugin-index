@@ -279,12 +279,17 @@ comments the link to the pull request on the issue.
 The bot can also find no URL in the issue body, fail to read the repository,
 or fail to write the entry. Then it comments the failure name and its message,
 and it closes the issue as not planned. A failed read includes a GitHub API
-error, such as a rate limit, while the bot reads the repository.
+answer of HTTP 404, which a repository that does not exist or is private
+gives.
 
-The bot itself can fail. It can fail to read `plugins/`, its own pull
-requests, or the default branch, or the push or the pull request can fail.
-The first job can also fail and leave no handoff. Then the bot comments the
-error and leaves the issue open, and the workflow run fails. If `pnpm propose`
+The bot itself can fail. Its read of the repository can stop with a
+build-level failure, as "Building the data" defines it. Examples are a rate
+limit, an outage, and an error that the reader does not name. It can fail to
+read `plugins/`, its own pull requests, or the default branch, or the push or
+the pull request can fail. The first job can also fail and leave no handoff.
+Then the bot comments the error and leaves the issue open, and the workflow
+run fails. If the read of the repository failed, the comment also gives the
+failure name. If `pnpm propose`
 refuses the handoff, the bot does not answer the issue, and the workflow run
 fails.
 

@@ -45,9 +45,11 @@ export interface IssueReadOptions {
 
 // The read step of an issue run, which makes no GitHub write. If the body names a repo
 // that the index or a bot pull request already has, it reads nothing. If the parser or
-// draftEntry refuses, the outcome names the failure; that includes a GitHub request
-// error while the reader reads the repo. If the bot cannot read the index, its pull
-// requests, or the default branch, the outcome is `failed`.
+// draftEntry refuses, the outcome names the failure; that includes a GitHub HTTP 404
+// for a repo that does not exist. If the read of the repo stops with a failure that the
+// reader marks build-level, such as a rate limit, or throws, the outcome is `failed`
+// with the failure name. If the bot cannot read the index, its pull requests, or the
+// default branch, the outcome is `failed` too.
 // A message is cut to what a comment quotes, so a long one cannot make the handoff too
 // large for the write step.
 export async function issueRead(options: IssueReadOptions): Promise<IssueOutcome> {
@@ -128,9 +130,10 @@ export interface IssueRunResult {
 // plugin id, since they can change while the read step runs, and the index in its
 // checkout, which is the commit the read step saw. Then it opens a pull request that
 // closes the issue when it merges, or closes the issue. Each answer is a comment on the
-// issue. If the read step failed, or the bot cannot read the index, its
-// pull requests, or the default branch, or the push or the pull request fails, the
-// comment says so and the issue stays open.
+// issue. If the read step failed, a build-level or thrown read of the repo included, or
+// the bot cannot read the index, its pull requests, or the default branch, or the push
+// or the pull request fails, the comment says so and the issue stays open, and the
+// status is 1.
 export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRunResult> {
   const { root, fetch, indexRepo, issue, read } = options;
   const github = githubClient(fetch);

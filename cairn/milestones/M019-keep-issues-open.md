@@ -94,13 +94,13 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
       `unexpected-error`. In `src/discover/issue.ts` `readOutcome` (~line 96),
       return `{ outcome: "failed" }` for such a refusal, its message opening
       with the failure name. Discovery's recording rule does not change.
-- [ ] T3: Update README "Proposing a plugin with an issue" (~lines 279-289),
+- [x] T3: Update README "Proposing a plugin with an issue" (~lines 279-289),
       the CHANGELOG Unreleased issue-form entry (~line 70), the `issueRead`
       and `issueAnswer` comments, and DESIGN.md's Discovery function family
       line on issue answers (~line 143). Check each sentence in a joined copy
       (LESSONS M018). The issue form's "If the plugin does not pass" stays,
       since a failed read is not a refusal of the plugin.
-- [ ] T4: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
+- [x] T4: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -116,6 +116,8 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
 
 - 2026-10-26: T1: 9 issue-run tests and 1 handoff test added; the 7 open-issue cases fail on `result.status` 0 before the fix, the 2 404 cases and the handoff case pass (they pin behavior the fix keeps).
 - 2026-10-26: T2: `draftEntry` refusals carry `buildLevel` from the reader and on a thrown read; `readOutcome` turns those into `failed`, which gains an optional `failure` in the handoff schema (same name pattern as `refused`), so the comment shows the name in a code span then the message. Chose a schema field over folding the name into the message so the name keeps its own pattern check. `pnpm test` 496 passed, `pnpm check` 0 problems.
+- 2026-10-26: T3: README issue section, CHANGELOG issue-form entry, `issueRead`/`issueAnswer` comments, and DESIGN's Discovery line updated; README points at "Building the data" for the build-level list instead of repeating it. Joined-copy search finds 0 of both removed sentences. The simple-english lint flags README line 68 ("validate"), text this branch does not touch; left as is.
+- 2026-10-26: T4: `pnpm test` 496 passed (14 files), `pnpm check` 17 entries, 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->
