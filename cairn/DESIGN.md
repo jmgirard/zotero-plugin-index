@@ -31,11 +31,21 @@ declared range of Zotero versions, source availability, whether GitHub marks
 the repository archived (when GitHub's response says), repository age, the
 release the index read and whether it is a prerelease (corrected M014),
 release count, open issues, and the host of the `update.json` file.
-The home list marks an
+The page shows the name, the description, the version pills, the declared
+range, and the repository and releases links first. The other facts sit in a
+closed "Details" section (M015). The home list marks an
 archived plugin with "(archived)" after its name, and the data carries the
 same `archived` fact (M013).
-The page also shows each override beside the upstream value it corrects
-(M007). Each page says that the index does not vet the plugins it lists.
+The Details section also shows each override beside the upstream value it
+corrects (M007, M015). Each page says that the index does not vet the plugins
+it lists.
+
+The home list and each plugin page show one pill for each Zotero major
+version in `ZOTERO_MAJORS` (7 to 10). A pill states how much of that major the
+declared range covers, counting Zotero N as N.0 to N.9: all, part, or none.
+The pills show only the declared range, so they are not a combined verdict.
+The site shows the manifest description unless it is blank or only repeats
+the plugin's name; a `description` override always shows (M015).
 
 The index runs on GitHub only: GitHub Actions, GitHub Pages, and GitHub
 issues. It has no server, no database, and no paid service. Thus every
@@ -137,7 +147,9 @@ exception is a report that is abuse.
 - Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
   home page and one page per record into `dist/`, or `<dir>`, from the data
   file there. `src/site/version.ts` holds the version and range functions
-  that the templates and the pages' script use. Added M007.
+  that the templates use, `majorSupport` and `ZOTERO_MAJORS` among them, and
+  `src/site/description.ts` holds `shownDescription`. Added M007; pills and
+  descriptions M015.
 
 ## Conventions
 
@@ -305,9 +317,11 @@ reused._
   reads `<out>/v1/plugins.json`, builds into a temporary directory, because
   Astro empties its output directory, and copies the pages into `<out>` beside
   the data. `src/site/version.ts` orders versions by Mozilla's legacy version
-  format (`cairn/references/mozilla-toolkit-version.md`) and places a Zotero
-  version in a record's declared range, with overrides applied. The tests, the
-  templates (through `site/src/data.ts`), and the pages' one script import it. The templates take the Pages path
+  format (`cairn/references/mozilla-toolkit-version.md`), finds a record's
+  declared range with overrides applied, and, in `majorSupport`, how much of
+  one Zotero major that range covers. The tests and the templates (through
+  `site/src/data.ts` and `site/src/components/Support.astro`) import it. The
+  pages carry no script (M015). The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
   Astro's `import.meta.env.BASE_URL`. `build.yml` runs `pnpm site` after the
   build, so a failed site build also deploys nothing. `tsconfig.json` includes
@@ -315,6 +329,9 @@ reused._
   are compiled by Astro without a type check (M007). A plugin page shows the
   "Archived on GitHub" fact only for a record whose `archived` is a boolean,
   and the home list's `data-archived` marker only for `archived: true` (M013).
+  All styles are global in `site/src/layouts/Base.astro`, with a
+  `prefers-color-scheme: dark` block, so Astro adds no scoped attributes to
+  the markup the site tests match (M015).
 
 ## Known issues
 
