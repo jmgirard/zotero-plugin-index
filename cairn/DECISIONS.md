@@ -125,3 +125,16 @@ data, so the v1 schema (D-006, D-007) stays as it is. The cost is that a reader
 or schema regression that fails every record with a named failure, such as
 `xpi-unreadable` or `facts-invalid`, now deploys a site with no plugin data.
 Candidate row "Withhold deploys when all reads fail" holds the safety net.
+
+### D-012: Also withhold a deploy when every record carries a failure, annotating D-011
+
+2026-10-26, M018 plan. D-011 withholds a deploy only for build-level
+failures, so a reader or schema regression that fails every record with a
+named failure deploys a site with no plugin data. At the M018 plan question
+set the user chose a second bar: `pnpm build` also exits 1 when every record
+carries a failure, whatever its name. The build-level bar keeps the rule that
+D-011 states. The user declined a bar on a failure share far above the live
+data's, because it needs a read of the live data and more code. Thus a
+regression that fails most records, but not all, still deploys. The cost is
+the one D-011 avoided, in a smaller form: an index where every plugin fails
+for good never deploys again.
