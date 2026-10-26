@@ -117,7 +117,7 @@ D-012 is written by this plan, not by the milestone.
       Print each bar's stderr line that holds, and return 1 when either bar
       holds. Update the comment above the rule. Leave `src/build/build.ts`
       and `schemas/` as they are.
-- [ ] T3: State the second bar with the AC4 phrase in the six places AC4
+- [x] T3: State the second bar with the AC4 phrase in the six places AC4
       names. In README, replace the sentences that say a build in which
       every record fails exits 0. Add the CHANGELOG `## Unreleased` entry.
       Run the AC4 searches.
@@ -154,6 +154,7 @@ D-012 is written by this plan, not by the milestone.
 - 2026-10-26: implement started on branch m018-every-record-fails.
 - 2026-10-26: T1 done (its checkpoint commit carried no tick, added here): the all-fail test now uses `fork`, a GitHub API 404, and `facts-invalid`; added the one-clean-record test and the build-level-alone test, whose tree copies SECOND under the id `second-copy@example.org` so both read the 503. On the old code the all-fail test and the 2-of-3 both-lines assertion failed, and the two new tests passed, as they pin kept behavior.
 - 2026-10-26: T2 done: `src/build/cli.ts` prints each bar's stderr line that holds and returns 1 when either holds; `build.ts` and `schemas/` untouched. `pnpm test` 486 passed, `pnpm check` 17 entries, 0 problems.
+- 2026-10-26: T3 done: the AC4 phrase is in the cli.ts comment (rewrapped onto one line), the build.yml comment, both README paragraphs, both DESIGN entries, and a new CHANGELOG entry; line-joined searches find neither old README sentence; `git diff main...HEAD -- schemas src/build/build.ts` is empty. README line 68's "validate" is an older style-hook hit, left alone as outside this change. `pnpm test` 486 passed, `pnpm check` clean, cairn_validate passed.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote

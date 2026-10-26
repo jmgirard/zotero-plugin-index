@@ -60,7 +60,8 @@ The index publishes its data file on GitHub Pages:
 A daily build updates the data. If more than half of the records carry a
 build-level failure, such as a rate limit or a network error, the build
 deploys nothing. "Building the data" below says which failures are
-build-level. If the site build fails, the build also
+build-level. If every record carries a failure, of any kind, the build
+also deploys nothing. If the site build fails, the build also
 deploys nothing. The data from the last good build then stays in place. "Building the data" below describes the file. A breaking
 change to the file gets a new schema version under a new path, such as `v2/`.
 By this project's rule, a new optional field does not get a new schema
@@ -354,9 +355,10 @@ prints the number of records with a build-level failure. If a record
 carries a build-level failure, the command also prints a `::warning::`
 line. GitHub Actions shows this line as a warning on the run. If more than
 half of the records carry a build-level failure, the command exits with
-status 1. If half of the records or fewer carry one, the command exits with
-status 0. That includes a build in which every record fails for a reason of
-its own.
+status 1. If every record carries a failure, whatever its name, the command
+also exits with status 1. For each of these two cases that holds, the
+command prints one line on stderr. Otherwise, the command exits with
+status 0.
 
 The command also writes copies of the two schemas to `dist/schemas/`.
 
