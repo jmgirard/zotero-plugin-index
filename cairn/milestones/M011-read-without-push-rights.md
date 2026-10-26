@@ -98,7 +98,7 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 - [x] T4: In `propose`, pass `GITHUB_TOKEN` to `git push` only through `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_0`, and
       `GIT_CONFIG_VALUE_0` (an `http.https://github.com/.extraheader`), never through argv or a config file. Test
       it against a local bare remote with a `git` shim on `PATH` that logs argv (AC4).
-- [ ] T5: Split both workflows. Read job: its own read-only `permissions`, `persist-credentials: false`, the
+- [x] T5: Split both workflows. Read job: its own read-only `permissions`, `persist-credentials: false`, the
       discover state cache (restore and save) for `discover.yml`, and `actions/upload-artifact@v7` of the handoff.
       Write job: `needs` the read job, the write permissions, `persist-credentials: false`, `actions/setup-node`
       with no `cache`, `actions/download-artifact` (D-005), and `pnpm propose` with `GITHUB_TOKEN`, `ISSUE_NUMBER`,
@@ -132,6 +132,9 @@ canceled", "Stop retrying a failing bot pull request", and "Close the issue when
 - 2026-10-26: implement chose to validate `plan.json` with Ajv (D-001) against a schema in `handoff.ts`; the failure name must match `^[a-z][a-z-]{0,59}$`, string fields have length caps, and each entry file is capped at 64 KiB.
 - 2026-10-26: a handoff that `readHandoff` refuses gets no answer on its issue, as AC3 requires; the write job fails, which shows on the run.
 - 2026-10-26: T4 check discrimination: passing the full environment to `pnpm check`, and dropping the environment config from the push, each turned the token test red; restored from a copy.
+
+- 2026-10-26: T5: both workflows set `permissions: {}` and per-job maps; the read jobs also drop `cache: pnpm`, since a dependency cache a read job saves on the default branch would reach later jobs; `actions/download-artifact@v8` (the latest major, 2026-10-07) beside `upload-artifact@v7`; handoff artifacts kept 1 day.
+- 2026-10-26: T5 Ruby check (AC1, AC4, AC5 shapes) passes on the branch and reports 15 failures on main's two workflows.
 
 ## Decisions
 
