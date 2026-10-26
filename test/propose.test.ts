@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
 import type { ReadItem, SkippedItem } from "../src/discover/discover.ts";
-import { entriesDir, planned, readHandoff, writePlan } from "../src/discover/handoff.ts";
+import { entriesDir, planned, plannedProblem, readHandoff, writePlan } from "../src/discover/handoff.ts";
 import { body, type CheckRunner, discoverRead, pnpmCheck, proposeHandoff, type Written } from "../src/discover/propose.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 import { checkout as gitCheckout, git } from "./support/git-checkout.ts";
@@ -223,6 +223,35 @@ describe("an entry the write step would refuse", () => {
     expect(Object.keys(read.state).sort()).toEqual(["example/.dot", "example/no-at"]);
     expect(result.proposed.map(({ repo }) => repo)).toEqual(["example/good"]);
     expect(posts).toHaveLength(1);
+  });
+});
+
+describe("the read step's entry check", () => {
+  test("plans a renamed repo under the name GitHub gives, which it checked", async () => {
+    const renamed = pluginRepo("example/new-name", "renamed@example.org");
+    const { read, result } = await twoStep(
+      {
+        ...indexRepo,
+        ...searched([["example/old-name", "2026-10-01T00:00:00Z"]]),
+        ...Object.fromEntries(Object.entries(renamed).map(([url, response]) => [url.replace("/repos/example/new-name", "/repos/example/old-name"), response])),
+        [`POST ${PULLS}`]: { status: 201, json: { html_url: "https://github.com/example/index/pull/1" } },
+      },
+      checkout().work,
+    );
+    if (!read.ok || !result?.ok) throw new Error(JSON.stringify({ read, result }));
+    expect(read.report.read).toEqual([expect.objectContaining({ outcome: "written", repo: "example/new-name", repoUrl: "https://github.com/example/new-name" })]);
+    expect(result.proposed.map(({ branch }) => branch)).toEqual(["discover/example/new-name"]);
+  });
+
+  test("throws, rather than naming the branch invalid, when git cannot run", async () => {
+    const saved = process.env.PATH;
+    process.env.PATH = tempDir();
+    try {
+      const entry = { repo: "example/alpha", repoUrl: "https://github.com/example/alpha", id: "alpha@example.org", version: "1.0" };
+      await expect(plannedProblem(entry, tempDir())).rejects.toMatchObject({ code: "ENOENT" });
+    } finally {
+      process.env.PATH = saved;
+    }
   });
 });
 

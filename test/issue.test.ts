@@ -201,6 +201,36 @@ describe("an issue run's refusals with names the reader gives", () => {
     ]);
   });
 
+  test.each<[string, (manifest: { version: string; description?: string }) => void]>([
+    ["a version longer than the handoff allows", (manifest) => (manifest.version = "1".repeat(600))],
+    ["a description that makes meta.json larger than 64 KiB", (manifest) => (manifest.description = "x".repeat(70_000))],
+  ])("refuses as not-proposable, with no push, %s", async (_name, change) => {
+    const repo = pluginRepo("example/big", "big@example.org");
+    const xpi = Object.keys(repo).find((url) => url.endsWith(".xpi"))!;
+    change((repo[xpi].xpi as Record<string, { version: string; description?: string }>)["manifest.json"]);
+    const { result, sent } = await runIssue(rendered("https://github.com/example/big"), { ...indexRepo, ...repo, ...opened });
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([
+      { method: "POST", url: COMMENTS, body: expect.stringContaining("`not-proposable`") },
+      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "not_planned" },
+    ]);
+  });
+
+  test("reads on, and refuses as not-proposable, a repo whose name a bot branch has but a handoff refuses", async () => {
+    const pull = { number: 30, state: "open", merged_at: null, html_url: "https://github.com/example/index/pull/30", head: { ref: "discover/example/b!", repo: { full_name: "example/index" } } };
+    const { result, sent } = await runIssue(rendered("https://github.com/example/b!"), {
+      ...indexRepo,
+      [`${PULLS}?state=all&per_page=100`]: { json: [pull] },
+      [`${PULLS}/30/files?per_page=100`]: { json: [] },
+      ...pluginRepo("example/b!", "b@example.org"),
+    });
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([
+      { method: "POST", url: COMMENTS, body: expect.stringContaining("`not-proposable`") },
+      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "not_planned" },
+    ]);
+  });
+
   test.each([
     ["an id that is not a Mozilla add-on id", "example/no-at", "plugin-no-at"],
     ["a repo whose branch name git refuses", "example/.dot", "dot@example.org"],

@@ -139,7 +139,10 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
     delete state[repo];
     index.ids.add(id.toLowerCase());
     written++;
-    report.read.push({ repo, repoUrl, outcome: "written", id, dir, version, strictMinVersion, strictMaxVersion });
+    // The name and URL that draftEntry checked, which can differ from the search
+    // result's after a rename.
+    const read = { repo: repoName(drafted.repoUrl) ?? repo, repoUrl: drafted.repoUrl };
+    report.read.push({ ...read, outcome: "written", id, dir, version, strictMinVersion, strictMaxVersion });
   }
   return { ok: true, state, report };
 }
@@ -190,9 +193,15 @@ export async function draftEntry(repoUrl: string, options: DraftOptions): Promis
   // `pnpm propose` refuses a handoff with an entry it cannot push, so such a repo is
   // refused here, and recorded.
   const repo = repoName(read.facts.repoUrl);
-  const problem = repo
-    ? await plannedProblem({ repo, repoUrl: read.facts.repoUrl, id, version, strictMinVersion, strictMaxVersion })
-    : `${read.facts.repoUrl} names no owner/repo`;
+  let problem: string | undefined;
+  try {
+    problem = repo
+      ? await plannedProblem({ repo, repoUrl: read.facts.repoUrl, id, version, strictMinVersion, strictMaxVersion }, entry.dir)
+      : `${read.facts.repoUrl} names no owner/repo`;
+  } catch (error) {
+    await rm(entry.dir, { recursive: true, force: true });
+    return refuse("unexpected-error", `checking the entry of ${read.facts.repoUrl} threw: ${(error as Error).message}`);
+  }
   if (problem) {
     await rm(entry.dir, { recursive: true, force: true });
     return refuse("not-proposable", `the bot cannot propose ${read.facts.repoUrl}: ${problem}`);

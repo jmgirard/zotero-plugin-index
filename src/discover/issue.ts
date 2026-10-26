@@ -2,7 +2,7 @@ import { rm } from "node:fs/promises";
 import type { Lookup } from "../upstream/host-guard.ts";
 import { type Fetch, githubClient } from "../upstream/reader.ts";
 import { draftEntry, indexed, repoName } from "./discover.ts";
-import { type IssueOutcome, MESSAGE_MAX, planned } from "./handoff.ts";
+import { type IssueOutcome, MESSAGE_MAX, planned, plannableRepo } from "./handoff.ts";
 import { type BotPulls, botPulls, type CheckRunner, code, defaultBranch, propose, type Written } from "./propose.ts";
 
 const API = "https://api.github.com";
@@ -77,7 +77,9 @@ async function readOutcome(options: IssueReadOptions): Promise<IssueOutcome> {
     // Any error here is the bot's, so the issue gets an answer either way.
     return { outcome: "failed", message: (error as Error).message };
   }
-  const known = (name: string | undefined) => !!name && (index.repos.has(name) || pulls.pulls.has(name));
+  // A name of a shape the handoff refuses is never `known`: the read goes on, and
+  // draftEntry refuses such a repo as not-proposable.
+  const known = (name: string | undefined) => !!name && plannableRepo(name) && (index.repos.has(name) || pulls.pulls.has(name));
   const given = githubRepo(parsed.url);
   if (known(given)) return { outcome: "known", repo: given! };
 

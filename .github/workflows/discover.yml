@@ -32,6 +32,10 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
+    # Empty when this attempt uploaded no handoff, so the write job never reads an
+    # earlier attempt's.
+    outputs:
+      handoff: ${{ steps.upload.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -63,7 +67,8 @@ jobs:
           key: discovery-state-${{ github.run_id }}-${{ github.run_attempt }}
       # Also after a failed step that left a plan, such as a failed state write. A re-run
       # replaces the first attempt's handoff.
-      - uses: actions/upload-artifact@v7
+      - id: upload
+        uses: actions/upload-artifact@v7
         if: ${{ !cancelled() && hashFiles('handoff/plan.json') != '' }}
         with:
           name: handoff
@@ -74,9 +79,9 @@ jobs:
 
   write:
     needs: read
-    # Also after a failed read job, whose plan the write step can still propose; not when
-    # the read job was skipped.
-    if: ${{ !cancelled() && needs.read.result != 'skipped' }}
+    # Also after a failed read job that uploaded a plan, such as one whose state write
+    # failed; not when the read job uploaded none.
+    if: ${{ !cancelled() && needs.read.outputs.handoff != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:

@@ -216,9 +216,15 @@ reused._
   count against the limit, and each entry directory for exactly the regular
   files `meta.json` and `index.json`. Any failure refuses the whole handoff
   before a request. So that one plugin cannot refuse a run's handoff,
-  `draftEntry` runs the same entry checks (`plannedProblem`) after it writes
-  an entry, and refuses a failing one as `not-proposable`, a recorded failure.
-  The read step cuts each issue message to 2,001 characters. The issue number comes from `ISSUE_NUMBER`, never from
+  `draftEntry` runs the same entry and file checks (`plannedProblem`) after
+  it writes an entry, and refuses a failing one as `not-proposable`, a
+  recorded failure; a check that throws, such as git failing to start, is
+  `unexpected-error`, not recorded. Discovery plans a written entry under the
+  name GitHub gives, which the check read. An issue's repo whose name has a
+  shape the handoff refuses is never `known`. The read step cuts each issue
+  message to 2,001 characters. Each read job outputs its upload's
+  `artifact-id`, and the write side downloads only when this attempt
+  uploaded one. The issue number comes from `ISSUE_NUMBER`, never from
   the handoff. The write step reads the bot pull requests again, and the
   index in its own checkout, which is the commit the read job saw, and skips
   an entry that either has. `propose` gives `git fetch` and
@@ -236,9 +242,9 @@ reused._
   the branch, and sends one create-pull-request request whose body carries
   the check's status and output. The checkout's branch and working tree do
   not change. A failure for one entry is reported, and the run goes on and
-  exits 1 at the end. It also reads the files of each open bot pull request,
-  and discovery refuses, without recording, a repo whose plugin id one of
-  them adds. `githubClient` gains `post`, which fails on a redirect, and
+  exits 1 at the end. Both steps read the files of each open bot pull request
+  (`botPulls`): discovery refuses, without recording, a repo whose plugin id
+  one of them adds, and the write step skips such an entry. `githubClient` gains `post`, which fails on a redirect, and
   M010 adds `patch`, which shares that code.
   `.github/workflows/discover.yml` runs it daily and on dispatch on the
   default branch only, with a `limit` input, in the `discover` concurrency

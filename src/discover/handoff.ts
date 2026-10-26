@@ -80,12 +80,16 @@ const validatePlan = new Ajv({ allErrors: true }).compile({
 });
 const validateEntry = new Ajv({ allErrors: true }).compile(entrySchema);
 
-// Returns why `readHandoff` would refuse a handoff with this entry, or undefined. The
-// read step checks each entry it drafts, so an entry of its own never refuses a handoff.
-export async function plannedProblem(entry: PlannedEntry): Promise<string | undefined> {
-  if (!validateEntry(JSON.parse(JSON.stringify(entry)))) return "a field is longer than the handoff allows";
-  return entryProblem(entry);
+// Returns why `readHandoff` would refuse a handoff with this entry and its drafted
+// directory, or undefined. The read step checks each entry it drafts, so an entry of its
+// own never refuses a handoff.
+export async function plannedProblem(entry: PlannedEntry, entryDir: string): Promise<string | undefined> {
+  if (!validateEntry(JSON.parse(JSON.stringify(entry)))) return "a field is empty or longer than the handoff allows";
+  return (await entryProblem(entry)) ?? entryDirProblem(entryDir, entry.id);
 }
+
+// Whether a repo name has the shape a handoff accepts.
+export const plannableRepo = (repo: string) => REPO.test(repo) && repo.length <= 200;
 
 // Writes `plan.json` into `dir`. The read step has already drafted the entries into
 // `entriesDir(dir)`.
@@ -175,7 +179,9 @@ async function entryProblem(entry: PlannedEntry): Promise<string | undefined> {
   }
   try {
     await run("git", ["check-ref-format", `refs/heads/discover/${repo}`]);
-  } catch {
+  } catch (error) {
+    // git exits 1 for a name it refuses; any other failure says nothing about the name.
+    if ((error as { code?: unknown }).code !== 1) throw error;
     return `the branch name discover/${repo} is not a valid git branch name`;
   }
   return undefined;
