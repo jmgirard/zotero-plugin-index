@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M017: Stop deploys only for build failures
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -86,7 +86,7 @@ planned.
 - AC3 → T1, T4
 - AC4 → T1, T4
 - AC5 → T1, T3
-- AC6 → T5
+- AC6 → T5, T7
 - AC7 → T6
 
 ## Tasks
@@ -116,6 +116,8 @@ planned.
       "more than half" and "carry a failure" as a reviewer aid.
 - [x] T6: Run the verify slot: `npx -y pnpm@12.15.0 test` and
       `npx -y pnpm@12.15.0 check`.
+- [x] T7: Review return 1: make the DESIGN.md Architecture paragraph point
+      to README "Building the data" for what a build-level failure is.
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -142,6 +144,8 @@ planned.
 - 2026-10-26: claim audit: 36 claims read, 2 corrected — README.md, src/build/build.ts, src/build/cli.ts, src/upstream/reader.ts, test/build.test.ts ("points at the build" softened to "usually", since a plugin's own dead download host also counts; one test name made exact). The `::warning::` annotation claim matches GitHub's documented workflow command but is unobserved; the granted post-merge `Build data` run checks it. Verify re-run: 483 passed, 0 problems.
 - 2026-10-26: implement complete; status set to review.
 - 2026-10-26: review return 1: AC6 — the DESIGN.md Architecture paragraph (`cairn/DESIGN.md:315-318`) states the build-level exit rule but neither names what a build-level failure is nor points to the README for it.
+- 2026-10-26: minor amendment: T7 added for review return 1, Coverage AC6 → T5, T7. T7 done: the Architecture paragraph now says "as README "Building the data" defines it". Docs only; `pnpm test` and `pnpm check` unaffected, run below.
+- 2026-10-26: implement complete after return 1; status set to review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
