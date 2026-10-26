@@ -71,7 +71,7 @@ planned.
       byte-identical to the default branch's output before this milestone,
       apart from `generatedAt`, on a fixture with both build-level and other
       failures.
-- [ ] AC6: README.md, the `## Unreleased` section of CHANGELOG.md,
+- [x] AC6: README.md, the `## Unreleased` section of CHANGELOG.md,
       cairn/DESIGN.md (Function Families and Architecture), and the comment in
       `.github/workflows/build.yml` each state that only build-level failures
       count toward the exit-1 rule, and each names what a build-level failure
@@ -163,3 +163,9 @@ Pass 1, 2026-10-26, on m017-build-health at e2a685a (level with origin/main 8f4c
 - AC6: FAIL. README, CHANGELOG, DESIGN Function Families, and `build.yml:37` state the rule and define it or point to README. DESIGN Architecture (`cairn/DESIGN.md:315-318`) states the build-level rule but neither names what a build-level failure is nor points to README.
 - AC7: `pnpm test` 483 passed (14 files); `pnpm check` 17 entries, 0 problems.
 - Gate: `cairn_validate.py` all checks passed; profile consistency-gate: none (generic).
+
+Pass 2, 2026-10-26, at 91af72f (level with origin/main), after review return 1.
+
+- AC6: README "Building the data" lists the four build-level causes and README:60-63 points to it; CHANGELOG's new Unreleased entry says only build-level failures count and points to README, and its M006 entry defines one by example; DESIGN Function Families (147-150) and Architecture (316-317) both say "as README "Building the data" defines it"; `build.yml:37` names examples and points to README.
+- AC1–AC5, AC7: code unchanged since pass 1 (T7 touched `cairn/DESIGN.md` only); `pnpm test` 483 passed and `pnpm check` 0 problems at 91af72f.
+- Gate: `cairn_validate.py` all checks passed.
