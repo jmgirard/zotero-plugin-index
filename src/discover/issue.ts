@@ -48,8 +48,9 @@ export interface IssueReadOptions {
 // draftEntry refuses, the outcome names the failure; that includes a GitHub HTTP 404
 // for a repo that does not exist. If the read of the repo stops with a failure that the
 // reader marks build-level, such as a rate limit, or throws, the outcome is `failed`
-// with the failure name. If the bot cannot read the index, its pull requests, or the
-// default branch, the outcome is `failed` too.
+// with the failure name, so the write step leaves the issue open and the run fails. If
+// the bot cannot read the index, its pull requests, or the default branch, the outcome
+// is `failed` too.
 // A message is cut to what a comment quotes, so a long one cannot make the handoff too
 // large for the write step.
 export async function issueRead(options: IssueReadOptions): Promise<IssueOutcome> {

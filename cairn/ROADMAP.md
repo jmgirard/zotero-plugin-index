@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-26 (M018 done and archived; 1 row narrowed and reti
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M019 | Keep issues open on a bot read failure | in-progress | — | normal | milestones/M019-keep-issues-open.md |
+| M019 | Keep issues open on a bot read failure | review | — | normal | milestones/M019-keep-issues-open.md |
 | M018 | Withhold deploys when every record fails | done | — | normal | milestones/archive/M018-every-record-fails.md |
 | M017 | Stop deploys only for build failures | done | — | normal | milestones/archive/M017-build-health.md |
 | M016 | Restore no cache in the deploy build | done | — | normal | milestones/archive/M016-no-build-cache.md |

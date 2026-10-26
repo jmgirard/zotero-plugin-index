@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M019: Keep issues open on a bot read failure
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -79,7 +79,7 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
 - AC1 → T1, T2
 - AC2 → T1, T2
 - AC3 → T1, T2
-- AC4 → T3
+- AC4 → T3, T5
 - AC5 → T4
 
 ## Tasks
@@ -101,6 +101,9 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
       (LESSONS M018). The issue form's "If the plugin does not pass" stays,
       since a failed read is not a refusal of the plugin.
 - [x] T4: Run `pnpm test` and `pnpm check` through `npx -y pnpm@12.15.0`.
+- [x] T5: (review return 1) Make the `issueRead` comment in
+      `src/discover/issue.ts` say that a build-level or thrown read leaves the
+      issue open and fails the run; re-run T4's checks.
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -120,6 +123,7 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
 - 2026-10-26: T4: `pnpm test` 496 passed (14 files), `pnpm check` 17 entries, 0 problems.
 - 2026-10-26: claim audit: 22 claims read, 3 corrected — src/discover/discover.ts, src/discover/handoff.ts, README.md (re-read once: all true; README sentence moved to the paragraph on issues that close).
 - 2026-10-26: review return 1: AC4 fails as written — the `issueRead` comment in `src/discover/issue.ts` (lines 46-52) says a build-level or thrown read gives the `failed` outcome but does not say that this leaves the issue open and fails the run.
+- 2026-10-26: T5 added for review return 1 (minor amendment; Coverage AC4 → T3, T5). The `issueRead` comment now says the write step leaves the issue open and the run fails, which restates the `issueAnswer` claim the claim audit read as true. `pnpm test` 496 passed, `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->
