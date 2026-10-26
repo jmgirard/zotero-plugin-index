@@ -149,6 +149,7 @@ planned.
 - 2026-10-26: correction to the "implement chose" line above: `buildData` returns `buildLevel` in record order, not sorted; records follow entry order, which the listing sorts.
 - 2026-10-26: review pass 2: four lenses, 27 findings; 6 fix now (message on one line with a regression test, D-011, DESIGN rewrap, two test comments, this correction), 4 follow-up into new row "Withhold deploys when all reads fail", 17 rejected. Verify: 484 passed, 0 problems.
 - 2026-10-26: correction to the line above: the four lenses reported 22 findings (diff-bug 12, blame-history 6, prior-review 4, ripple 0): 5 fix now in 43176b9, 3 follow-up into row "Withhold deploys when all reads fail", 14 rejected.
+- 2026-10-26: step-7 approval: m017-build-health approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
