@@ -27,27 +27,27 @@ an edit to M009's CHANGELOG entry.
 
 ## Acceptance criteria
 
-- [ ] AC1: The form-body parser returns the first non-empty line, trimmed, under the URL field's heading in
+- [x] AC1: The form-body parser returns the first non-empty line, trimmed, under the URL field's heading in
       a body GitHub renders from `add-plugin.yml`, and it returns a named problem when that line is
       `_No response_` or the heading is absent. A test covers a rendered body, the same body with CRLF line
       endings, a `_No response_` body, and a body with no such heading. The reader's `not-github-repo` failure
       judges whether the value is a GitHub repo URL.
-- [ ] AC2: For a repo that passes the inclusion bar, the run opens one pull request whose body contains
+- [x] AC2: For a repo that passes the inclusion bar, the run opens one pull request whose body contains
       `Closes #<issue>` and comments the pull request URL on the issue; a test with a fake GitHub API asserts
       both requests.
-- [ ] AC3: For a body the parser rejects, a read that fails, or an entry `writeEntry` refuses, the run
+- [x] AC3: For a body the parser rejects, a read that fails, or an entry `writeEntry` refuses, the run
       comments the problem or failure name and its message, and closes the issue as not planned. When the
       push or the pull-request request fails, the run comments the error, leaves the issue open, and exits 1.
       A test with a fake GitHub API asserts the requests for a parser problem, a `not-github-repo` read, an
       `entry-exists` write, and a failed push.
-- [ ] AC4: For a repo that an entry's `repoUrl` names, or whose bot pull request is open or closed without a
+- [x] AC4: For a repo that an entry's `repoUrl` names, or whose bot pull request is open or closed without a
       merge, the run reads nothing, comments naming the entry or the pull request, and closes the issue; a
       test asserts this for each of the three cases.
-- [ ] AC5: A parse of `add-plugin-issue.yml` with Ruby's YAML shows that no `run:` value contains `${{`, that
+- [x] AC5: A parse of `add-plugin-issue.yml` with Ruby's YAML shows that no `run:` value contains `${{`, that
       the issue body reaches the script through an `env:` value, the `issues: opened` trigger, a job condition
       on the `add-plugin` label, the concurrency group `discover` that `discover.yml` names, and the
       permissions `contents: write`, `pull-requests: write`, and `issues: write` and no other.
-- [ ] AC6: README describes the form, and M009's CHANGELOG entry names it; `pnpm test` and `pnpm check` pass.
+- [x] AC6: README describes the form, and M009's CHANGELOG entry names it; `pnpm test` and `pnpm check` pass.
 - [ ] AC7: After the merge, one issue opened from the form for a repo that has no entry and no bot pull
       request gets the comment that AC2 or AC3 names from the workflow.
 
@@ -103,3 +103,14 @@ an edit to M009's CHANGELOG entry.
 ## Decisions
 
 ## Review
+
+Evidence on the branch at 5a30199 plus the CRLF test fix below, 2026-10-26; main had not moved (`git rev-list HEAD..origin/main` 0).
+
+- AC1: `vitest run test/issue.test.ts -t parseIssueBody` 6 passed: `rendered(...)` (GitHub's `### Repository URL` heading, blank line, value) and the same body with every `\n` replaced by `\r\n` both return the URL; `_No response_` returns `no-response`, a body with no heading `no-url-heading`; "not a url" is returned as is, and the `not-github-repo` judgment test is AC3's. The label test reads `label: Repository URL` from `add-plugin.yml`. Review fixed the CRLF test, which had used a different body from the rendered one.
+- AC2: test "opens one pull request that closes the issue, and comments its URL" passed: with a fake API and a bare-repo remote, the non-GET requests are exactly `POST .../pulls` (head `discover/example/alpha`, base `main`, body containing `Closes #7`) then `POST .../issues/7/comments` with the pull request URL; no PATCH.
+- AC3: tests passed for a parser problem (`no-response`), a `not-github-repo` read (gitlab.com URL), and an `entry-exists` write (outDir already holds `alpha@example.org`): each sends exactly a comment with the backticked name and its message, then `PATCH .../issues/7` with `state: closed, state_reason: not_planned`. `pnpm discover-issue` with a pre-receive hook refusing the push: exit 1, stderr names `git push failed: … refused by the test hook`, the only non-GET request is the comment carrying that error, no PATCH.
+- AC4: the three "reads nothing, names the record" tests passed: for `Example/Second-Plugin` (entry `second-plugin@example.org` in the build fixture tree), `example/open-pr` (open bot PR #11), and `example/closed-pr` (closed unmerged #12), no GET under `/repos/<that repo>`, a comment naming `plugins/second-plugin@example.org/`, `pull/11`, or `pull/12`, then a PATCH closing the issue (`completed`, `not_planned`, `not_planned`). In implement, removing the pre-read check turned all three red.
+- AC5: `ruby -ryaml` on `add-plugin-issue.yml`: 2 `run:` values, 0 containing `${{` (a planted `echo "${{ github.event.issue.body }}"` read as 1 in implement); an `env:` value is `${{ github.event.issue.body }}`; trigger `{"issues"=>{"types"=>["opened"]}}`; job `if: contains(github.event.issue.labels.*.name, 'add-plugin')`; concurrency group `discover`, equal to `discover.yml`'s; permissions `contents: write, pull-requests: write, issues: write` at the top level and none on the job.
+- AC6: README section "Proposing a plugin with an issue" (README.md:184) describes the "Add a plugin" form, its label, the workflow, and each outcome; M009's CHANGELOG entry (CHANGELOG.md:62-68) names the form. `pnpm test`: type check clean, 11 files, 361 tests passed; `pnpm check`: 14 entries, 0 problems.
+- AC7: owed after the merge (T6); not verified yet.
+- Gate: `cairn_validate.py` exit 0, all checks passed; no DESIGN principle changed, so no `cairn_impact`; the generic profile's consistency-gate names no toolchain checks.

@@ -72,14 +72,18 @@ describe("parseIssueBody", () => {
     expect(form).toMatch(new RegExp(`^ {6}label: ${URL_LABEL}$`, "m"));
   });
 
-  test("returns the first non-empty line under the heading, trimmed", () => {
-    const body = "### Repository URL\n\n  https://github.com/example/alpha  \nsecond line\n\n### Other\n\nx";
+  test("returns the URL from a rendered body, and from the same body with CRLF line endings", () => {
+    const body = rendered("https://github.com/example/alpha");
     expect(parseIssueBody(body)).toEqual({ ok: true, url: "https://github.com/example/alpha" });
+    expect(parseIssueBody(body.replaceAll("\n", "\r\n"))).toEqual({ ok: true, url: "https://github.com/example/alpha" });
   });
 
-  test("reads a body with CRLF line endings", () => {
-    const body = "### Repository URL\r\n\r\nhttps://github.com/example/alpha\r\n";
-    expect(parseIssueBody(body)).toEqual({ ok: true, url: "https://github.com/example/alpha" });
+  test("returns the first non-empty line under the heading, trimmed, and stops at the next heading", () => {
+    expect(parseIssueBody("### Repository URL\n\n  https://github.com/example/alpha  \nsecond line\n\n### Other\n\nx")).toEqual({
+      ok: true,
+      url: "https://github.com/example/alpha",
+    });
+    expect(parseIssueBody("### Repository URL\n\n### Other\n\nhttps://github.com/example/alpha")).toMatchObject({ problem: "no-response" });
   });
 
   test("names the problem when the field has no response", () => {
