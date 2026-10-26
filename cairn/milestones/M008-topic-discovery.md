@@ -106,6 +106,7 @@ grows → candidate row "Warn when the daily build degrades".
 - 2026-10-25: T6 done: DESIGN.md's Function Families and Architecture describe `src/discover/`. Live read-only run (`--limit 3 --budget 20`, gh token, output in the session scratchpad) exited 0: 4 repos read, 3 entries written (aidenlx/zotlit, irism6/alphapulse, justanotherjurastudent/zotero_flexannotate), 1 refused with `no-release` and kept in the state file, no warnings. `pnpm test` and `pnpm check` pass.
 - 2026-10-25: claim audit: not owed — internal tier.
 - 2026-10-25: all tasks done, verify clean; status set to review.
+- 2026-10-26: step-7 approval: m008-topic-discovery approved for merge
 
 ## Decisions
 
