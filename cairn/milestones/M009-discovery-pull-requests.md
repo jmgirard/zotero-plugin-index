@@ -78,7 +78,7 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 - [x] T3: Implement the pull-request list read (paginated, `state=all`) and the skip set.
 - [x] T4: Implement the propose step: branch, commit as `github-actions[bot]`, push, `pnpm check` on the entry,
       the body, the limit, and per-entry failures.
-- [ ] T5: Write `.github/workflows/discover.yml`: a schedule at another hour than `build.yml`, dispatch with
+- [x] T5: Write `.github/workflows/discover.yml`: a schedule at another hour than `build.yml`, dispatch with
       `limit`, the two permissions, the `discover` concurrency group, a 30-minute limit, and the cache restore
       and save steps; check it with `ruby -ryaml` (Psych reads the `on:` key as `true`).
 - [ ] T6: Write the README section, the CHANGELOG entry, and DESIGN.md's Data sources and Architecture text;
@@ -110,6 +110,7 @@ token. Reading stable releases before prereleases → candidate row "Read stable
 - 2026-10-26: T1, T3: `test/fixtures/discover/pulls.json` (two pages) and the `pnpm discover --propose` skip test, red first on the unknown flag; `skipSet` and `proposeRun` in `src/discover/propose.ts`, `--propose` in the CLI; a planted defect (closed-unmerged not skipped) turned the test red; verify green (335 tests, 14 entries).
 - 2026-10-26: T2, T4: the propose code landed with T3, so T2's tests were not red first; instead planted defects (push without `--force`; stop at the first failed entry) each turned one test red. Tests in `test/propose.test.ts` for AC2 (in-process, 7 repos, pre-existing branch), AC3 (real `pnpm check` plus a `body` case with a failed check), AC4 (`pnpm discover --propose` with a pre-receive hook and a 422); the fixture fetch answers `<METHOD> <url> #<n>` keys and the preload logs requests to `ZPI_REQUESTS`; verify green (339 tests, 14 entries).
 - 2026-10-26: implementation choice: the propose step runs the check before it pushes, so a check that cannot run leaves no branch; `pnpmCheck` lives in `propose.ts` so tests run the real one.
+- 2026-10-26: T5: `.github/workflows/discover.yml` at 14:43 UTC (build.yml runs at 06:17), `actions/cache/restore@v6` and `save@v6` (v6.1.0 is the newest release, read with `gh api`), cache key carries `run_id` and `run_attempt` so a re-run does not collide; the limit reaches the command through an env var, `inputs.limit || 5`; a `ruby -ryaml` parse shows the schedule, the `limit` input (default 5), the two permissions, the `discover` group, the 30-minute limit, and the restore and save steps.
 
 ## Decisions
 
