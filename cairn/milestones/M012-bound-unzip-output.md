@@ -26,18 +26,18 @@ and "Bound the time of a discover run". The read-only read job → M011.
 
 ## Acceptance criteria
 
-- [ ] AC1: A test builds an XPI whose `manifest.json` entry declares compressed and unzipped sizes within 1 MiB and
+- [x] AC1: A test builds an XPI whose `manifest.json` entry declares compressed and unzipped sizes within 1 MiB and
       whose deflate data inflates to at least 512 MiB, and `readUpstream` fails it with `xpi-unreadable` within
       1 s measured in the test; a second XPI does the same with the default locale's `messages.json`. Both tests
       fail on the plan commit.
-- [ ] AC2: An entry whose deflate data inflates to one byte more than its declared unzipped size fails with
+- [x] AC2: An entry whose deflate data inflates to one byte more than its declared unzipped size fails with
       `xpi-unreadable`, and entries that inflate to exactly, or to fewer bytes than, their declared size read as
       before (test).
-- [ ] AC3: The review runs `pnpm build` on the default branch and on the branch back to back, and no plugin has the
+- [x] AC3: The review runs `pnpm build` on the default branch and on the branch back to back, and no plugin has the
       failure `xpi-unreadable` in the branch's data without having it in the default branch's.
-- [ ] AC4: `CHANGELOG.md`'s Unreleased section says that a `manifest.json` or default-locale `messages.json` whose
+- [x] AC4: `CHANGELOG.md`'s Unreleased section says that a `manifest.json` or default-locale `messages.json` whose
       deflate data inflates past its declared unzipped size fails with `xpi-unreadable`.
-- [ ] AC5: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
+- [x] AC5: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
 
 ## Coverage
 
@@ -57,7 +57,7 @@ and "Bound the time of a discover run". The read-only read job → M011.
       and stop at the first output byte past the declared size. A stored entry keeps its current size check.
       Correct the comment above `unzipOne`.
 - [x] T3: Add the CHANGELOG.md entry under Unreleased, and the DESIGN.md Architecture note beside the M005 text.
-- [ ] T4: At review, run `pnpm build` with `GITHUB_TOKEN` set on the default branch and on the branch back to back,
+- [x] T4: At review, run `pnpm build` with `GITHUB_TOKEN` set on the default branch and on the branch back to back,
       and compare the `xpi-unreadable` records (AC3).
 
 ## Work log
@@ -84,3 +84,11 @@ and "Bound the time of a discover run". The read-only read job → M011.
 ## Decisions
 
 ## Review
+
+- 2026-10-26 sync: no PR for the branch; `origin/main` has not moved since the cut at 184fca4; Copilot round off.
+- AC1: `vitest run test/upstream.test.ts -t "inflate|declared size"` on the branch: the 512 MiB tests for `manifest.json` and `_locales/en/messages.json` pass with `xpi-unreadable` in 79 ms and 61 ms; the fixture check passes (under 1 MiB, inflates to 536,870,912 bytes); the entry declares a compressed size of 521,826 bytes and an unzipped size of 1000. The same two tests run against the plan commit's reader (8f5feaf; `reader.ts` is unchanged from there to main) fail on the 1 s bound at 2,100 ms and 1,934 ms.
+- AC2: same run: "inflates to one byte more than its declared size" passes with `xpi-unreadable` (message names `manifest.json` and "inflates past the"); "declared size is its unzipped size plus 0" and "plus 1" both read the plugin with version 3.3.3. The one-byte-over test failed on the old reader as `manifest-invalid` (work log, T1).
+- AC3 (T4): `pnpm build --out <scratch>` with `GITHUB_TOKEN` from `gh auth token`, on main at 12:17:52 UTC, then on the branch at 12:18:26 UTC; both exit 0 and write 14 records with 0 failed reads. No record has `xpi-unreadable` on either side, and every field of all 14 records is equal between the two files.
+- AC4: `CHANGELOG.md` `## Unreleased` holds the entry "A `manifest.json` or default-locale `messages.json` whose deflate data inflates past the unzipped size that the zip declares fails with `xpi-unreadable`." (lines 36–40).
+- AC5: `npx -y pnpm@12.15.0 test` exit 0 (type check, then 12 files, 412 tests passed); `npx -y pnpm@12.15.0 check` exit 0 ("checked 14 entries in plugins, 0 problems").
+- gate: `cairn_validate.py` exit 0, all checks passed; no DESIGN.md principle changed, so `cairn_impact` skipped; the generic profile's consistency-gate slot names no toolchain checks.
