@@ -85,6 +85,7 @@ as M011 left them, with no dependency cache. The discovery state cache stays, be
 - 2026-10-26: T5: verify clean at the branch head: 14 test files, 475 tests passed; `pnpm check` 17 entries, 0 problems.
 - 2026-10-26: claim audit: 17 claims read, 3 corrected — `.github/workflows/build.yml` (a planted store "would be restored into this build before `pnpm install`"), `test/workflows.test.ts` (case comment limited to the `INPUT_<NAME>` rule for JavaScript and Docker actions, the `uses` case match called a precaution; first test renamed "has no cache step and no cache key"). Re-read once: two held, the case comment took the reader's wording. Noted, not acted on: no test checks that `cache-mode: none` is present, which no criterion promises.
 - 2026-10-26: verify clean after the claim fixes (475 tests, 17 entries, 0 problems); status set to review.
+- 2026-10-26: step-7 approval: m016-no-build-cache approved for merge
 
 ## Decisions
 
