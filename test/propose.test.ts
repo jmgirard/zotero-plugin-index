@@ -6,6 +6,7 @@ import { afterAll, describe, expect, test } from "vitest";
 import type { ReadItem, SkippedItem } from "../src/discover/discover.ts";
 import { body, type CheckRunner, pnpmCheck, proposeRun } from "../src/discover/propose.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
+import { checkout as gitCheckout, git } from "./support/git-checkout.ts";
 import { pluginRepo, searchPage } from "./support/plugin-repo.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -49,26 +50,7 @@ function passing(names: string[]): Responses {
   return Object.assign(searched(repos), ...names.map((name) => pluginRepo(`example/${name}`, `${name}@example.org`)));
 }
 
-function git(cwd: string, ...args: string[]): string {
-  const result = spawnSync("git", args, { cwd, encoding: "utf8" });
-  if (result.status !== 0) throw new Error(`git ${args.join(" ")}: ${result.stderr}`);
-  return result.stdout.trim();
-}
-
-// A checkout whose remote `origin` is a bare repo with one commit on main.
-function checkout() {
-  const dir = tempDir();
-  const remote = join(dir, "remote.git");
-  const work = join(dir, "work");
-  git(dir, "init", "--quiet", "--bare", "--initial-branch=main", remote);
-  git(dir, "init", "--quiet", "--initial-branch=main", work);
-  writeFileSync(join(work, "README.md"), "index\n");
-  git(work, "add", "README.md");
-  git(work, "-c", "user.name=test", "-c", "user.email=test@example.org", "-c", "commit.gpgsign=false", "commit", "--quiet", "-m", "start");
-  git(work, "remote", "add", "origin", remote);
-  git(work, "push", "--quiet", "origin", "main");
-  return { remote, work };
-}
+const checkout = () => gitCheckout(tempDir());
 
 // The paths a remote branch changes from main, and whether it is one commit on top of main.
 function branch(remote: string, name: string) {

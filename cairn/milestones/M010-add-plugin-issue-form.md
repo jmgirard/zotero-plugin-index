@@ -1,13 +1,13 @@
 # M010: Take one repo URL from an issue form
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** M009
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — a public issue form that anyone can use to propose a plugin
-- **Branch/PR:** —
+- **Branch/PR:** m010-add-plugin-issue-form
 
 ## Goal
 
@@ -63,7 +63,7 @@ an edit to M009's CHANGELOG entry.
 
 ## Tasks
 
-- [ ] T1: Write `add-plugin.yml` and failing tests for AC1–AC4, with form bodies in the shape GitHub renders.
+- [x] T1: Write `add-plugin.yml` and failing tests for AC1–AC4, with form bodies in the shape GitHub renders.
 - [ ] T2: Implement the form-body parser.
 - [ ] T3: Implement the issue run on top of M009's propose step: the index and skip checks, the read, the pull
       request with `Closes #<issue>`, the comment, and the close.
@@ -84,6 +84,11 @@ an edit to M009's CHANGELOG entry.
 - 2026-10-25: criteria audit (full mode, fresh Opus reader) returned 5 findings, all fixed: AC1 takes the first line under the heading, plants `_No response_`, CRLF, and a missing heading, and leaves URL judgment to the reader's `not-github-repo`; AC3 now covers `writeEntry` refusals and push or request failures, so every issue gets a reason, as the Goal promises; AC5 checks parsed `run:` values for `${{` in place of a one-spelling grep, which the label condition would also have broken, and adds the `discover` concurrency group so two runs never push one branch at once; AC7 names a repo with no entry and no bot pull request, and its recording act moved to T6.
 - 2026-10-25: plan gate chose to leave the issue open on a push or request failure over closing it as not planned, because that failure is the bot's and not the proposer's; falsified by such issues piling up unanswered.
 - 2026-10-25: lessons used: 2026-10-25 (M006) Ruby YAML to parse a workflow; 2026-10-25 (M002) the fixture preload.
+- 2026-10-26: branch m010-add-plugin-issue-form cut from main at e2b10ad; status in-progress.
+- 2026-10-26: T1 done: `add-plugin.yml` (one required input, label `Repository URL`, id `repo-url`) and `test/issue.test.ts`, red only because `src/discover/issue.ts` does not exist yet; the propose tests' `git` and `checkout` helpers moved to `test/support/git-checkout.ts` (propose tests green).
+- 2026-10-26: decided the API: `parseIssueBody` with problems `no-url-heading` and `no-response`, `issueRun` returning an exit status, and a `pnpm discover-issue` CLI reading `ISSUE_NUMBER`, `ISSUE_BODY`, and `GITHUB_REPOSITORY` from the environment.
+- 2026-10-26: decided the close reasons: `completed` when an entry already names the repo, `not_planned` for every other close.
+- 2026-10-26: the repo has no `add-plugin` label, and GitHub applies a form's label only when it exists; creating it is an outward action left for T6, at the user's yes.
 
 ## Decisions
 

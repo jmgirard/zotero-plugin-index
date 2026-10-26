@@ -1,0 +1,21 @@
+name: Add a plugin
+description: Propose a Zotero 7 plugin for the index by its GitHub repository.
+title: Add a plugin
+labels: ["add-plugin"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A bot reads the repository and its newest release with an `.xpi` file.
+        If the plugin passes the inclusion bar, the bot opens a pull request
+        that adds its entry, and it comments the link here. If not, it comments
+        the reason and closes this issue.
+  # src/discover/issue.ts finds the URL under this label's heading in the issue body.
+  - type: input
+    id: repo-url
+    attributes:
+      label: Repository URL
+      description: The GitHub repository of the plugin.
+      placeholder: https://github.com/<owner>/<repo>
+    validations:
+      required: true

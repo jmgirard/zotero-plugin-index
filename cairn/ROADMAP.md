@@ -9,7 +9,7 @@ _Last hygiene check: 2026-10-26 (M009 done and archived; 2 rows added, 1 row nar
 |---|---|---|---|---|---|
 | M008 | Find new plugin repos by topic search | done | — | high | milestones/archive/M008-topic-discovery.md |
 | M009 | Open a pull request for each new plugin | done | M008 | high | milestones/archive/M009-discovery-pull-requests.md |
-| M010 | Take one repo URL from an issue form | planned | M009 | normal | milestones/M010-add-plugin-issue-form.md |
+| M010 | Take one repo URL from an issue form | in-progress | M009 | normal | milestones/M010-add-plugin-issue-form.md |
 | M007 | Build the plugin site | done | M006 | high | milestones/archive/M007-plugin-site.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
