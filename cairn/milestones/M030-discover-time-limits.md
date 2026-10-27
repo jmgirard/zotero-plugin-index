@@ -73,3 +73,35 @@ A discover run stops new repo reads at a time limit and still saves its state an
 - AC4 evidence: section-scoped grep of README: "Finding new plugins" holds the 3-minute read, the 30-second branch check, and the 18-minute cut; "Pull requests from the bot" holds the 2- and 5-minute limits; "Proposing a plugin with an issue" holds "a read stopped at 3 minutes", "branch-name check stopped at 30 seconds", and "\"Finding new plugins\" gives both time limits". Joined-copy grep found each phrase once. CHANGELOG line 210 entry "`pnpm discover` stops each repository read …" sits in the first `##` section, Unreleased.
 - AC5 evidence: `npx -y pnpm@12.15.0 test`: tsc clean, 17 files, 730 tests passed; `npx -y pnpm@12.15.0 check`: 28 entries, 0 problems (2026-10-27, branch head plus a README rewrap).
 - consistency gate: `cairn_validate.py` exit 0, all checks passed; no DESIGN principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the run-limit test passes only if the search, the t3 read, and its git spawn finish within 1000 ms of real time — fix now: `performance.now()` is mocked and moves past the limit when t2's stalled XPI is requested; a clock 1 ms short fails the case, fixed 3bb57b0
+- diff-bug #2: no total limit on `pnpm propose` (per-process limits can pass the 30- and 15-minute write jobs) or on the search and bot pull request reads before the loop; README implied the job stays inside 30 minutes — fix now for the README sentence (now names the first job, and says `pnpm propose` has no whole-run limit), fixed 3bb57b0; follow-up for the limit: new row "Bound the whole discover workflow's time"
+- diff-bug #3: execFile's timeout sends SIGTERM only, so a git that ignores SIGTERM is never stopped — reject (edge): git exits on SIGTERM and cleans up its lock files, which SIGKILL would leave; the effect is a slow run
+- diff-bug #4: `killed` is also set when output passes `maxBuffer`, which would be named a time limit — reject (edge): `check-ref-format` and the propose git commands print far under 1 MiB; the effect is a wrong error message
+- diff-bug #5: the detached `pnpm check` is not stopped by a Ctrl-C or SIGTERM sent to `pnpm propose` alone — reject (edge): only a hand stop mid-check reaches it, and the check then runs to its own end
+- diff-bug #6: `pnpmCheck` races (timer at exit, failed spawn) — reject (false): reviewer found no defect
+- diff-bug #7: `draftEntry` timer after settle — reject (false): reviewer found no defect
+- diff-bug #8: the cut check sits before the in-index and skip checks, so `unread` counts repos that would be skipped, and the warning says "1 repos" — reject (planned change, style): the plan put the check beside the budget check, whose `unread` counts the same way; the plural is style
+- diff-bug #9: `duration` prints the 30-second limit as "30000 ms" — reject (style)
+- diff-bug #10: discover, handoff, and propose import from `src/build/build.ts`, which loads the build's two Ajv schemas — fix now: `READ_LIMIT_MS` and `duration` moved to `src/upstream/time-limit.ts`, fixed 3bb57b0
+- diff-bug #11: `draftEntry` copies `readRecord`'s AbortController and timer — fix now: both use `withinLimit` in `src/upstream/time-limit.ts`, fixed 3bb57b0
+- diff-bug #12: the defaults test only compares constants — fix now: the 5-minute `pnpm check` default is now a fake-timer test (not settled at 5 min − 1 ms, rejected at 5 min); the two git limits stay checked by value, since execFile's timer is not faked, fixed 3bb57b0
+- diff-bug #13: the build-level test overlaps the default test — reject (false): only `draftEntry`'s result carries `buildLevel` and `recorded`, which no other case asserts
+- diff-bug #14: `readMs: 200` also bounds the t3 and t1 reads — fix now: 1000 ms in the read case and the run-limit case, fixed 3bb57b0
+- diff-bug #15: no test for the propose recheck timeout, which leaves an issue run with no comment — follow-up: new row "Answer issues when the recheck fails"
+- blame-history #1: `pnpm propose` has no run-level budget — follow-up: same as diff-bug #2
+- blame-history #2: a timed-out `check-ref-format` is `unexpected-error`, not build-level, against D-015 — reject (planned change): AC3 names `unexpected-error`; it is not recorded, and issue runs treat it as failed
+- blame-history #3: the recheck throw crashes `pnpm propose` instead of printing "refused the handoff" (M011 contract) — follow-up: row "Answer issues when the recheck fails"
+- blame-history #4: detached `pnpm check` misses SIGINT — reject (edge): as diff-bug #5
+- blame-history #5: execFile may leave git grandchildren holding the pipe — reject (false): the diff-bug reviewer measured a callback at 310 ms with a background grandchild
+- blame-history #6: the run cut counts `unread` with no `not-read` failure, unlike D-015's build rule — reject (planned change): AC1 names `unread`; discover has no deploy rule
+- blame-history #7: D-016's lookup gap also applies to discover — follow-up: row "Bound the whole discover workflow's time"
+- prior-review #1: the propose recheck timeout leaves an issue with no comment (M019, M028 rules) — follow-up: row "Answer issues when the recheck fails"
+- prior-review #2: the run-limit test is timing-dependent, as M029's CI failure was — fix now: as diff-bug #1, fixed 3bb57b0
+- ripple #1: ROADMAP row "Bound the time of a discover run" describes resolved work — reject (planned change): post-merge hygiene graduates it
+- ripple #2: README says discover reads "in the same way as `pnpm add-plugin`", which has no time limit — reject (false): the sentence names the reader and the bar, and the time-limit paragraph follows in the same section
+- ripple #3: README's state-file paragraph says it records each refused repo — reject (false): that paragraph lists exceptions, and the next paragraph names the two new ones
+- ripple #4: DESIGN.md says any failure refuses the whole handoff, but the recheck now throws — follow-up: row "Answer issues when the recheck fails"
+- ripple #5: README's 30-minute sentence holds only for the read job — fix now: as diff-bug #2, fixed 3bb57b0
+- ripple #6: `discover.yml` comment "the state records repos that were refused" — reject (false): it holds for the refusals the state records
+- verify after fixes: `pnpm test` 731 passed, `pnpm check` 0 problems.
