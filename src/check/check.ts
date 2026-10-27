@@ -163,11 +163,11 @@ async function checkEntry(dir: string, entry: string, validators: Validators): P
   const overrides = (index.value as { overrides?: unknown } | undefined)?.overrides;
   if (Array.isArray(overrides)) {
     // The index of the first override for each field and version. The site's usedOverride
-    // (src/site/version.ts) applies only that one.
+    // (src/site/version.ts) never applies a later one.
     const first = new Map<string, number>();
     overrides.forEach((override, i) => {
       const { reason, field, version } = (override ?? {}) as { reason?: unknown; field?: unknown; version?: unknown };
-      // \p{Cf} is the Unicode format characters, such as U+200B, which print nothing.
+      // \p{Cf} is the Unicode format characters, such as U+200B, most of which print nothing.
       if (typeof reason === "string" && reason.length > 0 && !/[^\s\p{Cf}]/u.test(reason)) {
         add("reason-not-blank", `overrides[${i}].reason holds only whitespace or format characters`);
       }

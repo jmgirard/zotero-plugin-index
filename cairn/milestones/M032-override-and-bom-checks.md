@@ -1,6 +1,6 @@
 # M032: Catch blank reasons, repeat overrides, and BOMs
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -61,6 +61,8 @@
 - 2026-10-28: T3 done: `readJson` returns `bom` for a file whose UTF-8 text starts with U+FEFF, and `checkEntry` reports `<file> starts with a UTF-8 byte-order mark (U+FEFF): save it as UTF-8 without one` under the file's schema rule; before the change both cases printed "is not valid JSON: Unexpected token". pnpm test 837 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: T4 done: README "Checking entries" gains a paragraph on the two schema rules with the byte-order-mark line and a list of `reason-not-blank` and `unique-override`; the README `index.json` field list (the `reason` item, which said "other than whitespace") now names format characters and states the field-and-version rule; one CHANGELOG Unreleased entry. Joined-copy search finds each rule name and "byte-order mark" once in each file. The simple-english hook flags README lines 94 and 423 and CHANGELOG line 170, which this milestone does not touch.
 - 2026-10-28: T5 done: five defects planted in a copy of `src/check/check.ts` and restored from the copy (cmp clean): the reason test back to `/\S/` (2 AC1 cases red), no `unique-override` finding (3 red), a key without version (2 pass cases red), a key without field (1 red), no byte-order-mark test (2 AC3 cases red). Then pnpm test 837 passed, 1 skipped, and pnpm check 37 entries, 0 problems.
+- 2026-10-28: claim audit: 27 claims read, 5 corrected — README.md, CHANGELOG.md, src/check/check.ts. The reason "must hold a character" (not "contain text") other than whitespace and format characters; "Two more rules" (index-schema also checks overrides); "Most format characters" print nothing (U+0600 and U+00AD show a glyph); the site "never applies the repeat" in place of "applies only the first" (`usedOverride` prefers a versioned override and reads no `homepage`), in README, CHANGELOG, and the check.ts comment. The same Opus reader re-read the five once: all hold. pnpm test 837 passed, 1 skipped; pnpm check 0 problems.
+- 2026-10-28: status review; handed to /milestone-review.
 
 ## Decisions
 

@@ -172,8 +172,9 @@ only registry fields. Its `id` must equal the directory name.
     tag starts with a language of 2 or 3 letters. An optional script,
     region, and variant follow, each after a `-`. Examples are `zh`,
     `zh-TW`, and `sr-Latn-RS`. The tag `und` is not allowed.
-  - `reason`: why the upstream value is wrong. The reason must contain text
-    other than whitespace and Unicode format characters, such as U+200B.
+  - `reason`: why the upstream value is wrong. The reason must hold a
+    character other than whitespace and Unicode format characters, such as
+    U+200B.
 
 Two overrides must not have the same `field` and `version`.
 
@@ -511,17 +512,17 @@ In each entry, the rule `registry-schema` checks `meta.json` against the
 registry schema, and `index-schema` checks `index.json` against its schema.
 A file can start with a UTF-8 byte-order mark (U+FEFF). Then the line names
 the mark, in place of "is not valid JSON". Save such a file as UTF-8
-without the mark. Two rules check the overrides
-in `index.json`:
+without the mark. Two more rules check the
+overrides in `index.json`:
 
 - `reason-not-blank`: a reason must hold a character other than whitespace
-  and Unicode format characters. A format character, such as U+200B (zero
-  width space), prints nothing.
+  and Unicode format characters. Most format characters, such as U+200B
+  (zero width space), print nothing.
 - `unique-override`: two overrides must not have the same `field` and
   `version`. An override with no `version` repeats only another override
   with no `version`. The line names the index of the repeat and the index
-  of the first override with that field and version. The site applies only
-  that first override.
+  of the first override with that field and version. The site never applies
+  the repeat.
 
 The first run downloads the registry schema into `.cache/`, so that run needs
 a network connection. The command refuses a downloaded or cached schema whose
