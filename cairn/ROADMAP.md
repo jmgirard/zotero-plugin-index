@@ -7,6 +7,8 @@ _Last hygiene check: 2026-10-27 (M019 done and archived; 1 row graduated, 1 adde
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
+| M020 | Answer report issues from two forms | planned | — | normal | milestones/M020-report-forms.md |
+| M021 | Show report counts on the plugin pages | planned | M020 | normal | milestones/M021-report-counts.md |
 | M019 | Keep issues open on a bot read failure | done | — | normal | milestones/archive/M019-keep-issues-open.md |
 | M018 | Withhold deploys when every record fails | done | — | normal | milestones/archive/M018-every-record-fails.md |
 | M017 | Stop deploys only for build failures | done | — | normal | milestones/archive/M017-build-health.md |
@@ -15,7 +17,7 @@ _Last hygiene check: 2026-10-27 (M019 done and archived; 1 row graduated, 1 adde
 
 ## Candidates
 - Catch stray and unportable entry files: `pnpm check` skips a stray file under `plugins/` with exit 0, accepts directory names that break on Windows or collide by case, passes an override reason of only zero-width characters, passes two overrides for the same field and version, and reports a UTF-8 BOM as "not valid JSON" (M001 review); `pnpm add-plugin` also writes an id that differs only by case from an existing entry or is a reserved Windows name such as CON (M002 review); an entry id with `%` or a space fails the whole `pnpm site` build with NoMatchingStaticPathFound, which also stops the data deploy (M007 review); `pnpm discover` writes ids through the same `writeEntry` (M008 review) — added 2026-10-24 — M001, M002, M007, M008
-- Collect works and broken user reports: "Works" and "Broken" links open a prefilled issue form, and a bot adds the report to the data and closes the issue — added 2026-10-24 — cairn/DESIGN.md Data sources
+- Collect works and broken user reports: "Works" and "Broken" links open a prefilled issue form, and a bot adds the report to the data and closes the issue — added 2026-10-24 — cairn/DESIGN.md Data sources — started M020
 - Warn when the daily build degrades: a few hung hosts can push the build job past its 30-minute limit so no artifact is kept, since each request stops only at 60 s; add a time budget per plugin (M003 review); narrowed 2026-10-25 by M006 and 2026-10-26 by M017, which added the failure summary and the build-level warning; `pnpm discover` has no time budget either (M008 review) — added 2026-10-25 — M003, M006, M008, M017
 - Retry repos refused by a download error: `pnpm discover` keeps a refused repo's record for 30 days or until its next push, and that includes `update-json-http-error` and other failures that an HTTP 429 or 503 from a download host can cause, so one bad response hides a repo; treat download HTTP errors as not recorded, which changes the state rule M008 shipped (M008 review) — added 2026-10-25 — M008
 - Stop retrying a failing bot pull request: `pnpm propose` records no failure of its push or create request, so a repo whose pull request body passes GitHub's size limit fails again each run, takes one of its slots, and fails the workflow daily; record such failures under the 30-day rule (M009 review); an issue run meets the same refused request and leaves its issue open with the error (M010 review); narrowed 2026-10-26 by M011, whose read step refuses and records as `not-proposable` a repo whose branch name git refuses — added 2026-10-26 — M009, M010, M011

@@ -138,3 +138,25 @@ data's, because it needs a read of the live data and more code. Thus a
 regression that fails most records, but not all, still deploys. The cost is
 the one D-011 avoided, in a smaller form: an index where every plugin fails
 for good never deploys again.
+
+### D-013: Count user reports from closed report issues, and withhold a deploy when they cannot be read, annotating D-011 and D-012
+
+2026-10-27, M020 and M021 plan. User reports are GitHub issues filed from two
+issue forms. At the plan question set the user chose to keep no copy of a
+report in the repo. The daily build lists the index repo's closed issues with
+the label `report` and counts the ones the bot closed as completed. The user
+rejected a bot commit per report, which pushes to the default branch with no
+review and no CI. The user also rejected a pull request per report, which
+makes every count wait on the maintainer. The user chose to count only reports
+on the plugin version the index read, so counts start over when the index
+reads a new release. One report counts per GitHub account, plugin, and Zotero
+major: the newest. The count follows each issue's current text, so a reporter
+who edits a closed report changes it, which gains no more than filing a new
+one. A maintainer removes an abusive report with the label `not-counted`.
+The counts come only from the issues, so a build that cannot read them
+withholds the deploy, whatever the failure, and it reads them before any
+plugin read. This annotates D-011 and D-012, which withhold a deploy only for
+build-level failures or when every record fails. The cost is that GitHub's
+answer when the repo's issues are turned off stops every deploy until the
+maintainer turns them back on. The data gains `reports` as an optional field
+of schema v1 under D-006 and D-007.
