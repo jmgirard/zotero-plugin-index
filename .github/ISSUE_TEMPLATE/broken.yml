@@ -1,0 +1,36 @@
+name: Report that a plugin is broken
+description: Tell the index that a plugin version does not work on your Zotero version.
+title: "Report: broken"
+labels: ["report", "broken"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A bot checks this report, comments, and closes the issue. The daily
+        build counts each report on the plugin version that the index read,
+        once per GitHub account for each plugin and Zotero major. To ask the
+        plugin's author for a fix, open an issue in the plugin's own
+        repository.
+  # src/reports/report.ts finds each value under its input's label heading in the issue body.
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin id
+      description: The plugin's id, as its page on the index shows it.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      description: The plugin version you use, as Zotero's Plugins window shows it.
+    validations:
+      required: true
+  - type: input
+    id: zotero
+    attributes:
+      label: Zotero version
+      description: The version that Zotero's About window shows.
+      placeholder: "7.0.11"
+    validations:
+      required: true
