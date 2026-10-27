@@ -195,6 +195,59 @@ describe("readUpstream", () => {
     expect(result.ok && result.facts.languages).toEqual(languages);
   });
 
+  // Calls `edit` with the central-directory header of the entry `name` in a zipSync zip.
+  function editHeader(zip: Uint8Array, name: string, edit: (view: DataView, header: number) => void): Uint8Array {
+    const view = new DataView(zip.buffer, zip.byteOffset);
+    const nameLength = (at: number) => view.getUint16(at + 28, true);
+    let header = view.getUint32(zip.length - 22 + 16, true);
+    while (strFromU8(zip.subarray(header + 46, header + 46 + nameLength(header))) !== name) {
+      header += 46 + nameLength(header) + view.getUint16(header + 30, true) + view.getUint16(header + 32, true);
+    }
+    edit(view, header);
+    return zip;
+  }
+
+  const COMMENT = strToU8("# Comment\n");
+  const DEFLATED_COMMENT = new Uint8Array(deflateRawSync(COMMENT));
+  // The same data with its first block type set to 3, which no deflate stream may use.
+  const BROKEN_COMMENT = DEFLATED_COMMENT.map((byte, i) => (i === 0 ? byte | 0b110 : byte));
+
+  test.each<[string, Uint8Array, { compression?: number; size?: number; originalSize?: number }, string[]]>([
+    ["holds deflated comments, as a control", DEFLATED_COMMENT, { compression: 8, originalSize: COMMENT.length }, []],
+    ["declares an unzipped size over 1 MiB", DEFLATED_COMMENT, { compression: 8, originalSize: 1_048_577 }, ["de"]],
+    ["declares a compressed size over 1 MiB", COMMENT, { size: 1_048_577 }, ["de"]],
+    ["uses a compression other than stored or deflate", COMMENT, { compression: 12 }, ["de"]],
+    ["holds deflate data that fails to inflate", BROKEN_COMMENT, { compression: 8, originalSize: COMMENT.length }, ["de"]],
+    ["inflates past its declared size", DEFLATED_COMMENT, { compression: 8, originalSize: 3 }, ["de"]],
+  ])("reads an XPI whose comment-only locale file %s", async (_name, data, fields, languages) => {
+    const { result } = await readXpi((json) =>
+      editHeader(zipSync({ "manifest.json": json, "locale/de/a.ftl": [data, { level: 0 }] }), "locale/de/a.ftl", (view, header) => {
+        if (fields.compression !== undefined) view.setUint16(header + 10, fields.compression, true);
+        if (fields.size !== undefined) view.setUint32(header + 20, fields.size, true);
+        if (fields.originalSize !== undefined) view.setUint32(header + 24, fields.originalSize, true);
+      }),
+    );
+    expect(result.ok && result.facts.languages).toEqual(languages);
+  });
+
+  test("keeps the folders read after the locale files inflate 8 MiB in total", async () => {
+    const comments = "# Comment\n".repeat(100_000);
+    const tags = ["ar", "bg", "cs", "da", "de", "el", "es", "fi", "fr", "he"];
+    const { result } = await read((r) => Object.assign(r[XPI].xpi!, Object.fromEntries(tags.map((tag) => [`locale/${tag}/a.ftl`, comments]))));
+    expect(result.ok && result.facts.languages).toEqual(["fr", "he"]);
+  });
+
+  test.each([
+    ["one of them holds a message", FTL, ["de"]],
+    ["both hold comments only", "# Comment\n", []],
+  ])("reads two locale entries with the same name when %s", async (_name, second, languages) => {
+    const { result } = await readXpi((json) => {
+      const zip = zipSync({ "manifest.json": json, "locale/de/a.ftl": COMMENT, "locale/de/b.ftl": strToU8(second) });
+      return editHeader(zip, "locale/de/b.ftl", (_view, header) => zip.set(strToU8("locale/de/a.ftl"), header + 46));
+    });
+    expect(result.ok && result.facts.languages).toEqual(languages);
+  });
+
   test("shares its language tag pattern with both schemas", () => {
     const list = `^${LANGUAGE_TAG}(, ${LANGUAGE_TAG})*$`;
     const { definitions } = pluginsSchema as Json;
