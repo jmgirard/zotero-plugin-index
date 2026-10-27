@@ -197,3 +197,12 @@ only 60 seconds for each page. A host lookup whose wait the limit ended can
 also keep the process open after the build writes its file. Candidate row
 "Bound the build's report issue read" holds both gaps. The rest of D-015
 stands.
+
+### D-017: Correct D-016's candidate row pointer
+
+2026-10-27, M029 hygiene. D-016 names candidate row "Bound the build's
+report issue read" as the home of the two gaps. That row belongs to a group
+of rows that carries review findings from two milestones, and the hygiene
+rule files new findings for such a group as a new row. So the gaps are in
+candidate row "Close gaps in the build time limits", which names the first
+row. The rest of D-016 stands.
