@@ -61,6 +61,7 @@ A discover run stops new repo reads at a time limit and still saves its state an
 - 2026-10-27: claim audit: 54 claims read, 4 corrected — CHANGELOG.md, README.md, src/discover/propose.ts. Fixed: the CHANGELOG's "fails only that entry" (a fetch fails every entry), README's and `GIT_LIMIT_MS`'s "each git process" (the branch-name recheck has its own 30 s limit), and README's issue-run text (a recheck past 30 s in `pnpm propose` exits before `issueAnswer`, so the bot posts no comment). The reader reread all four as true. `pnpm test` 730 passed, `pnpm check` 0 problems.
 - 2026-10-27: open concern for review: in an issue run, a branch-name recheck in `pnpm propose` that throws (time limit, or a git that cannot start, which predates this branch) leaves the issue with no comment; README now states this. Catching the throw in `propose-cli.ts` is a possible follow-up.
 - 2026-10-27: all tasks done; status review.
+- 2026-10-27: step-7 approval: m030-discover-time-limits approved for merge
 
 ## Decisions
 
