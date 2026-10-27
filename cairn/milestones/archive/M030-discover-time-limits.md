@@ -1,0 +1,11 @@
+# M030: Bound the discover run's time
+
+**Status:** done (2026-10-27, PR #47 https://github.com/jmgirard/zotero-plugin-index/pull/47)
+
+**Goal:** A discover run stops new repo reads at a time limit and still saves its state and handoff before the job's 30-minute limit ends it.
+
+**Outcome:** `discover` (`src/discover/discover.ts`) takes `readMs`, `runMs`, and `startedAt`; it starts no read after `RUN_LIMIT_MS` (18 minutes from process start), counts the rest in `unread`, and warns "the run reads no repo after …, its time limit". `draftEntry` reads through `withinLimit(readMs, …)`, so a read past `READ_LIMIT_MS` (3 minutes) is a build-level `request-failed`, not recorded, and an earlier state record stays. `READ_LIMIT_MS`, `duration`, and `withinLimit` moved from `src/build/build.ts` to `src/upstream/time-limit.ts`, which `buildData` also uses. `git check-ref-format` in `handoff.ts` has a 30 s `timeout` (`REF_CHECK_LIMIT_MS`, `refCheckMs`) and throws "passed its time limit"; discovery refuses that repo as `unexpected-error`, and `pnpm propose` exits 1 from `readHandoff` before any request. In `propose.ts` the `git` helper has a 2-minute `timeout` (`GIT_LIMIT_MS`, `gitMs`), and `pnpmCheck(dir, ms = CHECK_LIMIT_MS)` spawns pnpm detached, kills its process group at 5 minutes, and rejects, so only that entry fails. Tests: 5 cases in `test/discover.test.ts` "the time limits" (one with a mocked `performance.now()`), 4 in `test/propose.test.ts` "the write step's process time limits" (git and pnpm shims, a fake-timer 5-minute default). README "Finding new plugins", "Pull requests from the bot", "Proposing a plugin with an issue", DESIGN, and CHANGELOG state the limits.
+
+**Decisions:** none.
+
+**Review:** Claim audit: 54 claims, 4 corrected. Four-lens pass, 30 findings: 8 fixed in 3bb57b0 (deterministic run-limit test, 1000 ms read limits in tests, shared `time-limit.ts` and `withinLimit`, a behavior test for the check default, README's 30-minute sentence), 7 to two new rows, 16 rejected (4 edge). Hygiene: row "Bound the time of a discover run" graduated; M027 row pruned; rows "Bound the whole discover workflow's time" and "Answer issues when the recheck fails" added; 6 lessons marked used M030; 2 captured; lessons 2026-10-26 (M010, used M020) and 2026-10-26 (M017, used M021) evicted by rank.
