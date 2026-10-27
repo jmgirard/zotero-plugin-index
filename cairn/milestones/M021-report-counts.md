@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M021: Show report counts on the plugin pages
 
-- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M020   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -159,6 +159,7 @@ throwaway accounts.
 - 2026-10-27: T5 done: README "Using the data" (the `reports` rule, the deploy rule), "The site", "Reporting whether a plugin works", and "Building the data"; the M020 CHANGELOG entry; DESIGN Contract boundary, item 4, Function Families, the `src/build/` and workflow-test paragraphs, and a Known issues entry that also names the reopen case and the "ghost" account. The forms, the bot comment, and README now say the index counts reports, in the present tense. A joined-text search finds none of the old future-tense phrases. The simple-english hook flags "validate" in README and CHANGELOG; kept, since it names the schema check, as the earlier README text does.
 - 2026-10-27: claim audit: 52 claims read, 1 corrected — CHANGELOG.md (the `reports` items cover only majors with a counted report, and only pages of read plugins show the counts and links).
 - 2026-10-27: status review; all 5 tasks done, `pnpm test` (589 tests) and `pnpm check` pass.
+- 2026-10-27: review return 1: AC6 — DESIGN.md's Contract boundary names the `reports` field but not the build's read of the report issues; Function Families and the `build.yml` paragraph name both. Status in-progress.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
