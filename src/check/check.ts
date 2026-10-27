@@ -9,6 +9,7 @@ export type Rule =
   | "index-schema"
   | "id-matches-directory"
   | "reason-not-blank"
+  | "unique-override"
   | "entry-name"
   | "entry-is-directory"
   | "unique-ignoring-case";
@@ -159,11 +160,22 @@ async function checkEntry(dir: string, entry: string, validators: Validators): P
 
   const overrides = (index.value as { overrides?: unknown } | undefined)?.overrides;
   if (Array.isArray(overrides)) {
+    // The index of the first override for each field and version. The site's usedOverride
+    // (src/site/version.ts) applies only that one.
+    const first = new Map<string, number>();
     overrides.forEach((override, i) => {
-      const reason = (override as { reason?: unknown } | null)?.reason;
+      const { reason, field, version } = (override ?? {}) as { reason?: unknown; field?: unknown; version?: unknown };
       // \p{Cf} is the Unicode format characters, such as U+200B, which print nothing.
       if (typeof reason === "string" && reason.length > 0 && !/[^\s\p{Cf}]/u.test(reason)) {
         add("reason-not-blank", `overrides[${i}].reason holds only whitespace or format characters`);
+      }
+      if (typeof field !== "string" || !(version === undefined || typeof version === "string")) return;
+      const key = JSON.stringify([field, version ?? null]);
+      const earlier = first.get(key);
+      if (earlier === undefined) first.set(key, i);
+      else {
+        const which = version === undefined ? "no version" : `version "${version}"`;
+        add("unique-override", `overrides[${i}] has the same field "${field}" and ${which} as overrides[${earlier}]`);
       }
     });
   }
