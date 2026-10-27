@@ -62,6 +62,7 @@ describe("readUpstream", () => {
         latestReleaseDate: "2026-08-24T13:25:16Z",
         prerelease: false,
         archived: false,
+        languages: [],
       },
     });
   });
@@ -122,6 +123,27 @@ describe("readUpstream", () => {
     });
     expect(result.ok).toBe(true);
     expect(result.ok && result.facts.name).toBeUndefined();
+  });
+
+  test.each<[string, Record<string, string>, string[]]>([
+    ["two folders under locale/, in code-unit order", { "locale/zh-CN/a.ftl": "", "locale/en-US/a.ftl": "" }, ["en-US", "zh-CN"]],
+    ["a nested file under chrome/locale/ only", { "chrome/locale/fr-FR/addon/x.dtd": "" }, ["fr-FR"]],
+    ["one tag under both paths once", { "locale/de/a.ftl": "", "chrome/locale/de/b.dtd": "" }, ["de"]],
+    [
+      "tags with _ or other letter case in canonical form",
+      { "locale/zh_CN/a.ftl": "", "locale/zh-CN/b.ftl": "", "locale/EN-us/a.ftl": "" },
+      ["en-US", "zh-CN"],
+    ],
+    ["an alias in canonical form", { "locale/iw/a.ftl": "" }, ["he"]],
+    ["no folder whose name is not a kept tag", { "locale/en-x-pirate/a.ftl": "", "locale/default/a.ftl": "", "locale/und/a.ftl": "" }, []],
+    [
+      "no tag from other paths or a directory entry",
+      { "_locales/de/messages.json": "{}", "content/locale/fr/x.ftl": "", "locale/en-US.ftl": "", "locale/it/": "" },
+      [],
+    ],
+  ])("lists %s as the languages", async (_name, files, languages) => {
+    const { result } = await read((r) => Object.assign(r[XPI].xpi!, files));
+    expect(result.ok && result.facts.languages).toEqual(languages);
   });
 
   test("reads the newest published stable release with an .xpi, whatever the list order", async () => {

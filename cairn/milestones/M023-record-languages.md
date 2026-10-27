@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M023: Record each plugin's interface languages
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — it adds a field to the public data file and an override field to `index.json`   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m023-record-languages   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -104,13 +104,13 @@ DESIGN follow.
 <!-- owner: plan (create) / implement (check-off, minor edits); substantive
      change is amend-via-gate. -->
 
-- [ ] T1: Write AC1's seven reader tests first and see them fail. The
+- [x] T1: Write AC1's seven reader tests first and see them fail. The
       fixtures add entries to the `r[XPI].xpi!` map in
       `test/upstream.test.ts`. Then add a helper that lists the entry names
       from the central-directory walk in `zipEntry`
       (`src/upstream/reader.ts:528`), and set `languages` in `readManifest`'s
       result and `UpstreamFacts`. Export the tag pattern from the reader.
-- [ ] T2: Add `languages` to the `upstream` definition of
+- [x] T2: Add `languages` to the `upstream` definition of
       `schemas/plugins.v1.schema.json`, and AC2's two build tests.
 - [ ] T3: Add `languages` to the override `field` enum of both schemas, with
       an `if`/`then` that sets the `value` pattern. Add AC3's check tests.
@@ -140,6 +140,7 @@ DESIGN follow.
 - 2026-10-27: plan gate chose `locale/` and `chrome/locale/` over also reading `_locales/`, because `_locales/` holds the manifest's name and description strings; falsified by a listed plugin whose interface text lives only in `_locales/`.
 - 2026-10-27: plan gate chose the value pattern in both schemas over a rule in `pnpm check`, because `buildData` checks entries only against the schema; falsified by a value the schemas pass that makes the site's `Intl` calls throw.
 - 2026-10-27: changelog: this milestone adds the series' one `## Unreleased` entry, since the data change is user-visible; M024 edits it.
+- 2026-10-27: T1+T2 in one checkpoint: the seven reader tests failed first (`languages` undefined); the build tests then failed as `facts-invalid` until the schema gained the field, so T2 landed with T1. `centralEntries` now holds the central-directory walk that `zipEntry` and the name list share; `LANGUAGE_TAG` (exported from the reader) drops `und` with a lookahead. The golden file `test/fixtures/build/mixed-failures.plugins.json` gained one line, `"languages": []`, in its one read record, checked by diffing the new output against it. `pnpm test` 635 passed; `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

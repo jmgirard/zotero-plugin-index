@@ -105,6 +105,15 @@
         "archived": {
           "description": "Whether GitHub marks the repo archived. Absent when the GitHub response gives no boolean.",
           "type": "boolean"
+        },
+        "languages": {
+          "description": "The language tags of the locale folders (locale/<tag>/ and chrome/locale/<tag>/) in the XPI whose manifest was read, in canonical form, each once, in code-unit order. Empty when the XPI has none. It does not say whether a translation is complete.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(?![Uu][Nn][Dd](?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?$"
+          }
         }
       }
     },

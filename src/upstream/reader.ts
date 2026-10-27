@@ -28,6 +28,9 @@ export interface UpstreamFacts {
   prerelease?: boolean;
   // GitHub's archived flag, left out when the repo response has no boolean.
   archived?: boolean;
+  // The language tags of the locale folders in the XPI whose manifest was read (see
+  // localeLanguages). The reader always sets it; records written before it existed have none.
+  languages?: string[];
 }
 
 // Each way a repo can fail the inclusion bar or fail to be read.
@@ -164,12 +167,21 @@ const NOT_ZOTERO_7: Failure[] = ["no-manifest", "no-zotero-id", "max-version-bel
 
 type ReleaseFacts = Pick<
   UpstreamFacts,
-  "id" | "name" | "description" | "homepage" | "version" | "strictMinVersion" | "strictMaxVersion" | "updateUrl" | "updateHost"
+  | "id"
+  | "name"
+  | "description"
+  | "homepage"
+  | "version"
+  | "strictMinVersion"
+  | "strictMaxVersion"
+  | "updateUrl"
+  | "updateHost"
+  | "languages"
 > & { release: ReleaseJson };
 
 // Reads the manifest of one release's XPI and checks the update.json it names.
 async function readRelease(download: Download, release: ReleaseJson, xpi: { browser_download_url: string }): Promise<ReleaseFacts> {
-  const { manifest, messages } = await readManifest(download, xpi.browser_download_url, release.tag_name);
+  const { manifest, messages, languages } = await readManifest(download, xpi.browser_download_url, release.tag_name);
   const zotero = manifest.applications?.zotero;
   const id = stringOrUndefined(zotero?.id);
   if (!id) fail("no-zotero-id", `the manifest of ${release.tag_name} has no applications.zotero.id`);
@@ -193,6 +205,7 @@ async function readRelease(download: Download, release: ReleaseJson, xpi: { brow
     strictMaxVersion,
     updateUrl,
     updateHost,
+    languages,
     release,
   };
 }
@@ -426,7 +439,7 @@ async function readManifest(
   download: Download,
   url: string,
   tag: string,
-): Promise<{ manifest: ManifestJson; messages: Messages }> {
+): Promise<{ manifest: ManifestJson; messages: Messages; languages: string[] }> {
   const response = await download(url);
   if (!response.ok) {
     fail("xpi-unreadable", `the XPI of ${tag} at ${url} returned HTTP ${response.status}`, buildLevelStatus(response.status, "download"));
@@ -458,7 +471,33 @@ async function readManifest(
     // A messages.json that is not JSON leaves the placeholders unresolved.
   }
   const isObject = typeof messages === "object" && messages !== null;
-  return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {} };
+  const languages = localeLanguages([...centralEntries(zip)].map((entry) => entry.fileName));
+  return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {}, languages };
+}
+
+// One language tag: a language of 2 or 3 letters other than "und", then an optional script,
+// region, and variant. Both schemas build their languages override pattern from it.
+export const LANGUAGE_TAG =
+  "(?![Uu][Nn][Dd](?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?";
+const WHOLE_TAG = new RegExp(`^${LANGUAGE_TAG}$`, "u");
+const LOCALE_FOLDER = /^(?:chrome\/)?locale\/([^/]+)\/./;
+
+// The language tag of each locale folder, the <tag> of an entry name locale/<tag>/<file>
+// or chrome/locale/<tag>/<file>. A "_" in <tag> reads as "-", and a <tag> that is not
+// LANGUAGE_TAG is left out. Each tag is in the form Intl.getCanonicalLocales returns,
+// once, in code-unit order.
+function localeLanguages(names: string[]): string[] {
+  const tags = new Set<string>();
+  for (const name of names) {
+    const folder = LOCALE_FOLDER.exec(name)?.[1].replaceAll("_", "-");
+    if (!folder || name.endsWith("/") || !WHOLE_TAG.test(folder)) continue;
+    try {
+      tags.add(Intl.getCanonicalLocales(folder)[0]);
+    } catch {
+      // A tag that Intl rejects is left out like any other folder that is not a tag.
+    }
+  }
+  return [...tags].sort();
 }
 
 // The smallest central-directory header: its fixed part, with no name, extra field, or comment.
@@ -487,7 +526,7 @@ function centralDirectory(zip: Uint8Array): { count: number; offset: number; zip
   return { count, offset: u32(zip, end + 16), zip64: false };
 }
 
-// Returns the entry count that bounds the loop over the central directory in zipEntry,
+// Returns the entry count that bounds the loop over the central directory in centralEntries,
 // or undefined when it finds no end record. The loop reads one header for each entry the
 // count claims, so readManifest refuses a count that the zip's bytes cannot hold.
 export function zipEntryCount(zip: Uint8Array): number | undefined {
@@ -522,17 +561,26 @@ interface ZipEntry {
   start: number;
 }
 
-// Finds the one entry `name` the way fflate 0.8.3's unzipSync reads the central
-// directory, or returns undefined when the zip lacks it. It fails when the zip holds more
-// than one entry named `name`, or when its declared or compressed size is over the cap.
-function zipEntry(zip: Uint8Array, name: string, tag: string): ZipEntry | undefined {
+// Each header of the central directory, with its file name, read the way fflate 0.8.3's
+// unzipSync reads them.
+function* centralEntries(zip: Uint8Array): Generator<{ fileName: string; header: number; zip64: boolean }> {
   const directory = centralDirectory(zip);
   if (!directory) throw new Error("invalid zip data");
-  let entry: ZipEntry | undefined;
   for (let i = 0, header = directory.offset; i < directory.count; i++) {
     const nameEnd = header + 46 + u16(zip, header + 28);
     const fileName = strFromU8(zip.subarray(header + 46, nameEnd), !(u16(zip, header + 8) & 2048));
-    const [size, originalSize, offset] = zip64Sizes(zip, header, directory.zip64);
+    yield { fileName, header, zip64: directory.zip64 };
+    header = nameEnd + u16(zip, header + 30) + u16(zip, header + 32);
+  }
+}
+
+// Finds the one entry `name` in the central directory, or returns undefined when the zip
+// lacks it. It fails when the zip holds more than one entry named `name`, or when its
+// declared or compressed size is over the cap.
+function zipEntry(zip: Uint8Array, name: string, tag: string): ZipEntry | undefined {
+  let entry: ZipEntry | undefined;
+  for (const { fileName, header, zip64 } of centralEntries(zip)) {
+    const [size, originalSize, offset] = zip64Sizes(zip, header, zip64);
     if (fileName === name) {
       if (entry) fail("xpi-unreadable", `the XPI of ${tag} holds more than one ${name}`);
       if (originalSize > UNZIPPED_MAX_BYTES || size > UNZIPPED_MAX_BYTES) {
@@ -541,7 +589,6 @@ function zipEntry(zip: Uint8Array, name: string, tag: string): ZipEntry | undefi
       const start = offset + 30 + u16(zip, offset + 26) + u16(zip, offset + 28);
       entry = { compression: u16(zip, header + 10), size, originalSize, start };
     }
-    header = nameEnd + u16(zip, header + 30) + u16(zip, header + 32);
   }
   return entry;
 }
