@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-27 (M030 done and archived; its row graduated, M027
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M031 | Refuse unsafe entry names | planned | — | normal | milestones/M031-safe-entry-names.md |
+| M031 | Refuse unsafe entry names | in-progress | — | normal | milestones/M031-safe-entry-names.md |
 | M032 | Catch blank reasons, repeat overrides, and BOMs | planned | — | normal | milestones/M032-override-and-bom-checks.md |
 | M030 | Bound the discover run's time | done | M029 | normal | milestones/archive/M030-discover-time-limits.md |
 | M029 | Bound the build's read time | done | — | normal | milestones/archive/M029-build-time-limits.md |
