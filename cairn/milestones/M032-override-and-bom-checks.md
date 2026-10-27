@@ -1,6 +1,6 @@
 # M032: Catch blank reasons, repeat overrides, and BOMs
 
-- **Status:** review
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -21,7 +21,7 @@
 
 ## Acceptance criteria
 
-- [x] AC1: The rule `reason-not-blank` reports each override reason of length 1 or more whose every character matches `/[\s\p{Cf}]/u`. That class holds whitespace and the Unicode format characters, such as U+200B, U+200D, U+2060, and U+00AD. The message says that the reason holds only whitespace or format characters. In `test/check.test.ts`, a reason of only U+200B is reported, and so is a reason of U+200D and a space. The reason `"ok​"`, written with that escape in the test source, is not reported.
+- [ ] AC1: The rule `reason-not-blank` reports each override reason of length 1 or more whose every character matches `/[\s\p{Cf}]/u`. That class holds whitespace and the Unicode format characters, such as U+200B, U+200D, U+2060, and U+00AD. The message says that the reason holds only whitespace or format characters. In `test/check.test.ts`, a reason of only U+200B is reported, and so is a reason of U+200D and a space. The reason `"ok​"`, written with that escape in the test source, is not reported.
 - [x] AC2: The rule `unique-override` reports each override in one `index.json` whose `field` and `version` equal those of an earlier override in the same file. An absent `version` equals only another absent `version`, and versions match exactly. The finding names its own index and the index of the first earlier override with that field and version. In `test/check.test.ts`, two `name` overrides with no `version` give one finding. Three such overrides give two findings, each naming index 0. A `name` override with no `version` beside one at `1.0` gives none. `name` at `1.0` beside `name` at `1.0.0` gives none. `name` at `1.0` beside `description` at `1.0` gives none.
 - [x] AC3: When `meta.json` or `index.json` starts with U+FEFF after a UTF-8 read, `pnpm check` reports that the file starts with a UTF-8 byte-order mark. The finding uses that file's schema rule, `registry-schema` or `index-schema`, in place of "is not valid JSON". The check gives no other finding for that file and exits 1. In `test/check.test.ts`, one case puts the mark before valid JSON in `meta.json` and one in `index.json`, and each shows the message as that file's only finding. A third case has U+FEFF inside a JSON string value, not at the start, and gets no byte-order-mark message.
 - [x] AC4: README "Checking entries" states the `reason-not-blank` change, the rule `unique-override`, and the byte-order-mark message. CHANGELOG's Unreleased section has an entry for the change.
@@ -63,6 +63,7 @@
 - 2026-10-28: T5 done: five defects planted in a copy of `src/check/check.ts` and restored from the copy (cmp clean): the reason test back to `/\S/` (2 AC1 cases red), no `unique-override` finding (3 red), a key without version (2 pass cases red), a key without field (1 red), no byte-order-mark test (2 AC3 cases red). Then pnpm test 837 passed, 1 skipped, and pnpm check 37 entries, 0 problems.
 - 2026-10-28: claim audit: 27 claims read, 5 corrected — README.md, CHANGELOG.md, src/check/check.ts. The reason "must hold a character" (not "contain text") other than whitespace and format characters; "Two more rules" (index-schema also checks overrides); "Most format characters" print nothing (U+0600 and U+00AD show a glyph); the site "never applies the repeat" in place of "applies only the first" (`usedOverride` prefers a versioned override and reads no `homepage`), in README, CHANGELOG, and the check.ts comment. The same Opus reader re-read the five once: all hold. pnpm test 837 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: status review; handed to /milestone-review.
+- 2026-10-28: review return 1: AC1 fails as written: `test/check.test.ts` holds raw U+200B and U+200D (and raw U+FEFF, as does `src/check/check.ts:225`) where AC1 asks for the escape in the test source. Fix with the return, as review fix-now items: quote `field` and `version` in `unique-override` messages with `JSON.stringify`; `toEqual` the whole list in "names the version it repeats"; move the mark-inside-a-string case to `checkTree`; CHANGELOG first `pnpm check` bullet ("contains text"); name `index-schema` in README's "Two more rules" sentence; add the new rules to DESIGN "Entry checks". Status in-progress.
 
 ## Decisions
 
@@ -74,3 +75,30 @@
 - AC4 (2026-10-28): a joined copy of README's "Checking entries" section (up to "Building the data") holds `reason-not-blank`, "whitespace and Unicode format characters", `unique-override`, and "byte-order mark", each once; CHANGELOG `## Unreleased` holds one entry naming all three ("`reason-not-blank` refuses a reason that holds only whitespace and Unicode format characters", "`unique-override` refuses two overrides with the same `field` and `version`", the byte-order-mark line).
 - AC5 (2026-10-28, 86fa682): `npx -y pnpm@12.15.0 test` (type check, then Vitest): 17 files, 837 passed, 1 skipped (the case-sensitivity test, skipped on this macOS volume); `npx -y pnpm@12.15.0 check`: 37 entries, 0 problems, exit 0.
 - Gate (2026-10-28): `cairn_validate.py` exit 0, all checks passed (coverage complete PASS); no DESIGN principle changed, so `cairn_impact` skipped; generic profile names no toolchain checks. Default branch unmoved since the cut (origin/main d475d29).
+- spawned: diff-bug, blame-history, prior-review, ripple
+- AC1 evidence correction (2026-10-28): the AC1 line above is wrong on one clause. `test/check.test.ts:288,295` hold raw U+200B and U+200D, not escapes (the edit tool wrote the characters), so "written with that escape in the test source" fails; AC1 unticked. Raw U+FEFF also sits at `test/check.test.ts:177,185` and `src/check/check.ts:225`.
+- diff-bug #1: test and check.ts write raw invisible characters, not escapes, against AC1; a dropped U+FEFF would make `startsWith("")` refuse every file — fix now (review return 1)
+- diff-bug #2: `unique-override` also reports repeats of schema-refused strings (`version: ""` twice, `field: "Name"` twice) beside the schema lines — reject, edge: a schema-invalid override is outside documented use, and the effect is one extra true finding line
+- diff-bug #3: `unique-override` messages insert `field` and `version` raw, so a repeated version holding a newline prints a forged finding line in CI and in a bot pull request body — fix now (quote with `JSON.stringify`); the same pattern in the older `id-matches-directory` message goes to follow-up row "Quote entry text in check messages"
+- diff-bug #4: reasons of U+0000, U+3164, U+2800, or combining marks still pass — reject, planned change: Scope Out names characters outside `\s` and `\p{Cf}`
+- diff-bug #5: a byte-order mark hides the file's other problems — reject, planned change: AC3 asks for the mark as the file's only finding
+- diff-bug #6: `pnpm build` still says "is not valid JSON" and `indexed` in `src/discover/discover.ts` drops a marked meta.json's repo — reject, planned change: T3 leaves other readers alone, and `pnpm check` gates the default branch in CI
+- diff-bug #7: "names the version it repeats" asserts only `findings[0].message` — fix now (`toEqual` on the whole list)
+- diff-bug #8: the mark-inside-a-string test spawns pnpm where `checkTree` reaches the same `readJson` — fix now (move it to "checkTree overrides")
+- blame-history #1: raw invisible characters against AC1 — fix now, same as diff-bug #1
+- blame-history #2: CHANGELOG Unreleased's first `pnpm check` bullet still says "each override reason contains text" — fix now
+- blame-history #3: visible format characters such as U+0600 are refused — reject, planned change: the plan gate chose the `\p{Cf}` class
+- blame-history #4: a no-version override beside one at `1.0` is not flagged — reject, planned change: AC2 passes that case
+- blame-history #5: DESIGN "Entry checks" omits the new rules — fix now
+- blame-history #6: schema-refused fields also get a repeat line — reject, edge, same as diff-bug #2
+- blame-history #7: refuse-over-strip and the `\p{Cf}` class have no D-entry — reject, planned change: both are milestone-local plan-gate choices recorded in the work log, not cross-cutting
+- prior-review #1: README and check.ts keep "Most format characters print nothing" — reject, false: that is the claim audit's corrected wording
+- prior-review #2: raw invisible characters against AC1 — fix now, same as diff-bug #1
+- prior-review #3: "Two more rules" kept — reject, false: that is the corrected wording (ripple #3 fixes its placement)
+- prior-review #4: ragged wrap in the new README and CHANGELOG lines — reject, style
+- ripple #1: the "Catch stray and unportable entry files" candidate row still states the three gaps — reject, planned change: post-merge hygiene graduates the row
+- ripple #2: CHANGELOG first `pnpm check` bullet says "contains text" — fix now, same as blame-history #2
+- ripple #3: "Two more rules" can read as more name rules — fix now (name `index-schema` in the sentence)
+- ripple #4: `pnpm build` prints the old message for a mark — reject, planned change, same as diff-bug #6
+- ripple #5: the schemas' `reason` descriptions omit the blank rule — reject, false: the schema states no rule this diff changed
+- ripple #6: DESIGN "Entry checks" omits the new rules — fix now, same as blame-history #5
