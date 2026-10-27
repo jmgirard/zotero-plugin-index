@@ -117,6 +117,7 @@ pattern `LANGUAGE_TAG` does not change.
 - 2026-10-27: review return 1: AC3 fails as written; the comment on `languages` in `src/upstream/reader.ts` (near line 31) does not name the build's Node.js `Intl` data.
 - 2026-10-27: T5 added for review return 1 (minor amendment; Coverage AC3 → T2, T3, T5) and done: the comment now names the build's Node.js `Intl` data. `pnpm test` 681 passed, `pnpm check` 0 problems. The claim audit's one pass stands; the new words repeat the `localeLanguages` comment it read as OK.
 - 2026-10-27: status review; handed to /milestone-review.
+- 2026-10-27: step-7 approval: m025-named-languages approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
