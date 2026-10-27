@@ -1,0 +1,41 @@
+name: Answer a report
+
+on:
+  issues:
+    types: [opened]
+
+# The job sets its own permissions.
+permissions: {}
+
+# No concurrency group: each report is answered on its own, so no run waits for another
+# or cancels one that waits.
+
+jobs:
+  answer:
+    # Only issues from works.yml and broken.yml, which add the label `report`.
+    if: contains(github.event.issue.labels.*.name, 'report')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # This job comments on and closes issues, so it restores and saves no Actions cache,
+    # as the build job of `Build data` does not. GitHub enforces this mode with the job's
+    # cache token.
+    cache-mode: none
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      # No dependency cache, as `cache-mode` above says.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: pnpm install --frozen-lockfile
+      # The command reads the issue's body and labels from the API, so only the issue's
+      # number reaches it, and no text from the issue enters a shell script.
+      - run: pnpm report-issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}

@@ -124,7 +124,7 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 - [x] T4: Write the tests of the command against recorded responses, then
       the command and its `package.json` script. Reuse `githubClient` and
       `code()`.
-- [ ] T5: Write `report-issue.yml` and its checks in
+- [x] T5: Write `report-issue.yml` and its checks in
       `test/workflows.test.ts`, reusing the `cacheLines` and `jobText`
       helpers.
 - [ ] T6: Write the README section, the CHANGELOG entry, and the DESIGN
@@ -150,6 +150,7 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 - 2026-10-27: T2 done: `works.yml` and `broken.yml`, with the input labels "Plugin id", "Plugin version", and "Zotero version", titles "Report: works" and "Report: broken". GitHub's file view of both on the branch at d4a2e5d shows the form preview and no template error.
 - 2026-10-27: T3 done: `parseReport` returns the first problem it finds, in input order and then plugin id, version, Zotero version, verdict; problem names `missing-heading`, `no-response`, `unknown-plugin`, `bad-plugin-version`, `bad-zotero-version`, `bad-verdict`. A planted removal of the upper Zotero bound failed exactly the "above the newest major" test. 514 tests pass, `pnpm check` 0 problems.
 - 2026-10-27: T4 done: `answerReport` in `src/reports/issue.ts` and `pnpm report-issue` (`src/reports/issue-cli.ts`). It reads the entry ids with its own `readdir`, because `listEntries` returns an empty list for a missing directory, which would refuse every report as an unknown plugin. Seven in-process tests and two spawned-command tests; 523 tests pass.
+- 2026-10-27: T5 done: `.github/workflows/report-issue.yml` ("Answer a report", job `answer`) and six checks in `test/workflows.test.ts`, with a new `otherEventUses` matcher tested on the body, the title, an index form, and the whole event. A planted `pull-requests: write` and a planted `concurrency` key each failed their test.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
