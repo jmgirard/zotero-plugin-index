@@ -1,0 +1,13 @@
+# M024: Filter the home list by interface language
+
+**Status:** done (2026-10-27, PR #36 https://github.com/jmgirard/zotero-plugin-index/pull/36)
+
+**Goal:** A site visitor can narrow the home list to the plugins that ship one interface language.
+
+feature series: M023 -> M024
+
+**Outcome:** `src/site/languages.ts` gives `appliedLanguages` (the `languages` override that `usedOverride` picks, split on `, `, else `upstream.languages`, through `Intl.getCanonicalLocales`, so each tag once in list order), `languageName` (English `Intl.DisplayNames`, `languageDisplay: "standard"`), `rowLanguages` (language subtags, once, code-unit order), and `languageOptions` (one per subtag, text "Name (count)", sorted by text). Each plugin page with `upstream` shows `<p class="languages">Interface languages: <span data-fact="languages">…</span></p>` between the declared range and the reports, or "None declared". The home page holds `<p class="language-filter" hidden>` with a label and `<select id="language" data-language-filter autocomplete="off">`; each row carries `data-languages` (`rowLanguagesAttribute` passes `new String("")` so Astro writes `=""`). An inlined module script, the site's one script (D-014), imports `rowShows`, `menuValue`, and `filterHref` from `src/site/language-filter.ts`, unhides the menu, filters rows, keeps the choice in `?language=` with `replaceState`, re-reads the address on `popstate`, and drops a parameter that names no option. The site fixture gained a seventh record and languages on five. README, the M023 CHANGELOG entry, DESIGN, and one lesson follow.
+
+**Decisions:** none. D-014 (recorded at the M023/M024 plan) covers the script.
+
+**Review:** Claim audits at implement: 38 claims, 3 corrected; then 64, 0 corrected. Review pass 1 (four lenses): 29 findings; 15 fixed in `0e60805` (URL logic moved to tested functions, `popstate`, unknown parameter dropped, stale DESIGN and LESSONS text, test brittleness); 2 to new row "Filter the home list before it paints"; 1 amendment return (Scope now states the canonical, once-only list); 11 rejected. Gate return 1: the amendment took the file to 150 plan-owned lines; the criteria were re-wrapped with identical words (T7). Pass 3 (four lenses): 25 findings; 8 fixed in `d88e7c9` (`filterHref` leaves an agreeing address unchanged, `autocomplete="off"` against Chromium's form restore, tests, DESIGN, the lesson); 3 follow-ups (new row "Test the home page script in a browser"; absorbed into "Drop locale folders naming no language"); 14 rejected, 1 as edge (History API rate limits). Lessons: 6 marked used M024; 1 captured (Astro's bare empty attribute); 2026-10-25 (M003, used M012) on Vitest's `hookTimeout` evicted by rank.
