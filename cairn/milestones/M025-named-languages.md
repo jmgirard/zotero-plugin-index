@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M025: Drop locale folders naming no language
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** low   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -88,7 +88,7 @@ pattern `LANGUAGE_TAG` does not change.
       schema `languages` description (near line 110), and cairn/DESIGN.md
       item 2 (near line 100) and the reader paragraph (near line 270).
       Search joined copies for stale wording.
-- [ ] T4: Run `pnpm test` and `pnpm check`. The PR's CI run, on Node 24,
+- [x] T4: Run `pnpm test` and `pnpm check`. The PR's CI run, on Node 24,
       is the Node 24 check of AC1 and AC2.
 
 ## Work log
@@ -109,6 +109,9 @@ pattern `LANGUAGE_TAG` does not change.
 - 2026-10-27: T1 done: two table cases; on the unchanged reader the AC1 case failed with extra `img`, `js`, `js-US`, `qaa`, and the AC2 case passed (control).
 - 2026-10-27: T2 done: module-level `LANGUAGE_NAMES` (`Intl.DisplayNames`, `fallback: "none"`) checked on `new Intl.Locale(tag).language` inside the existing try; both comments updated. `pnpm test` 681 passed, `pnpm check` 0 problems.
 - 2026-10-27: T3 done: README (rule, Node `Intl` source, region and script not checked, overrides not checked), CHANGELOG Unreleased entry edited, schema `languages` description, DESIGN item 2 and reader paragraph. Joined-copy search: "does not check that a tag names" 0 in README. The simple-english hook's hits on untouched README and CHANGELOG lines are left alone.
+- 2026-10-27: claim audit: 14 claims read, 0 corrected — README.md, CHANGELOG.md, schemas/plugins.v1.schema.json, src/upstream/reader.ts, test/upstream.test.ts, cairn/DESIGN.md. Its optional note taken: schema "Empty when the XPI has none" now reads "no such folder".
+- 2026-10-27: T4 done: `pnpm test` 681 passed, `pnpm check` 0 problems on Node 26.12.1; the Node 24 check of AC1 and AC2 is the PR's CI run at review.
+- 2026-10-27: status review; handed to /milestone-review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
