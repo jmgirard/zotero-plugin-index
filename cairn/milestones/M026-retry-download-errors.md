@@ -39,22 +39,22 @@ describe the state file, so it does not change.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: `discover()`, run from an empty state, returns a state with no
+- [x] AC1: `discover()`, run from an empty state, returns a state with no
       record for a repo whose read fails with `update-json-http-error` on
       an HTTP 429 answer for its `update.json`, and none for a repo whose
       read fails with `xpi-unreadable` on an HTTP 503 answer for its XPI.
       Its report lists each such repo as refused with that failure name.
-- [ ] AC2: `discover()`, run from an empty state, returns a state that
+- [x] AC2: `discover()`, run from an empty state, returns a state that
       records a repo whose read fails with `update-json-http-error` on an
       HTTP 404 answer for its `update.json`, and one whose read fails with
       `xpi-unreadable` on an HTTP 404 answer for its XPI, each record
       carrying that failure name.
-- [ ] AC3: The comment above `NOT_RECORDED` in `src/discover/discover.ts`,
+- [x] AC3: The comment above `NOT_RECORDED` in `src/discover/discover.ts`,
       the discovery state paragraph in README.md's `pnpm discover`
       section, and the discovery paragraph in cairn/DESIGN.md's
       Architecture state that a refusal caused by an HTTP 429 or 5xx
       answer from a download host is not recorded.
-- [ ] AC4: `pnpm test` and `pnpm check` pass.
+- [x] AC4: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate -->
@@ -114,3 +114,12 @@ describe the state file, so it does not change.
 
 ## Review
 <!-- owner: review · exclusive. -->
+
+Evidence gathered 2026-10-27 on the branch after merging origin/main at 5fb6ccf (three new plugin entries, no code).
+
+- AC1: `vitest run test/discover.test.ts -t "HTTP error answer"` (verbose): the update.json 429 case (fails with `update-json-http-error`) and the XPI 503 case (fails with `xpi-unreadable`) pass; each runs `discover()` from an empty state, asserts the report item `refused` with that failure, and asserts the state equals `{}`. On the pre-T2 code both failed with the record present (T1 work log).
+- AC2: the same run: the update.json 404 and XPI 404 cases pass; each asserts the state equals `{ "example/downloads": { pushedAt, failure, checkedAt } }` with `failure` `update-json-http-error` and `xpi-unreadable` respectively.
+- AC3: read at the head: `src/discover/discover.ts` lines 18-21 (the `NOT_RECORDED` comment) say a failure the reader marks build-level, "such as an HTTP 429 or 5xx answer for the XPI or the update.json", is not recorded; README.md's joined text holds "It also does not record an HTTP 429 or 5xx answer to the download of the XPI or the `update.json`, after any redirects."; cairn/DESIGN.md lines 294-295 hold "nor a refusal caused by an HTTP 429 or 5xx answer from a download host".
+- AC4: `pnpm test`: 17 files, 685 tests passed; `pnpm check`: 26 entries, 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed; no principle changed, so `cairn_impact` skipped; the generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
