@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-27 (M025 done and archived; 1 row graduated, 1 adde
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M026 | Retry repos refused by a download error | in-progress | — | normal | milestones/M026-retry-download-errors.md |
+| M026 | Retry repos refused by a download error | review | — | normal | milestones/M026-retry-download-errors.md |
 | M025 | Drop locale folders naming no language | done | — | low | milestones/archive/M025-named-languages.md |
 | M024 | Filter the home list by interface language | done | M023 | normal | milestones/archive/M024-language-filter.md |
 | M023 | Record each plugin's interface languages | done | — | normal | milestones/archive/M023-record-languages.md |

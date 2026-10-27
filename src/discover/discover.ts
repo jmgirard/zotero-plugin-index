@@ -16,8 +16,9 @@ const RECHECK_MS = 30 * 24 * 60 * 60 * 1000;
 export type DiscoveryFailure = Failure | Extract<WriteResult, { ok: false }>["failure"] | "not-proposable" | "unexpected-error";
 
 // Failures that say nothing about the repo, such as a rate limit, are not recorded, so
-// the next run reads the repo again. Nor is a reader failure marked build-level, such as
-// an HTTP 429 or 5xx answer from the host of the XPI or the update.json.
+// the next run reads the repo again. Nor is a failure the reader marks build-level, such
+// as an HTTP 429 or 5xx answer for the XPI or the update.json; draftEntry checks that
+// mark, since the same failure name can be either kind.
 const NOT_RECORDED = new Set<DiscoveryFailure>(["github-http-error", "request-failed", "unexpected-error"]);
 
 // A repo that was read and refused. `pushedAt` is the repo's pushed_at at that read.

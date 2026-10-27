@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M026: Retry repos refused by a download error
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -106,6 +106,8 @@ describe the state file, so it does not change.
 - 2026-10-27: T2 done: `draftEntry` passes `recorded` false for a reader failure marked build-level; comments on `NOT_RECORDED` and `Drafted` updated. `pnpm test` 685 passed, `pnpm check` 23 entries, 0 problems.
 - 2026-10-27: T3 done: README's discovery state paragraph and DESIGN's discovery paragraph name the 429/5xx download answers; joined-copy search of README, DESIGN, and CHANGELOG found no other sentence on which refusals the state keeps. The simple-english hook flagged README lines 94, 357, and 371, which this branch does not touch; left as they are.
 - 2026-10-27: T4 done: `pnpm test` 17 files, 685 passed; `pnpm check` 23 entries, 0 problems.
+- 2026-10-27: claim audit: 6 claims read, 2 corrected — src/discover/discover.ts (the `NOT_RECORDED` comment now says `draftEntry` applies the build-level rule), README.md (a 429 or 5xx after redirects can come from another host, so "answer to the download of"). A third note, that the read budget can delay the next read, predates this branch; not taken.
+- 2026-10-27: implement done; status review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
