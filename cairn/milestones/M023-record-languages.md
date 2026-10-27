@@ -40,7 +40,7 @@ DESIGN follow.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: `readUpstream` sets `facts.languages` to the language tags of the
+- [x] AC1: `readUpstream` sets `facts.languages` to the language tags of the
       locale folders in the XPI whose manifest it read. A locale folder is
       the `<tag>` part of an entry name that starts with `locale/<tag>/` or
       `chrome/locale/<tag>/` and does not end with `/`. The reader reads `_`
@@ -62,13 +62,13 @@ DESIGN follow.
       - An XPI whose only locale entries are `_locales/de/messages.json`,
         `content/locale/fr/x.ftl`, `locale/en-US.ftl`, and the directory
         entry `locale/it/` gives `[]`.
-- [ ] AC2: `schemas/plugins.v1.schema.json` gives the `upstream` block an
+- [x] AC2: `schemas/plugins.v1.schema.json` gives the `upstream` block an
       optional `languages` property. It is an array, possibly empty, of
       unique strings that each match the tag pattern of AC3. `schemaVersion`
       stays 1. Tests in `test/build.test.ts` show that `buildData` writes the
       reader's list as `upstream.languages`, once for a list with tags and
       once for `[]`. They show that the output passes `checkOutput` in both.
-- [ ] AC3: `schemas/index.v1.schema.json` accepts `languages` as an override
+- [x] AC3: `schemas/index.v1.schema.json` accepts `languages` as an override
       `field`, and so does the override definition in
       `schemas/plugins.v1.schema.json`. For that field, each schema requires
       the `value` to be one or more tags joined by `, `, such as
@@ -79,7 +79,7 @@ DESIGN follow.
       whose `languages` value is `Chinese (China)`, `zh-CN,,en`, `abcd`,
       `en-u-ca-gregory`, or `UND`. They also show that it passes an entry
       whose value is `zh-CN, en-US`.
-- [ ] AC4: README "Using the data" describes `upstream.languages`. It names
+- [x] AC4: README "Using the data" describes `upstream.languages`. It names
       the two folder paths that the reader reads. It says that the list does
       not say whether a translation is complete. It says that a plugin whose
       text sits in its code gets `[]`. README "Plugin entries" lists
@@ -87,7 +87,7 @@ DESIGN follow.
       `CHANGELOG.md` `## Unreleased` has one entry for the language list and
       its override. The entry says that the v1 schema changed, so a saved
       copy of it must be fetched again.
-- [ ] AC5: `pnpm test` and `pnpm check` pass.
+- [x] AC5: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate; each acceptance criterion → the
@@ -152,3 +152,11 @@ DESIGN follow.
 
 ## Review
 <!-- owner: review · exclusive. -->
+
+Pass 1, 2026-10-27, branch `m023-record-languages` at `2724844`, `main` at `6a354ca` (not moved since the cut).
+
+- AC1 evidence: `pnpm exec vitest run --reporter=verbose` passes the seven `lists … as the languages` cases in `test/upstream.test.ts`, each against the list AC1 names (two `locale/` folders stored zh-CN then en-US give `["en-US","zh-CN"]`; `chrome/locale/fr-FR/addon/x.dtd` gives `["fr-FR"]`; `de` under both paths once; `zh_CN`+`zh-CN`+`EN-us` give `["en-US","zh-CN"]`; `iw` gives `["he"]`; `en-x-pirate`, `default`, `und` give `[]`; `_locales/`, `content/locale/`, `locale/en-US.ftl`, and the directory entry `locale/it/` give `[]`). Code read: `readRelease` takes `languages` from `readManifest` on the same XPI whose manifest it parses, also on the newer-release fallback; `localeLanguages` keeps a folder only when it matches `LANGUAGE_TAG`, writes `Intl.getCanonicalLocales` form, de-duplicates in a `Set`, and sorts by code unit.
+- AC2 evidence: `schemas/plugins.v1.schema.json` `definitions.upstream.properties.languages` is an array with `uniqueItems` and items of `type: string` matching `^LANGUAGE_TAG$`, no `minItems`, and `languages` is not in `required`; `schemaVersion` is still `const: 1`. The test `writes the reader's language list, with tags or empty, and the output passes the schema` passes: the second plugin's record carries `["en-US","zh-CN"]`, Better Notes carries `[]`, and `checkOutput` returns no problem.
+- AC3 evidence: both schemas list `languages` in the override `field` enum, with an `if` (`field` is `languages`) / `then` (`value` is a string matching `^T(, T)*$`, T the AC3 pattern plus the `und` lookahead). The test `shares its language tag pattern with both schemas` passes, pinning all three copies to `LANGUAGE_TAG`. `test/check.test.ts` passes the five `index-schema: a languages override with the value …` cases (`Chinese (China)`, `zh-CN,,en`, `abcd`, `en-u-ca-gregory`, `UND`), each reporting `/overrides/0/value`, and `passes a languages override with the value zh-CN, en-US`. The implement work log records the planted check: without the `if`/`then`, exactly those five failed.
+- AC4 evidence: a joined-copy search of README.md finds in "Using the data" "A locale folder is `locale/<tag>/` or `chrome/locale/<tag>/` with at least one file in it.", "It does not say whether a translation is complete.", and "ships no locale folders, so its list is empty."; in "Plugin entries" the field list ends "`strict_max_version`, or `languages`." and the value text "For `languages`, the value is one or more language tags joined by a comma and a space". CHANGELOG.md has one `## ` heading (`## Unreleased`) and one entry naming "interface languages", which ends "so fetch any saved copy of it again."
+- AC5 evidence: `pnpm test` exit 0, type check clean, 16 files, 642 tests passed; `pnpm check` exit 0, "checked 20 entries in plugins, 0 problems".
