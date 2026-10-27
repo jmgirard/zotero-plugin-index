@@ -48,6 +48,7 @@ export function upstreamValue(record: PluginRecord, field: string): string | und
     homepage: upstream.homepage,
     strict_min_version: upstream.strictMinVersion,
     strict_max_version: upstream.strictMaxVersion,
+    languages: upstream.languages?.length ? upstream.languages.join(", ") : undefined,
   };
   return fields[field];
 }

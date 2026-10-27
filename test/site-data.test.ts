@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import type { PluginRecord } from "../src/build/build.ts";
-import { displayName, loadData, overrideUsed, rangeText, safeHref } from "../site/src/data.ts";
+import { displayName, loadData, overrideUsed, rangeText, safeHref, upstreamValue } from "../site/src/data.ts";
 
 function record(facts: Partial<NonNullable<PluginRecord["upstream"]>>, overrides: PluginRecord["overrides"] = []): PluginRecord {
   return {
@@ -30,6 +30,16 @@ describe("rangeText", () => {
     [{}, "No declared range"],
   ])("states %j as %s", (facts, text) => {
     expect(rangeText(record(facts))).toBe(text);
+  });
+});
+
+describe("upstreamValue", () => {
+  test.each<[string[] | undefined, string | undefined]>([
+    [["en-US", "zh-CN"], "en-US, zh-CN"],
+    [[], undefined],
+    [undefined, undefined],
+  ])("gives the languages %j as %j", (languages, value) => {
+    expect(upstreamValue(record({ languages }), "languages")).toBe(value);
   });
 });
 

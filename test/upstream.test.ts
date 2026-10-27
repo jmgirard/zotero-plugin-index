@@ -140,7 +140,7 @@ describe("readUpstream", () => {
     ["no folder whose name is not a kept tag", { "locale/en-x-pirate/a.ftl": "", "locale/default/a.ftl": "", "locale/und/a.ftl": "" }, []],
     [
       "no tag from other paths or a directory entry",
-      { "_locales/de/messages.json": "{}", "content/locale/fr/x.ftl": "", "locale/en-US.ftl": "", "locale/it/": "" },
+      { "_locales/de/messages.json": "{}", "content/locale/fr/x.ftl": "", "locale/en-US.ftl": "", "locale/it/": "", "locale/it/sub/": "" },
       [],
     ],
   ])("lists %s as the languages", async (_name, files, languages) => {
@@ -152,8 +152,10 @@ describe("readUpstream", () => {
     const list = `^${LANGUAGE_TAG}(, ${LANGUAGE_TAG})*$`;
     const { definitions } = pluginsSchema as Json;
     expect(definitions.upstream.properties.languages.items.pattern).toBe(`^${LANGUAGE_TAG}$`);
-    expect(definitions.override.then.properties.value.pattern).toBe(list);
-    expect((indexSchema as Json).properties.overrides.items.then.properties.value.pattern).toBe(list);
+    for (const override of [definitions.override, (indexSchema as Json).properties.overrides.items]) {
+      expect(override.if).toEqual({ required: ["field"], properties: { field: { const: "languages" } } });
+      expect(override.then.properties.value.pattern).toBe(list);
+    }
   });
 
   test("reads the newest published stable release with an .xpi, whatever the list order", async () => {

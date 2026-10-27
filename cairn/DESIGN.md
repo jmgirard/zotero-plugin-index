@@ -31,11 +31,12 @@ declared range of Zotero versions, source availability, whether GitHub marks
 the repository archived (when GitHub's response says), repository age, the
 release the index read and whether it is a prerelease (corrected M014),
 release count, open issues, the host of the `update.json` file, the
-counted user reports on the release the index read (M021), and the
-interface languages that the read XPI's locale folders name (M023). The
-languages say which translations a plugin ships, not whether they are
-complete, and a `languages` override names them for a plugin whose text
-sits in its code.
+counted user reports on the release the index read (M021).
+The data also carries the interface languages that the read XPI's locale
+folders name (M023). They say which languages a plugin ships interface text
+for, not whether a translation is complete. A `languages` override records
+them for a plugin whose list is wrong or empty. The plugin page and the
+home list do not show them yet.
 The page shows the name, the description, the version pills, the declared
 range, the user reports on the release the index read with a "Works" and a
 "Broken" link (M021), and the repository and releases links first. The other facts sit in a
@@ -258,11 +259,13 @@ reused._
   `xpi-unreadable` once the output passes the unzipped size that the zip
   declares, because `unzipSync` decodes the whole stream however far it runs
   past that size (M012).
-  The reader lists the entry names of the same central directory, inflates
-  nothing more, and records as `languages` the tags of the `locale/<tag>/`
-  and `chrome/locale/<tag>/` folders that hold a file. A tag counts when it
-  matches `LANGUAGE_TAG`, the pattern that both schemas build their
-  `languages` override value from (M023).
+  The reader walks the same central directory once more, one header at a
+  time, inflates nothing more, and records as `languages` the tags of the
+  `locale/<tag>/` and `chrome/locale/<tag>/` folders that hold a file. So
+  each XPI takes up to three walks over the claimed count: for
+  `manifest.json`, the default locale's `messages.json`, and the names. A
+  tag counts when it matches `LANGUAGE_TAG`. Both schemas copy that pattern
+  into their `languages` patterns, and a test checks the copies (M023).
 - `src/discover/` pages through GitHub's repository search for each topic
   with the reader's GitHub client, which `src/upstream/reader.ts` exports.
   The search is sorted by last update, so pages do not shift between

@@ -179,7 +179,8 @@ type ReleaseFacts = Pick<
   | "languages"
 > & { release: ReleaseJson };
 
-// Reads the manifest of one release's XPI and checks the update.json it names.
+// Reads the manifest and the locale folders of one release's XPI and checks the
+// update.json the manifest names.
 async function readRelease(download: Download, release: ReleaseJson, xpi: { browser_download_url: string }): Promise<ReleaseFacts> {
   const { manifest, messages, languages } = await readManifest(download, xpi.browser_download_url, release.tag_name);
   const zotero = manifest.applications?.zotero;
@@ -471,7 +472,12 @@ async function readManifest(
     // A messages.json that is not JSON leaves the placeholders unresolved.
   }
   const isObject = typeof messages === "object" && messages !== null;
-  const languages = localeLanguages([...centralEntries(zip)].map((entry) => entry.fileName));
+  let languages: string[];
+  try {
+    languages = localeLanguages(zip);
+  } catch (error) {
+    fail("xpi-unreadable", `the XPI of ${tag} is not a readable zip: ${(error as Error).message}`);
+  }
   return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {}, languages };
 }
 
@@ -483,13 +489,14 @@ export const LANGUAGE_TAG =
 const WHOLE_TAG = new RegExp(`^${LANGUAGE_TAG}$`, "u");
 const LOCALE_FOLDER = /^(?:chrome\/)?locale\/([^/]+)\/./;
 
-// The language tag of each locale folder, the <tag> of an entry name locale/<tag>/<file>
-// or chrome/locale/<tag>/<file>. A "_" in <tag> reads as "-", and a <tag> that is not
-// LANGUAGE_TAG is left out. Each tag is in the form Intl.getCanonicalLocales returns,
-// once, in code-unit order.
-function localeLanguages(names: string[]): string[] {
+// The language tag of each locale folder in the zip, the <tag> of an entry name
+// locale/<tag>/<file> or chrome/locale/<tag>/<file>. A "_" in <tag> reads as "-", and a
+// <tag> that is not LANGUAGE_TAG is left out. Each tag is in the form
+// Intl.getCanonicalLocales returns, once, in code-unit order. It reads the names one header
+// at a time, so it keeps no list of the zip's entries.
+function localeLanguages(zip: Uint8Array): string[] {
   const tags = new Set<string>();
-  for (const name of names) {
+  for (const { fileName: name } of centralEntries(zip)) {
     const folder = LOCALE_FOLDER.exec(name)?.[1].replaceAll("_", "-");
     if (!folder || name.endsWith("/") || !WHOLE_TAG.test(folder)) continue;
     try {

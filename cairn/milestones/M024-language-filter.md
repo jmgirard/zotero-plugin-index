@@ -161,6 +161,7 @@ with no `upstream` has an empty applied list. M023 keeps
 - 2026-10-27: plan gate chose a menu hidden in the HTML until the script runs over a menu that always shows, so a page without JavaScript shows the full list and no control that does nothing; falsified by a visitor who reads the hidden menu as missing.
 - 2026-10-27: plan gate chose to keep the choice in a `language` query parameter over no URL state, so a filtered list can be linked; falsified by the parameter breaking the Pages path or the browser's back button.
 - 2026-10-27: changelog: edits M023's `## Unreleased` entry under the series rule.
+- 2026-10-27: from the M023 review: the `languages` override pattern accepts a repeated tag and other letter case (`zh-CN, zh-CN`, `ZH-cn`), so the applied list should write each tag in `Intl.getCanonicalLocales` form once before the page fact, the row's `data-languages`, and the menu counts use it. M023 also added the `languages` key to `upstreamValue`, so T3 keeps it and adds AC1's table tests.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
