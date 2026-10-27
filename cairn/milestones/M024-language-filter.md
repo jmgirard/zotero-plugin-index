@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M024: Filter the home list by interface language
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M023   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -176,6 +176,8 @@ once, in list order. A record with no `upstream` has an empty applied list. M023
 - 2026-10-27: implement done; status set to review.
 - 2026-10-27: amendment routed: AC1 — Scope defines the applied list that AC1's fact names as the `languages` override's value split on `, `, but `appliedLanguages` also writes each tag in `Intl.getCanonicalLocales` form once, as the M023 review note in this log asked, so an override `zh-CN, zh-CN` shows "Chinese (China)" once where the Scope text says twice (diff-bug #5); the fix-now findings landed in 0e60805; status set to in-progress for the Scope amendment alone.
 - 2026-10-27: amendment return: AC1 — "Each tag of the list is then written in the form `Intl.getCanonicalLocales` returns, once, in list order." The sentence is added to the Scope paragraph that defines the applied list; no acceptance-criterion wording changed, so no criterion re-audit ran; the deliverable is unchanged, since the code already did this per the M023 review note; `test/language.test.ts` "writes each override tag in canonical form, once" pins it.
+- 2026-10-27: claim audit: 64 claims read, 0 corrected — README.md, CHANGELOG.md, src/site/languages.ts, src/site/language-filter.ts, site/src/data.ts, site/src/pages/index.astro, test names; a second pass after the review's fixes added prose. The reader's own `test/site.test.ts` run failed at its `pnpm site` step in its sandbox; here `pnpm test` (676) and `pnpm check` pass.
+- 2026-10-27: amendment done; status set to review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
