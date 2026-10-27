@@ -63,7 +63,7 @@ export async function closeIssue(options: CloseIssueOptions): Promise<CloseIssue
   } catch (error) {
     return { status: 1, errors: [(error as Error).message] };
   }
-  if (issue === null || typeof issue !== "object" || "pull_request" in issue) return skip(`item ${closes[0]} is a pull request`);
+  if (issue === null || typeof issue !== "object" || "pull_request" in issue) return skip(`item ${closes[0]} is not an issue`);
   if (issue.state !== "open") return skip(`issue ${closes[0]} is not open`);
   const labels = (Array.isArray(issue.labels) ? issue.labels : []).map((label) => (typeof label === "string" ? label : label?.name));
   if (!labels.includes(ISSUE_LABEL)) return skip(`issue ${closes[0]} has no ${ISSUE_LABEL} label`);

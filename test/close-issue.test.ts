@@ -75,7 +75,7 @@ describe("closing the issue of a bot pull request closed without a merge", () =>
     ["the body has no Closes line", { [PULL]: { json: { ...pull, body: body(entry, { status: 0, output: "" }) } } }, "Closes"],
     ["the body has two Closes lines", { [PULL]: { json: { ...pull, body: `${issueBody}\n\nCloses #8` } } }, "Closes"],
     ["the body's only Closes line is inside the check-output fence", { [PULL]: { json: { ...pull, body: fencedBody } } }, "Closes"],
-    ["the item is a pull request", { [ISSUE]: { json: { ...issue, pull_request: { url: `${INDEX}/pulls/7` } } } }, "pull request"],
+    ["the item is a pull request", { [ISSUE]: { json: { ...issue, pull_request: { url: `${INDEX}/pulls/7` } } } }, "not an issue"],
     ["the issue is closed", { [ISSUE]: { json: { ...issue, state: "closed" } } }, "not open"],
     ["the issue has no add-plugin label", { [ISSUE]: { json: { ...issue, labels: [{ name: "report" }] } } }, "add-plugin"],
     ["no bot comment holds the URL", { [COMMENT_LIST]: { json: [{ user: { login: "someone" }, body: PULL_URL }, { user: BOT, body: `${PULL_URL}0` }] } }, "no bot comment"],
@@ -91,8 +91,9 @@ describe("closing the issue of a bot pull request closed without a merge", () =>
   });
 
   test("reads the issue named by the Closes line outside the fence", async () => {
-    const { gets } = await run({ ...acting, [PULL]: { json: { ...pull, body: issueBody.replace("Closes #7", "Closes #70") } } });
+    const { gets } = await run({ ...acting, [PULL]: { json: { ...pull, body: body(entry, { status: 0, output: "Closes #7\n" }, 70) } } });
     expect(gets).toContain(`${INDEX}/issues/70`);
+    expect(gets).not.toContain(ISSUE);
   });
 
   test.each<[string, Responses, string]>([

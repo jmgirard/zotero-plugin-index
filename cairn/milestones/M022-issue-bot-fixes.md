@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M022: Fix two gaps of the issue bot
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -135,6 +135,8 @@ merge. README, CHANGELOG, and DESIGN follow.
 - 2026-10-27: T2 done. `closeIssue` lives in `src/discover/close-issue.ts` with its CLI in `close-issue-cli.ts`; `PREFIX` is now exported from `propose.ts`. Choices: the bot login is `github-actions[bot]`; the URL is the pull request's `html_url`, matched with no digit after it; a bot comment holding that URL and "closed without a merge" counts as the earlier closing comment; a fence closes on a line of the same character at least as long. Planting no fence tracking and no digit boundary each failed its own test.
 - 2026-10-27: T3 done. `otherEventUses` in `test/workflows.test.ts` now takes the allowed event uses as exact chains, so the report and close workflows share it. Ruby's YAML reads the trigger, `if:`, permissions, and checkout step as written. Planting a head checkout, an extra permission, an extra trigger type, and a `cache: pnpm` key each failed its matching test.
 - 2026-10-27: T4 done. README drops the stale `unexpected-error` sentence, adds the entry-check error to the bot-failure paragraph, and adds a paragraph on `pnpm close-issue`; the CHANGELOG bullet and DESIGN's Discovery family and `add-plugin-issue.yml` paragraph follow. Joined-copy searches found the old sentence 0 times and each new phrase once per file.
+- 2026-10-27: claim audit: 54 claims read, 2 corrected — test/close-issue.test.ts (the outside-the-fence test now plants a decoy `Closes #7` inside the fence), src/discover/close-issue.ts (skip message "is not an issue"); the reader re-read both and found them true. It could not confirm the existing premise that GitHub enforces `cache-mode: none`, which report-issue.yml and DESIGN already state.
+- 2026-10-27: all tasks done; `pnpm test` (625 tests) and `pnpm check` pass; status review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
