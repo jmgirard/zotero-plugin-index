@@ -1,13 +1,11 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { entryNameProblem } from "../check/check.ts";
 import type { UpstreamFacts } from "../upstream/reader.ts";
 
 export type WriteResult =
   | { ok: true; dir: string }
   | { ok: false; failure: "unsafe-id" | "entry-exists" | "write-failed"; message: string };
-
-// Plugin ids are email-like (name@example.org) or a {GUID}.
-const SAFE_ID = /^[A-Za-z0-9_@{}+.-]{1,200}$/;
 
 // The registry meta.json holds upstream facts only; index.json starts with no overrides.
 export function entryFiles(facts: UpstreamFacts) {
@@ -25,10 +23,17 @@ export function entryFiles(facts: UpstreamFacts) {
 // Writes the entry directory `<outDir>/<id>/`. It never replaces an existing entry, whose
 // index.json may hold overrides.
 export async function writeEntry(outDir: string, facts: UpstreamFacts): Promise<WriteResult> {
-  // The id comes from the plugin's manifest and names a directory, so it must not
-  // reach outside outDir. `pnpm check` skips names that start with a dot.
-  if (!SAFE_ID.test(facts.id) || facts.id.startsWith(".")) {
-    return { ok: false, failure: "unsafe-id", message: `the id ${JSON.stringify(facts.id)} cannot name a directory` };
+  // The id comes from the plugin's manifest and names a directory, so `pnpm check`'s name
+  // rule applies to it.
+  const problem = entryNameProblem(facts.id);
+  if (problem) {
+    return { ok: false, failure: "unsafe-id", message: `the id ${JSON.stringify(facts.id)} cannot name a directory: ${problem}` };
+  }
+  // A case-sensitive file system would let both directories exist, and Windows and macOS
+  // checkouts would then hold one of them.
+  const same = (await namesIn(outDir)).find((name) => name !== facts.id && name.toLowerCase() === facts.id.toLowerCase());
+  if (same !== undefined) {
+    return { ok: false, failure: "entry-exists", message: `${join(outDir, same)} already exists, equal to the id ${facts.id} ignoring case` };
   }
   const dir = join(outDir, facts.id);
   try {
@@ -50,4 +55,13 @@ export async function writeEntry(outDir: string, facts: UpstreamFacts): Promise<
     return { ok: false, failure: "write-failed", message: `cannot write ${dir}: ${(error as Error).message}` };
   }
   return { ok: true, dir };
+}
+
+// The names in dir. A missing dir has none; another read error is left for mkdir to report.
+async function namesIn(dir: string): Promise<string[]> {
+  try {
+    return await readdir(dir);
+  } catch {
+    return [];
+  }
 }

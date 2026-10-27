@@ -142,4 +142,20 @@ describe("writeEntry", () => {
       expect(existsSync(out)).toBe(false);
     },
   );
+
+  test.each(["CON", "nul.example"])("refuses the Windows name %j", async (id) => {
+    const out = join(tempDir(), "entries");
+    const result = await writeEntry(out, { ...facts, id });
+    expect(result).toEqual({ ok: false, failure: "unsafe-id", message: expect.stringContaining("Windows reserves") });
+    expect(existsSync(out)).toBe(false);
+  });
+
+  // On a case-insensitive volume mkdir also fails, but its message names the new id.
+  test("refuses an id equal to an existing entry's name ignoring case", async () => {
+    const out = tempDir();
+    mkdirSync(join(out, "Foo@example.org"));
+    const result = await writeEntry(out, { ...facts, id: "foo@example.org" });
+    expect(result).toEqual({ ok: false, failure: "entry-exists", message: expect.stringContaining("Foo@example.org") });
+    expect(readdirSync(out)).toEqual(["Foo@example.org"]);
+  });
 });
