@@ -1,0 +1,8 @@
+{
+  "id": "pdfsethorizontalscroll@euclpts.com",
+  "name": "Set HorizontalScroll",
+  "description": "Set horizontal scrolling and zooming to the page height as defaults.",
+  "homepage": "https://github.com/qiwei-ma/zotero-pdf-setHorizontal#readme",
+  "repoUrl": "https://github.com/qiwei-ma/zotero-pdf-setHorizontal",
+  "updateUrl": "https://github.com/qiwei-ma/zotero-pdf-setHorizontal/releases/download/release/update.json"
+}
