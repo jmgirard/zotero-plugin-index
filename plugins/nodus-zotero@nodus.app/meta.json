@@ -1,0 +1,7 @@
+{
+  "id": "nodus-zotero@nodus.app",
+  "name": "Nodus for Zotero",
+  "description": "Evidence-grounded research assistant for Zotero with full-text semantic retrieval, audited citations, OCR and visual document understanding.",
+  "repoUrl": "https://github.com/jorgepb96/nodus",
+  "updateUrl": "https://github.com/jorgepb96/nodus/releases/latest/download/updates.json"
+}
