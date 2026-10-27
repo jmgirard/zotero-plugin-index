@@ -119,7 +119,7 @@ DESIGN follow.
 - [x] T4: README "Using the data" and "Plugin entries", the CHANGELOG entry,
       and DESIGN "Contract boundary" and "Data sources" item 2. Search a
       joined copy of each file for the phrases you change.
-- [ ] T5: Run `pnpm test` and `pnpm check`. Then run `pnpm build` on the
+- [x] T5: Run `pnpm test` and `pnpm check`. Then run `pnpm build` on the
       real entries and compare a few records' `languages` with an
       `unzip -Z1` listing of the same XPIs.
 
@@ -143,6 +143,7 @@ DESIGN follow.
 - 2026-10-27: T1+T2 in one checkpoint: the seven reader tests failed first (`languages` undefined); the build tests then failed as `facts-invalid` until the schema gained the field, so T2 landed with T1. `centralEntries` now holds the central-directory walk that `zipEntry` and the name list share; `LANGUAGE_TAG` (exported from the reader) drops `und` with a lookahead. The golden file `test/fixtures/build/mixed-failures.plugins.json` gained one line, `"languages": []`, in its one read record, checked by diffing the new output against it. `pnpm test` 635 passed; `pnpm check` 0 problems.
 - 2026-10-27: T3: both schemas' override definitions gained `languages` and an `if`/`then` value pattern (with `"type": "string"`, which Ajv's strict mode needs beside `pattern`); a test in `test/upstream.test.ts` pins all three pattern copies to `LANGUAGE_TAG`. Planted check: with the `if`/`then` removed from `index.v1`, exactly the five rejection tests failed; restored from a copy. `pnpm test` 642 passed; `pnpm check` 0 problems.
 - 2026-10-27: T4: README "Using the data" (the `languages` paragraph), "Building the data" (a pointer to it), and "Plugin entries" (the field and value format); one CHANGELOG entry with the refetch note; DESIGN "Contract boundary", "Data sources" item 2, and the reader's Architecture note. A joined-copy search found no other list of override fields. The writing-style hook flags three older README sentences (lines 77, 332, 346) this milestone does not touch; left as they are.
+- 2026-10-27: T5: `pnpm build` on the 20 real entries with no token read 18; better-bibtex (HTTP 422 on releases page 11) and zotmoov (HTTP 403) failed on GitHub API limits, as an unauthenticated run does. 17 of the 18 list `zh-CN`; scite lists only `en-US`. The lists for zoplicate (48 tags), Jasminum, zotero-ocr, and Zotero Addons equal an `unzip -Z1` listing of the same XPIs. Zoplicate's `locale/af-ZA/zoplicate-addon.ftl` differs from `en-US` in 3 of 90 lines (zh-CN: 66), so a folder can be an untranslated copy, as README says the list cannot tell; a `languages` override can narrow such a plugin.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
