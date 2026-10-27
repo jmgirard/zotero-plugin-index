@@ -3,6 +3,7 @@ import { lstat, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { Ajv } from "ajv";
+import { duration } from "../build/build.ts";
 
 // A handoff is what a read job leaves for the write job: `plan.json` and one directory
 // `entries/<id>/` for each drafted entry. The read job reads repos that anyone can name,
@@ -18,6 +19,8 @@ const FILE_MAX_BYTES = 64 * 1024;
 // The most characters of a message that an issue comment quotes. The read step cuts a
 // message to one more than this, so the comment still marks the cut.
 export const MESSAGE_MAX = 2000;
+// The longest the `git check-ref-format` check of a branch name may take.
+export const REF_CHECK_LIMIT_MS = 30 * 1000;
 
 export interface PlannedEntry {
   repo: string;
@@ -86,10 +89,11 @@ const validateEntry = new Ajv({ allErrors: true }).compile(entrySchema);
 
 // Returns why `readHandoff` would refuse a handoff with this entry and its drafted
 // directory, or undefined. The read step checks each entry it drafts, so an entry of its
-// own never refuses a handoff.
-export async function plannedProblem(entry: PlannedEntry, entryDir: string): Promise<string | undefined> {
+// own never refuses a handoff. It throws when the branch-name check cannot run or passes
+// `refCheckMs`.
+export async function plannedProblem(entry: PlannedEntry, entryDir: string, refCheckMs = REF_CHECK_LIMIT_MS): Promise<string | undefined> {
   if (!validateEntry(JSON.parse(JSON.stringify(entry)))) return "a field is empty or longer than the handoff allows";
-  return (await entryProblem(entry)) ?? entryDirProblem(entryDir, entry.id);
+  return (await entryProblem(entry, refCheckMs)) ?? entryDirProblem(entryDir, entry.id);
 }
 
 // Whether a repo name has the shape a handoff accepts.
@@ -174,7 +178,7 @@ export async function readHandoff(dir: string, kind: Plan["kind"], limit: number
   return { ok: true, plan: checked, dirs };
 }
 
-async function entryProblem(entry: PlannedEntry): Promise<string | undefined> {
+async function entryProblem(entry: PlannedEntry, refCheckMs = REF_CHECK_LIMIT_MS): Promise<string | undefined> {
   const { id, repo, repoUrl } = entry;
   if (!ADDON_ID.test(id) || id.startsWith(".")) return `the id ${JSON.stringify(id)} is not a Mozilla add-on id`;
   if (!REPO.test(repo)) return `the repo ${JSON.stringify(repo)} is not a lowercase owner/repo`;
@@ -182,8 +186,11 @@ async function entryProblem(entry: PlannedEntry): Promise<string | undefined> {
     return `the repo URL ${JSON.stringify(repoUrl)} is not the GitHub URL of ${repo}`;
   }
   try {
-    await run("git", ["check-ref-format", `refs/heads/discover/${repo}`]);
+    await run("git", ["check-ref-format", `refs/heads/discover/${repo}`], { timeout: refCheckMs });
   } catch (error) {
+    if ((error as { killed?: unknown }).killed) {
+      throw new Error(`git check-ref-format passed its time limit of ${duration(refCheckMs)}`);
+    }
     // git exits 1 for a name it refuses; any other failure says nothing about the name.
     if ((error as { code?: unknown }).code !== 1) throw error;
     return `the branch name discover/${repo} is not a valid git branch name`;

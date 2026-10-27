@@ -72,13 +72,15 @@ interface RunOptions {
   readMs?: number;
   runMs?: number;
   startedAt?: number;
+  refCheckMs?: number;
 }
 
 async function runResult(responses: Responses, options: RunOptions = {}) {
   const { root = tempDir(), outDir = tempDir(), state = {}, skip = new Set<string>(), limit = 50, budget = 100, now = NOW } = options;
-  const { readMs, runMs, startedAt } = options;
+  const { readMs, runMs, startedAt, refCheckMs } = options;
   const { fetch, requests } = fixtureFetch(responses);
-  const result = await discover({ root, outDir, fetch, lookup: publicLookup, state, skip, limit, budget, now, readMs, runMs, startedAt });
+  const limits = { readMs, runMs, startedAt, refCheckMs };
+  const result = await discover({ root, outDir, fetch, lookup: publicLookup, state, skip, limit, budget, now, ...limits });
   return { result, requests };
 }
 
@@ -350,6 +352,28 @@ describe("the time limits", () => {
     expect(reads).toEqual([]);
     expect(report.unread).toBe(3);
     expect(report.warnings).toContainEqual(expect.stringContaining("reads no repo after 18 minutes, its time limit"));
+  });
+
+  test("refuses, without recording, a repo whose branch-name check passes its limit", async () => {
+    // A git on PATH whose check-ref-format never exits.
+    const shims = tempDir();
+    const realGit = spawnSync("sh", ["-c", "command -v git"], { encoding: "utf8" }).stdout.trim();
+    writeFileSync(join(shims, "git"), `#!/bin/sh\n[ "$1" = check-ref-format ] && exec sleep 600\nexec "${realGit}" "$@"\n`);
+    chmodSync(join(shims, "git"), 0o755);
+    const outDir = tempDir();
+    const saved = process.env.PATH;
+    process.env.PATH = `${shims}:${saved}`;
+    try {
+      const responses = { ...searched([["example/t3", "2026-10-03T00:00:00Z"]]), ...pluginRepo("example/t3", "t3@example.org") };
+      const { report, state: after } = await run(responses, { outDir, refCheckMs: 300 });
+      expect(report.read).toEqual([
+        expect.objectContaining({ repo: "example/t3", failure: "unexpected-error", message: expect.stringContaining("git check-ref-format passed its time limit of 300 ms") }),
+      ]);
+      expect(after).toEqual({});
+      expect(readdirSync(outDir)).toEqual([]);
+    } finally {
+      process.env.PATH = saved;
+    }
   });
 });
 

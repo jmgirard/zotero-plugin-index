@@ -85,6 +85,8 @@ export interface DiscoverOptions {
   readMs?: number;
   runMs?: number;
   startedAt?: number;
+  // The longest the branch-name check of a drafted entry may take.
+  refCheckMs?: number;
 }
 
 export type DiscoverResult = { ok: true; state: DiscoveryState; report: Report } | { ok: false; message: string };
@@ -102,7 +104,7 @@ interface Candidate {
 // lacks.
 export async function discover(options: DiscoverOptions): Promise<DiscoverResult> {
   const { root, outDir, fetch, lookup, skip, limit, budget, now = new Date() } = options;
-  const { readMs = READ_LIMIT_MS, runMs = RUN_LIMIT_MS, startedAt = 0 } = options;
+  const { readMs = READ_LIMIT_MS, runMs = RUN_LIMIT_MS, startedAt = 0, refCheckMs } = options;
   const warnings: string[] = [];
   let candidates: Candidate[];
   try {
@@ -149,7 +151,7 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
       continue;
     }
 
-    const drafted = await draftEntry(repoUrl, { fetch, lookup, outDir, ids: index.ids, pendingIds: options.pendingIds, readMs });
+    const drafted = await draftEntry(repoUrl, { fetch, lookup, outDir, ids: index.ids, pendingIds: options.pendingIds, readMs, refCheckMs });
     if (!drafted.ok) {
       const { failure, message } = drafted;
       if (drafted.recorded) state[repo] = { pushedAt, failure, checkedAt: now.toISOString() };
@@ -185,15 +187,16 @@ export interface DraftOptions {
   // requests add.
   ids: Set<string>;
   pendingIds?: Set<string>;
-  // The longest the read of the repo may take.
+  // The longest the read of the repo, and the branch-name check of its entry, may take.
   readMs?: number;
+  refCheckMs?: number;
 }
 
 // Reads one repo and writes its entry to outDir, unless the index or an open pull
 // request already has its plugin id. `repoUrl` in the result is the URL GitHub gives
 // for the repo. A read that passes `readMs` fails as request-failed, marked build-level.
 export async function draftEntry(repoUrl: string, options: DraftOptions): Promise<Drafted> {
-  const { fetch, lookup, outDir, ids, pendingIds, readMs = READ_LIMIT_MS } = options;
+  const { fetch, lookup, outDir, ids, pendingIds, readMs = READ_LIMIT_MS, refCheckMs } = options;
   const refuse = (failure: DiscoveryFailure, message: string, recorded = !NOT_RECORDED.has(failure), buildLevel = false): Drafted => ({
     ok: false,
     failure,
@@ -232,7 +235,7 @@ export async function draftEntry(repoUrl: string, options: DraftOptions): Promis
   let problem: string | undefined;
   try {
     problem = repo
-      ? await plannedProblem({ repo, repoUrl: read.facts.repoUrl, id, version, strictMinVersion, strictMaxVersion }, entry.dir)
+      ? await plannedProblem({ repo, repoUrl: read.facts.repoUrl, id, version, strictMinVersion, strictMaxVersion }, entry.dir, refCheckMs)
       : `${read.facts.repoUrl} names no owner/repo`;
   } catch (error) {
     await rm(entry.dir, { recursive: true, force: true });
