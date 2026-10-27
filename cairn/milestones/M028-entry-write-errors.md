@@ -142,9 +142,10 @@ Pass 1, 2026-10-27, at 45e7efa. Sync: main at a26f530, not moved; no PR; Copilot
 - blame-history #1: `buildLevel` now covers outDir write failures, which D-011's build-level list excludes — reject (planned change: the plan gate chose the mark and logged its falsifier; README never calls write failures build-level, and `Drafted`'s comment defines the field)
 - blame-history #2: DESIGN's discover sentence on unrecorded refusals reads as if the reader marks write refusals — reject (false: "which the reader marks build-level" binds the 429/5xx refusal, and the recording rule it states is unchanged)
 - blame-history #3: the change reverses M019's "output-directory refusals are unchanged" — noted (recorded deferral, absorbed through the candidate row)
-- prior-review #1: CHANGELOG entry left a 44-character line — fix now
-- prior-review #2: README paragraph ends with a short "the workflow run fails." line; "gives." at 375 predates the branch — fix now for the edited lines; the untouched "gives." line left
+- prior-review #1: CHANGELOG entry left a 44-character line — fix now, fixed 423c2f7
+- prior-review #2: README paragraph ends with a short "the workflow run fails." line; "gives." at 375 predates the branch — fix now for the edited lines; the untouched "gives." line left, fixed 423c2f7
 - ripple #1: ROADMAP row "Keep issues open on entry write errors" describes the old behavior — reject (planned change: step 9 hygiene graduates the row)
 - ripple #2: README's build-level list omits the write failures that `buildLevel` now covers — reject (false: README calls only read failures build-level, and the field is internal)
 - ripple #3: the issue form does not mention write failures — reject (false: no sentence in it became wrong; it never listed bot failures)
-- ripple #4: discover.ts recording comment no longer names every unrecorded case — fix now
+- ripple #4: discover.ts recording comment no longer names every unrecorded case — fix now, fixed 423c2f7
+- After the fixes, at 423c2f7: `pnpm test` 17 files, 711 passed; `pnpm check` 28 entries, 0 problems. No snapshot files changed (`git diff --name-only main...HEAD` holds no `_snaps` or `__snapshots__` path). Open-PR cap: no open PRs by jmgirard.
