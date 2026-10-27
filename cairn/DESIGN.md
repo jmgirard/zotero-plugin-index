@@ -163,7 +163,9 @@ exception is a report that is abuse.
   `ISSUE_NUMBER` set, answers the issue: a pull request, or a comment with
   the reason and a close (M009, M010, M011). A read of the repo that stops
   with a build-level failure, or throws, gets a comment and leaves the issue
-  open (M019), as does an error from the check of the drafted entry (M022).
+  open (M019), as does an error from the check of the drafted entry (M022)
+  and an entry that `writeEntry` cannot write to the output directory
+  (`entry-exists` there, `write-failed`; M028).
   `pnpm close-issue` reads the pull request that `PR_NUMBER` names. When it
   is a bot pull request closed without a merge, the command comments on the
   open "Add a plugin" issue that its `Closes #<n>` line names and closes it

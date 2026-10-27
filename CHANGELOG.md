@@ -74,8 +74,10 @@
   the reason and closes the issue. It does the same for a repository that the
   index or a bot pull request already has. The bot's read of the repository
   can stop with a build-level failure, such as a GitHub rate limit or outage.
-  It can also stop with an error that the reader does not name, and the
-  check of the entry that the bot wrote can stop with an error. Then the bot
+  It can also stop with an error that the reader does not name. The bot can
+  fail to write the entry, with `entry-exists` for a directory already in its
+  output directory or with `write-failed`. The check of the entry that the bot
+  wrote can stop with an error. Then the bot
   comments the failure and leaves the issue open, and the workflow run fails.
   If a maintainer closes the bot's pull request without a merge, the bot
   comments on the issue and closes it as not planned.

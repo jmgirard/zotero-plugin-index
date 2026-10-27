@@ -93,11 +93,11 @@ report issues left open".
       `recorded` as it is. Update the comments on `Drafted`, on `draftEntry`,
       on `issueRead` and `issueAnswer` in `src/discover/issue.ts`, and on the
       handoff's `failed` outcome (`src/discover/handoff.ts:37`).
-- [ ] T3: Update README.md's issue-run paragraphs (about lines 369 and 375),
+- [x] T3: Update README.md's issue-run paragraphs (about lines 369 and 375),
       the CHANGELOG's Unreleased "Add a plugin" entry (about line 69), and
       DESIGN.md's discover text (about line 165). Run AC6's search and fix
       each sentence it finds that disagrees.
-- [ ] T4: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
+- [x] T4: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -114,6 +114,8 @@ report issues left open".
 - 2026-10-27: implement: branch m028-entry-write-errors cut from main at a26f530; status in-progress.
 - 2026-10-27: T1 done: the test that pinned the close became a two-case table (output-directory `entry-exists`, `write-failed` under a regular file), red on main because the outcome was `refused`, not `failed`; a new two-case table (index id clash, `../unsafe`) passes on main and after. T1 and T2 share one checkpoint, since T1's tests are red until T2.
 - 2026-10-27: T2 done: `draftEntry` passes `buildLevel` for a `writeEntry` refusal other than `unsafe-id`, `recorded` unchanged; comments on `Drafted`, `issueRead`, `readOutcome`, `issueAnswer`, and the handoff's `failed` outcome updated. `pnpm test` 711 passed, `pnpm check` 28 entries, 0 problems.
+- 2026-10-27: T3 done: README's refusal paragraph names the id refusals in place of "fail to write the entry", and its bot-failure paragraph names `entry-exists` and `write-failed`; the CHANGELOG "Add a plugin" entry and DESIGN's discover text gain the write failure. AC6 search (scratchpad script, 58 sentences): every hit on the issue run agrees with AC1 to AC3. The simple-english hook flags README lines 94 and 389 and CHANGELOG line 170, all older text this change does not touch; left as they are.
+- 2026-10-27: T4 done: `npx -y pnpm@12.15.0 test` 17 files, 711 passed; `npx -y pnpm@12.15.0 check` 28 entries, 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
