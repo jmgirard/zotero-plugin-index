@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M020: Answer report issues from two forms
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — it adds issue forms and a bot that answers people on GitHub   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m020-report-forms   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -112,7 +112,7 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
 
-- [ ] T1: Create the labels `report`, `works`, `broken`, and `not-counted`
+- [x] T1: Create the labels `report`, `works`, `broken`, and `not-counted`
       on the repo with `gh label create`, each with a one-line description.
       The forms add a label only when it exists (LESSONS, M010).
 - [ ] T2: Write `works.yml` and `broken.yml`, and the test of their ids,
@@ -145,6 +145,8 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 - 2026-10-27: plan gate chose one job with `contents: read` and `issues: write` over the read and write jobs of the "Add a plugin" workflow, because this job reads no plugin repo, only the issue and the entry ids; falsified by evidence that the job must read content from outside the index repo.
 - 2026-10-27: collision check: the candidate row "Collect works and broken user reports" is absorbed by M020 and M021. No D-entry or archived milestone covers reports. Inbox: 0 open issues, 6 open bot pull requests, none overlapping.
 - 2026-10-27: lessons used: 2026-10-26 (M010) labels must exist, 2026-10-25 (M002) recorded responses, 2026-10-25 (M001) pnpm through npx, 2026-10-26 (M018) search joined text.
+- 2026-10-27: implement started on branch m020-report-forms, cut from main at 972649c.
+- 2026-10-27: T1 done: created the labels `report`, `works`, `broken`, and `not-counted` with `gh label create`; `gh label list` shows all four.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
