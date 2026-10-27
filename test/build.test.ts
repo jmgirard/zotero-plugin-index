@@ -6,8 +6,8 @@ import { Ajv } from "ajv";
 import dns from "node:dns";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json" };
-import { buildData, checkOutput, writeData } from "../src/build/build.ts";
-import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
+import { buildData, checkOutput, INDEX_REPO, writeData } from "../src/build/build.ts";
+import { fixtureFetch, loadFixture, type Recorded, type Responses } from "./support/fixture-fetch.ts";
 import { DNS_FAIL_HOST, mixedFailures } from "./support/mixed-failures.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -52,16 +52,24 @@ function writeFixture(recorded: Responses): string {
 
 // pnpm sets npm_execpath to its own binary when it runs `pnpm test`. The preload makes
 // the command answer its requests and host lookups from `fixture` instead of the network.
-function pnpmBuild(args: string[], fixture?: string) {
+// GITHUB_REPOSITORY is left out unless `extra` sets it.
+function pnpmBuild(args: string[], fixture?: string, extra: Record<string, string> = {}) {
   const pnpmPath = process.env.npm_execpath;
   if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");
-  const { INIT_CWD: _outer, GITHUB_TOKEN: _token, ...env } = process.env;
+  const { INIT_CWD: _outer, GITHUB_TOKEN: _token, GITHUB_REPOSITORY: _repo, ...env } = process.env;
   if (fixture) Object.assign(env, { ZPI_FIXTURE: fixture, NODE_OPTIONS: `--import=${PRELOAD}` });
+  Object.assign(env, extra);
   return spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "build", ...args], { encoding: "utf8", env, timeout: 50_000 });
 }
 
 interface Output {
-  plugins: { id: string; upstream?: Record<string, unknown>; failure?: { name: string; message: string }; overrides: unknown[] }[];
+  plugins: {
+    id: string;
+    upstream?: Record<string, unknown>;
+    reports?: unknown[];
+    failure?: { name: string; message: string };
+    overrides: unknown[];
+  }[];
 }
 
 function readOutput(out: string): Output {
@@ -169,6 +177,78 @@ function treeOf(...ids: string[]): string {
 }
 
 const SECOND_UPDATE = "https://raw.githubusercontent.com/example/second-plugin/main/update.json";
+const ISSUES = `https://api.github.com/repos/${INDEX_REPO}/issues?labels=report&state=closed&per_page=100`;
+const ISSUES_PAGE_2 = `${ISSUES}&page=2`;
+
+// Runs pnpm build over TREE against `recorded` and returns the result, the out directory,
+// and the URL of each request in order.
+function loggedBuild(recorded: Responses, extra: Record<string, string> = {}) {
+  const out = tempDir();
+  const log = join(tempDir(), "requests.jsonl");
+  writeFileSync(log, "");
+  const result = pnpmBuild([TREE, "--out", out], writeFixture(recorded), { ZPI_REQUESTS: log, ...extra });
+  const urls = readFileSync(log, "utf8")
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => (JSON.parse(line) as { url: string }).url);
+  return { result, out, urls };
+}
+
+describe("pnpm build and the report issues", () => {
+  test("reads every page of the closed report issues first and writes the counted reports", () => {
+    const { result, out, urls } = loggedBuild(responses());
+    expect(result.status).toBe(0);
+    expect(urls.slice(0, 2)).toEqual([ISSUES, ISSUES_PAGE_2]);
+    const lists = urls.filter((url) => url.includes("/issues?"));
+    expect(lists).toHaveLength(2);
+    for (const url of lists) {
+      const params = new URL(url).searchParams;
+      expect([params.get("labels"), params.get("state")]).toEqual(["report", "closed"]);
+    }
+    const output = readOutput(out);
+    const validate = new Ajv({ allErrors: true }).compile(pluginsSchema);
+    expect(validate(output), JSON.stringify(validate.errors)).toBe(true);
+    expect(record(output, BETTER_NOTES)?.reports).toEqual([
+      { zoteroMajor: 7, works: 1, broken: 0 },
+      { zoteroMajor: 8, works: 1, broken: 0 },
+    ]);
+    expect(record(output, SECOND)?.reports).toEqual([{ zoteroMajor: 7, works: 0, broken: 1 }]);
+    expect(record(output, FORKED)).not.toHaveProperty("reports");
+  });
+
+  test("writes an empty reports list on each read record when no report counts", () => {
+    const recorded = responses();
+    recorded[ISSUES] = { json: [] };
+    const { result, out } = loggedBuild(recorded);
+    expect(result.status).toBe(0);
+    const output = readOutput(out);
+    expect([record(output, BETTER_NOTES)?.reports, record(output, SECOND)?.reports]).toEqual([[], []]);
+  });
+
+  test("reads the report issues of the repo that GITHUB_REPOSITORY names", () => {
+    const recorded = responses();
+    recorded["https://api.github.com/repos/example/fork/issues?labels=report&state=closed&per_page=100"] = { json: [] };
+    const { result, urls } = loggedBuild(recorded, { GITHUB_REPOSITORY: "example/fork" });
+    expect(result.status).toBe(0);
+    expect(urls[0]).toBe("https://api.github.com/repos/example/fork/issues?labels=report&state=closed&per_page=100");
+    expect(urls.some((url) => url.startsWith(`https://api.github.com/repos/${INDEX_REPO}/`))).toBe(false);
+  });
+
+  test.each([
+    ["an HTTP 503 answer", ISSUES, { status: 503, text: "Service Unavailable" }, `github-http-error: GET ${ISSUES} returned HTTP 503`],
+    ["a rejected fetch", ISSUES, { error: "connect ECONNRESET" }, `request-failed: GET ${ISSUES} failed: connect ECONNRESET`],
+    ["a second page that fails", ISSUES_PAGE_2, { status: 502, text: "Bad Gateway" }, `github-http-error: GET ${ISSUES_PAGE_2} returned HTTP 502`],
+    ["an answer that is not a list", ISSUES, { json: { message: "Not Found" } }, `request-failed: GET ${ISSUES} returned a body that is not a list`],
+  ])("names the failure, writes no data file, and exits 1 for %s", (_, url, answer, failure) => {
+    const recorded = responses();
+    recorded[url] = answer as Recorded;
+    const { result, out, urls } = loggedBuild(recorded);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(`cannot read the report issues: ${failure}`);
+    expect(existsSync(join(out, "v1", "plugins.json"))).toBe(false);
+    expect(urls.every((u) => u.includes("/issues?"))).toBe(true);
+  });
+});
 
 describe("pnpm build", () => {
   test("names an error the reader does not expect unexpected-error, goes on, and exits 1 when 2 of 3 records fail for build-level reasons and all 3 fail", () => {
@@ -327,7 +407,8 @@ describe("buildData", () => {
     let result: Awaited<ReturnType<typeof buildData>>;
     beforeAll(async () => {
       const tree = tempDir();
-      result = await buildData(tree, fixtureFetch(mixedFailures(tree)).fetch, new Date("2026-10-26T00:00:00Z"));
+      const recorded = { ...mixedFailures(tree), [ISSUES]: { json: [] } };
+      result = await buildData(tree, fixtureFetch(recorded).fetch, new Date("2026-10-26T00:00:00Z"));
     });
 
     test("names the records whose failure is build-level", () => {
@@ -394,6 +475,22 @@ describe("checkOutput", () => {
   test("reports a record whose archived value is not a boolean", () => {
     const problems = checkOutput(file({ ...base, upstream: { ...facts, archived: "true" } }));
     expect(problems.some((problem) => problem.startsWith("/plugins/0/upstream/archived "))).toBe(true);
+  });
+
+  test("passes a record with report counts", () => {
+    expect(checkOutput(file({ ...base, upstream: facts, reports: [{ zoteroMajor: 7, works: 0, broken: 2 }] }))).toEqual([]);
+  });
+
+  test.each([
+    ["a Zotero major below 7", { zoteroMajor: 6, works: 1, broken: 0 }, "/zoteroMajor "],
+    ["a Zotero major that is not an integer", { zoteroMajor: 7.5, works: 1, broken: 0 }, "/zoteroMajor "],
+    ["a negative works count", { zoteroMajor: 7, works: -1, broken: 0 }, "/works "],
+    ["a broken count that is not an integer", { zoteroMajor: 7, works: 0, broken: "1" }, "/broken "],
+    ["no broken count", { zoteroMajor: 7, works: 1 }, " must have required property 'broken'"],
+    ["another field", { zoteroMajor: 7, works: 1, broken: 0, account: 1 }, " must NOT have additional properties"],
+  ])("reports a report count with %s", (_, count, problem) => {
+    const problems = checkOutput(file({ ...base, upstream: facts, reports: [count] }));
+    expect(problems.some((p) => p.startsWith("/plugins/0/reports/0") && p.includes(problem))).toBe(true);
   });
 
   test("reports a record whose prerelease value is not a boolean", () => {

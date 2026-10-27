@@ -1,7 +1,57 @@
 {
-  "source": "Written by hand for the build tests: example/second-plugin passes the inclusion bar, is archived, and has only a prerelease, and example/forked-plugin is a fork. The build tests add the responses of test/fixtures/upstream/better-notes.json.",
+  "source": "Written by hand for the build tests: example/second-plugin passes the inclusion bar, is archived, and has only a prerelease, and example/forked-plugin is a fork. Two pages of report issues hold three counted reports and one closed as not planned. The build tests add the responses of test/fixtures/upstream/better-notes.json.",
   "repoUrl": "https://github.com/example/second-plugin",
   "responses": {
+    "https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&per_page=100": {
+      "headers": {
+        "link": "<https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&per_page=100&page=2>; rel=\"next\", <https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&per_page=100&page=2>; rel=\"last\""
+      },
+      "json": [
+        {
+          "number": 41,
+          "user": { "id": 2, "login": "second-reporter" },
+          "created_at": "2026-10-27T09:00:00Z",
+          "state_reason": "completed",
+          "closed_by": { "login": "github-actions[bot]", "id": 41898282, "type": "Bot" },
+          "labels": [{ "name": "report" }, { "name": "broken" }],
+          "body": "### Plugin id\n\nsecond-plugin@example.org\n\n### Plugin version\n\n1.0.0\n\n### Zotero version\n\n7.0"
+        },
+        {
+          "number": 40,
+          "user": { "id": 1, "login": "first-reporter" },
+          "created_at": "2026-10-27T08:00:00Z",
+          "state_reason": "completed",
+          "closed_by": { "login": "github-actions[bot]", "id": 41898282, "type": "Bot" },
+          "labels": [{ "name": "report" }, { "name": "works" }],
+          "body": "### Plugin id\n\nKnowledge4Zotero@windingwind.com\n\n### Plugin version\n\n3.3.3\n\n### Zotero version\n\n7.0.11"
+        }
+      ]
+    },
+    "https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&per_page=100&page=2": {
+      "headers": {
+        "link": "<https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&per_page=100&page=1>; rel=\"prev\", <https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&per_page=100&page=1>; rel=\"first\""
+      },
+      "json": [
+        {
+          "number": 39,
+          "user": { "id": 3, "login": "third-reporter" },
+          "created_at": "2026-10-26T08:00:00Z",
+          "state_reason": "completed",
+          "closed_by": { "login": "github-actions[bot]", "id": 41898282, "type": "Bot" },
+          "labels": [{ "name": "report" }, { "name": "works" }],
+          "body": "### Plugin id\n\nKnowledge4Zotero@windingwind.com\n\n### Plugin version\n\n3.3.3\n\n### Zotero version\n\n8.0"
+        },
+        {
+          "number": 38,
+          "user": { "id": 4, "login": "fourth-reporter" },
+          "created_at": "2026-10-26T07:00:00Z",
+          "state_reason": "not_planned",
+          "closed_by": { "login": "github-actions[bot]", "id": 41898282, "type": "Bot" },
+          "labels": [{ "name": "report" }, { "name": "broken" }],
+          "body": "### Plugin id\n\nKnowledge4Zotero@windingwind.com\n\n### Plugin version\n\n3.3.3\n\n### Zotero version\n\n7.0"
+        }
+      ]
+    },
     "https://api.github.com/repos/example/second-plugin": {
       "json": {
         "full_name": "example/second-plugin",

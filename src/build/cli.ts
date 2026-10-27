@@ -20,7 +20,8 @@ async function main(): Promise<number> {
   const root = positional[0] ? resolve(cwd, positional[0]) : "plugins";
   const outDir = out ? resolve(cwd, out) : "dist";
 
-  const built = await buildData(root, (url, init) => fetch(url, init));
+  // GitHub Actions names the repo the workflow runs in.
+  const built = await buildData(root, (url, init) => fetch(url, init), undefined, process.env.GITHUB_REPOSITORY);
   if (!built.ok) {
     for (const problem of built.problems) console.error(problem);
     console.error("wrote no file");

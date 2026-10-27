@@ -124,7 +124,7 @@ throwaway accounts.
 
 - [x] T1: Write the tests of `countReports`, then the function, reusing
       `parseReport` from M020.
-- [ ] T2: Read the report issues in `buildData` before the plugin reads,
+- [x] T2: Read the report issues in `buildData` before the plugin reads,
       add `reports` to the records and the schema, and add the CLI's failure
       line and exit. Add recorded responses for the issue list to the build
       fixtures, since every build now reads it (LESSONS, M002).
@@ -153,6 +153,7 @@ throwaway accounts.
 - 2026-10-27: re-audit: AC1 (full) — null `closed_by` unnamed (named); a gloss saying which workflow closes reports, unchecked (cut); one probe per drop family (the `closed_by` probes named, the other families tested); a report that a person reopens and closes again stops counting (T5 adds it to the DESIGN Known issues entry); DESIGN item 4 should say the bot closed the issues (T5).
 - 2026-10-27: re-audit: AC1 (full) — the record a report goes to and "each Zotero major" (answered: AC2 states the output, no change); an absent `closed_by` drops every report if GitHub stops sending it (new candidate row); probes for one `user.id` under two logins, the dropped-newest case for each drop, and the near-miss login `github-actions` (tests added); the tie probe exists; AC2's fixture needs counted reports (T2). No wording change.
 - 2026-10-27: T1 done: `countReports` in `src/reports/count.ts`; an item without a numeric `user.id`, a parseable `created_at`, or a numeric `number` does not count. Planted defects (no `closed_by` check, no tie rule) turned 3 tests red.
+- 2026-10-27: T2 done: `buildData` takes `indexRepo` (default `INDEX_REPO`, the CLI passes `GITHUB_REPOSITORY`) and reads the issue list after the local entry reads and before any upstream read, so the entry-error tests still make no request; the failure line is `cannot read the report issues: <failure name>: <message>`. `reportCount` is a schema definition. The mixed-failures golden file gains one `"reports": []` line, regenerated from the new code. A planted defect (a failed read goes on with no issues) turned the 4 AC3 tests red.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

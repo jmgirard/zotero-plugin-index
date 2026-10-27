@@ -4,7 +4,8 @@ import { Ajv, type ErrorObject } from "ajv";
 import indexSchema from "../../schemas/index.v1.schema.json" with { type: "json" };
 import pluginsSchema from "../../schemas/plugins.v1.schema.json" with { type: "json" };
 import { listEntries } from "../check/check.ts";
-import { type Fetch, readUpstream, type UpstreamFacts } from "../upstream/reader.ts";
+import { countReports, type ReportCount } from "../reports/count.ts";
+import { type Fetch, githubClient, ReadFailure, readUpstream, type UpstreamFacts } from "../upstream/reader.ts";
 
 export interface Override {
   field: string;
@@ -18,6 +19,9 @@ export interface PluginRecord {
   id: string;
   repoUrl: string;
   upstream?: UpstreamFacts;
+  // The counted user reports on the version in upstream, by Zotero major. Every record with
+  // upstream that the build writes has it; data written before reports existed has none.
+  reports?: ReportCount[];
   failure?: { name: string; message: string };
   overrides: Override[];
 }
@@ -37,10 +41,15 @@ const validateIndex = ajv.compile(indexSchema);
 const validatePlugins = ajv.compile(pluginsSchema);
 const validateRecord = ajv.getSchema(`${pluginsSchema.$id}#/definitions/record`)!;
 
-// Reads every entry under root, then reads each plugin upstream, one at a time. A failed
-// upstream read goes into that entry's record. An entry that cannot be read, or whose
-// meta.json or index.json is invalid, stops the build before any upstream read.
-export async function buildData(root: string, fetch: Fetch, now = new Date()): Promise<BuildResult> {
+// The repo whose report issues the build counts, when GITHUB_REPOSITORY is unset.
+export const INDEX_REPO = "jmgirard/zotero-plugin-index";
+
+// Reads every entry under root, then the report issues of indexRepo, then each plugin
+// upstream, one at a time. A failed upstream read goes into that entry's record. An entry
+// that cannot be read, or whose meta.json or index.json is invalid, stops the build before
+// any request. The counts come only from the issues, so a failed issue read also stops
+// it, before any upstream read (D-013).
+export async function buildData(root: string, fetch: Fetch, now = new Date(), indexRepo = INDEX_REPO): Promise<BuildResult> {
   let listed: Awaited<ReturnType<typeof listEntries>>;
   try {
     listed = await listEntries(root);
@@ -58,7 +67,15 @@ export async function buildData(root: string, fetch: Fetch, now = new Date()): P
   }
   if (problems.length > 0) return { ok: false, problems };
 
-  const plugins: PluginRecord[] = [];
+  let issues: unknown[];
+  try {
+    issues = await githubClient(fetch).pages(`https://api.github.com/repos/${indexRepo}/issues?labels=report&state=closed&per_page=100`);
+  } catch (error) {
+    const name = error instanceof ReadFailure ? `${error.failure}: ` : "";
+    return { ok: false, problems: [`cannot read the report issues: ${name}${(error as Error).message}`] };
+  }
+
+  const records: PluginRecord[] = [];
   const buildLevel: string[] = [];
   for (const { id, repoUrl, overrides } of entries) {
     const { buildLevel: counts, ...read } = await readRecord(repoUrl, fetch);
@@ -70,11 +87,15 @@ export async function buildData(root: string, fetch: Fetch, now = new Date()): P
       ? []
       : (validateRecord.errors ?? []).map(describe);
     if (recordProblems.length > 0 && record.upstream) {
-      plugins.push({ id, repoUrl, failure: { name: "facts-invalid", message: recordProblems.join("; ") }, overrides });
+      records.push({ id, repoUrl, failure: { name: "facts-invalid", message: recordProblems.join("; ") }, overrides });
     } else {
-      plugins.push(record);
+      records.push(record);
     }
   }
+  const reports = countReports(issues, records);
+  const plugins = records.map(({ id, repoUrl, upstream, failure, overrides }) =>
+    upstream ? { id, repoUrl, upstream, reports: reports.get(id) ?? [], overrides } : { id, repoUrl, failure, overrides },
+  );
   const data: PluginsFile = { schemaVersion: 1, generatedAt: now.toISOString(), plugins };
   const text = `${JSON.stringify(data, null, 2)}\n`;
   // Check the file as written, where undefined fields are gone.
