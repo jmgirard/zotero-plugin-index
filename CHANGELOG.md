@@ -28,8 +28,7 @@
   `chrome/locale/<tag>/` folder fails nothing. The reader inflates at most
   about 9 MiB of such files from each XPI. A file that it does not read, or
   cannot inflate, counts as holding a message. A download from `localhost`
-  fails
-  with `host-refused`. So does a download from a host that is, or resolves
+  fails with `host-refused`. So does a download from a host that is, or resolves
   to, an address in a blocked range, such as a loopback or private range.
   The reader follows at most 5 redirects for the XPI and the `update.json`.
   A cut-off XPI download, and a redirect with no `Location`, now fail with

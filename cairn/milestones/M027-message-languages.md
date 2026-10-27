@@ -220,3 +220,20 @@ Pass 2, 2026-10-27, branch head 3280947 after review return 1; main at 2068a97, 
 - AC5: `pnpm test`: 17 files, 708 tests passed. `pnpm check`: 28 entries, 0 problems.
 - Gate: `cairn_validate.py` all checks passed; no principle changed; no toolchain checks in the generic profile.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: locale entries declaring size 0 charge nothing to the budget but each builds an fflate `Inflate`, so cost per entry exceeds main's (not measured by the reviewer) — reject, edge: the same crafted near-50 MiB XPI as pass-1 diff-bug #4 (5.4 s against 2.6 s on main), slow running only; recorded in new row "Bound per-entry work in the locale walk".
+- diff-bug #2: the 512-header bomb test's 1 s bound may flake on CI — noted: 116 ms locally, and the build job runs it on Node 24 at review; raise to 2 s only if CI flakes.
+- diff-bug #3: `zipEntry` now calls `entryAt` for every entry — reject, false: `u16` reads past the end as 0 and never throws, `zip64Sizes` already ran for every entry, and failure names and messages are unchanged.
+- diff-bug #4: a stored entry whose compressed and declared sizes differ keeps its tag — reject, false: real zip tools write true sizes in the central directory, and the error only keeps a tag.
+- diff-bug #5: `.properties` continuation after a comment, `<!ENTITY` in a quoted DTD value, and Fluent attribute-like lines — reject, false: each only keeps a tag, and no real translation is dropped.
+- diff-bug #6: one push can decode more than 1 KiB of pending stored-block input — noted: stored output equals its input, so the about 1 MiB overshoot holds (the T7 claim audit measured 1,103,987 bytes at most).
+- blame-history #1: per-file `Inflate` work is not charged to the budget, about 2 s for half a million entries — follow-up, row "Bound per-entry work in the locale walk".
+- blame-history #2: `Intl` calls run for every locale entry before the kept-tag skip, 2.8 s per million entries, from M023 and M025 — follow-up, same row.
+- blame-history #3: broken CHANGELOG reflow ("fails" alone) and ragged README and DESIGN lines — fix now.
+- prior-review #1: DESIGN never says the budget charges compressed size, though pass-1 diff-bug #9's reject says comments and DESIGN state the code — fix now (DESIGN names the three charges).
+- prior-review #2: added DESIGN lines over 80 columns and the lone "fails" CHANGELOG line, against the M018 wrap lesson — fix now (DESIGN lines 40 and 257 rewrapped).
+- ripple #1: DESIGN's inflate sentence gives 16 KiB for every file — fix now (it now names `manifest.json` and `messages.json`).
+- ripple #2: DESIGN's "each unzipped file at 1 MiB" reads as a failure rule for locale files — reject, false: the next sentence says a locale file over 1 MiB is not unzipped and counts.
+- ripple #3: README's "inflates it 1 KiB at a time to find a message" implies an early stop inside a file — fix now ("inflates the whole file, 1 KiB of input at a time, and then looks for a message").
+- ripple #4: README's "a plugin that writes its text straight into its code ... its list is empty" is now one cause of two — reject, false: the sentence stays true, and the paragraph names comment-only folders above it.
+- ripple #5: the schema's "Empty when the XPI has no such folder" — reject, false: "such folder" is a folder with a named language and a file that holds a message, so it covers both causes.
+- Return floor: no finding shows a criterion failing or a load-bearing defect; no return.

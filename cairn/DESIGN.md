@@ -36,11 +36,11 @@ interface languages (M024).
 The data also carries the interface languages that the read XPI's locale
 folders name (M023), counting a folder only when one of its files holds a
 message, judged by file type (M027). They say which languages a plugin
-ships interface text for, not whether a translation is complete. A `languages` override records
-them for a plugin whose list is wrong or empty. Each plugin page shows
-them by name, outside the Details section, and the home page's language
-menu filters the list by language subtag, run by the site's one script
-(D-014, M024).
+ships interface text for, not whether a translation is complete. A
+`languages` override records them for a plugin whose list is wrong or
+empty. Each plugin page shows them by name, outside the Details section,
+and the home page's language menu filters the list by language subtag,
+run by the site's one script (D-014, M024).
 The page shows the name, the description, the version pills, the declared
 range, the interface languages (M024), the user reports on the release the
 index read with a "Works" and a "Broken" link (M021), and the repository
@@ -254,9 +254,10 @@ reused._
   The reader caps the XPI at 50 MiB, each unzipped file at 1 MiB, and the
   `update.json` at 1 MiB. A locale file whose declared or compressed size is
   over 1 MiB is not unzipped, and one that inflates past its declared size
-  stops within one 1 KiB push; both count as holding a message (M027). `src/upstream/host-guard.ts` refuses a download
-  host in a loopback, private, or reserved range, by its literal address or
-  by each address that DNS returns. The reader follows download redirects
+  stops within one 1 KiB push; both count as holding a message (M027).
+  `src/upstream/host-guard.ts` refuses a download host in a loopback,
+  private, or reserved range, by its literal address or by each address
+  that DNS returns. The reader follows download redirects
   itself, at most 5, and checks each one (M004). If an XPI's zip claims
   more entries than its length can hold, at 46 bytes for each entry, the
   read fails with `xpi-unreadable`. If the zip has more than one entry named
@@ -266,9 +267,9 @@ reused._
   so without these checks either zip held the build's CPU (M005, corrected
   M012).
   The reader finds each file from the central directory, read as `unzipSync`
-  reads it, and loops over the claimed count. It inflates a deflated file
-  with fflate's streaming `Inflate`, 16 KiB of input at a time. For
-  `manifest.json` and the default locale's `messages.json`, it fails with
+  reads it, and loops over the claimed count. It inflates a deflated
+  `manifest.json` or default locale's `messages.json` with fflate's
+  streaming `Inflate`, 16 KiB of input at a time, and fails with
   `xpi-unreadable` once the output passes the unzipped size that the zip
   declares, because `unzipSync` decodes the whole stream however far it runs
   past that size (M012).
@@ -284,8 +285,9 @@ reused._
   another compression, and one that would take the XPI's inflated locale
   total past 8 MiB (`LOCALE_MAX_BYTES`). So does a file that fails to
   inflate, or whose output length differs from its declared size, so no
-  locale file fails the read. A file whose output passes its declared size
-  adds that output to the total, so the reader inflates at most about
+  locale file fails the read. The total charges each file the largest of
+  its declared size, its compressed size, and its output, so the reader
+  inflates at most about
   1 MiB past 8 MiB of locale files for each XPI, however small the sizes
   the files declare. So each XPI takes up to three walks over the claimed
   count: for `manifest.json`, the default locale's `messages.json`, and the

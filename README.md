@@ -104,9 +104,9 @@ and not a `#` or `!` comment. In a `.dtd` file, it is an `<!ENTITY` outside
 `<!-- -->` comments. A file of any other type counts. So a folder whose
 files hold only comments, as some plugins ship for each language that
 Zotero supports, adds no language. The build inflates at most about 9 MiB
-of locale files from each XPI. A file that it does not read, or cannot inflate,
-counts as holding a message. The build writes each
-tag in its standard form, so `zh_CN` becomes `zh-CN`, and sorts the list. It
+of locale files from each XPI. A file that it does not read, or cannot
+inflate, counts as holding a message. The build writes each tag in its
+standard form, so `zh_CN` becomes `zh-CN`, and sorts the list. It
 leaves out a folder whose name does not have the form of a language tag, and
 the tag `und` (undetermined). It also leaves out a tag whose language has no
 English name in the `Intl` data of the Node.js that runs the build. So a
@@ -232,9 +232,10 @@ host, and what it unzips from the XPI:
   deflate data inflates past the unzipped size that the zip declares fails
   with `xpi-unreadable`. The command inflates 16 KiB of that data at a time
   and stops after the first 16 KiB whose output passes that size.
-- A file in a locale folder fails nothing. The command inflates it 1 KiB at
-  a time to find a message. For each file it counts the largest of the
-  declared size, the compressed size, and the output. It does not inflate a
+- A file in a locale folder fails nothing. The command inflates the whole
+  file, 1 KiB of input at a time, and then looks for a message. For each
+  file it counts the largest of the declared size, the compressed size, and
+  the output. It does not inflate a
   locale file that takes that count for the XPI past 8 MiB. One file that
   inflates past its declared size can add about 1 MiB more. A locale file
   over 1 MiB, past that count, or not readable counts as holding a message.
