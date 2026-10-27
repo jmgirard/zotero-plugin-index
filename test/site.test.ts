@@ -244,14 +244,14 @@ describe("the plugin page", () => {
       ...(description ? [`<p class="description" data-description>${escaped(description)}</p>`] : []),
       support,
       ...(hasBound(record) ? ['data-fact="declared-range"'] : []),
-      ...(record.upstream ? ["<section class=\"reports\" data-reports>"] : []),
+      ...(record.upstream ? ['data-fact="languages"', "<section class=\"reports\" data-reports>"] : []),
       'data-fact="repository"',
       ...(record.upstream ? ['data-fact="releases"'] : []),
       "<details>",
     ]);
     if (!description) expect(html).not.toContain("data-description");
     if (!hasBound(record)) expect(html).not.toContain('data-fact="declared-range"');
-    if (!record.upstream) expect(html).not.toContain('data-fact="releases"');
+    if (!record.upstream) expect(html).not.toMatch(/data-fact="(?:releases|languages)"/);
     if (!record.failure && hasBound(record)) expectPills(html, record);
     else expect(pills(html)).toEqual([]);
 
@@ -297,6 +297,28 @@ describe("the plugin page", () => {
       ["strict_max_version", "7.*", "8.*", "every version", "yes", "The author confirmed that the plugin works on Zotero 8."],
       ["strict_min_version", "7.0", "8.5", "0.9.0", "no", "Version 0.9.0 needs an API that Zotero 8.5 added."],
     ]);
+  });
+
+  test.each([
+    ["two upstream tags", "first-plugin@example.org", "English (United States), Chinese (China)"],
+    ["an empty upstream list", "old-plugin@example.org", "None declared"],
+    ["no languages field", "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "None declared"],
+    ["an override for every version, in its own order", "no-range-plugin@example.org", "French, German"],
+    ["an override for another version only", "min-only-plugin@example.org", "Chinese (China), Chinese (Taiwan)"],
+    ["an override for the version read beside one for every version", "locale-plugin@example.org", "Portuguese (Brazil), Spanish (Latin America)"],
+  ])("shows the interface languages for %s", (_, id, text) => {
+    expect(page(id)).toContain(`<p class="languages">Interface languages: <span data-fact="languages">`);
+    expect(fact(page(id), "languages")).toBe(text);
+  });
+
+  test.each([
+    ["a non-empty", "no-range-plugin@example.org", [["en", "fr, de"]]],
+    ["an empty", "locale-plugin@example.org", [["none", "es"], ["none", "pt-BR, es-419"]]],
+  ])("shows %s upstream list beside a languages override", (_, id, cells) => {
+    const rows = [...page(id).matchAll(/<tr data-override="languages">(.*?)<\/tr>/g)].map((row) =>
+      [...row[1]!.matchAll(/<td>(.*?)<\/td>/g)].slice(1, 3).map((cell) => cell[1]),
+    );
+    expect(rows).toEqual(cells);
   });
 
   test("shows the failure and no declared range for a record that was not read", () => {

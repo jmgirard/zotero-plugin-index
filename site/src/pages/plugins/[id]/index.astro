@@ -5,6 +5,7 @@ import {
   day,
   declaredRange,
   displayName,
+  languagesText,
   loadData,
   overrideUsed,
   rangeText,
@@ -45,6 +46,13 @@ const { min, max } = declaredRange(record);
     (min !== undefined || max !== undefined) && (
       <p class="range">
         Declared range: <span data-fact="declared-range">{rangeText(record)}</span>
+      </p>
+    )
+  }
+  {
+    upstream && (
+      <p class="languages">
+        Interface languages: <span data-fact="languages">{languagesText(record)}</span>
       </p>
     )
   }

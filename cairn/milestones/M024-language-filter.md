@@ -130,7 +130,7 @@ with no `upstream` has an empty applied list. M023 keeps
       helpers to `src/site/`: the applied list, the display name, the row's
       subtags, the menu options, and the function that decides whether a row
       shows.
-- [ ] T3: Add the plugin page fact to `site/src/pages/plugins/[id]/index.astro`
+- [x] T3: Add the plugin page fact to `site/src/pages/plugins/[id]/index.astro`
       and a `languages` key to `upstreamValue` in `site/src/data.ts`, with
       AC1's tests. Write `{" "}` at a line end before an element.
 - [ ] T4: Add the menu, the row attributes, and the `<script>` to
@@ -165,6 +165,7 @@ with no `upstream` has an empty applied list. M023 keeps
 - 2026-10-27: T1 done: the site fixture gains languages on five records and a seventh record, `locale-plugin@example.org`, for the override pair; `first` holds two upstream tags, `old` `[]`, `guid` no field, `no-range` the unversioned `fr, de` override, `min-only` `zh-CN, zh-TW` with an override for version 1.0.0 only, and `locale` a version-specific `pt-BR, es-419` beside an unversioned `es`. `pnpm test` (647) and `pnpm check` pass.
 - 2026-10-27: T2 choice: the filter function `rowShows(rowLanguages, value, options)` sits alone in `src/site/language-filter.ts`, with no imports, so the page's script bundles only it; it takes the menu's values so that a value no option has shows every row, AC3's sixth input. The build helpers (`appliedLanguages`, `languageName`, `rowLanguages`, `languageOptions`) sit in `src/site/languages.ts`; `appliedLanguages` passes the list through `Intl.getCanonicalLocales`, which writes each tag in canonical form once, per the M023 review note.
 - 2026-10-27: T2 done: `test/language.test.ts` was red before the two files existed and passes with 14 tests, AC3's six `rowShows` inputs among them. `pnpm test` (661) and `pnpm check` pass.
+- 2026-10-27: T3 done: the plugin page shows `<p class="languages">Interface languages: <span data-fact="languages">…</span></p>` between the declared-range line and the reports section, from `languagesText` in `site/src/data.ts`; `.languages` takes the muted color of `.range`. The page-order test now places the fact; six fact tests and two Overrides-table tests added. `pnpm test` (669) and `pnpm check` pass.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
