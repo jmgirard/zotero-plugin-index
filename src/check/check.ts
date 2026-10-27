@@ -147,10 +147,12 @@ async function checkEntry(dir: string, entry: string, validators: Validators): P
   if (meta.readError) add("files-present", `cannot read meta.json: ${meta.readError}`);
   if (index.readError) add("files-present", `cannot read index.json: ${index.readError}`);
 
-  if (meta.error) add("registry-schema", `meta.json is not valid JSON: ${meta.error}`);
+  if (meta.bom) add("registry-schema", `meta.json ${BOM_MESSAGE}`);
+  else if (meta.error) add("registry-schema", `meta.json is not valid JSON: ${meta.error}`);
   else if ("value" in meta) validate(validators.meta, meta.value, "meta.json", "registry-schema", add);
 
-  if (index.error) add("index-schema", `index.json is not valid JSON: ${index.error}`);
+  if (index.bom) add("index-schema", `index.json ${BOM_MESSAGE}`);
+  else if (index.error) add("index-schema", `index.json is not valid JSON: ${index.error}`);
   else if ("value" in index) validate(validators.index, index.value, "index.json", "index-schema", add);
 
   const id = (meta.value as { id?: unknown } | undefined)?.id;
@@ -204,9 +206,12 @@ function describe(error: ErrorObject): string {
 interface JsonRead {
   missing: boolean;
   readError?: string;
+  bom?: boolean;
   error?: string;
   value?: unknown;
 }
+
+const BOM_MESSAGE = "starts with a UTF-8 byte-order mark (U+FEFF): save it as UTF-8 without one";
 
 async function readJson(path: string): Promise<JsonRead> {
   let text: string;
@@ -216,6 +221,8 @@ async function readJson(path: string): Promise<JsonRead> {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return { missing: true };
     return { missing: false, readError: (error as Error).message };
   }
+  // The utf8 read keeps a leading byte-order mark, and JSON.parse refuses it.
+  if (text.startsWith("﻿")) return { missing: false, bom: true };
   try {
     return { missing: false, value: JSON.parse(text) };
   } catch (error) {

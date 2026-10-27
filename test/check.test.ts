@@ -170,6 +170,25 @@ describe("pnpm check <root>", () => {
     expect(result.stdout).toContain("meta.json is not valid JSON");
   });
 
+  test.each([
+    ["meta.json", "registry-schema"],
+    ["index.json", "index-schema"],
+  ])("%s that starts with a UTF-8 byte-order mark", (file, rule) => {
+    const root = treeWith((dir) => writeFileSync(join(dir, file), `﻿${readFileSync(join(dir, file), "utf8")}`));
+    const result = expectOnlyRule(root, rule);
+    expect(result.findings).toHaveLength(1);
+    expect(result.stdout).toContain(`${file} starts with a UTF-8 byte-order mark`);
+  });
+
+  test("passes a byte-order mark inside a JSON string", () => {
+    const root = treeWith((dir) =>
+      editJson(join(dir, "index.json"), (index) => (index.overrides = [{ field: "name", value: "x", reason: "a﻿b" }])),
+    );
+    const result = runCheck(root);
+    expect(result.status).toBe(0);
+    expect(result.stdout).not.toContain("byte-order mark");
+  });
+
   test("registry-schema: meta.json with a field the registry does not define", () => {
     const root = treeWith((dir) => editJson(join(dir, "meta.json"), (meta) => (meta.downloads = 5)));
     const result = expectOnlyRule(root, "registry-schema");
