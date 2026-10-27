@@ -1,0 +1,113 @@
+<!-- Section ownership + write-modes: see tracking-rules.md "Milestone-file
+     section ownership". A phase skill never rewrites another phase's section.
+     Per-section owners are tagged below. The one size check that can fail is
+     cairn_validate's <150 over the plan-owned body. -->
+# M025: Drop locale folders naming no language
+
+- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Priority:** low   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
+- **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
+- **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
+- **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
+- **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
+- **Surface tier:** user-facing — it changes what the published data file's `languages` list holds and the docs that describe it   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
+- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+
+## Goal
+<!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
+
+The published `languages` list holds only tags whose language has an English name, so a locale folder such as `locale/img/` no longer lists `img` as a language.
+
+## Scope
+<!-- owner: plan · create/amend-via-gate -->
+
+**In:** `localeLanguages` in `src/upstream/reader.ts` keeps a canonical tag
+only when `new Intl.DisplayNames(["en"], { type: "language", fallback:
+"none" })` gives a name for the tag's language subtag
+(`new Intl.Locale(tag).language`). The script, region, and variant are not
+checked. Two new cases in the reader's languages table. The README,
+CHANGELOG, schema description, DESIGN, and code comments that state the
+rule.
+
+**Out:** `languages` override values in `index.json` keep only the schema's
+tag-shape pattern. The user chose the read list only at the plan, and
+README states that overrides are not filtered; no row. The site's display
+of an override tag with no name, by its code, stays as it is. Old records
+need no rewrite, since the daily build reads each plugin again. The schema
+pattern `LANGUAGE_TAG` does not change.
+
+## Acceptance criteria
+<!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
+
+- [ ] AC1: For an XPI whose locale folders are `locale/en-US/`,
+      `locale/img/`, `locale/js/`, `locale/qaa/`, `chrome/locale/IMG/`,
+      `locale/js_US/`, and `locale/fil/`, each holding a file,
+      `readUpstream` gives `languages` as `["en-US", "fil"]`. A case in the
+      languages table of `test/upstream.test.ts` asserts this list.
+- [ ] AC2: For an XPI whose only locale folders are `chrome/locale/en_XX/`
+      and `chrome/locale/en_Qaaa/`, each holding a file, `readUpstream`
+      gives `languages` as `["en-Qaaa", "en-XX"]`. A case in that table
+      asserts this list.
+- [ ] AC3: The `languages` text in README.md's "Using the data", the
+      languages entry under "Unreleased" in CHANGELOG.md, the `languages`
+      description in `schemas/plugins.v1.schema.json`, item 2 of
+      cairn/DESIGN.md's data sources and its reader paragraph, and the
+      comments on `languages` and `localeLanguages` in
+      `src/upstream/reader.ts` state that a tag counts only when its
+      language has an English name in the build's Node.js `Intl` data.
+      README.md also states that this rule does not apply to `languages`
+      override values. README.md, with each line break replaced by a space,
+      does not contain "does not check that a tag names".
+- [ ] AC4: `pnpm test` and `pnpm check` pass.
+
+## Coverage
+<!-- owner: plan · create/amend-via-gate -->
+
+- AC1 → T1, T2
+- AC2 → T1, T2
+- AC3 → T2, T3
+- AC4 → T4
+
+## Tasks
+<!-- owner: plan (create) / implement (check-off, minor edits); substantive
+     change is amend-via-gate. -->
+
+- [ ] T1: Add the AC1 and AC2 cases to the languages table in
+      `test/upstream.test.ts` (near line 130). Run them on the unchanged
+      reader and see the AC1 case fail with `img`, `js`, `qaa`, and `js-US`
+      in the list; the AC2 case passes before and after, as a control.
+- [ ] T2: In `localeLanguages` (`src/upstream/reader.ts` near line 497),
+      skip a canonical tag when a module-level `Intl.DisplayNames(["en"],
+      { type: "language", fallback: "none" })` gives no name for its
+      language subtag. Update the comments on `languages` (near line 31)
+      and above `localeLanguages` (near line 492).
+- [ ] T3: Update README.md "Using the data" (near line 97; drop "It does not
+      check that a tag names a known language", state the rule, its Node
+      `Intl` source, and that overrides are not filtered), the CHANGELOG
+      languages entry under "Unreleased" (edit it, add no new entry), the
+      schema `languages` description (near line 110), and cairn/DESIGN.md
+      item 2 (near line 100) and the reader paragraph (near line 270).
+      Search joined copies for stale wording.
+- [ ] T4: Run `pnpm test` and `pnpm check`. The PR's CI run, on Node 24,
+      is the Node 24 check of AC1 and AC2.
+
+## Work log
+<!-- owner: any skill · append-only; one line per entry; absolute dates. -->
+
+- 2026-10-27: created by /milestone-plan.
+- 2026-10-27: tier check: milestone — it changes what the published `languages` list holds, against README's stated rule that the reader does not check for a known language, and the filter is a design choice.
+- 2026-10-27: idea vet: two concerns. Live data (20 records, 50 tags, read 2026-10-27) holds no unnamed tag, so the change guards later plugins only — answered build it. The kept set follows the build's Node `Intl` data, so a rare language with no English name is dropped and a Node upgrade can change the set — answered build it, with the docs naming that source.
+- 2026-10-27: question set: apply the rule to `languages` override values too — no, read list only; README says so.
+- 2026-10-27: lessons used: 2026-10-25 (M001) pnpm through npx; 2026-10-26 (M018) search joined copies of wrapped docs.
+- 2026-10-27: plan gate chose checking the language subtag over checking the whole tag because the whole-tag call gives no name for `en-XX` (known language, unknown region); falsified by a kept tag whose language has a name but which users report as no real interface language.
+- 2026-10-27: changelog: edit the languages entry under "Unreleased", since that feature is not released yet, rather than add an entry.
+- 2026-10-27: collision check: absorbs candidate row "Drop locale folders naming no language" (M023, M024 reviews); M023 and M024 shipped the reader and the site; no D-entry covers the filter.
+- 2026-10-27: inbox sweep: 0 open issues; 3 open bot PRs (#15, #25, #28) each add a plugin, no overlap.
+- 2026-10-27: criteria audit (full): 8 findings, all fixed. AC1 dropped its "because" clause and added probes for `chrome/locale/`, upper case, `_`, and `js_US`; AC2 narrowed to exact inputs and list; AC3 added the schema description, DESIGN item 2, the Node `Intl` source, and a line-break-safe search; the override check was not built (question set), so README states overrides are not filtered.
+- 2026-10-27: criteria re-audit (full, after the question set): 3 findings, all fixed. `locale/css/` (an ISO 639-3 code that later data could name) became `locale/qaa/` (private use); AC1 added the kept 3-letter `fil`; AC2 added the unknown script `en_Qaaa`; T4 reads the PR's Node 24 CI run.
+
+## Decisions
+<!-- owner: implement / review · append-only; milestone-local. -->
+
+## Review
+<!-- owner: review · exclusive. -->
