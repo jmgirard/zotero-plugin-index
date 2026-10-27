@@ -48,7 +48,7 @@ pattern `LANGUAGE_TAG` does not change.
       and `chrome/locale/en_Qaaa/`, each holding a file, `readUpstream`
       gives `languages` as `["en-Qaaa", "en-XX"]`. A case in that table
       asserts this list.
-- [ ] AC3: The `languages` text in README.md's "Using the data", the
+- [x] AC3: The `languages` text in README.md's "Using the data", the
       languages entry under "Unreleased" in CHANGELOG.md, the `languages`
       description in `schemas/plugins.v1.schema.json`, item 2 of
       cairn/DESIGN.md's data sources and its reader paragraph, and the
@@ -131,3 +131,9 @@ Pass 1 (2026-10-27, branch at 2e1c9a4, main not moved):
 - AC3: FAIL. README, CHANGELOG, schema, DESIGN (both sites), and the `localeLanguages` comment name the Node.js `Intl` data; README states overrides are not checked; the joined README holds 0 matches of "does not check that a tag names". The comment on `languages` in `src/upstream/reader.ts` (near line 31) says only "has an English name (see localeLanguages)" and does not name the Node.js `Intl` data. Returned to implement.
 - AC4: `pnpm test` 17 files, 681 tests passed; `pnpm check` 20 entries, 0 problems.
 - Gate: `cairn_validate` all checks passed; no principle changed (cairn_impact skipped); generic profile names no toolchain checks.
+
+Pass 2 (2026-10-27, branch at 0eb06fc, main not moved):
+
+- AC3: the comments on `languages` (lines 31-33) and `localeLanguages`, README, CHANGELOG, the schema description, and DESIGN item 2 and the reader paragraph each name an English name in the Node.js `Intl` data; README states overrides are not checked; the joined README holds 0 matches of "does not check that a tag names".
+- AC1, AC2, AC4 at 0eb06fc: `pnpm test` 17 files, 681 tests passed (both new table cases among them); `pnpm check` 20 entries, 0 problems.
+- Gate: `cairn_validate` all checks passed.
