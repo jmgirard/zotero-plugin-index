@@ -126,7 +126,7 @@ with no `upstream` has an empty applied list. M023 keeps
 - [x] T1: Add records to `test/fixtures/site/plugins.json` for AC1's six
       cases and AC2's `zh-CN` and `zh-TW` record. The fixture must stay
       valid against the v1 schema (the existing fixture test).
-- [ ] T2: Write the tests for AC3's six inputs first, then add the language
+- [x] T2: Write the tests for AC3's six inputs first, then add the language
       helpers to `src/site/`: the applied list, the display name, the row's
       subtags, the menu options, and the function that decides whether a row
       shows.
@@ -163,6 +163,8 @@ with no `upstream` has an empty applied list. M023 keeps
 - 2026-10-27: changelog: edits M023's `## Unreleased` entry under the series rule.
 - 2026-10-27: from the M023 review: the `languages` override pattern accepts a repeated tag and other letter case (`zh-CN, zh-CN`, `ZH-cn`), so the applied list should write each tag in `Intl.getCanonicalLocales` form once before the page fact, the row's `data-languages`, and the menu counts use it. M023 also added the `languages` key to `upstreamValue`, so T3 keeps it and adds AC1's table tests.
 - 2026-10-27: T1 done: the site fixture gains languages on five records and a seventh record, `locale-plugin@example.org`, for the override pair; `first` holds two upstream tags, `old` `[]`, `guid` no field, `no-range` the unversioned `fr, de` override, `min-only` `zh-CN, zh-TW` with an override for version 1.0.0 only, and `locale` a version-specific `pt-BR, es-419` beside an unversioned `es`. `pnpm test` (647) and `pnpm check` pass.
+- 2026-10-27: T2 choice: the filter function `rowShows(rowLanguages, value, options)` sits alone in `src/site/language-filter.ts`, with no imports, so the page's script bundles only it; it takes the menu's values so that a value no option has shows every row, AC3's sixth input. The build helpers (`appliedLanguages`, `languageName`, `rowLanguages`, `languageOptions`) sit in `src/site/languages.ts`; `appliedLanguages` passes the list through `Intl.getCanonicalLocales`, which writes each tag in canonical form once, per the M023 review note.
+- 2026-10-27: T2 done: `test/language.test.ts` was red before the two files existed and passes with 14 tests, AC3's six `rowShows` inputs among them. `pnpm test` (661) and `pnpm check` pass.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
