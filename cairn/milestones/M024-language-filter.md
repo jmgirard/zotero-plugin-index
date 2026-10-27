@@ -42,7 +42,7 @@ with no `upstream` has an empty applied list. M023 keeps
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: Each plugin page whose record has `upstream` shows an "Interface
+- [x] AC1: Each plugin page whose record has `upstream` shows an "Interface
       languages" fact (`data-fact="languages"`) outside the Details section.
       It comes after the declared-range line if the page has one, and before
       the reports section. The fact names each tag of the applied list by
@@ -60,7 +60,7 @@ with no `upstream` has an empty applied list. M023 keeps
       joined by `, ` as its upstream value. If that list is empty or absent,
       the table shows "none". Tests check the table for an empty and a
       non-empty upstream list.
-- [ ] AC2: The built home page holds a `<label>` and a
+- [x] AC2: The built home page holds a `<label>` and a
       `<select data-language-filter>` inside one element with the `hidden`
       attribute. The first option is "All languages", with the value `""`.
       Then comes one option for each subtag that some row carries. The
@@ -76,7 +76,7 @@ with no `upstream` has an empty applied list. M023 keeps
       the test. The fixture holds a record with `zh-CN` and `zh-TW`, counted
       once under `zh`. It also holds a record whose read failed, whose row
       carries `data-languages=""`.
-- [ ] AC3: The home page's script removes that `hidden` attribute. When the
+- [x] AC3: The home page's script removes that `hidden` attribute. When the
       visitor picks an option, the script shows each row whose
       `data-languages`, split on spaces, contains the option's value, and
       hides each other row. "All languages" shows every row. The script then
@@ -97,15 +97,15 @@ with no `upstream` has an empty applied list. M023 keeps
       ends with `?language=zh`. Picking "All languages" shows every row and
       drops the parameter. Loading `?language=xx` selects "All languages"
       and shows every row.
-- [ ] AC4: No page built from the site fixture, other than the home page,
+- [x] AC4: No page built from the site fixture, other than the home page,
       holds a `<script` element. A test reads every `.html` file of that
       build to show it.
-- [ ] AC5: README "The site" describes the language menu, the `language`
+- [x] AC5: README "The site" describes the language menu, the `language`
       query parameter, the full list that shows without JavaScript, and the
       plugin page fact. The `## Unreleased` entry of `CHANGELOG.md` for the
       language list names them. If a release took that entry, a new entry
       names them.
-- [ ] AC6: `pnpm test` and `pnpm check` pass.
+- [x] AC6: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate; each acceptance criterion → the
@@ -179,3 +179,12 @@ with no `upstream` has an empty applied list. M023 keeps
 
 ## Review
 <!-- owner: review · exclusive. -->
+
+- 2026-10-27 sync: `origin/main` is 2b317fb, the branch's merge base, so no merge was needed; no PR exists; the Copilot round is off (no header line in `cairn/PROFILE.md`).
+- AC1 evidence (2026-10-27, head f3426e0): `vitest run test/language.test.ts test/site.test.ts --reporter=verbose` passes 71 of 71. "shows the interface languages for …" passes for the six records (two upstream tags, `[]`, no field, the unversioned `fr, de` override shown as "French, German", an override for another version only, a version-specific override beside an unversioned one), each against text written in the test; "shows the parts of <id> in order …" passes for all 7 records, placing `data-fact="languages"` after the declared-range line and before the reports section, outside `<details>`, and absent on the failed record's page; "shows a non-empty / an empty upstream list beside a languages override" passes ("en" and "none").
+- AC2 evidence (same run): "gives each row the language subtags it applies" passes, matching every row's `data-languages="…"` against literal values, `""` for the failed `broken-plugin` and `zh` once for `min-only` (`zh-CN`, `zh-TW`); "holds a hidden language menu with one option for each subtag" passes, matching `<p class="language-filter" hidden>` with the `<label>` and `<select data-language-filter>` and the options "All languages" (`""`), then Chinese (2), English (1), French (1), German (1), Portuguese (1), Spanish (1).
+- AC3 evidence: the six `rowShows` tests in `test/language.test.ts` pass (a carried subtag, `""`, an empty row, `en` against `ken`, a later subtag, `xx` with no option). Browser check at f3426e0: the fixture site built into the scratchpad at `serve/zotero-plugin-index/`, served by `python3 -m http.server 4321` (the `site-preview` entry), opened in the built-in pane: (1) `/zotero-plugin-index/` showed the menu (no `hidden` attribute left), "All languages", 7 rows visible; (2) picking "Chinese (2)" left `first-plugin@example.org` and `min-only-plugin@example.org` visible, the rows the AC2 test lists for `zh`, and the URL became `…/zotero-plugin-index/?language=zh`; (3) picking "All languages" showed 7 rows and the URL became `…/zotero-plugin-index/`; (4) loading `?language=xx` selected "All languages" with 7 rows visible.
+- AC4 evidence: "has a script on the home page only" passes; it reads every `.html` file of the fixture build (8 files) and asserts `<script` in `index.html` and in no other file, so it fails if the home page loses its script or another page gains one.
+- AC5 evidence: README "The site" (read 2026-10-27) has the "Interface language" menu paragraph, the `language` query parameter with `?language=zh`, "Without JavaScript, the home page shows no menu and lists every plugin", and the plugin-page paragraph naming the interface languages and "None declared". CHANGELOG has one release section, `## Unreleased`, so no release took the entry; its languages entry (M023's) names the "Interface languages" line, the menu, the `language` parameter, and the no-JavaScript list. Two lines of that entry ran past the wrap width after the claim fix and were reflowed with the same words.
+- AC6 evidence: after the reflow, `pnpm test` (type check, then Vitest) passes 672 of 672 in 17 files, and `pnpm check` prints "checked 20 entries in plugins, 0 problems".
+- Consistency gate: `cairn_validate.py` exits 0 (16 PASS, 8 advisories OK, `coverage complete` PASS); no principle changed, so `cairn_impact.py` is skipped; the `generic` profile's consistency-gate slot names no toolchain checks.
