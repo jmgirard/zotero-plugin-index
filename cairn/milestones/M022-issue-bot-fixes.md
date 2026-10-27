@@ -111,7 +111,7 @@ merge. README, CHANGELOG, and DESIGN follow.
 
 - [x] T1: Write the test that makes the entry check throw in an issue run,
       then the change in `readOutcome` (`src/discover/issue.ts`).
-- [ ] T2: Write the tests of `pnpm close-issue` against recorded responses,
+- [x] T2: Write the tests of `pnpm close-issue` against recorded responses,
       then the command and its `package.json` script, reusing `githubClient`
       and `code()`.
 - [ ] T3: Write `close-add-plugin-issue.yml` and its checks in
@@ -132,6 +132,7 @@ merge. README, CHANGELOG, and DESIGN follow.
 - 2026-10-27: lessons used: 2026-10-25 (M002) recorded responses, 2026-10-26 (M009) the built-in token starts no workflow run, 2026-10-26 (M018) search joined text.
 - 2026-10-27: branch m022-issue-bot-fixes cut from main at 02c2a78; status in-progress.
 - 2026-10-27: T1 done. `readOutcome` maps an `unexpected-error` refusal to `failed`, rather than marking it build-level in `draftEntry`, so the discover run keeps its handling. The test hides git from PATH so `git check-ref-format` cannot start; it failed before the change with outcome `refused`. `runIssue` now also returns the read outcome.
+- 2026-10-27: T2 done. `closeIssue` lives in `src/discover/close-issue.ts` with its CLI in `close-issue-cli.ts`; `PREFIX` is now exported from `propose.ts`. Choices: the bot login is `github-actions[bot]`; the URL is the pull request's `html_url`, matched with no digit after it; a bot comment holding that URL and "closed without a merge" counts as the earlier closing comment; a fence closes on a line of the same character at least as long. Planting no fence tracking and no digit boundary each failed its own test.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
