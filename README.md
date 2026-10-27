@@ -55,7 +55,7 @@ the override replaces that list. If no language is left, the page shows
 "None declared". A closed "Details" section follows. It holds the plugin id, facts about the
 repository and its releases, and the overrides of the index for the plugin.
 If the last build failed to read a plugin, its page shows the failure in place
-of the pills.
+of the pills. That page has no interface languages line.
 
 The user reports part of a page names the plugin version that the index
 read. For each Zotero major with a counted report, it shows the number of

@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M024: Filter the home list by interface language
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M023   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -171,6 +171,8 @@ with no `upstream` has an empty applied list. M023 keeps
 - 2026-10-27: T5 done: the fixture site was built into the scratchpad at `serve/zotero-plugin-index/` and served by the `site-preview` entry of `.claude/launch.json` (already in `.git/info/exclude`), on port 4321. In the built-in browser pane: (1) loading `/zotero-plugin-index/` showed the menu, with "All languages" selected and all 7 rows visible; (2) picking "Chinese (2)" left visible only `first-plugin@example.org` and `min-only-plugin@example.org`, and the URL became `/zotero-plugin-index/?language=zh`; (3) picking "All languages" showed all 7 rows and the URL lost its query; (4) loading `?language=xx` selected "All languages" with all 7 rows visible. Loading `?language=zh` also selected Chinese and showed the same 2 rows.
 - 2026-10-27: T5 fix: the pane showed the label touching the menu, because Astro drops the line break between `</label>` and `<select>`; a `{" "}` now writes a space, and the menu test matches it. `pnpm test` (672) and `pnpm check` pass.
 - 2026-10-27: T6 done: README "The site" gains a paragraph on the menu, the `language` parameter, and the full list without JavaScript, and its plugin-page paragraph names the languages fact; M023's `## Unreleased` CHANGELOG entry gains the page fact and the menu (series rule); DESIGN's Contract boundary, site build line, and Architecture script line now state the fact, the menu, and the one script (D-014). The simple-english lint hook still flags README lines 93, 350, 364 and CHANGELOG lines 74, 165, all in text older than this milestone; left as they are. `pnpm test` (672) and `pnpm check` pass.
+- 2026-10-27: claim audit: 38 claims read, 3 corrected — CHANGELOG.md (the languages line shows only on pages of plugins the index read), README.md (a failed plugin's page has no languages line), src/site/languages.ts (the `appliedLanguages` comment now names the override case); the same Opus reader re-read the three and found each true. `pnpm test` (672) and `pnpm check` pass.
+- 2026-10-27: implement done; status set to review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

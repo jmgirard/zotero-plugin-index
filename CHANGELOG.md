@@ -174,8 +174,8 @@
   languages of a plugin whose list is wrong or empty, in the record's
   `overrides` block. As with every override, the `upstream` block does not
   apply it. The schema stays at version 1. The schema rejects fields that
-  it does not define, so fetch any saved copy of it again. Each plugin page
-  shows the languages by name in an "Interface languages" line. That line
+  it does not define, so fetch any saved copy of it again. The page of each
+  plugin that the index read shows the languages by name in an "Interface languages" line. That line
   uses a `languages` override that applies to the version the index read. If
   the plugin has no languages, the line says "None declared". The home page has an "Interface language" menu that shows only
   the plugins with the language you pick. It counts `zh-CN` and `zh-TW`

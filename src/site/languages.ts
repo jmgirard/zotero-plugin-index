@@ -10,7 +10,7 @@ const NAMES = new Intl.DisplayNames(["en"], { type: "language", languageDisplay:
 // The languages after overrides: the value of the languages override that applies (see
 // usedOverride), split on ", ", or else the upstream list. Each tag is in the form
 // Intl.getCanonicalLocales returns, once, in list order. Empty for a record with no
-// upstream block or no languages field.
+// upstream block, or with no languages field and no languages override that applies.
 export function appliedLanguages(record: LanguageRecord): string[] {
   if (!record.upstream) return [];
   const override = usedOverride(record, "languages");
