@@ -7,14 +7,15 @@ _Last hygiene check: 2026-10-27 (M030 done and archived; its row graduated, M027
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
+| M031 | Refuse unsafe entry names | planned | — | normal | milestones/M031-safe-entry-names.md |
+| M032 | Catch blank reasons, repeat overrides, and BOMs | planned | — | normal | milestones/M032-override-and-bom-checks.md |
 | M030 | Bound the discover run's time | done | M029 | normal | milestones/archive/M030-discover-time-limits.md |
 | M029 | Bound the build's read time | done | — | normal | milestones/archive/M029-build-time-limits.md |
 | M028 | Keep issues open on entry write errors | done | — | normal | milestones/archive/M028-entry-write-errors.md |
-<!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
-     terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
+<!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
-- Catch stray and unportable entry files: `pnpm check` skips a stray file under `plugins/` with exit 0, accepts directory names that break on Windows or collide by case, passes an override reason of only zero-width characters, passes two overrides for the same field and version, and reports a UTF-8 BOM as "not valid JSON" (M001 review); `pnpm add-plugin` also writes an id that differs only by case from an existing entry or is a reserved Windows name such as CON (M002 review); an entry id with `%` or a space fails the whole `pnpm site` build with NoMatchingStaticPathFound, which also stops the data deploy (M007 review); `pnpm discover` writes ids through the same `writeEntry` (M008 review) — added 2026-10-24 — M001, M002, M007, M008
+- Catch stray and unportable entry files: `pnpm check` skips a stray file under `plugins/` with exit 0, accepts directory names that break on Windows or collide by case, passes an override reason of only zero-width characters, passes two overrides for the same field and version, and reports a UTF-8 BOM as "not valid JSON" (M001 review); `pnpm add-plugin` also writes an id that differs only by case from an existing entry or is a reserved Windows name such as CON (M002 review); an entry id with `%` or a space fails the whole `pnpm site` build with NoMatchingStaticPathFound, which also stops the data deploy (M007 review); `pnpm discover` writes ids through the same `writeEntry` (M008 review) — added 2026-10-24 — M001, M002, M007, M008 — started M031 — started M032
 - Stop retrying a failing bot pull request: `pnpm propose` records no failure of its push or create request, so a repo whose pull request body passes GitHub's size limit fails again each run, takes one of its slots, and fails the workflow daily; record such failures under the 30-day rule (M009 review); an issue run meets the same refused request and leaves its issue open with the error (M010 review); narrowed 2026-10-26 by M011, whose read step refuses and records as `not-proposable` a repo whose branch name git refuses — added 2026-10-26 — M009, M010, M011
 - Answer issues whose run was canceled: `add-plugin-issue.yml` shares the `discover` concurrency group, and GitHub's docs say a new pending run in a group cancels the one already pending, so an issue opened while another run waits can get no comment; rerun such issues, for example from a scheduled sweep of unanswered `add-plugin` issues; an issue run can also cancel a pending scheduled `Discover plugins` run, so many issues can hold off discovery (M010, M010 review); a concurrency group per issue is no fix, since two runs could then push one branch, open two pull requests for one plugin id, leave an issue that no pull request names, or recreate a merged branch (M022 plan audit) — added 2026-10-26 — M010, M022
 - Check the index at the push base: `pnpm propose` checks the index in its checkout, the commit the read job saw, but builds each commit on the newest default branch, so an entry merged during the run can be proposed again; read `plugins/` at the fetched base commit (M011 review) — added 2026-10-26 — M011
@@ -47,8 +48,7 @@ _Last hygiene check: 2026-10-27 (M030 done and archived; its row graduated, M027
 - [parked] Stop rereading hosts that keep failing: `pnpm discover` records no refusal from a 429 or 5xx download answer, so a repo whose download host keeps failing takes one of the run's 100 reads every day, newest pushed first; M030 bounds a run's time, not these rereads; promote when discover reports show the same repo refused with a 429 or 5xx answer on several runs in a row (M026 review) — added 2026-10-27 — M026
 - [parked] Drop locale folders that copy another: after M027 a folder whose files copy another folder's text, such as English text under `locale/de/`, still counts as a language; none of the 23 listed multi-language plugins read on 2026-10-27 does this, and `en-GB` copied from `en-US` can be the author's choice; promote when a listed plugin ships such a folder (M027 plan) — added 2026-10-27 — M023, M027
 <!-- unnumbered ideas; one line each, ordered high → normal → low → parked:
-     - [high] short title: detail — added YYYY-MM-DD — links
-     - short title: detail — added YYYY-MM-DD — links
+     - [high] short title: detail — added YYYY-MM-DD — links   (no token: normal)
      - [parked] short title: detail; promote when <condition> — added YYYY-MM-DD — links
      the opening token is `[high]`/`[low]`/`[parked]` or absent (`normal`); `[parked]` marks a row whose
      promotion condition has not held — tracking-rules "Candidate priority token";
