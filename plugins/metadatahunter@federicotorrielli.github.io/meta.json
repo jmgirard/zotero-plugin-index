@@ -1,0 +1,7 @@
+{
+  "id": "metadatahunter@federicotorrielli.github.io",
+  "name": "Metadata Hunter",
+  "description": "A Zotero plugin to find and add missing DOIs and abstracts to references",
+  "repoUrl": "https://github.com/federicotorrielli/zotero-metadata-hunter",
+  "updateUrl": "https://raw.githubusercontent.com/federicotorrielli/zotero-metadata-hunter/main/update.json"
+}
