@@ -8,7 +8,10 @@ export type Rule =
   | "registry-schema"
   | "index-schema"
   | "id-matches-directory"
-  | "reason-not-blank";
+  | "reason-not-blank"
+  | "entry-name"
+  | "entry-is-directory"
+  | "unique-ignoring-case";
 
 export interface Finding {
   entry: string;
@@ -49,8 +52,13 @@ export function entryNameProblem(name: string): string | undefined {
 
 export async function checkTree(root: string, validators: Validators): Promise<CheckResult> {
   const entries = await listEntries(root);
-  const findings: Finding[] = [];
+  const findings: Finding[] = await strayFiles(root);
+  for (const names of caseClashes(entries.map((entry) => entry.name))) {
+    findings.push({ entry: names[0], rule: "unique-ignoring-case", message: `names equal ignoring case: ${names.join(", ")}` });
+  }
   for (const { name, readError } of entries) {
+    const nameProblem = entryNameProblem(name);
+    if (nameProblem) findings.push({ entry: name, rule: "entry-name", message: nameProblem });
     if (readError) {
       findings.push({ entry: name, rule: "files-present", message: `cannot read the entry: ${readError}` });
       continue;
@@ -58,6 +66,44 @@ export async function checkTree(root: string, validators: Validators): Promise<C
     findings.push(...(await checkEntry(join(root, name), name, validators)));
   }
   return { checked: entries.length, findings };
+}
+
+// The sets of two or more names that are equal ignoring case, each sorted, in order of
+// their first names. Windows and macOS check out such names as one directory.
+export function caseClashes(names: string[]): string[][] {
+  const byLower = new Map<string, string[]>();
+  for (const name of names) {
+    const key = name.toLowerCase();
+    byLower.set(key, [...(byLower.get(key) ?? []), name]);
+  }
+  return [...byLower.values()]
+    .filter((set) => set.length > 1)
+    .map((set) => set.sort())
+    .sort((a, b) => (a[0] < b[0] ? -1 : 1));
+}
+
+// The names under root that are not directories. `listEntries` skips them, so the build and
+// discover never read them. A name that stat cannot read is left to `listEntries`.
+async function strayFiles(root: string): Promise<Finding[]> {
+  let names: string[];
+  try {
+    names = await readdir(root);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw error;
+  }
+  const findings: Finding[] = [];
+  for (const name of names.sort()) {
+    if (name.startsWith(".")) continue;
+    try {
+      if (!(await stat(join(root, name))).isDirectory()) {
+        findings.push({ entry: name, rule: "entry-is-directory", message: "is a file, not an entry directory" });
+      }
+    } catch {
+      // Reported as files-present through listEntries.
+    }
+  }
+  return findings;
 }
 
 export interface ListedEntry {
