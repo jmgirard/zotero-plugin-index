@@ -144,6 +144,7 @@ throwaway accounts.
 - 2026-10-27: plan gate chose the build reading closed report issues over a bot commit per report and a pull request per report (D-013); falsified by evidence that the issue read fails often enough to withhold deploys, or that reporters edit closed reports to move counts.
 - 2026-10-27: plan gate chose withholding the deploy on any failed issue read over deploying without counts, because a deploy without counts would empty every page's reports for a day; falsified by evidence that the read fails for reasons the maintainer cannot fix, such as a long GitHub outage.
 - 2026-10-27: note from M020's claim audit: the report forms' markdown, the bot comment in `src/reports/issue.ts`, and README "Reporting whether a plugin works" say the index "will count" reports; when counting ships here, T5 puts them in the present tense.
+- 2026-10-27: note from M020's review: the candidate "Count only reports the bot closed" shows that AC1's "closed as completed" also takes issues their authors closed; implement weighs it as an amendment before T1.
 - 2026-10-27: lessons used: 2026-10-25 (M002) recorded responses, 2026-10-25 (M004) DNS stubs in build tests, 2026-10-25 (M007) attribute matching, 2026-10-26 (M015) local preview of the site, 2026-10-25 (M006) Pages deploys only from main, 2026-10-26 (M018) search joined text.
 
 ## Decisions

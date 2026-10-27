@@ -171,3 +171,47 @@ Evidence gathered 2026-10-27 on branch m020-report-forms; main had not moved sin
 - AC6: README's new section "Reporting whether a plugin works" lists the five checks of AC3 (fields, entry id, version length and spaces, Zotero major range from `ZOTERO_MAJORS`, one verdict label) and both answers of AC4 (comment and close as completed; problem comment and close as not planned). `CHANGELOG.md` Unreleased gains one bullet, "Two issue forms take reports …". DESIGN.md's Function Families gains "Reports (`src/reports/`)" and its Architecture list a paragraph naming `report-issue.yml` and `pnpm report-issue`.
 - AC7: `pnpm test` passes, type check then Vitest, 15 files and 531 tests; `pnpm check` reports 20 entries, 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed, exit 0. No DESIGN principle changed, so no impact report. The generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- prior-review #1: a failed issue or `plugins/` read sends nothing, unlike the "Add a plugin" bot's "could not finish" comment — follow-up "Answer report issues left open"
+- prior-review #2: the workflow has not run live — reject, planned change: the question set put the live test after the merge
+- prior-review #3: forms and comment promise counts that M021 builds — reject, planned change: M021's work log holds the tense change
+- prior-review #4: a 10-minute timeout leaves a report unanswered — follow-up "Answer report issues left open"
+- prior-review #5: a rerun after a failed close comments twice — follow-up "Answer report issues left open"
+- prior-review #6: two lines over 120 characters — reject, style
+- ripple #1: DESIGN item 4 said reports were not built — fix now, fixed 23b8cd3
+- ripple #2: DESIGN said a bot adds each report to the data, against D-013 — fix now, fixed 23b8cd3
+- ripple #3: DESIGN said each bot workflow runs in two jobs — fix now, fixed 23b8cd3
+- ripple #4: the banked "one click and one typed field" principle needs the prefilled links — reject, planned change: M021's links fill two of the three fields
+- ripple #5: no link prefills the forms yet — reject, planned change: M021 AC5
+- ripple #6: `vitest.config.ts` comment omitted the report tests — fix now, fixed 23b8cd3
+- ripple #7: DESIGN's sentence on `test/workflows.test.ts` named only `build.yml` — fix now, fixed 23b8cd3
+- ripple #8: README lacked the missing-label caveat for the report forms — fix now, fixed 23b8cd3
+- ripple #9: the CHANGELOG bullet omits the failure cases README states — reject, false: the bullet states the normal path and contradicts nothing
+- ripple #10: the candidate row still describes the old plan — reject, planned change: the row graduates at M021's hygiene, and its token names M020
+- diff-bug #1: "closed as completed" does not show the bot closed the issue, since an author can close their own — follow-up "Count only reports the bot closed"
+- diff-bug #2: a failed close leaves an open issue with a "took this report" comment, and a rerun comments twice — follow-up "Answer report issues left open"
+- diff-bug #3: a `report` label added after opening never gets an answer — follow-up "Answer report issues left open"
+- diff-bug #4: the bot's close can overwrite an author's close — follow-up "Count only reports the bot closed"
+- diff-bug #5: `otherEventUses` stopped at the first `}`, missed `github['event']` and `toJSON(github)` — fix now, fixed 23b8cd3
+- diff-bug #6: the trigger test let a second trigger pass — fix now, fixed 23b8cd3
+- diff-bug #7: report floods spend the shared API budget and can make the issue read fail — follow-up "Limit floods of report issues"
+- diff-bug #8: the refusal repeated up to 100 characters of reporter text under the bot's name — fix now, fixed 23b8cd3: the message quotes no issue text
+- diff-bug #9: the Zotero message said "start with a major" but the code reads the first number — fix now, fixed 23b8cd3
+- diff-bug #10: the id match is case-sensitive — reject, edge: a hand-typed id in another case, outside common use once M021's links fill the id; the effect is a refusal that names the problem
+- diff-bug #11: the id cut could split a character — fix now, fixed 23b8cd3: no cut remains
+- diff-bug #12: a broken report read "version `x` broken" — fix now, fixed 23b8cd3: "is broken"
+- diff-bug #13: a label with no name put `undefined` in `labels` — fix now, fixed 23b8cd3
+- diff-bug #14: actions pinned by tag — reject, style: every workflow in the repo does the same
+- diff-bug #15: printing the comment relies on `code()` — reject, false: each value sits mid-line in a code span and `code()` folds newlines
+- diff-bug #16: the spawned test took the first name in `plugins/`, file or not — fix now, fixed 23b8cd3
+- diff-bug #17: a test name mentions a pill — reject, style
+- diff-bug (c): three same-path heading tests, a spawned test that repeats an in-process one, matcher rows, a loose `toContain` — reject, planned change: AC3 names each input, the spawned test shows the exit code, and the rows show the matcher can fail
+- blame-history #1: silent failure departs from the "Add a plugin" bot's comment-on-failure rule — follow-up "Answer report issues left open"
+- blame-history #2: DESIGN item 4 contradicted D-013 — fix now, fixed 23b8cd3
+- blame-history #3: three typed fields with no prefill — reject, planned change: M021 AC5
+- blame-history #4: the issue body reaches a job holding `issues: write`, unlike the M011 split — reject, planned change: the plan gate chose one job, and its work-log line names the alternative
+- blame-history #5: the id match is case-sensitive — reject, edge: as diff-bug #10
+- blame-history #6: an `if:` value without braces was not scanned — fix now, fixed 23b8cd3
+- blame-history #7: `indexed` treats a missing `plugins/` as empty for the "Add a plugin" bot, a gap from before this diff — follow-up "Fail issue runs with no plugins folder"
+- blame-history #8: a rerun comments twice and nothing retries a failed close — follow-up "Answer report issues left open"
+- Settled: 42 lines; 16 fixed on the branch at 23b8cd3, 11 follow-up into four new rows, 15 rejected (2 edge). None shows a criterion failing, so no return. After the fixes: 537 tests pass, `pnpm check` 0 problems; a planted second trigger failed the trigger test.
