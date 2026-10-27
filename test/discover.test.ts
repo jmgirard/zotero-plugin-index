@@ -15,7 +15,7 @@ import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
 import { type DiscoveryState, discover, draftEntry, type ReadItem } from "../src/discover/discover.ts";
 import { githubClient } from "../src/upstream/reader.ts";
-import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
+import { fixtureFetch, loadFixture, type Responses, type SeenRequest } from "./support/fixture-fetch.ts";
 import { pluginRepo, searchPage } from "./support/plugin-repo.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -73,12 +73,13 @@ interface RunOptions {
   runMs?: number;
   startedAt?: number;
   refCheckMs?: number;
+  onRequest?: (seen: SeenRequest) => void;
 }
 
 async function runResult(responses: Responses, options: RunOptions = {}) {
   const { root = tempDir(), outDir = tempDir(), state = {}, skip = new Set<string>(), limit = 50, budget = 100, now = NOW } = options;
   const { readMs, runMs, startedAt, refCheckMs } = options;
-  const { fetch, requests } = fixtureFetch(responses);
+  const { fetch, requests } = fixtureFetch(responses, options.onRequest);
   const limits = { readMs, runMs, startedAt, refCheckMs };
   const result = await discover({ root, outDir, fetch, lookup: publicLookup, state, skip, limit, budget, now, ...limits });
   return { result, requests };
@@ -307,14 +308,14 @@ describe("the time limits", () => {
   const state: DiscoveryState = { "example/t2": before, "example/t1": before };
 
   test("refuses a read that passes its limit as request-failed, keeps its record, and reads the next repo", async () => {
-    const { reads, report, state: after } = await run(stalled(), { state, readMs: 200 });
+    const { reads, report, state: after } = await run(stalled(), { state, readMs: 1000 });
     expect(reads).toEqual(["example/t3", "example/t2", "example/t1"]);
     expect(report.read.map((item: ReadItem) => [item.repo, item.outcome === "written" ? "written" : item.failure])).toEqual([
       ["example/t3", "written"],
       ["example/t2", "request-failed"],
       ["example/t1", "written"],
     ]);
-    expect(report.read[1]).toMatchObject({ message: expect.stringContaining("passed its time limit of 200 ms") });
+    expect(report.read[1]).toMatchObject({ message: expect.stringContaining("passed its time limit of 1000 ms") });
     expect(after).toEqual({ "example/t2": before });
   });
 
@@ -325,12 +326,23 @@ describe("the time limits", () => {
   });
 
   test("starts no read once the run limit has passed, counts the rest as unread, and warns", async () => {
-    const limits = { readMs: 1500, runMs: 1000, startedAt: performance.now() };
-    const { reads, report, state: after } = await run(stalled(), { state, ...limits });
-    expect(reads).toEqual(["example/t3", "example/t2"]);
-    expect(report.unread).toBe(1);
-    expect(report.warnings).toContainEqual(expect.stringContaining("reads no repo after 1000 ms, its time limit"));
-    expect(after).toEqual(state);
+    // The run's clock stands still until t2's read waits on its stalled XPI, then passes
+    // the run limit, so the cut does not depend on how fast the runner is.
+    let elapsed = 0;
+    const clock = vi.spyOn(performance, "now").mockImplementation(() => elapsed);
+    try {
+      const onRequest = (seen: SeenRequest) => {
+        if (seen.url === stalledXpi) elapsed = 1000;
+      };
+      const limits = { readMs: 1000, runMs: 1000, startedAt: 0, onRequest };
+      const { reads, report, state: after } = await run(stalled(), { state, ...limits });
+      expect(reads).toEqual(["example/t3", "example/t2"]);
+      expect(report.unread).toBe(1);
+      expect(report.warnings).toContainEqual(expect.stringContaining("reads no repo after 1000 ms, its time limit"));
+      expect(after).toEqual(state);
+    } finally {
+      clock.mockRestore();
+    }
   });
 
   test("names the default limits of 3 minutes for a read and 18 minutes for the run", async () => {

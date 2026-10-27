@@ -2,19 +2,10 @@ import { spawnSync } from "node:child_process";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { afterAll, describe, expect, test } from "vitest";
+import { afterAll, describe, expect, test, vi } from "vitest";
 import type { ReadItem, SkippedItem } from "../src/discover/discover.ts";
 import { entriesDir, planned, plannedProblem, REF_CHECK_LIMIT_MS, readHandoff, writePlan } from "../src/discover/handoff.ts";
-import {
-  body,
-  CHECK_LIMIT_MS,
-  type CheckRunner,
-  discoverRead,
-  GIT_LIMIT_MS,
-  pnpmCheck,
-  proposeHandoff,
-  type Written,
-} from "../src/discover/propose.ts";
+import { body, type CheckRunner, discoverRead, GIT_LIMIT_MS, pnpmCheck, proposeHandoff, type Written } from "../src/discover/propose.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 import { checkout as gitCheckout, git } from "./support/git-checkout.ts";
 import { pluginRepo, searchPage } from "./support/plugin-repo.ts";
@@ -331,8 +322,10 @@ describe("read and write step failures", () => {
 });
 
 describe("the write step's process time limits", () => {
-  test("default to the 30 seconds, 2 minutes, and 5 minutes that README gives", () => {
-    expect([REF_CHECK_LIMIT_MS, GIT_LIMIT_MS, CHECK_LIMIT_MS]).toEqual([30 * 1000, 2 * 60 * 1000, 5 * 60 * 1000]);
+  // execFile's timeout runs on a timer that Vitest's fake timers do not replace, so the
+  // git limits are checked by value.
+  test("default to 30 seconds for the branch-name check and 2 minutes for other git processes", () => {
+    expect([REF_CHECK_LIMIT_MS, GIT_LIMIT_MS]).toEqual([30 * 1000, 2 * 60 * 1000]);
   });
 
   // example/alpha is read first, since it was pushed last.
@@ -359,6 +352,26 @@ describe("the write step's process time limits", () => {
       }
     }
   }
+
+  test("stops a pnpm check after 5 minutes by default", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      await withShim("pnpm", "#!/bin/sh\nexec sleep 600\n", async () => {
+        let settled = false;
+        const outcome = pnpmCheck(tempDir()).then(
+          () => "resolved",
+          (error: Error) => error.message,
+        );
+        void outcome.finally(() => (settled = true));
+        await vi.advanceTimersByTimeAsync(5 * 60 * 1000 - 1);
+        expect(settled).toBe(false);
+        await vi.advanceTimersByTimeAsync(1);
+        expect(await outcome).toBe("pnpm check passed its time limit of 5 minutes");
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 
   test("fails one entry whose git process passes its limit, with no pull request, and proposes the next", async () => {
     const { remote, work } = checkout();

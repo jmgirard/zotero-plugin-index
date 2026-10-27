@@ -295,9 +295,10 @@ after 30 seconds. If it takes longer, the command refuses the repository with
 starts no repository read after 18 minutes from its start. The `unread` field
 of the report counts each repository that it did not reach. The report also
 gets a warning that names the time limit. The command still writes its state
-file and,
-with `--handoff`, its handoff. These limits leave time for the other steps of
-the `Discover plugins` job, which GitHub stops at 30 minutes.
+file and, with `--handoff`, its handoff. These limits leave time for the
+other steps of the first job of `Discover plugins`, which GitHub stops at 30
+minutes. In the second job, `pnpm propose` has limits on each process but
+none on the whole run.
 
 ### Pull requests from the bot
 

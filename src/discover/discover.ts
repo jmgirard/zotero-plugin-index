@@ -1,10 +1,10 @@
 import { readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { type WriteResult, writeEntry } from "../add-plugin/add-plugin.ts";
-import { duration, READ_LIMIT_MS } from "../build/build.ts";
 import { listEntries } from "../check/check.ts";
 import type { Lookup } from "../upstream/host-guard.ts";
 import { type Failure, type Fetch, githubClient, ReadFailure, readUpstream } from "../upstream/reader.ts";
+import { duration, READ_LIMIT_MS, withinLimit } from "../upstream/time-limit.ts";
 import { plannedProblem } from "./handoff.ts";
 
 const API = "https://api.github.com";
@@ -205,15 +205,11 @@ export async function draftEntry(repoUrl: string, options: DraftOptions): Promis
     ...(buildLevel && { buildLevel: true }),
   });
   let read: Awaited<ReturnType<typeof readUpstream>>;
-  const timeLimit = new AbortController();
-  const timer = setTimeout(() => timeLimit.abort(new Error(`the read passed its time limit of ${duration(readMs)}`)), readMs);
   try {
-    read = await readUpstream(repoUrl, fetch, { lookup, signal: timeLimit.signal });
+    read = await withinLimit(readMs, (signal) => readUpstream(repoUrl, fetch, { lookup, signal }));
   } catch (error) {
     // A bug in the reader, not a fact about the repo.
     return refuse("unexpected-error", `reading ${repoUrl} threw: ${(error as Error).message}`, false, true);
-  } finally {
-    clearTimeout(timer);
   }
   if (!read.ok) return refuse(read.failure, read.message, !read.buildLevel && !NOT_RECORDED.has(read.failure), read.buildLevel);
   const { id, version, strictMinVersion, strictMaxVersion } = read.facts;
