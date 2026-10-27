@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M024: Filter the home list by interface language
 
-- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M023   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -173,6 +173,7 @@ with no `upstream` has an empty applied list. M023 keeps
 - 2026-10-27: T6 done: README "The site" gains a paragraph on the menu, the `language` parameter, and the full list without JavaScript, and its plugin-page paragraph names the languages fact; M023's `## Unreleased` CHANGELOG entry gains the page fact and the menu (series rule); DESIGN's Contract boundary, site build line, and Architecture script line now state the fact, the menu, and the one script (D-014). The simple-english lint hook still flags README lines 93, 350, 364 and CHANGELOG lines 74, 165, all in text older than this milestone; left as they are. `pnpm test` (672) and `pnpm check` pass.
 - 2026-10-27: claim audit: 38 claims read, 3 corrected — CHANGELOG.md (the languages line shows only on pages of plugins the index read), README.md (a failed plugin's page has no languages line), src/site/languages.ts (the `appliedLanguages` comment now names the override case); the same Opus reader re-read the three and found each true. `pnpm test` (672) and `pnpm check` pass.
 - 2026-10-27: implement done; status set to review.
+- 2026-10-27: amendment routed: AC1 — Scope defines the applied list that AC1's fact names as the `languages` override's value split on `, `, but `appliedLanguages` also writes each tag in `Intl.getCanonicalLocales` form once, as the M023 review note in this log asked, so an override `zh-CN, zh-CN` shows "Chinese (China)" once where the Scope text says twice (diff-bug #5); the fix-now findings landed in 0e60805; status set to in-progress for the Scope amendment alone.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
@@ -189,32 +190,32 @@ with no `upstream` has an empty applied list. M023 keeps
 - AC6 evidence: after the reflow, `pnpm test` (type check, then Vitest) passes 672 of 672 in 17 files, and `pnpm check` prints "checked 20 entries in plugins, 0 problems".
 - Consistency gate: `cairn_validate.py` exits 0 (16 PASS, 8 advisories OK, `coverage complete` PASS); no principle changed, so `cairn_impact.py` is skipped; the `generic` profile's consistency-gate slot names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
-- diff-bug #1: the URL-parameter behavior (read `language` on load, fall back for an unknown value, set or remove it) sat in untested inline script code although README and CHANGELOG claim it — fix now: `menuValue` and `filterHref` in `src/site/language-filter.ts`, tested in `test/language.test.ts`, which the script now calls.
-- diff-bug #2: the page maps an unknown value to "" before `rowShows` sees it, so AC3's sixth `rowShows` case covers a path the page never runs, and the real fallback was untested — fix now: the fallback is `menuValue`, tested with `xx`.
-- diff-bug #3: a same-document Back step (after a hand-typed `#x`) restores the old address but leaves the menu and rows on the newer choice — fix now: a `popstate` listener reads the address into the menu again.
-- diff-bug #4: `?language=xx` selects "All languages" but leaves `?language=xx` in the address, so a copied link names a filter the page does not apply — fix now: on load and on `popstate` a parameter that names no option is removed with `replaceState`.
+- diff-bug #1: the URL-parameter behavior (read `language` on load, fall back for an unknown value, set or remove it) sat in untested inline script code although README and CHANGELOG claim it — fix now, fixed 0e60805: `menuValue` and `filterHref` in `src/site/language-filter.ts`, tested in `test/language.test.ts`, which the script now calls.
+- diff-bug #2: the page maps an unknown value to "" before `rowShows` sees it, so AC3's sixth `rowShows` case covers a path the page never runs, and the real fallback was untested — fix now, fixed 0e60805: the fallback is `menuValue`, tested with `xx`.
+- diff-bug #3: a same-document Back step (after a hand-typed `#x`) restores the old address but leaves the menu and rows on the newer choice — fix now, fixed 0e60805: a `popstate` listener reads the address into the menu again.
+- diff-bug #4: `?language=xx` selects "All languages" but leaves `?language=xx` in the address, so a copied link names a filter the page does not apply — fix now, fixed 0e60805: on load and on `popstate` a parameter that names no option is removed with `replaceState`.
 - diff-bug #5: Scope defines the applied list as the override's value split on `, `, but `appliedLanguages` also writes each tag in canonical form once, from the M023 review note in the work log, so `zh-CN, zh-CN` shows once where the Scope text says twice — amendment return (the Scope promise, not the work, is wrong): routed to `/milestone-implement` for a gated Scope amendment.
 - diff-bug #6: `rowLanguagesAttribute` passes `new String("")` because Astro tests for `""` with `===` — reject (planned change): AC2 asks for the literal `data-languages=""`, and its test fails if an Astro upgrade changes the output.
-- diff-bug #7: the script's inline TypeScript is never type-checked — fix now: the script's decisions moved to `src/site/language-filter.ts`, which `tsc` checks; the DOM glue left in the template follows the M007 rule that `.astro` files build without a type check, and the browser check covers it.
+- diff-bug #7: the script's inline TypeScript is never type-checked — fix now, fixed 0e60805: the script's decisions moved to `src/site/language-filter.ts`, which `tsc` checks; the DOM glue left in the template follows the M007 rule that `.astro` files build without a type check, and the browser check covers it.
 - diff-bug #8: with `?language=zh` the full list can paint before the module script filters it — follow-up: candidate row "Filter the home list before it paints".
-- diff-bug #9: CHANGELOG line of 82 characters and README line of 92 characters past the wrap width — fix now: reflowed.
+- diff-bug #9: CHANGELOG line of 82 characters and README line of 92 characters past the wrap width — fix now, fixed 0e60805: reflowed.
 - diff-bug #10: code-unit order would put a name that starts with a lowercase or non-ASCII letter after "Z" — reject (planned change): AC2 asks for code-unit order, and no English name the menu shows today starts that way.
 - diff-bug #11: the `languageName` test checks `Intl.DisplayNames` through a one-line wrapper — reject (false): "What gets a test" requires a happy-path test for each new exported function, and `languageName` is exported for `site/src/data.ts`.
-- diff-bug #12: the `rowLanguages` empty-row test runs the same path as the non-empty one, and the site test already pins `data-languages=""` — fix now: test removed.
+- diff-bug #12: the `rowLanguages` empty-row test runs the same path as the non-empty one, and the site test already pins `data-languages=""` — fix now, fixed 0e60805: test removed.
 - diff-bug #13: the Overrides-table tests repeat `test/site-data.test.ts` coverage of `upstreamValue` — reject (planned change): AC1 names those tests.
 - diff-bug #14: four of the six `rowShows` cases run the same `split(" ").includes` path — reject (planned change): AC3 names the six inputs.
 - diff-bug #15: the canonical-form test mostly asserts what `Intl.getCanonicalLocales` does — reject (false): dedupe and case-fixing are `appliedLanguages`' own contract, from the M023 review note.
-- diff-bug #16: the row regex and the `row()` helper break if `data-languages` moves before `data-plugin`, with no change in behavior — fix now: both read each attribute from the row's tag by name; the menu regex keeps its exact markup, which AC2 states element by element.
-- blame-history #1: `cairn/LESSONS.md` line 26 says the pages carry no script since M015 — fix now: corrected in place (corrected M024).
+- diff-bug #16: the row regex and the `row()` helper break if `data-languages` moves before `data-plugin`, with no change in behavior — fix now, fixed 0e60805: both read each attribute from the row's tag by name; the menu regex keeps its exact markup, which AC2 states element by element.
+- blame-history #1: `cairn/LESSONS.md` line 26 says the pages carry no script since M015 — fix now, fixed 0e60805: corrected in place (corrected M024).
 - blame-history #2: D-009 has no pointer to D-014 — reject (false): DECISIONS.md is append-only, and D-014's heading names D-009 as superseded, as earlier pairs do.
 - blame-history #3: `rowLanguagesAttribute` depends on Astro's exact check for `""` — reject (planned change): as diff-bug #6.
-- blame-history #4: the CHANGELOG sentence "That line uses a `languages` override …" reads as if the line never shows the upstream list — fix now: reworded to say the override's languages replace the list when one applies.
+- blame-history #4: the CHANGELOG sentence "That line uses a `languages` override …" reads as if the line never shows the upstream list — fix now, fixed 0e60805: reworded to say the override's languages replace the list when one applies.
 - blame-history #5: a record with no `languages` field shows "None declared", the same as `[]` — reject (planned change): AC1 names that case and its text.
-- blame-history #6: CHANGELOG and README lines past the wrap width — fix now: as diff-bug #9.
+- blame-history #6: CHANGELOG and README lines past the wrap width — fix now, fixed 0e60805: as diff-bug #9.
 - blame-history #7: the full list shows until the module runs — follow-up: as diff-bug #8.
-- prior-review #1: three added lines run past the 76-column wrap that lesson 2026-10-26 (M018) records for README, CHANGELOG, and DESIGN — fix now: README and CHANGELOG reflowed; no added line now passes 78 columns.
-- ripple #1: DESIGN's Contract boundary list of what the page shows first leaves out the interface languages, and says the other facts sit in Details — fix now: the list names them (M024).
-- ripple #2: `cairn/LESSONS.md` line 26 says no page carries a script — fix now: as blame-history #1.
-- ripple #3: DESIGN's list of the facts a reader can check leaves out the interface languages — fix now: added (M024).
+- prior-review #1: three added lines run past the 76-column wrap that lesson 2026-10-26 (M018) records for README, CHANGELOG, and DESIGN — fix now, fixed 0e60805: README and CHANGELOG reflowed; no added line now passes 78 columns.
+- ripple #1: DESIGN's Contract boundary list of what the page shows first leaves out the interface languages, and says the other facts sit in Details — fix now, fixed 0e60805: the list names them (M024).
+- ripple #2: `cairn/LESSONS.md` line 26 says no page carries a script — fix now, fixed 0e60805: as blame-history #1.
+- ripple #3: DESIGN's list of the facts a reader can check leaves out the interface languages — fix now, fixed 0e60805: added (M024).
 - ripple #4: README line 10 says the home page lists every plugin — reject (false): it does with the default "All languages", and the menu paragraph follows.
 - ripple #5: the test title "… with the minor facts in a closed Details section" — reject (false): the minor facts are still in Details, and the test body places the languages fact outside it.
