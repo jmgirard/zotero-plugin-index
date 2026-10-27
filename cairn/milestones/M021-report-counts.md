@@ -128,7 +128,7 @@ throwaway accounts.
       add `reports` to the records and the schema, and add the CLI's failure
       line and exit. Add recorded responses for the issue list to the build
       fixtures, since every build now reads it (LESSONS, M002).
-- [ ] T3: Add `issues: read` to `build.yml` and its check to
+- [x] T3: Add `issues: read` to `build.yml` and its check to
       `test/workflows.test.ts`.
 - [ ] T4: Add the report block to the plugin page template and the site
       fixture records, then the site tests. Match attribute forms such as
@@ -154,6 +154,7 @@ throwaway accounts.
 - 2026-10-27: re-audit: AC1 (full) — the record a report goes to and "each Zotero major" (answered: AC2 states the output, no change); an absent `closed_by` drops every report if GitHub stops sending it (new candidate row); probes for one `user.id` under two logins, the dropped-newest case for each drop, and the near-miss login `github-actions` (tests added); the tie probe exists; AC2's fixture needs counted reports (T2). No wording change.
 - 2026-10-27: T1 done: `countReports` in `src/reports/count.ts`; an item without a numeric `user.id`, a parseable `created_at`, or a numeric `number` does not count. Planted defects (no `closed_by` check, no tie rule) turned 3 tests red.
 - 2026-10-27: T2 done: `buildData` takes `indexRepo` (default `INDEX_REPO`, the CLI passes `GITHUB_REPOSITORY`) and reads the issue list after the local entry reads and before any upstream read, so the entry-error tests still make no request; the failure line is `cannot read the report issues: <failure name>: <message>`. `reportCount` is a schema definition. The mixed-failures golden file gains one `"reports": []` line, regenerated from the new code. A planted defect (a failed read goes on with no issues) turned the 4 AC3 tests red.
+- 2026-10-27: T3 done: the build job gets its own `permissions` block (`contents: read`, `issues: read`); the workflow-level `contents: read` stays for the deploy job's base. Removing `issues: read` turned its test red. The report-issue.yml test also checks that `pnpm report-issue` gets `secrets.GITHUB_TOKEN`, since the count takes only reports closed by that token's account (first AC1 audit).
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
