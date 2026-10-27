@@ -153,7 +153,9 @@ export type Drafted =
   | { ok: true; id: string; dir: string; repoUrl: string; version: string; strictMinVersion?: string; strictMaxVersion?: string }
   // `recorded` is false for a refusal that says nothing about the repo. `buildLevel` marks a
   // refusal that usually points at the bot rather than at the repo: a reader failure that
-  // the reader marks build-level, or a read that threw. A `buildLevel` refusal is never recorded.
+  // the reader marks build-level, a read that threw, or an entry that writeEntry could not
+  // write to outDir (`entry-exists` there, `write-failed`). A `buildLevel` refusal is never
+  // recorded.
   | { ok: false; failure: DiscoveryFailure; message: string; recorded: boolean; buildLevel?: true };
 
 export interface DraftOptions {
@@ -193,8 +195,12 @@ export async function draftEntry(repoUrl: string, options: DraftOptions): Promis
     return refuse("entry-exists", `an open pull request already adds an entry for the id ${id}`, false);
   }
   const entry = await writeEntry(outDir, read.facts);
-  // An existing directory in outDir, or a failed write, is about outDir, not the repo.
-  if (!entry.ok) return refuse(entry.failure, entry.message, entry.failure === "unsafe-id");
+  // An existing directory in outDir, or a failed write, is about outDir, not the repo, so
+  // it is not recorded and is marked build-level.
+  if (!entry.ok) {
+    const unsafe = entry.failure === "unsafe-id";
+    return refuse(entry.failure, entry.message, unsafe, !unsafe);
+  }
   // `pnpm propose` refuses a handoff with an entry it cannot push, so such a repo is
   // refused here, and recorded.
   const repo = repoName(read.facts.repoUrl);

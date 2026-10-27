@@ -154,17 +154,15 @@ describe("an issue run", () => {
     expect(sent[0].body).toMatch(problem === "no-response" ? /Repository URL/ : /is not a GitHub repo URL/);
   });
 
-  test("comments the failure and closes the issue as not planned when writeEntry finds the entry directory", async () => {
-    const outDir = tempDir();
-    mkdirSync(join(outDir, "alpha@example.org"));
-    const { result, sent } = await runIssue(
-      rendered("https://github.com/example/alpha"),
-      { ...indexRepo, ...pluginRepo("example/alpha", "alpha@example.org"), ...opened },
-      { outDir },
-    );
+  test.each([
+    ["an entry has the plugin's id", "example/clash", "second-plugin@example.org", "entry-exists", /already has an entry for the id/],
+    ["the plugin's id cannot name a directory", "example/unsafe", "../unsafe", "unsafe-id", /cannot name a directory/],
+  ])("comments the failure and closes the issue as not planned when %s", async (_name, repo, id, failure, message) => {
+    const { outcome, result, sent } = await runIssue(rendered(`https://github.com/${repo}`), { ...indexRepo, ...pluginRepo(repo, id) }, { root: TREE });
+    expect(outcome).toMatchObject({ outcome: "refused", failure, message: expect.stringMatching(message) });
     expect(result.status).toBe(0);
     expect(sent).toEqual([
-      { method: "POST", url: COMMENTS, body: expect.stringMatching(/`entry-exists`.*already exists/s) },
+      { method: "POST", url: COMMENTS, body: expect.stringContaining(`no pull request for this issue.\n\n\`${failure}\``) },
       { method: "PATCH", url: ISSUE, state: "closed", state_reason: "not_planned" },
     ]);
   });
@@ -292,6 +290,37 @@ describe("an issue run's read failures that point at the bot", () => {
     expect(result.status).toBe(1);
     expect(sent).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(/^The bot could not finish/) }]);
     expect(sent[0].body).toMatch(/`unexpected-error`: ` checking the entry of [^`]*ENOENT[^`]* `/);
+  });
+
+  test.each<[string, (outDir: string) => string, string, RegExp]>([
+    [
+      "writeEntry finds the entry directory",
+      (outDir) => {
+        mkdirSync(join(outDir, "alpha@example.org"));
+        return outDir;
+      },
+      "entry-exists",
+      /alpha@example\.org already exists$/,
+    ],
+    [
+      "the output directory cannot be made",
+      (outDir) => {
+        writeFileSync(join(outDir, "file"), "");
+        return join(outDir, "file", "entries");
+      },
+      "write-failed",
+      /^cannot create .*ENOTDIR/,
+    ],
+  ])("comments the failure name and message, leaves the issue open, and returns 1 when %s", async (_name, prepare, failure, message) => {
+    const { outcome, result, sent } = await runIssue(
+      rendered("https://github.com/example/alpha"),
+      { ...indexRepo, ...pluginRepo("example/alpha", "alpha@example.org"), ...opened },
+      { outDir: prepare(tempDir()) },
+    );
+    expect(outcome).toMatchObject({ outcome: "failed", failure, message: expect.stringMatching(message) });
+    expect(result.status).toBe(1);
+    expect(sent).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(/^The bot could not finish/) }]);
+    expect(sent[0].body).toContain(`\`${failure}\`: `);
   });
 
   test.each([

@@ -35,7 +35,8 @@ export type IssueOutcome =
   | { outcome: "known"; repo: string }
   | { outcome: "refused"; failure: string; message: string }
   // `failure` names the failure when the read of the repo stopped with a build-level
-  // failure or threw, or the check of the drafted entry threw.
+  // failure or threw, the entry could not be written, or the check of the drafted entry
+  // threw.
   | { outcome: "failed"; failure?: string; message: string };
 
 export type Plan = { kind: "discover"; entries: PlannedEntry[] } | ({ kind: "issue" } & IssueOutcome);
