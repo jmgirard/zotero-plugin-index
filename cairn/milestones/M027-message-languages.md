@@ -134,7 +134,7 @@ override values and the schema's tag pattern do not change.
 - [x] T5: Run `pnpm test` and `pnpm check`. Update any build fixture XPI or
       golden file whose locale files are empty and whose test expects a tag,
       and name each one in the work log.
-- [ ] T6: Push the branch, dispatch `build.yml` on it, download its data
+- [x] T6: Push the branch, dispatch `build.yml` on it, download its data
       artifact, and compare it with the published data as AC3 states. Its
       deploy job fails on a branch (M006 lesson); nothing publishes.
 
@@ -159,6 +159,7 @@ override values and the schema's tag pattern do not change.
 - 2026-10-27: T3: AC2 tests added: a comment-only control and five per-file limit cases through a new `editHeader` helper, the 8 MiB case (ten 1,000,000-byte comment files, the last two kept), and two duplicate-name cases. The 8 MiB case builds its files from repeated comment lines, not the M012 deflate stream, since each file must stay under 1 MiB. Plants on a copy of `reader.ts`, restored after: no size cap failed the two size cases, a catch that drops failed the inflate-fails and past-size cases, no budget failed the 8 MiB case; no overflow stop failed nothing, since writing past the buffer then throws a RangeError that the same catch keeps.
 - 2026-10-27: T4: the AC4 passages now state the message rule: README "Using the data", the Unreleased CHANGELOG languages entry (edited, no new entry), the schema `languages` description, DESIGN's languages paragraph, data sources item 2, and reader paragraph (one walk, the limits, still up to three walks per XPI), and the reader comments on `languages`, `readRelease`, and `localeLanguages`. A joined-copy search of README, CHANGELOG, and DESIGN finds none of the old phrases. The simple-english hook flagged older README and CHANGELOG lines outside this change; left as they are.
 - 2026-10-27: T5: `pnpm test` 706 passed, `pnpm check` 0 problems, `cairn_validate` all passed. The only fixture changed is the language case in `test/build.test.ts` (T2); the golden `mixed-failures.plugins.json` is unchanged.
+- 2026-10-27: T6: branch pushed at 82f544b; Build data run 40516293620 on the branch: build job success (Node 24), deploy job did not run (run conclusion failure, deploy left waiting on the environment rule), nothing published. Its `plugins-data` artifact lists Zoplicate 5.1.1 as `["en-US", "zh-CN"]`; 27 other records have an `upstream` block and the same version in both files, and all 27 language lists equal the published ones.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
