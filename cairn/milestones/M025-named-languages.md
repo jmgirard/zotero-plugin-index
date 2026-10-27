@@ -151,7 +151,7 @@ Pass 2 (2026-10-27, branch at 0eb06fc, main not moved):
 - blame-history #5: an overlong CHANGELOG line, and no comment on `LANGUAGE_NAMES` — reject (style).
 - prior-review #1: comment and code lines of 85-93 columns in `reader.ts` — reject (style): no formatter, and main has 71 lines over 90 columns.
 - prior-review #2: an 82-column CHANGELOG line — reject (style).
-- prior-review #3: "no such folder" in CHANGELOG and the schema can read as only absent folders — fix now: CHANGELOG now says "If no tag is left, the list is empty"; the schema's "such folder" refers back to the folders the same sentence filters.
+- prior-review #3: "no such folder" in CHANGELOG and the schema can read as only absent folders — fix now: CHANGELOG now says "If no tag is left, the list is empty"; the schema's "such folder" refers back to the folders the same sentence filters, fixed 703df79.
 - prior-review #4: the site shows override tags with no name by code — reject (planned change): Scope Out.
 - ripple #1: DESIGN's reader paragraph first says it records the folder tags, then qualifies it — reject (false): the next sentence of the same paragraph states the filter.
 - ripple #2: the docs name "the build" as the Node source, but discover and add-plugin also run the reader — reject (false): only the build publishes the list.
