@@ -1,0 +1,8 @@
+{
+  "id": "attachmentscanner@changlab.um.edu.mo",
+  "name": "Attachment Scanner",
+  "description": "Plugin for scanning items with no, broken, and duplicate attachments",
+  "homepage": "https://github.com/SciImage/zotero-attachment-scanner",
+  "repoUrl": "https://github.com/SciImage/zotero-attachment-scanner",
+  "updateUrl": "https://raw.githubusercontent.com/SciImage/zotero-attachment-scanner/main/others/update.json"
+}
