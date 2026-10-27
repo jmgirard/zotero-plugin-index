@@ -187,6 +187,15 @@
           "reason": "Version 4.2.0 added Brazilian Portuguese and Latin American Spanish."
         }
       ]
+    },
+    {
+      "id": "_x-y+z.w@{v}",
+      "repoUrl": "https://github.com/example/punctuation-plugin",
+      "failure": {
+        "name": "no-xpi-release",
+        "message": "no release of example/punctuation-plugin has an .xpi asset"
+      },
+      "overrides": []
     }
   ]
 }
