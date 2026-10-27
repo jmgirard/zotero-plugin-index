@@ -1,0 +1,8 @@
+{
+  "id": "zotero-except@local",
+  "name": "Zotero Except — 隐藏同步配置",
+  "description": "在我的文库和最近阅读中隐藏 SettingsSync 配置条目，保留原始数据。",
+  "homepage": "https://github.com/haohaomin/zotero-except",
+  "repoUrl": "https://github.com/haohaomin/zotero-except",
+  "updateUrl": "https://github.com/haohaomin/zotero-except/releases/latest/download/updates.json"
+}
