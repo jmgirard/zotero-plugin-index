@@ -29,7 +29,8 @@
         "releaseCount": 27,
         "latestReleaseDate": "2026-09-30T18:04:11Z",
         "prerelease": false,
-        "archived": false
+        "archived": false,
+        "languages": ["en-US", "zh-CN"]
       },
       "reports": [
         { "zoteroMajor": 7, "works": 3, "broken": 1 },
@@ -66,7 +67,8 @@
         "releaseCount": 5,
         "latestReleaseDate": "2024-07-01T08:30:00Z",
         "prerelease": true,
-        "archived": true
+        "archived": true,
+        "languages": []
       },
       "reports": [],
       "overrides": []
@@ -106,9 +108,16 @@
         "releaseCount": 2,
         "latestReleaseDate": "2026-08-01T00:00:00Z",
         "prerelease": false,
-        "archived": false
+        "archived": false,
+        "languages": ["en"]
       },
-      "overrides": []
+      "overrides": [
+        {
+          "field": "languages",
+          "value": "fr, de",
+          "reason": "The plugin ships French and German text outside its locale folders."
+        }
+      ]
     },
     {
       "id": "min-only-plugin@example.org",
@@ -127,13 +136,55 @@
         "releaseCount": 9,
         "latestReleaseDate": "2026-09-15T00:00:00Z",
         "prerelease": false,
-        "archived": false
+        "archived": false,
+        "languages": ["zh-CN", "zh-TW"]
       },
       "overrides": [
         {
           "field": "description",
           "value": "Sorts attachments into folders.",
           "reason": "The manifest description only repeats the plugin name."
+        },
+        {
+          "field": "languages",
+          "version": "1.0.0",
+          "value": "ja",
+          "reason": "Version 1.0.0 shipped only Japanese text."
+        }
+      ]
+    },
+    {
+      "id": "locale-plugin@example.org",
+      "repoUrl": "https://github.com/example/locale-plugin",
+      "upstream": {
+        "id": "locale-plugin@example.org",
+        "name": "Locale Plugin",
+        "description": "Translates item fields.",
+        "version": "4.2.0",
+        "strictMinVersion": "7.0",
+        "strictMaxVersion": "9.*",
+        "updateUrl": "https://example.org/locale-plugin/update.json",
+        "updateHost": "example.org",
+        "repoUrl": "https://github.com/example/locale-plugin",
+        "repoCreatedAt": "2024-05-05T00:00:00Z",
+        "openIssues": 2,
+        "releaseCount": 11,
+        "latestReleaseDate": "2026-10-10T00:00:00Z",
+        "prerelease": false,
+        "archived": false,
+        "languages": []
+      },
+      "overrides": [
+        {
+          "field": "languages",
+          "value": "es",
+          "reason": "The plugin ships Spanish text outside its locale folders."
+        },
+        {
+          "field": "languages",
+          "version": "4.2.0",
+          "value": "pt-BR, es-419",
+          "reason": "Version 4.2.0 added Brazilian Portuguese and Latin American Spanish."
         }
       ]
     }

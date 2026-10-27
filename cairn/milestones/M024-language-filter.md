@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M024: Filter the home list by interface language
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M023   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — it changes the public site's home page and plugin pages   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m024-language-filter   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -123,7 +123,7 @@ with no `upstream` has an empty applied list. M023 keeps
 <!-- owner: plan (create) / implement (check-off, minor edits); substantive
      change is amend-via-gate. -->
 
-- [ ] T1: Add records to `test/fixtures/site/plugins.json` for AC1's six
+- [x] T1: Add records to `test/fixtures/site/plugins.json` for AC1's six
       cases and AC2's `zh-CN` and `zh-TW` record. The fixture must stay
       valid against the v1 schema (the existing fixture test).
 - [ ] T2: Write the tests for AC3's six inputs first, then add the language
@@ -162,6 +162,7 @@ with no `upstream` has an empty applied list. M023 keeps
 - 2026-10-27: plan gate chose to keep the choice in a `language` query parameter over no URL state, so a filtered list can be linked; falsified by the parameter breaking the Pages path or the browser's back button.
 - 2026-10-27: changelog: edits M023's `## Unreleased` entry under the series rule.
 - 2026-10-27: from the M023 review: the `languages` override pattern accepts a repeated tag and other letter case (`zh-CN, zh-CN`, `ZH-cn`), so the applied list should write each tag in `Intl.getCanonicalLocales` form once before the page fact, the row's `data-languages`, and the menu counts use it. M023 also added the `languages` key to `upstreamValue`, so T3 keeps it and adds AC1's table tests.
+- 2026-10-27: T1 done: the site fixture gains languages on five records and a seventh record, `locale-plugin@example.org`, for the override pair; `first` holds two upstream tags, `old` `[]`, `guid` no field, `no-range` the unversioned `fr, de` override, `min-only` `zh-CN, zh-TW` with an override for version 1.0.0 only, and `locale` a version-specific `pt-BR, es-419` beside an unversioned `es`. `pnpm test` (647) and `pnpm check` pass.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

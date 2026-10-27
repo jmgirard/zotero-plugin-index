@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-27 (M023 done and archived; 2 rows added, M020 row 
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M024 | Filter the home list by interface language | planned | M023 | normal | milestones/M024-language-filter.md |
+| M024 | Filter the home list by interface language | in-progress | M023 | normal | milestones/M024-language-filter.md |
 | M023 | Record each plugin's interface languages | done | — | normal | milestones/archive/M023-record-languages.md |
 | M022 | Fix two gaps of the issue bot | done | — | normal | milestones/archive/M022-issue-bot-fixes.md |
 | M021 | Show report counts on the plugin pages | done | M020 | normal | milestones/archive/M021-report-counts.md |
