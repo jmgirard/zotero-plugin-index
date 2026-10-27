@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest";
 const ROOT = resolve(import.meta.dirname, "..");
 const BUILD = resolve(ROOT, ".github/workflows/build.yml");
 const REPORT = resolve(ROOT, ".github/workflows/report-issue.yml");
+const CLOSE = resolve(ROOT, ".github/workflows/close-add-plugin-issue.yml");
 
 // Each line of a workflow, other than a comment line, that uses an actions/cache action or
 // sets a `cache` key, in block or flow form. An inline comment stays in its line, so a
@@ -22,10 +23,9 @@ function cacheLines(text: string): string[] {
 }
 
 // Each use of the event in a `${{ }}` expression or an `if:` value, which GitHub reads as
-// an expression without the braces, other than `github.event.issue.number` and
-// `github.event.issue.labels`: the body, the title, or the whole event, and a bare
-// `github`, which holds the event too.
-function otherEventUses(text: string): string[] {
+// an expression without the braces, other than the uses in `allowed`: the body, the
+// title, or the whole event, and a bare `github`, which holds the event too.
+function otherEventUses(text: string, allowed: string[]): string[] {
   const expressions = [
     ...[...text.matchAll(/\$\{\{([\s\S]*?)\}\}/g)].map(([, inner]) => inner),
     ...[...text.matchAll(/^\s*if\s*:(.*)$/gm)].map(([, value]) => value),
@@ -34,7 +34,7 @@ function otherEventUses(text: string): string[] {
     [...inner.matchAll(/\bgithub\b(?:\s*(?:\.\s*[\w-]+|\[[^\]]*\]))*/g)]
       .map(([use]) => use.replace(/\s/g, ""))
       .filter((use) => /^github(?:$|\.event\b|\[["']event["']\])/.test(use))
-      .filter((use) => !/^github\.event\.issue\.(?:number|labels)\b/.test(use)),
+      .filter((use) => !allowed.includes(use)),
   );
 }
 
@@ -84,6 +84,7 @@ describe("build.yml", () => {
 
 describe("report-issue.yml", () => {
   const report = readFileSync(REPORT, "utf8");
+  const ISSUE_USES = ["github.event.issue.number", "github.event.issue.labels"];
   const answer = jobText(report, "answer");
 
   test("runs on opened issues only, and its one job only for the label report", () => {
@@ -105,7 +106,7 @@ describe("report-issue.yml", () => {
 
   test("passes the issue number through env, and no other part of the event", () => {
     expect(answer).toMatch(/^ {8}env:\n(?: {10}\S.*\n)* {10}ISSUE_NUMBER: \$\{\{ github\.event\.issue\.number \}\}$/m);
-    expect(otherEventUses(report)).toEqual([]);
+    expect(otherEventUses(report, ISSUE_USES)).toEqual([]);
   });
 
   // The build counts only reports closed by github-actions[bot], the GITHUB_TOKEN's account.
@@ -122,14 +123,61 @@ describe("report-issue.yml", () => {
     ["an index on the context", "${{ github['event'].issue.body }}", "github['event'].issue.body"],
     ["the whole context", "${{ toJSON(github) }}", "github"],
   ])("finds an expression that uses %s", (_name, line, use) => {
-    expect(otherEventUses(`run: echo "${line}"`)).toEqual([use]);
+    expect(otherEventUses(`run: echo "${line}"`, ISSUE_USES)).toEqual([use]);
   });
 
   test("finds the body in an if: value without braces", () => {
-    expect(otherEventUses("    if: contains(github.event.issue.body, 'x')\n")).toEqual(["github.event.issue.body"]);
+    expect(otherEventUses("    if: contains(github.event.issue.body, 'x')\n", ISSUE_USES)).toEqual(["github.event.issue.body"]);
   });
 
   test("leaves other contexts alone", () => {
-    expect(otherEventUses("run: echo ${{ github.repository }} ${{ github.event_name }} ${{ secrets.GITHUB_TOKEN }}\n")).toEqual([]);
+    expect(otherEventUses("run: echo ${{ github.repository }} ${{ github.event_name }} ${{ secrets.GITHUB_TOKEN }}\n", ISSUE_USES)).toEqual([]);
+  });
+});
+
+describe("close-add-plugin-issue.yml", () => {
+  const close = readFileSync(CLOSE, "utf8");
+  const job = jobText(close, "close");
+
+  test("runs on closed pull requests through pull_request_target only, and its one job only for a bot branch closed without a merge", () => {
+    expect(close.match(/^on:\n((?: .*\n|\n)*?)(?=^\S)/m)?.[1].trim()).toBe("pull_request_target:\n    types: [closed]");
+    expect(close.slice(close.indexOf("\njobs:\n")).match(/^ {2}[\w-]+:$/gm)).toEqual(["  close:"]);
+    expect(job.match(/^ {4}if:.*$/gm)).toEqual([
+      "    if: github.event.pull_request.merged == false && startsWith(github.event.pull_request.head.ref, 'discover/') && github.event.pull_request.head.repo.full_name == github.repository",
+    ]);
+  });
+
+  test("gives the job contents read, issues write, and pull-requests read, and no other permission", () => {
+    expect(close).toMatch(/^permissions: \{\}$/m);
+    expect(job).toMatch(/^ {4}permissions:\n {6}contents: read\n {6}issues: write\n {6}pull-requests: read\n {4}\S/m);
+  });
+
+  test("restores no cache", () => {
+    expect(job).toMatch(/^ {4}cache-mode: none$/m);
+    expect(cacheLines(close)).toEqual([]);
+  });
+
+  test("checks out the default branch with no stored credentials", () => {
+    expect(job).toMatch(/^ {6}- uses: actions\/checkout@v7\n {8}with:\n {10}persist-credentials: false\n {6}- /m);
+    expect(close.split("\n").filter((line) => !line.trimStart().startsWith("#") && /\bref\s*:/.test(line))).toEqual([]);
+  });
+
+  test("passes the token and the pull request number to pnpm close-issue only through env", () => {
+    expect(job).toMatch(
+      /^ {6}- run: pnpm close-issue\n {8}env:\n {10}GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}\n {10}PR_NUMBER: \$\{\{ github\.event\.pull_request\.number \}\}\n?$/m,
+    );
+    expect([...close.matchAll(/^.*\$\{\{.*$/gm)].map(([line]) => line.trim())).toEqual([
+      "GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}",
+      "PR_NUMBER: ${{ github.event.pull_request.number }}",
+    ]);
+  });
+
+  test("uses no field of the pull request other than its number, merged, and head branch and repo", () => {
+    const allowed = ["number", "merged", "head.ref", "head.repo.full_name"].map((field) => `github.event.pull_request.${field}`);
+    expect(otherEventUses(close, allowed)).toEqual([]);
+    expect(otherEventUses("run: echo ${{ github.event.pull_request.head.sha }} ${{ github.event.pull_request.title }}\n", allowed)).toEqual([
+      "github.event.pull_request.head.sha",
+      "github.event.pull_request.title",
+    ]);
   });
 });

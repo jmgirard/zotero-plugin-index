@@ -114,7 +114,7 @@ merge. README, CHANGELOG, and DESIGN follow.
 - [x] T2: Write the tests of `pnpm close-issue` against recorded responses,
       then the command and its `package.json` script, reusing `githubClient`
       and `code()`.
-- [ ] T3: Write `close-add-plugin-issue.yml` and its checks in
+- [x] T3: Write `close-add-plugin-issue.yml` and its checks in
       `test/workflows.test.ts`, reusing the `cacheLines` and `jobText`
       helpers.
 - [ ] T4: Write the README, CHANGELOG, and DESIGN text. Search joined copies
@@ -133,6 +133,7 @@ merge. README, CHANGELOG, and DESIGN follow.
 - 2026-10-27: branch m022-issue-bot-fixes cut from main at 02c2a78; status in-progress.
 - 2026-10-27: T1 done. `readOutcome` maps an `unexpected-error` refusal to `failed`, rather than marking it build-level in `draftEntry`, so the discover run keeps its handling. The test hides git from PATH so `git check-ref-format` cannot start; it failed before the change with outcome `refused`. `runIssue` now also returns the read outcome.
 - 2026-10-27: T2 done. `closeIssue` lives in `src/discover/close-issue.ts` with its CLI in `close-issue-cli.ts`; `PREFIX` is now exported from `propose.ts`. Choices: the bot login is `github-actions[bot]`; the URL is the pull request's `html_url`, matched with no digit after it; a bot comment holding that URL and "closed without a merge" counts as the earlier closing comment; a fence closes on a line of the same character at least as long. Planting no fence tracking and no digit boundary each failed its own test.
+- 2026-10-27: T3 done. `otherEventUses` in `test/workflows.test.ts` now takes the allowed event uses as exact chains, so the report and close workflows share it. Ruby's YAML reads the trigger, `if:`, permissions, and checkout step as written. Planting a head checkout, an extra permission, an extra trigger type, and a `cache: pnpm` key each failed its matching test.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

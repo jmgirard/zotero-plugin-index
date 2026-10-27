@@ -1,0 +1,42 @@
+name: Close the issue of a closed bot pull request
+
+# pull_request_target runs this file from the default branch, also for a pull request
+# that conflicts, which `pull_request` would skip. The job checks out the default branch
+# and runs no code from the pull request.
+on:
+  pull_request_target:
+    types: [closed]
+
+# The job sets its own permissions.
+permissions: {}
+
+jobs:
+  close:
+    # Only a bot pull request closed without a merge: a discover/ branch in this repo.
+    # A pull request that the bot's own token closes starts no run.
+    if: github.event.pull_request.merged == false && startsWith(github.event.pull_request.head.ref, 'discover/') && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # This job comments on and closes issues, so it restores and saves no Actions cache,
+    # like the job of `Answer a report`. GitHub's cache service enforces this mode.
+    cache-mode: none
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      # No dependency cache, as `cache-mode` above says.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: pnpm install --frozen-lockfile
+      # The command reads the pull request and its issue from the API, so only the pull
+      # request's number reaches it, and no text from either enters a shell script.
+      - run: pnpm close-issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
