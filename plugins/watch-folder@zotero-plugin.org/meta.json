@@ -1,0 +1,7 @@
+{
+  "id": "watch-folder@zotero-plugin.org",
+  "name": "Zotero Watch Folder",
+  "description": "Automatically import PDFs from a watched folder into Zotero with metadata retrieval and file organization.",
+  "repoUrl": "https://github.com/josesiqueira/zotero-watch-folder",
+  "updateUrl": "https://raw.githubusercontent.com/josesiqueira/zotero-watch-folder/main/update.json"
+}
