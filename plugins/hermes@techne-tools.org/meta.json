@@ -1,0 +1,8 @@
+{
+  "id": "hermes@techne-tools.org",
+  "name": "Logios",
+  "description": "Hermes AI Agent integration for Zotero — Chat with your research library",
+  "homepage": "https://github.com/techne-tools/logios#readme",
+  "repoUrl": "https://github.com/techne-tools/logios",
+  "updateUrl": "https://github.com/techne-tools/logios/releases/download/release/update.json"
+}
