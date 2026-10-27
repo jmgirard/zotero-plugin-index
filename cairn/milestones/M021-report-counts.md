@@ -134,7 +134,7 @@ throwaway accounts.
       fixture records, then the site tests. Match attribute forms such as
       `data-fact="reports"` (LESSONS, M007). View the built site through a
       local server (LESSONS, M015).
-- [ ] T5: Write the README, CHANGELOG, and DESIGN text. Search joined copies
+- [x] T5: Write the README, CHANGELOG, and DESIGN text. Search joined copies
       of the files for the old and new phrases (LESSONS, M018).
 
 ## Work log
@@ -156,6 +156,7 @@ throwaway accounts.
 - 2026-10-27: T2 done: `buildData` takes `indexRepo` (default `INDEX_REPO`, the CLI passes `GITHUB_REPOSITORY`) and reads the issue list after the local entry reads and before any upstream read, so the entry-error tests still make no request; the failure line is `cannot read the report issues: <failure name>: <message>`. `reportCount` is a schema definition. The mixed-failures golden file gains one `"reports": []` line, regenerated from the new code. A planted defect (a failed read goes on with no issues) turned the 4 AC3 tests red.
 - 2026-10-27: T3 done: the build job gets its own `permissions` block (`contents: read`, `issues: read`); the workflow-level `contents: read` stays for the deploy job's base. Removing `issues: read` turned its test red. The report-issue.yml test also checks that `pnpm report-issue` gets `secrets.GITHUB_TOKEN`, since the count takes only reports closed by that token's account (first AC1 audit).
 - 2026-10-27: T4 done: the report block (`data-reports`) sits after the declared range and before the repository links, for each record with `upstream`; `reportHref` in `site/src/data.ts` builds the links. The site fixture's GUID record now reads version `3.0.0+r1`, so one record needs both id and version encoding; the prerelease test's text follows. Viewed through a local server: Astro dropped the spaces around the links ("itWorksor"), fixed with `{" "}`. Unencoded versions turned 2 tests red.
+- 2026-10-27: T5 done: README "Using the data" (the `reports` rule, the deploy rule), "The site", "Reporting whether a plugin works", and "Building the data"; the M020 CHANGELOG entry; DESIGN Contract boundary, item 4, Function Families, the `src/build/` and workflow-test paragraphs, and a Known issues entry that also names the reopen case and the "ghost" account. The forms, the bot comment, and README now say the index counts reports, in the present tense. A joined-text search finds none of the old future-tense phrases. The simple-english hook flags "validate" in README and CHANGELOG; kept, since it names the schema check, as the earlier README text does.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

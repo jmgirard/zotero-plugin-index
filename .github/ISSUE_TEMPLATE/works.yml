@@ -7,8 +7,8 @@ body:
     attributes:
       value: |
         A bot checks this report, comments, and closes the issue. The index
-        will count a report only while it reads that plugin version, and once
-        per GitHub account for each plugin and Zotero major.
+        counts a report only while it reads that plugin version, and once per
+        GitHub account for each plugin and Zotero major.
   # src/reports/report.ts finds each value under its input's label heading in the issue body.
   - type: input
     id: plugin

@@ -32,7 +32,8 @@ the repository archived (when GitHub's response says), repository age, the
 release the index read and whether it is a prerelease (corrected M014),
 release count, open issues, and the host of the `update.json` file.
 The page shows the name, the description, the version pills, the declared
-range, and the repository and releases links first. The other facts sit in a
+range, the user reports on the release the index read with a "Works" and a
+"Broken" link (M021), and the repository and releases links first. The other facts sit in a
 closed "Details" section (M015). The home list marks an
 archived plugin with "(archived)" after its name, and the data carries the
 same `archived` fact (M013).
@@ -61,7 +62,9 @@ rejects fields it does not define, so a consumer that validates against a
 saved copy must fetch the schema again after such a change. The URL is
 `https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json`, and the
 schemas are under `https://jmgirard.github.io/zotero-plugin-index/schemas/`,
-each schema's `$id` being its own URL (M006).
+each schema's `$id` being its own URL (M006). Each record that has
+`upstream` carries the report counts in the optional `reports` field
+(D-013, M021).
 
 Out of scope: install buttons, mirrors for regions that cannot reach GitHub,
 user accounts, and a combined compatibility verdict.
@@ -95,12 +98,12 @@ shows each one separately.
    or will not fix upstream. Each override states its reason.
 4. User reports. Two issue forms take a "works" or a "broken" report with
    the plugin id, the plugin version, and the Zotero version. A bot checks
-   each report, comments, and closes the issue (M020). The counts are not
-   built yet. D-013 sets their rule, and M021 builds them. Each plugin page
-   is to have a "Works" link and a "Broken" link. Each link opens a form with
-   the plugin and its version filled in, so the reporter adds only the
-   Zotero version. The daily build is to count the report issues that the
-   bot closed as completed. No file in the repo holds a report.
+   each report, comments, and closes the issue (M020). Each plugin page has
+   a "Works" link and a "Broken" link. Each link opens a form with the
+   plugin and its version filled in, so the reporter adds only the Zotero
+   version. The daily build reads the closed report issues and counts those
+   that `github-actions[bot]`, the account the bot runs as, closed as
+   completed, by D-013's rule (M021). No file in the repo holds a report.
 
 Inclusion bar: a public repository, a Zotero 7+ manifest, and at least one
 release with a readable `update.json`. The bot checks all three, and it
@@ -109,8 +112,8 @@ the index shows that it is archived (D-006, M013). The maintainer removes
 spam. Inclusion is not a judgment of
 quality. The index does not list plugins for Zotero 5 or 6.
 
-Once user reports exist, a page whose declared compatibility and user reports
-disagree shows both (corrected M007). For example, "Declares 7.0 to 8.*" appears beside "Reports on 8.x:
+A page whose declared compatibility and user reports disagree shows both
+(corrected M007, M021). For example, an 8 ✓ pill appears above "Zotero 8:
 2 works, 3 broken".
 
 An author can open an issue to be delisted or to correct a fact, and the
@@ -151,9 +154,12 @@ exception is a report that is abuse.
   It exits 1 when more than half of the records carry a build-level failure,
   as README "Building the data" defines it, and also when every record carries a
   failure, whatever its name. It prints a summary of failure
-  names and a `::warning::` line for build-level failures. Added M003;
+  names and a `::warning::` line for build-level failures. Before any plugin
+  read it reads the closed report issues of `GITHUB_REPOSITORY`, or of
+  `INDEX_REPO`, and writes `reports` on each record that has `upstream`; a
+  failed issue read writes no file and exits 1 (D-013). Added M003;
   schemas and exit rule M006; build-level rule and summary M017; every-record
-  rule M018.
+  rule M018; reports M021.
 - Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
   home page and one page per record into `dist/`, or `<dir>`, from the data
   file there. `src/site/version.ts` holds the version and range functions
@@ -164,6 +170,9 @@ exception is a report that is abuse.
   issue's plugin id, plugin version, Zotero major, and verdict, or names the
   first problem. `pnpm report-issue` reads the issue that `ISSUE_NUMBER`
   names, comments, and closes it as completed or not planned. Added M020.
+  `countReports(issues, records)` (`src/reports/count.ts`) counts the closed
+  report issues for each record that has `upstream`, by Zotero major
+  (M021).
 
 ## Conventions
 
@@ -329,15 +338,19 @@ reused._
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request, except those the built-in token makes, such as the
   discovery bot's (M009).
-- `src/build/` reads the entries, runs the upstream reader on each plugin in
-  turn, and checks each record and then the whole output against
+- `src/build/` reads the entries, then every page of the closed report
+  issues, runs the upstream reader on each plugin in turn, writes the
+  `countReports` counts into each read record's `reports`, and checks each record and then the whole output against
   `schemas/plugins.v1.schema.json` before it writes the file.
   `.github/workflows/build.yml` runs `pnpm check`, then the build, then
   `pnpm site` (M007), daily and on manual dispatch, and keeps `dist/` as a
   workflow artifact (M003). The build also copies both schemas to `dist/schemas/`, and it exits 1 after it
   writes the file when more than half of the records carry a build-level
   failure, as README "Building the data" defines it (M017), or when every
-  record carries a failure of any name (M018, D-012). The reader
+  record carries a failure of any name (M018, D-012). A failed read of the
+  report issues stops the build before any plugin read and writes no file
+  (D-013, M021). The build job holds `contents: read` and `issues: read`
+  for that read, and `test/workflows.test.ts` checks both (M021). The reader
   marks a failure build-level beside its name, and `buildData` returns the
   marked ids outside the data, so the published file keeps its shape
   (D-011). The workflow then uploads `dist/` as the Pages artifact, and a deploy job that
@@ -352,7 +365,9 @@ reused._
   without `cache-mode: none`; `ci.yml` keeps `cache: pnpm` (M016). It also
   checks `report-issue.yml`: its trigger, label condition, permissions,
   `cache-mode: none`, no cache line, no concurrency group, the issue number
-  through `env:`, and no other use of `github.event` (M020).
+  through `env:`, and no other use of `github.event` (M020), and that
+  `pnpm report-issue` gets `secrets.GITHUB_TOKEN`, whose account the report
+  count requires (M021).
 - `site/` is an Astro project (D-004), and `src/site/` builds it. `pnpm site`
   reads `<out>/v1/plugins.json`, builds into a temporary directory, because
   Astro empties its output directory, and copies the pages into `<out>` beside
@@ -394,3 +409,11 @@ reused._
   when the reader connects" holds the fix.
 - One person maintains the index. Approvals and disputes wait for that
   person. Expected at design time, 2026-10-24.
+- Throwaway GitHub accounts can inflate the report counts, because each
+  account counts once for each plugin and Zotero major. The maintainer
+  removes abuse one issue at a time with the label `not-counted`. A report
+  that someone reopens and closes again, or that the maintainer closes by
+  hand after a failed bot run, does not count, because the count takes only
+  issues that `github-actions[bot]` closed. GitHub shows every deleted
+  account as one "ghost" account, so their reports count once for each
+  plugin and major. Recorded at M021, 2026-10-27.
