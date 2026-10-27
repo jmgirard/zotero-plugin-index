@@ -144,6 +144,7 @@ merge. README, CHANGELOG, and DESIGN follow.
 - 2026-10-27: T5 done. DESIGN's Discovery family now names `.github/workflows/close-add-plugin-issue.yml` beside `pnpm close-issue`; a joined-copy search of the Function Families section finds each once.
 - 2026-10-27: all tasks done; `pnpm test` and `pnpm check` pass; status review.
 - 2026-10-27: review fix-now work in c5cd804: a concurrency group per pull request, an exact match of the closing comment (the issue run's comment now states the no-merge close), README conditions, three comments, the CLI extra-argument test, and an exact test pattern; planting the old phrase check failed 5 tests; `pnpm test` 627 tests pass.
+- 2026-10-27: step-7 approval: m022-issue-bot-fixes approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
