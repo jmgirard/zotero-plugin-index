@@ -37,6 +37,13 @@ describe("filterHref", () => {
   test("removes the language parameter for All languages", () => {
     expect(filterHref(`${PAGE}?language=zh`, "")).toBe(PAGE);
   });
+
+  test.each([
+    ["no language parameter", `${PAGE}?q=a%20b&a`, ""],
+    ["the language parameter already set", `${PAGE}?q=a%20b&language=zh`, "zh"],
+  ])("leaves an address with %s unchanged", (_, href, value) => {
+    expect(filterHref(href, value)).toBe(href);
+  });
 });
 
 function record(languages: string[] | undefined, overrides: LanguageRecord["overrides"] = []): LanguageRecord {

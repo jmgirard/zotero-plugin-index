@@ -307,8 +307,11 @@ describe("the plugin page", () => {
     ["an override for another version only", "min-only-plugin@example.org", "Chinese (China), Chinese (Taiwan)"],
     ["an override for the version read beside one for every version", "locale-plugin@example.org", "Portuguese (Brazil), Spanish (Latin America)"],
   ])("shows the interface languages for %s", (_, id, text) => {
-    expect(page(id)).toContain(`<p class="languages">Interface languages: <span data-fact="languages">`);
     expect(fact(page(id), "languages")).toBe(text);
+  });
+
+  test("labels the interface languages fact", () => {
+    expect(page("first-plugin@example.org")).toContain(`<p class="languages">Interface languages: <span data-fact="languages">`);
   });
 
   test.each([
@@ -368,7 +371,7 @@ describe("the home page", () => {
   // The row holds no other <li>, so it ends at the first </li> after it starts.
   function row(id: string): string {
     const html = home();
-    const start = html.indexOf(` data-plugin="${escaped(id)}"`);
+    const start = [...html.matchAll(/<li class="plugin"[^>]*>/g)].find(([tag]) => tag.includes(` data-plugin="${escaped(id)}"`))?.index ?? -1;
     expect(start, id).toBeGreaterThan(-1);
     return html.slice(start, html.indexOf("</li>", start));
   }
@@ -412,7 +415,7 @@ describe("the home page", () => {
   });
 
   test("holds a hidden language menu with one option for each subtag", () => {
-    const menu = /<p class="language-filter" hidden><label for="language">Interface language<\/label> <select id="language" data-language-filter>(.*?)<\/select><\/p>/.exec(home());
+    const menu = /<p class="language-filter" hidden><label for="language">Interface language<\/label> <select id="language" data-language-filter autocomplete="off">(.*?)<\/select><\/p>/.exec(home());
     expect(menu).not.toBeNull();
     const options = [...menu![1]!.matchAll(/<option value="([^"]*)">([^<]*)<\/option>/g)].map(([, value, text]) => [value, text]);
     expect(options).toEqual([

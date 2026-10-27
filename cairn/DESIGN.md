@@ -182,10 +182,11 @@ exception is a report that is abuse.
   home page and one page per record into `dist/`, or `<dir>`, from the data
   file there. `src/site/version.ts` holds the version and range functions
   that the templates use, `majorSupport` and `ZOTERO_MAJORS` among them, and
-  `src/site/description.ts` holds `shownDescription`. `src/site/languages.ts`
-  holds the applied languages, their names, and the menu options, and
-  `src/site/language-filter.ts` holds `rowShows`, which the home page's
-  script imports. Added M007; pills and descriptions M015; languages M024.
+  `src/site/description.ts` holds `shownDescription`.
+  `src/site/languages.ts` holds the applied languages, their names, and the
+  menu options. `src/site/language-filter.ts` holds `rowShows`, `menuValue`,
+  and `filterHref`, which the home page's script imports. Added M007; pills
+  and descriptions M015; languages M024.
 - Reports (`src/reports/`): `parseReport(body, labels, ids)` reads a report
   issue's plugin id, plugin version, Zotero major, and verdict, or names the
   first problem. `pnpm report-issue` reads the issue that `ISSUE_NUMBER`

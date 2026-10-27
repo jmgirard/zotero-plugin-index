@@ -14,7 +14,7 @@ const { plugins } = loadData();
   </p>
   <p class="language-filter" hidden>
     <label for="language">Interface language</label>{" "}
-    <select id="language" data-language-filter>
+    <select id="language" data-language-filter autocomplete="off">
       <option value="">All languages</option>
       {languageOptions(plugins).map(({ value, text }) => <option value={value}>{text}</option>)}
     </select>

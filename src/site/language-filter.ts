@@ -15,9 +15,12 @@ export function menuValue(asked: string | null, options: readonly string[]): str
 }
 
 // The page's address with its language parameter set to value, or with the parameter
-// removed when value is "". The path and the other parameters stay.
+// removed when value is "". An address that already says so comes back unchanged.
+// Otherwise the query is written again, so the other parameters keep their values but not
+// always their spelling, such as %20 for +.
 export function filterHref(href: string, value: string): string {
   const url = new URL(href);
+  if (value ? url.searchParams.get("language") === value : !url.searchParams.has("language")) return href;
   if (value) url.searchParams.set("language", value);
   else url.searchParams.delete("language");
   return url.href;
