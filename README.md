@@ -77,6 +77,18 @@ By this project's rule, a new optional field does not get a new schema
 version. The schema rejects fields that it does not define. If you validate
 against a saved copy of the schema, fetch it again after such a change.
 
+Each `upstream` block has a `languages` list, such as `["en-US", "zh-CN"]`.
+It holds the language tags of the locale folders in the plugin's XPI, the
+one whose manifest the index read. A locale folder is `locale/<tag>/` or
+`chrome/locale/<tag>/` with at least one file in it. The build writes each
+tag in its standard form, so `zh_CN` becomes `zh-CN`, and sorts the list. It
+leaves out a folder whose name is not a language tag, and the tag `und`
+(undetermined). The list says which languages a plugin ships interface text
+for. It does not say whether a translation is complete. A plugin that writes
+its text straight into its code ships no locale folders, so its list is
+empty. A `languages` override can name its languages, as "Plugin entries"
+says. Data written before the list existed has no `languages` field.
+
 Each record that has an `upstream` block also has a `reports` list. It
 counts the user reports on the plugin version in `upstream.version`. The
 list has one item for each Zotero major with at least one counted report,
@@ -121,10 +133,14 @@ only registry fields. Its `id` must equal the directory name.
   when the plugin author cannot or will not fix the fact upstream. Each item
   has these fields:
   - `field`: the fact to correct. The value is one of `name`, `description`,
-    `homepage`, `strict_min_version`, or `strict_max_version`.
+    `homepage`, `strict_min_version`, `strict_max_version`, or `languages`.
   - `version`: the plugin version that the override applies to. If you leave
     it out, the override applies to every version.
-  - `value`: the corrected value.
+  - `value`: the corrected value. For `languages`, the value is one or more
+    language tags joined by a comma and a space, such as `zh-CN, en-US`. A
+    tag starts with a language of 2 or 3 letters. An optional script,
+    region, and variant follow, each after a `-`. Examples are `zh`,
+    `zh-TW`, and `sr-Latn-RS`. The tag `und` is not allowed.
   - `reason`: why the upstream value is wrong. The reason must contain text
     other than whitespace.
 
@@ -426,7 +442,8 @@ their reasons, in an `overrides` block. The schema for the file is
 GitHub response for the repository says whether it is archived, the
 `upstream` block has an `archived` field, `true` or `false`. The `upstream`
 block also has a `prerelease` field, `true` or `false`. It says whether
-GitHub marks the release that the reader read as a prerelease. Each record
+GitHub marks the release that the reader read as a prerelease. It also has
+a `languages` list, which "Using the data" describes. Each record
 with an `upstream` block has a `reports` list, which "Using the data"
 describes.
 
