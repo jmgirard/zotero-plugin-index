@@ -1,6 +1,6 @@
 # M029: Bound the build's read time
 
-- **Status:** review
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -63,6 +63,7 @@
 - 2026-10-27: T5 done. Branch pushed; `build.yml` dispatched on it (run 40529804385): build job success in 89 s, "build-level failures: 0 of 28 records", 28 records with 0 failed reads; the deploy job failed as off-`main` runs do (LESSONS M006).
 - 2026-10-27: claim audit: 33 claims read, 2 corrected — CHANGELOG.md (the old bound also had the lookup's 60 s limit), src/upstream/reader.ts (an abort hidden by a redirect body's cancel now fails the download as a build-level cut with the reason; `downloader` takes the signal; new test, red with the check planted out). `pnpm test` 721 passed, `pnpm check` clean.
 - 2026-10-27: all tasks done; status review.
+- 2026-10-27: review return 1: AC4 fails as written — README says "Such a plugin shows no facts until a later build reads it" right after the `not-read` sentence, so it covers only unread entries, not a read cut by the 3-minute limit; AC4 asks it for both.
 
 ## Decisions
 
