@@ -81,7 +81,7 @@ pattern `LANGUAGE_TAG` does not change.
       { type: "language", fallback: "none" })` gives no name for its
       language subtag. Update the comments on `languages` (near line 31)
       and above `localeLanguages` (near line 492).
-- [ ] T3: Update README.md "Using the data" (near line 97; drop "It does not
+- [x] T3: Update README.md "Using the data" (near line 97; drop "It does not
       check that a tag names a known language", state the rule, its Node
       `Intl` source, and that overrides are not filtered), the CHANGELOG
       languages entry under "Unreleased" (edit it, add no new entry), the
@@ -108,6 +108,7 @@ pattern `LANGUAGE_TAG` does not change.
 - 2026-10-27: implement started on branch m025-named-languages.
 - 2026-10-27: T1 done: two table cases; on the unchanged reader the AC1 case failed with extra `img`, `js`, `js-US`, `qaa`, and the AC2 case passed (control).
 - 2026-10-27: T2 done: module-level `LANGUAGE_NAMES` (`Intl.DisplayNames`, `fallback: "none"`) checked on `new Intl.Locale(tag).language` inside the existing try; both comments updated. `pnpm test` 681 passed, `pnpm check` 0 problems.
+- 2026-10-27: T3 done: README (rule, Node `Intl` source, region and script not checked, overrides not checked), CHANGELOG Unreleased entry edited, schema `languages` description, DESIGN item 2 and reader paragraph. Joined-copy search: "does not check that a tag names" 0 in README. The simple-english hook's hits on untouched README and CHANGELOG lines are left alone.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

@@ -167,8 +167,10 @@
 - The data records the interface languages of each plugin. The record's
   `upstream` block in `v1/plugins.json` now has a `languages` list, such as
   `["en-US", "zh-CN"]`. It holds the language tags of the `locale/<tag>/`
-  and `chrome/locale/<tag>/` folders in the XPI that the reader read. A
-  plugin with no such folder gets an empty list. The list does not say
+  and `chrome/locale/<tag>/` folders in the XPI that the reader read. If a
+  tag's language has no English name in the build's Node.js `Intl` data, the
+  list leaves the tag out. So a folder such as `locale/img/` adds no
+  language. A plugin with no such folder gets an empty list. The list does not say
   whether a translation is complete. An `index.json` override can have the
   field `languages` and a value such as `zh-CN, en-US`. It records the
   languages of a plugin whose list is wrong or empty, in the record's
