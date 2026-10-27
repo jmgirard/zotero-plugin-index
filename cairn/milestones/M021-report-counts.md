@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M021: Show report counts on the plugin pages
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M020   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -157,6 +157,8 @@ throwaway accounts.
 - 2026-10-27: T3 done: the build job gets its own `permissions` block (`contents: read`, `issues: read`); the workflow-level `contents: read` stays for the deploy job's base. Removing `issues: read` turned its test red. The report-issue.yml test also checks that `pnpm report-issue` gets `secrets.GITHUB_TOKEN`, since the count takes only reports closed by that token's account (first AC1 audit).
 - 2026-10-27: T4 done: the report block (`data-reports`) sits after the declared range and before the repository links, for each record with `upstream`; `reportHref` in `site/src/data.ts` builds the links. The site fixture's GUID record now reads version `3.0.0+r1`, so one record needs both id and version encoding; the prerelease test's text follows. Viewed through a local server: Astro dropped the spaces around the links ("itWorksor"), fixed with `{" "}`. Unencoded versions turned 2 tests red.
 - 2026-10-27: T5 done: README "Using the data" (the `reports` rule, the deploy rule), "The site", "Reporting whether a plugin works", and "Building the data"; the M020 CHANGELOG entry; DESIGN Contract boundary, item 4, Function Families, the `src/build/` and workflow-test paragraphs, and a Known issues entry that also names the reopen case and the "ghost" account. The forms, the bot comment, and README now say the index counts reports, in the present tense. A joined-text search finds none of the old future-tense phrases. The simple-english hook flags "validate" in README and CHANGELOG; kept, since it names the schema check, as the earlier README text does.
+- 2026-10-27: claim audit: 52 claims read, 1 corrected — CHANGELOG.md (the `reports` items cover only majors with a counted report, and only pages of read plugins show the counts and links).
+- 2026-10-27: status review; all 5 tasks done, `pnpm test` (589 tests) and `pnpm check` pass.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
