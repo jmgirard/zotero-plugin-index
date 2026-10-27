@@ -1,16 +1,15 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-27 (M021 done and archived; 2 rows graduated, 2 added, 1 unparked; 11 lessons marked used, 1 captured, 1 evicted; M018 row pruned)_
+_Last hygiene check: 2026-10-27 (M022 done and archived; 2 rows graduated, 1 added, M019 row pruned; 9 lessons marked used, 1 captured, 1 evicted)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M022 | Fix two gaps of the issue bot | review | — | normal | milestones/M022-issue-bot-fixes.md |
+| M022 | Fix two gaps of the issue bot | done | — | normal | milestones/archive/M022-issue-bot-fixes.md |
 | M021 | Show report counts on the plugin pages | done | M020 | normal | milestones/archive/M021-report-counts.md |
 | M020 | Answer report issues from two forms | done | — | normal | milestones/archive/M020-report-forms.md |
-| M019 | Keep issues open on a bot read failure | done | — | normal | milestones/archive/M019-keep-issues-open.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
 
@@ -24,7 +23,6 @@ _Last hygiene check: 2026-10-27 (M021 done and archived; 2 rows graduated, 2 add
 - Check the index at the push base: `pnpm propose` checks the index in its checkout, the commit the read job saw, but builds each commit on the newest default branch, so an entry merged during the run can be proposed again; read `plugins/` at the fetched base commit (M011 review) — added 2026-10-26 — M011
 - Let old v1 schemas accept new fields: the v1 `upstream` block keeps `additionalProperties: false`, so a saved copy of the schema rejects each optional field that D-006 lets v1 gain; allowing unknown fields would let old copies accept later additions, but it changes what the schema checks; see "Keep the v1 data when v2 ships" (M013 review) — added 2026-10-26 — M013, D-007
 - Count more GitHub answers as build-level: a GitHub API answer of HTTP 200 with an HTML body and a 403 from GitHub's release-asset host are not build-level, so an outage or regression that fails most records this way, but not all, still deploys (M017 review); narrowed and retitled 2026-10-26 by M018, which withholds a deploy when every record fails (D-012) (M018 review) — added 2026-10-26 — M006, M017, M018, D-011, D-012
-- Keep issues open on entry-check errors: an "Add a plugin" issue run still closes the issue as not planned when `plannedProblem` throws in `draftEntry` (`unexpected-error`, such as git failing to start), though that is the bot's failure and D-011 counts `unexpected-error` as build-level; M019 left it out of scope (M019 review) — added 2026-10-26 — M019, D-011 — started M022
 - Answer report issues left open: a report run that fails (the issue read, the `plugins/` read, the comment, the close, or its 10-minute timeout), a `report` label added after the issue opens, or a rerun, which comments twice, leaves a report issue open or answered twice, and nothing retries; the "Add a plugin" bot comments "could not finish" on its own failures; see "Answer issues whose run was canceled" (M020 review) — added 2026-10-27 — M020
 - Keep issues open on entry write errors: an issue run closes the issue as not planned when `writeEntry` fails with `write-failed` or finds an output directory left behind (`entry-exists`), though both are the bot's fault (M022 plan audit) — added 2026-10-27 — M019, M022
 - Fail builds when closed_by goes missing: `countReports` drops a report issue whose `closed_by` is absent, so if GitHub's issue list answer stops carrying the field, every count reads zero and the build still deploys, against D-013's rule that counts that cannot be read withhold the deploy; fail the issue read when an item has no `closed_by` key (M021 AC1 re-audit); a renamed or deleted `report` label gives the same result, since GitHub answers an empty list (M021 review) — added 2026-10-27 — M021, D-013
@@ -34,7 +32,6 @@ _Last hygiene check: 2026-10-27 (M021 done and archived; 2 rows graduated, 2 add
 - [low] Limit floods of report issues: anyone can open report issues without limit, each run spends the repo's shared API budget, and a build whose issue read fails withholds the deploy (D-013) (M020 review) — added 2026-10-27 — M020, D-013
 - [low] Fail issue runs with no plugins folder: `indexed` in `src/discover/discover.ts` reads entries through `listEntries`, which returns no entries for a missing `plugins/`, so an "Add a plugin" run treats the index as empty (M020 review) — added 2026-10-27 — M020
 - [low] Check the restored discovery state: the discover read job restores `discovery-state-` by prefix from the default branch's cache in the same job that reads repos anyone can tag, so a job that a crafted repo took over could save a state entry that hides repos from later runs for up to 30 days; check the restored state's shape or keep the state outside the cache (M016 review) — added 2026-10-26 — M009, M016
-- [low] Close the issue when its pull request closes: an issue whose bot pull request is closed without a merge stays open, though the bot's comment said it closes when that pull request merges (M010 review) — added 2026-10-26 — M010 — started M022
 - [low] Block more IPv6 ranges in the host check: the M004 host check lets through ::ffff:0:0:0/96 (SIIT), 64:ff9b:1::/48 (local NAT64), 100::/64, 2001::/23 (Teredo included), fec0::/10, 3fff::/20, 5f00::/16, and 192.88.99.0/24; the translated ones reach a private address only on a NAT64 or SIIT network (M004 review) — added 2026-10-25 — M004
 - [low] Order releases with bad dates safely: the reader sorts releases by `Date.parse(published_at)`, and an invalid date gives NaN, which leaves the sort order undefined, so "newest" and the stable pick can name the wrong release; GitHub gives a valid date for each published release, and no test covers it (M014 review) — added 2026-10-26 — M014
 - [low] State the bar for the release read: DESIGN.md says the inclusion bar needs "at least one release with a readable `update.json`", but the reader checks only the release it reads, so a plugin is refused when that release fails and another release passes (M014 review) — added 2026-10-26 — M014
