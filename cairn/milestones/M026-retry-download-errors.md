@@ -82,11 +82,11 @@ describe the state file, so it does not change.
       pass `recorded` as false when `read.buildLevel` is set. Update the
       comment above `NOT_RECORDED` (near line 18) and on `Drafted` (near
       line 152).
-- [ ] T3: Update README.md's discovery state paragraph (near line 266)
+- [x] T3: Update README.md's discovery state paragraph (near line 266)
       and cairn/DESIGN.md's discovery paragraph (near line 291). README
       names the host as "the host of the XPI or the `update.json`". Search
       joined copies of both files for stale wording (lesson M018).
-- [ ] T4: Run `pnpm test` and `pnpm check`.
+- [x] T4: Run `pnpm test` and `pnpm check`.
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -104,6 +104,8 @@ describe the state file, so it does not change.
 - 2026-10-27: started on branch m026-retry-download-errors, cut from main at 236a45c.
 - 2026-10-27: T1 done: a four-row table in "the discovery state" tests. On the unchanged code the 429 and 503 rows failed with the repo's record present in the state, and the two 404 rows passed.
 - 2026-10-27: T2 done: `draftEntry` passes `recorded` false for a reader failure marked build-level; comments on `NOT_RECORDED` and `Drafted` updated. `pnpm test` 685 passed, `pnpm check` 23 entries, 0 problems.
+- 2026-10-27: T3 done: README's discovery state paragraph and DESIGN's discovery paragraph name the 429/5xx download answers; joined-copy search of README, DESIGN, and CHANGELOG found no other sentence on which refusals the state keeps. The simple-english hook flagged README lines 94, 357, and 371, which this branch does not touch; left as they are.
+- 2026-10-27: T4 done: `pnpm test` 17 files, 685 passed; `pnpm check` 23 entries, 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
