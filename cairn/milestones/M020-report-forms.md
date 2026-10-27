@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M020: Answer report issues from two forms
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -152,6 +152,8 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 - 2026-10-27: T4 done: `answerReport` in `src/reports/issue.ts` and `pnpm report-issue` (`src/reports/issue-cli.ts`). It reads the entry ids with its own `readdir`, because `listEntries` returns an empty list for a missing directory, which would refuse every report as an unknown plugin. Seven in-process tests and two spawned-command tests; 523 tests pass.
 - 2026-10-27: T5 done: `.github/workflows/report-issue.yml` ("Answer a report", job `answer`) and six checks in `test/workflows.test.ts`, with a new `otherEventUses` matcher tested on the body, the title, an index form, and the whole event. A planted `pull-requests: write` and a planted `concurrency` key each failed their test.
 - 2026-10-27: T6 done: README section "Reporting whether a plugin works", one CHANGELOG Unreleased bullet, and DESIGN's Function Families and Architecture entries. The form text and the bot's comment now state the counting rule without saying that the daily build counts reports, since nothing counts them until M021; M021's docs task adds that claim.
+- 2026-10-27: claim audit: 45 claims read, 6 corrected — .github/ISSUE_TEMPLATE/works.yml, broken.yml, src/reports/issue.ts, README.md (counting rule now in future tense), test/report.test.ts (test name), .github/workflows/report-issue.yml (two comments), src/reports/report.ts (an unknown id is quoted to 100 characters, with a test). The re-read found all six true.
+- 2026-10-27: implement done; status review. 531 tests pass, `pnpm check` 0 problems. M021's docs and forms text must change "will count" to the present tense once counting ships.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

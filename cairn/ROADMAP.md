@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-27 (M019 done and archived; 1 row graduated, 1 adde
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M020 | Answer report issues from two forms | in-progress | — | normal | milestones/M020-report-forms.md |
+| M020 | Answer report issues from two forms | review | — | normal | milestones/M020-report-forms.md |
 | M021 | Show report counts on the plugin pages | planned | M020 | normal | milestones/M021-report-counts.md |
 | M022 | Fix two gaps of the issue bot | planned | — | normal | milestones/M022-issue-bot-fixes.md |
 | M019 | Keep issues open on a bot read failure | done | — | normal | milestones/archive/M019-keep-issues-open.md |
