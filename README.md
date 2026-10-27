@@ -304,9 +304,10 @@ answer.
 ## Reporting whether a plugin works
 
 To report on a plugin, open an issue with the "Report that a plugin works"
-form or the "Report that a plugin is broken" form. Each form asks for the plugin id, the plugin
-version, and the Zotero version. The works form adds the labels `report`
-and `works`. The broken form adds the labels `report` and `broken`.
+form or the "Report that a plugin is broken" form. Each form asks for the
+plugin id, the plugin version, and the Zotero version. The works form adds
+the labels `report` and `works`. The broken form adds the labels `report`
+and `broken`.
 
 When an issue with the label `report` opens, the `Answer a report` workflow
 runs `pnpm report-issue` with the issue number in `ISSUE_NUMBER`. The
@@ -325,10 +326,10 @@ If the bot takes the report, it comments the plugin id, the plugin version,
 the Zotero major, and the verdict. The comment also states how the index
 will count the report. It will count a report only while it reads that
 plugin version, and once per GitHub account for each plugin and Zotero
-major. Then the bot closes the issue as completed. Otherwise, the bot comments the name and the message of the
-first problem it found, and closes the issue as not planned. The comment
-puts each value from the issue in a code span, so the value cannot link to
-a page or mention a user.
+major. Then the bot closes the issue as completed. Otherwise, the bot
+comments the name and the message of the first problem it found, and
+closes the issue as not planned. The comment puts each value from the issue
+in a code span, so the value cannot link to a page or mention a user.
 
 If the bot cannot read the issue or `plugins/`, it sends nothing. If it
 cannot post the comment, it does not close the issue. In these cases the
