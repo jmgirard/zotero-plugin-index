@@ -115,11 +115,11 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 - [x] T1: Create the labels `report`, `works`, `broken`, and `not-counted`
       on the repo with `gh label create`, each with a one-line description.
       The forms add a label only when it exists (LESSONS, M010).
-- [ ] T2: Write `works.yml` and `broken.yml`, and the test of their ids,
+- [x] T2: Write `works.yml` and `broken.yml`, and the test of their ids,
       labels, and headings. After the branch is pushed, open each form's
       GitHub file view on the branch in the built-in browser and look for a
       template error.
-- [ ] T3: Write the tests of `parseReport`, then `src/reports/report.ts`.
+- [x] T3: Write the tests of `parseReport`, then `src/reports/report.ts`.
       The Zotero bound reads `ZOTERO_MAJORS` from `src/site/version.ts`.
 - [ ] T4: Write the tests of the command against recorded responses, then
       the command and its `package.json` script. Reuse `githubClient` and
@@ -147,6 +147,8 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 - 2026-10-27: lessons used: 2026-10-26 (M010) labels must exist, 2026-10-25 (M002) recorded responses, 2026-10-25 (M001) pnpm through npx, 2026-10-26 (M018) search joined text.
 - 2026-10-27: implement started on branch m020-report-forms, cut from main at 972649c.
 - 2026-10-27: T1 done: created the labels `report`, `works`, `broken`, and `not-counted` with `gh label create`; `gh label list` shows all four.
+- 2026-10-27: T2 done: `works.yml` and `broken.yml`, with the input labels "Plugin id", "Plugin version", and "Zotero version", titles "Report: works" and "Report: broken". GitHub's file view of both on the branch at d4a2e5d shows the form preview and no template error.
+- 2026-10-27: T3 done: `parseReport` returns the first problem it finds, in input order and then plugin id, version, Zotero version, verdict; problem names `missing-heading`, `no-response`, `unknown-plugin`, `bad-plugin-version`, `bad-zotero-version`, `bad-verdict`. A planted removal of the upper Zotero bound failed exactly the "above the newest major" test. 514 tests pass, `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
