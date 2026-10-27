@@ -1,17 +1,16 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-27 (M022 done and archived; 2 rows graduated, 1 added, M019 row pruned; 9 lessons marked used, 1 captured, 1 evicted)_
+_Last hygiene check: 2026-10-27 (M023 done and archived; 2 rows added, M020 row pruned; 6 lessons marked used, none captured)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M023 | Record each plugin's interface languages | review | — | normal | milestones/M023-record-languages.md |
 | M024 | Filter the home list by interface language | planned | M023 | normal | milestones/M024-language-filter.md |
+| M023 | Record each plugin's interface languages | done | — | normal | milestones/archive/M023-record-languages.md |
 | M022 | Fix two gaps of the issue bot | done | — | normal | milestones/archive/M022-issue-bot-fixes.md |
 | M021 | Show report counts on the plugin pages | done | M020 | normal | milestones/archive/M021-report-counts.md |
-| M020 | Answer report issues from two forms | done | — | normal | milestones/archive/M020-report-forms.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
 
