@@ -70,7 +70,8 @@ const FETCH_TIMEOUT_MS = 60_000;
 // The largest XPI among the listed plugins was 5.5 MB (observed 2026-10-25).
 export const XPI_MAX_BYTES = 50 * 1024 * 1024;
 export const UPDATE_JSON_MAX_BYTES = 1024 * 1024;
-// Each file the reader unzips: manifest.json and the default locale's messages.json.
+// Each file the reader unzips: manifest.json, the default locale's messages.json, and each
+// locale file that localeLanguages reads. A locale file over it counts as holding a message.
 export const UNZIPPED_MAX_BYTES = 1024 * 1024;
 
 export class ReadFailure extends Error {
@@ -492,10 +493,13 @@ const WHOLE_TAG = new RegExp(`^${LANGUAGE_TAG}$`, "u");
 const LOCALE_FOLDER = /^(?:chrome\/)?locale\/([^/]+)\/./;
 const LANGUAGE_NAMES = new Intl.DisplayNames(["en"], { type: "language", fallback: "none" });
 
-// The most that localeLanguages inflates from the locale files of one XPI, counted as the
-// larger of each file's declared and compressed size.
+// The most that localeLanguages inflates from the locale files of one XPI, counted for each
+// file as the largest of its declared size, its compressed size, and its output.
 // The locale files of the listed plugins took at most 562,599 bytes (observed 2026-10-27).
 export const LOCALE_MAX_BYTES = 8 * 1024 * 1024;
+// localeLanguages inflates 1 KiB of input at a time, so deflate's limit of about 1032 bytes
+// of output for each byte of input keeps one push to about 1 MiB of output.
+const LOCALE_INFLATE_CHUNK_BYTES = 1024;
 
 // The language tag of each locale folder in the zip that holds a message, the <tag> of an
 // entry name locale/<tag>/<file> or chrome/locale/<tag>/<file>. A "_" in <tag> reads as "-".
@@ -508,8 +512,10 @@ export const LOCALE_MAX_BYTES = 8 * 1024 * 1024;
 // it is on, so it keeps no list of the zip's entries. A file that it does not inflate counts
 // as holding a message: one whose declared or compressed size is over UNZIPPED_MAX_BYTES,
 // whose compression is neither stored nor deflate, or whose larger size would take the
-// total past LOCALE_MAX_BYTES. So does a file whose inflate fails, so no locale file fails
-// the read.
+// total past LOCALE_MAX_BYTES. So does a file whose inflate fails or whose output length
+// differs from its declared size, so no locale file fails the read. A file whose output
+// passes its declared size adds that output to the total, so files that each declare a
+// small size cannot make it inflate more than about 1 MiB past LOCALE_MAX_BYTES.
 function localeLanguages(zip: Uint8Array): string[] {
   const tags = new Set<string>();
   let inflated = 0;
@@ -532,11 +538,21 @@ function localeLanguages(zip: Uint8Array): string[] {
         tags.add(tag);
         continue;
       }
-      inflated += bytes;
-      const data = inflateEntry(zip, entry, () => {
-        throw new Error("inflates past its declared size");
-      });
-      if (holdsMessage(name, strFromU8(data))) tags.add(tag);
+      let output = 0;
+      try {
+        const data = inflateEntry(
+          zip,
+          entry,
+          () => {
+            throw new Error("inflates past its declared size");
+          },
+          LOCALE_INFLATE_CHUNK_BYTES,
+          (length) => (output += length),
+        );
+        if (data.length !== entry.originalSize || holdsMessage(name, strFromU8(data))) tags.add(tag);
+      } finally {
+        inflated += Math.max(bytes, output);
+      }
     } catch {
       tags.add(tag);
     }
@@ -683,24 +699,33 @@ function unzipOne(zip: Uint8Array, name: string, tag: string): Uint8Array | unde
 
 // Unzips one entry. fflate 0.8.3's unzipSync decodes the whole stream of a deflated file,
 // however far its output runs past the size the central directory declares (observed
-// 2026-10-25), so this inflates the file INFLATE_CHUNK_BYTES of input at a time and calls
-// `overflow` with the declared size once the output passes it. It returns a stored file at
-// its compressed size, as unzipSync does, and throws on any other compression.
-function inflateEntry(zip: Uint8Array, entry: ZipEntry, overflow: (declared: number) => never): Uint8Array {
+// 2026-10-25), so this inflates the file `chunkBytes` of input at a time and calls
+// `overflow` with the declared size once the output passes it. It hands `onOutput` the
+// length of each piece of output first, the piece that passes the size included. It returns
+// a stored file at its compressed size, as unzipSync does, and throws on any other
+// compression.
+function inflateEntry(
+  zip: Uint8Array,
+  entry: ZipEntry,
+  overflow: (declared: number) => never,
+  chunkBytes = INFLATE_CHUNK_BYTES,
+  onOutput?: (length: number) => void,
+): Uint8Array {
   const data = zip.subarray(entry.start, entry.start + entry.size);
   if (entry.compression === 0) return data.slice();
   if (entry.compression !== 8) throw new Error(`unknown compression type ${entry.compression}`);
   const out = new Uint8Array(entry.originalSize);
   let length = 0;
   const inflate = new Inflate((chunk) => {
+    onOutput?.(chunk.length);
     if (length + chunk.length > out.length) overflow(out.length);
     out.set(chunk, length);
     length += chunk.length;
   });
   let at = 0;
   do {
-    inflate.push(data.subarray(at, at + INFLATE_CHUNK_BYTES), at + INFLATE_CHUNK_BYTES >= data.length);
-    at += INFLATE_CHUNK_BYTES;
+    inflate.push(data.subarray(at, at + chunkBytes), at + chunkBytes >= data.length);
+    at += chunkBytes;
   } while (at < data.length);
   return out.subarray(0, length);
 }

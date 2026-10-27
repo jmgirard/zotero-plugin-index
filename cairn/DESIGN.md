@@ -252,7 +252,8 @@ reused._
   The reader copies the repo response's `archived` value into its facts only
   when it is a boolean (M013).
   The reader caps the XPI at 50 MiB, each unzipped file at 1 MiB, and the
-  `update.json` at 1 MiB. `src/upstream/host-guard.ts` refuses a download
+  `update.json` at 1 MiB. A locale file over 1 MiB is not unzipped and
+  counts as holding a message (M027). `src/upstream/host-guard.ts` refuses a download
   host in a loopback, private, or reserved range, by its literal address or
   by each address that DNS returns. The reader follows download redirects
   itself, at most 5, and checks each one (M004). If an XPI's zip claims
@@ -265,22 +266,27 @@ reused._
   M012).
   The reader finds each file from the central directory, read as `unzipSync`
   reads it, and loops over the claimed count. It inflates a deflated file
-  with fflate's streaming `Inflate`, 16 KiB of input at a time. It fails with
+  with fflate's streaming `Inflate`, 16 KiB of input at a time. For
+  `manifest.json` and the default locale's `messages.json`, it fails with
   `xpi-unreadable` once the output passes the unzipped size that the zip
   declares, because `unzipSync` decodes the whole stream however far it runs
   past that size (M012).
   The reader walks the same central directory once more, one header at a
   time, and records as `languages` the tags of the `locale/<tag>/` and
   `chrome/locale/<tag>/` folders where a file holds a message (M027). It
-  inflates each locale file from the header it is on, the same way, until
-  one file of the tag holds a message. An `.ftl` file needs a Fluent
-  message or term line, a `.properties` file a line that is not a comment,
-  and a `.dtd` file an `<!ENTITY` outside comments. A file of any other
-  type counts. A file that the reader does not inflate counts too: one over
-  1 MiB declared or compressed, one with another compression, and one that
-  would take the XPI's inflated locale total past 8 MiB
-  (`LOCALE_MAX_BYTES`). So does a file that fails to inflate, so no locale
-  file fails the read. So each XPI takes up to three walks over the claimed
+  inflates each locale file from the header it is on, 1 KiB of input at a
+  time, until one file of the tag holds a message. An `.ftl` file needs a
+  Fluent message or term line, a `.properties` file a line that is not
+  blank and not a comment, and a `.dtd` file an `<!ENTITY` outside
+  comments. A file of any other type counts. A file that the reader does
+  not inflate counts too: one over 1 MiB declared or compressed, one with
+  another compression, and one that would take the XPI's inflated locale
+  total past 8 MiB (`LOCALE_MAX_BYTES`). So does a file that fails to
+  inflate, or whose output length differs from its declared size, so no
+  locale file fails the read. A file whose output passes its declared size
+  adds that output to the total, so the reader inflates at most about
+  1 MiB past 8 MiB of locale files for each XPI, however small the sizes
+  the files declare. So each XPI takes up to three walks over the claimed
   count: for `manifest.json`, the default locale's `messages.json`, and the
   locale folders. A
   tag counts when it matches `LANGUAGE_TAG` and its language subtag has an

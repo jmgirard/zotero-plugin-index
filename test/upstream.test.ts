@@ -219,6 +219,8 @@ describe("readUpstream", () => {
     ["uses a compression other than stored or deflate", COMMENT, { compression: 12 }, ["de"]],
     ["holds deflate data that fails to inflate", BROKEN_COMMENT, { compression: 8, originalSize: COMMENT.length }, ["de"]],
     ["inflates past its declared size", DEFLATED_COMMENT, { compression: 8, originalSize: 3 }, ["de"]],
+    ["holds no deflate data for its declared size", new Uint8Array(0), { compression: 8, originalSize: COMMENT.length }, ["de"]],
+    ["declares stored data that runs past the zip's end", COMMENT, { size: 1000, originalSize: 1000 }, ["de"]],
   ])("reads an XPI whose comment-only locale file %s", async (_name, data, fields, languages) => {
     const { result } = await readXpi((json) =>
       editHeader(zipSync({ "manifest.json": json, "locale/de/a.ftl": [data, { level: 0 }] }), "locale/de/a.ftl", (view, header) => {
@@ -237,15 +239,31 @@ describe("readUpstream", () => {
     expect(result.ok && result.facts.languages).toEqual(["fr", "he"]);
   });
 
-  test.each([
-    ["one of them holds a message", FTL, ["de"]],
-    ["both hold comments only", "# Comment\n", []],
-  ])("reads two locale entries with the same name when %s", async (_name, second, languages) => {
+  test("reads two locale entries with the same name", async () => {
     const { result } = await readXpi((json) => {
-      const zip = zipSync({ "manifest.json": json, "locale/de/a.ftl": COMMENT, "locale/de/b.ftl": strToU8(second) });
+      const zip = zipSync({ "manifest.json": json, "locale/de/a.ftl": COMMENT, "locale/de/b.ftl": strToU8(FTL) });
       return editHeader(zip, "locale/de/b.ftl", (_view, header) => zip.set(strToU8("locale/de/a.ftl"), header + 46));
     });
-    expect(result.ok && result.facts.languages).toEqual(languages);
+    expect(result.ok && result.facts.languages).toEqual(["de"]);
+  });
+
+  test("reads within 1 s an XPI of 512 locale files that each declare 1 byte and inflate to 16 MiB", async () => {
+    const bomb = new Uint8Array(deflateRawSync(Buffer.alloc(16 * 1024 * 1024)));
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const tags = Array.from({ length: 512 }, (_, i) => `en-${letters[Math.floor(i / 26)]}${letters[i % 26]}`);
+    const json = strToU8(JSON.stringify(manifest(loadFixture(FIXTURE).responses)));
+    const zip = zipSync({ "manifest.json": json, ...Object.fromEntries(tags.map((tag) => [`locale/${tag}/a.ftl`, [bomb, { level: 0 }]])) });
+    for (const tag of tags) {
+      editHeader(zip, `locale/${tag}/a.ftl`, (view, header) => {
+        view.setUint16(header + 10, 8, true);
+        view.setUint32(header + 24, 1, true);
+      });
+    }
+    const started = performance.now();
+    const { result } = await readXpi(() => zip);
+    expect(performance.now() - started).toBeLessThan(1000);
+    // Some regions, such as AN, are retired, so their tags read in another canonical form.
+    expect(result.ok && result.facts.languages).toEqual([...new Set(Intl.getCanonicalLocales(tags))].sort());
   });
 
   test("shares its language tag pattern with both schemas", () => {

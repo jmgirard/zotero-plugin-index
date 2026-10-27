@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M027: Skip locale folders that hold no messages
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -137,6 +137,10 @@ override values and the schema's tag pattern do not change.
 - [x] T6: Push the branch, dispatch `build.yml` on it, download its data
       artifact, and compare it with the published data as AC3 states. Its
       deploy job fails on a branch (M006 lesson); nothing publishes.
+- [x] T7: Review return 1: count real inflated bytes toward `LOCALE_MAX_BYTES`
+      with small input chunks; keep a tag whose file's output length differs
+      from its declared size; add a bomb timing test and the two short-read
+      cases; drop the second duplicate-name case; fix ripple #1-#5.
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -163,6 +167,9 @@ override values and the schema's tag pattern do not change.
 - 2026-10-27: claim audit: 65 claims read, 7 corrected — CHANGELOG.md, README.md, schemas/plugins.v1.schema.json, src/upstream/reader.ts, test/upstream.test.ts (`.properties` rule now names blank lines in CHANGELOG and schema; the budget counts the larger of declared and compressed size; the `readRelease` comment; the Fluent pattern described as coded, tab before `=` included, which AC1 names; the 8 MiB test name; README and CHANGELOG name files the reader cannot inflate). Code unchanged; `pnpm test` 706 passed, `pnpm check` 0 problems.
 - 2026-10-27: implement done; status review.
 - 2026-10-27: review return 1: the locale budget charges declared sizes, so headers sharing one deflate bomb hold the reader 16.5 s (diff-bug #1); a deflate entry that inflates short with no error, or a stored entry past the zip's end, drops its folder (diff-bug #2, #3). Fix: count real inflated bytes toward the budget with small input chunks, keep the tag when the output length differs from the declared size, add a bomb timing test, drop the second duplicate-name case, and fix ripple #1-#5 (UNZIPPED_MAX_BYTES comment, DESIGN caps and inflate sentences, README and CHANGELOG limit lists).
+- 2026-10-27: T7 added for review return 1.
+- 2026-10-27: T7: tests first: the bomb case (512 headers of a 16 MiB deflate stream declaring 1 byte each) took 17.8 s and failed, and the two short-read cases (no deflate data for a declared 10 bytes; stored data declared 1000 bytes running past the zip's end) dropped `de`. Fix: `inflateEntry` takes an input chunk size and an `onOutput` count; `localeLanguages` pushes 1 KiB at a time (`LOCALE_INFLATE_CHUNK_BYTES`), charges each file the largest of its declared size, compressed size, and output, and keeps a tag whose output length differs from its declared size. The bomb case now reads in about 120 ms; its expected list is the canonical form of its 512 tags, since retired regions such as `en-AN` canonicalize to another tag. The second duplicate-name case dropped. Ripple #1-#5 fixed, and README, CHANGELOG, and DESIGN now say "about 8 MiB". `pnpm test` 708 passed, `pnpm check` 0 problems. One `npx` start hung for 7 minutes before Vitest ran; the stuck process was stopped and the run repeated with `./node_modules/.bin/vitest`.
+- 2026-10-27: implement done after review return 1; status review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

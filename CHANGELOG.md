@@ -24,7 +24,10 @@
   with `xpi-too-large`, and an `update.json` over 1 MiB fails with
   `update-json-too-large`. A `manifest.json` or default-locale
   `messages.json` whose unzipped or compressed size in the zip is more than
-  1 MiB fails with `manifest-too-large`. A download from `localhost` fails
+  1 MiB fails with `manifest-too-large`. A locale file fails nothing. The
+  reader inflates about 8 MiB of locale files at most from each XPI. A
+  locale file that it does not read counts as holding a message. A download
+  from `localhost` fails
   with `host-refused`. So does a download from a host that is, or resolves
   to, an address in a blocked range, such as a loopback or private range.
   The reader follows at most 5 redirects for the XPI and the `update.json`.
@@ -175,7 +178,8 @@
   `.properties` file, it is a line that is not blank and not a `#` or `!`
   comment. In a `.dtd` file, it is an `<!ENTITY` outside comments. A file of
   any other type counts. So a folder whose files hold only comments adds no
-  language. The reader reads at most 8 MiB of locale files from each XPI. A
+  language. The reader reads about 8 MiB of locale files at most from each
+  XPI. A
   file that it does not read, or cannot inflate, counts as holding a
   message. If no tag is left, the list is empty. The list does not say
   whether a translation is complete. An `index.json` override can have the
