@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-27 (M025 done and archived; 1 row graduated, 1 adde
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M026 | Retry repos refused by a download error | planned | — | normal | milestones/M026-retry-download-errors.md |
+| M026 | Retry repos refused by a download error | review | — | normal | milestones/M026-retry-download-errors.md |
 | M025 | Drop locale folders naming no language | done | — | low | milestones/archive/M025-named-languages.md |
 | M024 | Filter the home list by interface language | done | M023 | normal | milestones/archive/M024-language-filter.md |
 | M023 | Record each plugin's interface languages | done | — | normal | milestones/archive/M023-record-languages.md |
@@ -40,8 +40,10 @@ _Last hygiene check: 2026-10-27 (M025 done and archived; 1 row graduated, 1 adde
 - [low] Filter the home list before it paints: the language menu's script is a module, so it runs after the page parses, and a visitor who opens `?language=zh` can see the full list before it shrinks to the filtered one (M024 review) — added 2026-10-27 — M024
 - [low] Test the home page script in a browser: the language menu's DOM code in `site/src/pages/index.astro` (showing the menu, the `popstate` listener, the select's restored value) has only a hand check in the browser pane; an automated browser test needs a new dev dependency (M024 review) — added 2026-10-27 — M024
 - [low] Drop zxx and mul from the languages: `localeLanguages` keeps a `locale/zxx/` or `locale/mul/` folder, since `Intl.DisplayNames` names them "No linguistic content" and "Multiple languages"; neither is one interface language (M025 review) — added 2026-10-27 — M025
+- [low] Drop stale state records on a reread: a repo read again after a push or after 30 days whose read now fails without a record (a GitHub API error, a failed request, or a 429 or 5xx download answer) keeps its old discovery-state record and failure name; the old `pushedAt` or age still makes the next run read it, so no repo is hidden (M026 review) — added 2026-10-27 — M008, M026
 - [parked] Check addresses when the reader connects: M004 checks the reader's own DNS answer before each download, and DNS can answer differently when fetch connects (rebinding); check the address at connect time, which needs the undici package and a decision entry; promote on evidence that the build publishes response bodies or that a rebinding answer reaches a service on the runner — added 2026-10-25 — M004
 - [parked] Keep the v1 data when v2 ships: each Pages deploy replaces the whole site, so a build that moves to `plugins.v2` must keep writing `v1/plugins.json` and its schema for the transition period DESIGN.md promises; promote when a v2 schema is planned (M006 review) — added 2026-10-25 — M006, cairn/DESIGN.md Contract boundary
+- [parked] Stop rereading hosts that keep failing: `pnpm discover` records no refusal from a 429 or 5xx download answer, so a repo whose download host keeps failing takes one of the run's 100 reads every day, newest pushed first; see "Bound the time of a discover run"; promote when discover reports show the same repo refused with a 429 or 5xx answer on several runs in a row (M026 review) — added 2026-10-27 — M026
 <!-- unnumbered ideas; one line each, ordered high → normal → low → parked:
      - [high] short title: detail — added YYYY-MM-DD — links
      - short title: detail — added YYYY-MM-DD — links

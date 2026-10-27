@@ -16,7 +16,9 @@ const RECHECK_MS = 30 * 24 * 60 * 60 * 1000;
 export type DiscoveryFailure = Failure | Extract<WriteResult, { ok: false }>["failure"] | "not-proposable" | "unexpected-error";
 
 // Failures that say nothing about the repo, such as a rate limit, are not recorded, so
-// the next run reads the repo again.
+// the next run reads the repo again. Nor is a failure the reader marks build-level, such
+// as an HTTP 429 or 5xx answer for the XPI or the update.json; draftEntry checks that
+// mark, since the same failure name can be either kind.
 const NOT_RECORDED = new Set<DiscoveryFailure>(["github-http-error", "request-failed", "unexpected-error"]);
 
 // A repo that was read and refused. `pushedAt` is the repo's pushed_at at that read.
@@ -151,7 +153,7 @@ export type Drafted =
   | { ok: true; id: string; dir: string; repoUrl: string; version: string; strictMinVersion?: string; strictMaxVersion?: string }
   // `recorded` is false for a refusal that says nothing about the repo. `buildLevel` marks a
   // refusal that usually points at the bot rather than at the repo: a reader failure that
-  // the reader marks build-level, or a read that threw.
+  // the reader marks build-level, or a read that threw. A `buildLevel` refusal is never recorded.
   | { ok: false; failure: DiscoveryFailure; message: string; recorded: boolean; buildLevel?: true };
 
 export interface DraftOptions {
@@ -183,7 +185,7 @@ export async function draftEntry(repoUrl: string, options: DraftOptions): Promis
     // A bug in the reader, not a fact about the repo.
     return refuse("unexpected-error", `reading ${repoUrl} threw: ${(error as Error).message}`, false, true);
   }
-  if (!read.ok) return refuse(read.failure, read.message, undefined, read.buildLevel);
+  if (!read.ok) return refuse(read.failure, read.message, !read.buildLevel && !NOT_RECORDED.has(read.failure), read.buildLevel);
   const { id, version, strictMinVersion, strictMaxVersion } = read.facts;
   // Entry directories may be in another place than outDir, so writeEntry cannot see them.
   if (ids.has(id.toLowerCase())) return refuse("entry-exists", `the index already has an entry for the id ${id}`);

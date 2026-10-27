@@ -290,7 +290,9 @@ reused._
   the index lacks. A later run reads that repo again when its `pushed_at`
   changed or the record is 30 days old. A `github-http-error`,
   `request-failed`, or `unexpected-error` result is not kept, nor a write
-  refused by the output directory (`entry-exists` there, `write-failed`).
+  refused by the output directory (`entry-exists` there, `write-failed`),
+  nor a refusal caused by an HTTP 429 or 5xx answer from a download host,
+  which the reader marks build-level (M026).
   A failed search ends the run before any read and leaves the state file as
   it was. The report names, for each entry written, its version and declared
   range (M008).
