@@ -112,7 +112,7 @@ DESIGN follow.
       result and `UpstreamFacts`. Export the tag pattern from the reader.
 - [x] T2: Add `languages` to the `upstream` definition of
       `schemas/plugins.v1.schema.json`, and AC2's two build tests.
-- [ ] T3: Add `languages` to the override `field` enum of both schemas, with
+- [x] T3: Add `languages` to the override `field` enum of both schemas, with
       an `if`/`then` that sets the `value` pattern. Add AC3's check tests.
       Add a test that the pattern in each schema equals the reader's pattern
       joined by `, `, so the three copies cannot drift.
@@ -141,6 +141,7 @@ DESIGN follow.
 - 2026-10-27: plan gate chose the value pattern in both schemas over a rule in `pnpm check`, because `buildData` checks entries only against the schema; falsified by a value the schemas pass that makes the site's `Intl` calls throw.
 - 2026-10-27: changelog: this milestone adds the series' one `## Unreleased` entry, since the data change is user-visible; M024 edits it.
 - 2026-10-27: T1+T2 in one checkpoint: the seven reader tests failed first (`languages` undefined); the build tests then failed as `facts-invalid` until the schema gained the field, so T2 landed with T1. `centralEntries` now holds the central-directory walk that `zipEntry` and the name list share; `LANGUAGE_TAG` (exported from the reader) drops `und` with a lookahead. The golden file `test/fixtures/build/mixed-failures.plugins.json` gained one line, `"languages": []`, in its one read record, checked by diffing the new output against it. `pnpm test` 635 passed; `pnpm check` 0 problems.
+- 2026-10-27: T3: both schemas' override definitions gained `languages` and an `if`/`then` value pattern (with `"type": "string"`, which Ajv's strict mode needs beside `pattern`); a test in `test/upstream.test.ts` pins all three pattern copies to `LANGUAGE_TAG`. Planted check: with the `if`/`then` removed from `index.v1`, exactly the five rejection tests failed; restored from a copy. `pnpm test` 642 passed; `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

@@ -131,10 +131,20 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["field", "value", "reason"],
+      "if": { "required": ["field"], "properties": { "field": { "const": "languages" } } },
+      "then": {
+        "properties": {
+          "value": {
+            "description": "For languages: one or more language tags joined by \", \", such as \"zh-CN, en-US\".",
+            "type": "string",
+            "pattern": "^(?![Uu][Nn][Dd](?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?(, (?![Uu][Nn][Dd](?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?)*$"
+          }
+        }
+      },
       "properties": {
         "field": {
-          "description": "The upstream fact this override corrects: name, description, homepage (homepage_url in the manifest), or strict_min_version and strict_max_version, which correct the upstream strictMinVersion and strictMaxVersion.",
-          "enum": ["name", "description", "homepage", "strict_min_version", "strict_max_version"]
+          "description": "The upstream fact this override corrects: name, description, homepage (homepage_url in the manifest), strict_min_version and strict_max_version, which correct the upstream strictMinVersion and strictMaxVersion, or languages, which corrects the upstream languages.",
+          "enum": ["name", "description", "homepage", "strict_min_version", "strict_max_version", "languages"]
         },
         "version": {
           "description": "The plugin version the override applies to. Absent means every version.",

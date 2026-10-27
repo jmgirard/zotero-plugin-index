@@ -2,7 +2,9 @@ import { deflateRawSync, inflateRawSync } from "node:zlib";
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import type { Lookup } from "../src/upstream/host-guard.ts";
-import { buildLevelStatus, readUpstream, zipEntryCount } from "../src/upstream/reader.ts";
+import indexSchema from "../schemas/index.v1.schema.json" with { type: "json" };
+import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json" };
+import { buildLevelStatus, LANGUAGE_TAG, readUpstream, zipEntryCount } from "../src/upstream/reader.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 
 const FIXTURE = "test/fixtures/upstream/better-notes.json";
@@ -144,6 +146,14 @@ describe("readUpstream", () => {
   ])("lists %s as the languages", async (_name, files, languages) => {
     const { result } = await read((r) => Object.assign(r[XPI].xpi!, files));
     expect(result.ok && result.facts.languages).toEqual(languages);
+  });
+
+  test("shares its language tag pattern with both schemas", () => {
+    const list = `^${LANGUAGE_TAG}(, ${LANGUAGE_TAG})*$`;
+    const { definitions } = pluginsSchema as Json;
+    expect(definitions.upstream.properties.languages.items.pattern).toBe(`^${LANGUAGE_TAG}$`);
+    expect(definitions.override.then.properties.value.pattern).toBe(list);
+    expect((indexSchema as Json).properties.overrides.items.then.properties.value.pattern).toBe(list);
   });
 
   test("reads the newest published stable release with an .xpi, whatever the list order", async () => {
