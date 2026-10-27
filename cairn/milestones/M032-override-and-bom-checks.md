@@ -41,7 +41,7 @@
 - [x] T2: Add `unique-override` to `Rule` and check `overrides` pairs in `checkEntry`, keyed by `field` and `version`, with an absent `version` as its own key. Add the AC2 cases.
 - [x] T3: In `readJson` (`src/check/check.ts:137`), test for a leading U+FEFF before `JSON.parse` and return a byte-order-mark error that `checkEntry` reports under the file's schema rule. Leave the build's own read (`src/build/build.ts:208`) as it is, since `pnpm check` runs before the build. Add the AC3 cases.
 - [x] T4: Update README "Checking entries" and CHANGELOG Unreleased. Search a joined copy of README for each phrase (LESSONS M018).
-- [ ] T5: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` (LESSONS M001). Plant each changed rule's defect from a copy of the file and restore from the copy (LESSONS M010).
+- [x] T5: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` (LESSONS M001). Plant each changed rule's defect from a copy of the file and restore from the copy (LESSONS M010).
 
 ## Work log
 
@@ -60,6 +60,7 @@
 - 2026-10-28: T2 done: `unique-override` keys each override by `field` and `version` (absent as its own key), skips an override whose field is not a string or whose version is neither absent nor a string (left to the schema), and says `overrides[<i>] has the same field "<f>" and <no version | version "<v>"> as overrides[<first>]`; the three reporting cases failed before the rule. pnpm test 834 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: T3 done: `readJson` returns `bom` for a file whose UTF-8 text starts with U+FEFF, and `checkEntry` reports `<file> starts with a UTF-8 byte-order mark (U+FEFF): save it as UTF-8 without one` under the file's schema rule; before the change both cases printed "is not valid JSON: Unexpected token". pnpm test 837 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: T4 done: README "Checking entries" gains a paragraph on the two schema rules with the byte-order-mark line and a list of `reason-not-blank` and `unique-override`; the README `index.json` field list (the `reason` item, which said "other than whitespace") now names format characters and states the field-and-version rule; one CHANGELOG Unreleased entry. Joined-copy search finds each rule name and "byte-order mark" once in each file. The simple-english hook flags README lines 94 and 423 and CHANGELOG line 170, which this milestone does not touch.
+- 2026-10-28: T5 done: five defects planted in a copy of `src/check/check.ts` and restored from the copy (cmp clean): the reason test back to `/\S/` (2 AC1 cases red), no `unique-override` finding (3 red), a key without version (2 pass cases red), a key without field (1 red), no byte-order-mark test (2 AC3 cases red). Then pnpm test 837 passed, 1 skipped, and pnpm check 37 entries, 0 problems.
 
 ## Decisions
 
