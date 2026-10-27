@@ -97,7 +97,8 @@ shows each one separately.
    request.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
    `manifest.json` in the newest stable release that has an `.xpi` file,
-   the names of that XPI's locale folders (M023), and the `update.json`
+   the names of that XPI's locale folders whose language has an English
+   name in the build's Node.js `Intl` data (M023, M025), and the `update.json`
    that the manifest names (corrected M002, M014). A
    stable release is one that GitHub does not mark as a prerelease. If no
    stable release has an `.xpi` file, the bot reads the newest release that
@@ -271,8 +272,11 @@ reused._
   `locale/<tag>/` and `chrome/locale/<tag>/` folders that hold a file. So
   each XPI takes up to three walks over the claimed count: for
   `manifest.json`, the default locale's `messages.json`, and the names. A
-  tag counts when it matches `LANGUAGE_TAG`. Both schemas copy that pattern
-  into their `languages` patterns, and a test checks the copies (M023).
+  tag counts when it matches `LANGUAGE_TAG` and its language subtag has an
+  English name in the build's Node.js `Intl` data (`Intl.DisplayNames` with
+  `fallback: "none"`), so a node upgrade can change which rare codes count.
+  Both schemas copy that pattern into their `languages` patterns, and a test
+  checks the copies (M023, M025).
 - `src/discover/` pages through GitHub's repository search for each topic
   with the reader's GitHub client, which `src/upstream/reader.ts` exports.
   The search is sorted by last update, so pages do not shift between

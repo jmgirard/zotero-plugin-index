@@ -100,9 +100,13 @@ one whose manifest the index read. A locale folder is `locale/<tag>/` or
 `chrome/locale/<tag>/` with at least one file in it. The build writes each
 tag in its standard form, so `zh_CN` becomes `zh-CN`, and sorts the list. It
 leaves out a folder whose name does not have the form of a language tag, and
-the tag `und` (undetermined). It does not check that a tag names a known
-language. The list says which languages a plugin ships interface text
-for. It does not say whether a translation is complete. A plugin that writes
+the tag `und` (undetermined). It also leaves out a tag whose language has no
+English name in the `Intl` data of the Node.js that runs the build. So a
+folder such as `locale/img/` or `locale/js/` adds no language. It does not
+check the script, region, or variant of a tag, so `en-XX` stays. A
+`languages` override value is not checked this way. The list says which
+languages a plugin ships interface text for. It does not say whether a
+translation is complete. A plugin that writes
 its text straight into its code ships no locale folders, so its list is
 empty. A `languages` override in its `index.json` can record its
 languages in the record's `overrides` block, as "Plugin entries" says.
