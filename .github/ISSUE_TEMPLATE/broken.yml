@@ -6,9 +6,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        A bot checks this report, comments, and closes the issue. The daily
-        build counts each report on the plugin version that the index read,
-        once per GitHub account for each plugin and Zotero major. To ask the
+        A bot checks this report, comments, and closes the issue. A report
+        counts only while the index reads that plugin version, and once per
+        GitHub account for each plugin and Zotero major. To ask the
         plugin's author for a fix, open an issue in the plugin's own
         repository.
   # src/reports/report.ts finds each value under its input's label heading in the issue body.

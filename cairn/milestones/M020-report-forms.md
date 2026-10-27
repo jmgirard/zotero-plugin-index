@@ -127,7 +127,7 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 - [x] T5: Write `report-issue.yml` and its checks in
       `test/workflows.test.ts`, reusing the `cacheLines` and `jobText`
       helpers.
-- [ ] T6: Write the README section, the CHANGELOG entry, and the DESIGN
+- [x] T6: Write the README section, the CHANGELOG entry, and the DESIGN
       paragraphs. Search joined copies of the files for the old and new
       phrases (LESSONS, M018).
 
@@ -151,6 +151,7 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 - 2026-10-27: T3 done: `parseReport` returns the first problem it finds, in input order and then plugin id, version, Zotero version, verdict; problem names `missing-heading`, `no-response`, `unknown-plugin`, `bad-plugin-version`, `bad-zotero-version`, `bad-verdict`. A planted removal of the upper Zotero bound failed exactly the "above the newest major" test. 514 tests pass, `pnpm check` 0 problems.
 - 2026-10-27: T4 done: `answerReport` in `src/reports/issue.ts` and `pnpm report-issue` (`src/reports/issue-cli.ts`). It reads the entry ids with its own `readdir`, because `listEntries` returns an empty list for a missing directory, which would refuse every report as an unknown plugin. Seven in-process tests and two spawned-command tests; 523 tests pass.
 - 2026-10-27: T5 done: `.github/workflows/report-issue.yml` ("Answer a report", job `answer`) and six checks in `test/workflows.test.ts`, with a new `otherEventUses` matcher tested on the body, the title, an index form, and the whole event. A planted `pull-requests: write` and a planted `concurrency` key each failed their test.
+- 2026-10-27: T6 done: README section "Reporting whether a plugin works", one CHANGELOG Unreleased bullet, and DESIGN's Function Families and Architecture entries. The form text and the bot's comment now state the counting rule without saying that the daily build counts reports, since nothing counts them until M021; M021's docs task adds that claim.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

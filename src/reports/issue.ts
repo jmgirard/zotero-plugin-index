@@ -51,13 +51,13 @@ export async function answerReport(options: ReportAnswerOptions): Promise<Report
   if (parsed.ok) {
     const { plugin, version, zoteroMajor, verdict } = parsed.report;
     comment = [
-      `The index counts this report: ${code(plugin)} version ${code(version)} ${verdict} on Zotero ${code(String(zoteroMajor))}.`,
+      `The bot took this report: ${code(plugin)} version ${code(version)} ${verdict} on Zotero ${code(String(zoteroMajor))}.`,
       "",
-      "The report counts only while the index reads that plugin version, and once per GitHub account for each plugin and Zotero major. The daily build adds it to the plugin's page.",
+      "The report counts only while the index reads that plugin version, and once per GitHub account for each plugin and Zotero major.",
     ].join("\n");
     close = "completed";
   } else {
-    comment = `The index does not count this report.\n\n\`${parsed.problem}\`: ${code(parsed.message)}`;
+    comment = `The bot did not take this report.\n\n\`${parsed.problem}\`: ${code(parsed.message)}`;
     close = "not_planned";
   }
   try {

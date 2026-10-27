@@ -158,6 +158,10 @@ exception is a report that is abuse.
   that the templates use, `majorSupport` and `ZOTERO_MAJORS` among them, and
   `src/site/description.ts` holds `shownDescription`. Added M007; pills and
   descriptions M015.
+- Reports (`src/reports/`): `parseReport(body, labels, ids)` reads a report
+  issue's plugin id, plugin version, Zotero major, and verdict, or names the
+  first problem. `pnpm report-issue` reads the issue that `ISSUE_NUMBER`
+  names, comments, and closes it as completed or not planned. Added M020.
 
 ## Conventions
 
@@ -308,6 +312,16 @@ reused._
   `issueAnswer` checks them again by repo and id, and opens the pull request
   through the same propose step, with `Closes #<issue>` in its body (M010,
   M011).
+- `.github/ISSUE_TEMPLATE/works.yml` and `broken.yml` are report forms with
+  the inputs `plugin`, `version`, and `zotero`. Each adds the label `report`
+  and its verdict label, `works` or `broken`. `.github/workflows/report-issue.yml`
+  runs `pnpm report-issue` on `issues: opened` when `report` is set, with
+  only the issue number passed through `env:`. Its one job holds
+  `contents: read` and `issues: write`, sets `cache-mode: none`, and has no
+  concurrency group. `answerReport` (`src/reports/issue.ts`) reads the
+  issue's body and labels from the API and the entry ids with its own
+  `readdir`, so a missing `plugins/` fails the run instead of refusing every
+  report. The comment puts each value from the issue in a code span (M020).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request, except those the built-in token makes, such as the
   discovery bot's (M009).
