@@ -384,9 +384,10 @@ One example is a git that cannot start. The bot can fail to read
 `plugins/`, its own pull requests, or the default branch, or the push or the
 pull request can fail. The first job can also fail and leave no handoff.
 Then the bot comments the error and leaves the issue open, and the workflow
-run fails. If the read of the repository or the write of the entry failed,
-the comment also gives the failure name. If `pnpm propose` refuses the
-handoff, the bot does not answer the issue, and the workflow run fails.
+run fails. If the read of the repository, the write of the entry, or the
+check of the entry failed, the comment also gives the failure name. If
+`pnpm propose` refuses the handoff, the bot does not answer the issue, and
+the workflow run fails.
 
 A maintainer can close a bot pull request without a merge. Then the
 `Close the issue of a closed bot pull request` workflow runs

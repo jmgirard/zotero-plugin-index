@@ -47,9 +47,10 @@ export interface IssueReadOptions {
 // that the index or a bot pull request already has, it reads nothing. If the parser or
 // draftEntry refuses, the outcome names the failure; that includes a GitHub HTTP 404
 // for a repo that does not exist. If the read of the repo stops with a failure that the
-// reader marks build-level, such as a rate limit, or throws, or the drafted entry cannot
-// be written to outDir, or its check throws, the outcome is `failed` with the failure
-// name, so the write step leaves the issue open and the run fails. If the bot cannot read the index, its pull requests,
+// reader marks build-level, such as a rate limit, or throws, or writeEntry cannot write
+// the drafted entry (`entry-exists` in outDir, `write-failed`), or its check throws, the
+// outcome is `failed` with the failure name, so the write step leaves the issue open and
+// the run fails. If the bot cannot read the index, its pull requests,
 // or the default branch, the outcome is `failed` too.
 // A message is cut to what a comment quotes, so a long one cannot make the handoff too
 // large for the write step.
@@ -89,8 +90,8 @@ async function readOutcome(options: IssueReadOptions): Promise<IssueOutcome> {
   const drafted = await draftEntry(parsed.url, { ...options, ids: index.ids, pendingIds: pulls.ids });
   if (!drafted.ok) {
     const { failure, message } = drafted;
-    // A rate limit, an outage, an entry that cannot be written, or an entry check that
-    // throws says nothing about the plugin, so the issue stays open.
+    // A rate limit, an outage, an outDir that cannot take the entry, or an entry check
+    // that throws says nothing about the plugin, so the issue stays open.
     const failed = drafted.buildLevel || failure === "unexpected-error";
     return failed ? { outcome: "failed", failure, message } : { outcome: "refused", failure, message };
   }
@@ -133,11 +134,11 @@ export interface IssueRunResult {
 // plugin id, since they can change while the read step runs, and the index in its
 // checkout, which is the commit the read step saw. Then it opens a pull request that
 // closes the issue when it merges, or closes the issue. Each answer is a comment on the
-// issue. If the read step failed, a build-level or thrown read of the repo, an entry that
-// could not be written, and a thrown check of the drafted entry included, or
-// the bot cannot read the index, its pull requests, or the default branch, or the push
-// or the pull request fails, the comment says so and the issue stays open, and the
-// status is 1.
+// issue. If the read step failed, a build-level or thrown read of the repo, an entry
+// that writeEntry could not write to outDir, and a thrown check of the drafted entry
+// included, or the bot cannot read the index, its pull requests, or the default branch,
+// or the push or the pull request fails, the comment says so and the issue stays open,
+// and the status is 1.
 export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRunResult> {
   const { root, fetch, indexRepo, issue, read } = options;
   const github = githubClient(fetch);

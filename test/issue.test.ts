@@ -292,7 +292,7 @@ describe("an issue run's read failures that point at the bot", () => {
     expect(sent[0].body).toMatch(/`unexpected-error`: ` checking the entry of [^`]*ENOENT[^`]* `/);
   });
 
-  test.each<[string, (outDir: string) => string, string, RegExp]>([
+  test.each<[string, (outDir: string) => string, string, RegExp, string]>([
     [
       "writeEntry finds the entry directory",
       (outDir) => {
@@ -301,6 +301,7 @@ describe("an issue run's read failures that point at the bot", () => {
       },
       "entry-exists",
       /alpha@example\.org already exists$/,
+      "already exists",
     ],
     [
       "the output directory cannot be made",
@@ -310,8 +311,9 @@ describe("an issue run's read failures that point at the bot", () => {
       },
       "write-failed",
       /^cannot create .*ENOTDIR/,
+      "ENOTDIR",
     ],
-  ])("comments the failure name and message, leaves the issue open, and returns 1 when %s", async (_name, prepare, failure, message) => {
+  ])("comments the failure name and message, leaves the issue open, and returns 1 when %s", async (_name, prepare, failure, message, quoted) => {
     const { outcome, result, sent } = await runIssue(
       rendered("https://github.com/example/alpha"),
       { ...indexRepo, ...pluginRepo("example/alpha", "alpha@example.org"), ...opened },
@@ -320,7 +322,7 @@ describe("an issue run's read failures that point at the bot", () => {
     expect(outcome).toMatchObject({ outcome: "failed", failure, message: expect.stringMatching(message) });
     expect(result.status).toBe(1);
     expect(sent).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(/^The bot could not finish/) }]);
-    expect(sent[0].body).toContain(`\`${failure}\`: `);
+    expect(sent[0].body).toMatch(new RegExp(`\`${failure}\`: \` [^\`]*${quoted}`));
   });
 
   test.each([
