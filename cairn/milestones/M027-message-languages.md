@@ -210,3 +210,13 @@ Pass 1, 2026-10-27, branch head f22232c; main at 2068a97, not moved since the cu
 - ripple #5: CHANGELOG's reader limits entry has no locale sentence — fix now, review return 1.
 - ripple #6: the "Drop zxx and mul from the languages" row says `localeLanguages` keeps those folders — reject, false: it still keeps one that holds a message.
 - Return floor: diff-bug #1 is a load-bearing defect, and #2 and #3 show AC2's failed-inflate case failing; status back to in-progress.
+
+Pass 2, 2026-10-27, branch head 3280947 after review return 1; main at 2068a97, not moved.
+
+- AC1: `vitest run test/upstream.test.ts --reporter=verbose`: the 21 "as the languages" cases pass, the same cases as pass 1.
+- AC2: the same run passes the 8 per-file cases (the control, the five pass-1 cases, no deflate data for a declared size, stored data past the zip's end, each keeping `de` with the read `ok`), the 8 MiB case (`["fr", "he"]`), the duplicate-name case (`["de"]`), and the 512-header bomb case in 116 ms (17.8 s before T7). Code read: still one `centralEntries` loop with `entryAt` per header; the per-file `try` now wraps the inflate in a `finally` that charges the largest of declared size, compressed size, and output.
+- AC3: Build data run 40521422892 at 3280947 (Node 24): build job success, deploy job failure on the branch, so nothing published (the live data still lists Zoplicate with 48 tags). Its artifact lists Zoplicate 5.1.1 as `["en-US", "zh-CN"]`; 27 other records share a version with the live data, and all 27 lists are equal.
+- AC4: read at 3280947: the passages named in pass 1 still state the rule; DESIGN's reader paragraph and the `localeLanguages` comment now also state 1 KiB pushes, the real-output charge, and the about 1 MiB overshoot.
+- AC5: `pnpm test`: 17 files, 708 tests passed. `pnpm check`: 28 entries, 0 problems.
+- Gate: `cairn_validate.py` all checks passed; no principle changed; no toolchain checks in the generic profile.
+- spawned: diff-bug, blame-history, prior-review, ripple
