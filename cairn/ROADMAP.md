@@ -1,16 +1,15 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-27 (M026 done and archived; 1 row graduated, 2 added at review, M023 row pruned; 2 lessons marked used, none captured)_
+_Last hygiene check: 2026-10-27 (M027 done and archived; 3 rows added at plan and review, M024 row pruned; 7 lessons marked used, 2 captured, 2 evicted by rank)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M027 | Skip locale folders that hold no messages | review | — | normal | milestones/M027-message-languages.md |
+| M027 | Skip locale folders that hold no messages | done | — | normal | milestones/archive/M027-message-languages.md |
 | M026 | Retry repos refused by a download error | done | — | normal | milestones/archive/M026-retry-download-errors.md |
 | M025 | Drop locale folders naming no language | done | — | low | milestones/archive/M025-named-languages.md |
-| M024 | Filter the home list by interface language | done | M023 | normal | milestones/archive/M024-language-filter.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
 
