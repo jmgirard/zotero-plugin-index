@@ -476,7 +476,8 @@ async function readManifest(
 }
 
 // One language tag: a language of 2 or 3 letters other than "und", then an optional script,
-// region, and variant. Both schemas build their languages override pattern from it.
+// region, and variant. Both schemas copy it into their languages patterns, and a test
+// checks that the copies match.
 export const LANGUAGE_TAG =
   "(?![Uu][Nn][Dd](?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?";
 const WHOLE_TAG = new RegExp(`^${LANGUAGE_TAG}$`, "u");

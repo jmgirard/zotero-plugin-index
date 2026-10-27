@@ -143,7 +143,7 @@
       },
       "properties": {
         "field": {
-          "description": "The upstream fact this override corrects: name, description, homepage (homepage_url in the manifest), strict_min_version and strict_max_version, which correct the upstream strictMinVersion and strictMaxVersion, or languages, which corrects the upstream languages.",
+          "description": "The upstream fact this override corrects: name, description, homepage (homepage_url in the manifest), strict_min_version and strict_max_version, which correct the upstream strictMinVersion and strictMaxVersion, or languages, which names the right upstream languages.",
           "enum": ["name", "description", "homepage", "strict_min_version", "strict_max_version", "languages"]
         },
         "version": {

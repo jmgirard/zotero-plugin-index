@@ -169,9 +169,9 @@
   `["en-US", "zh-CN"]`. It holds the language tags of the `locale/<tag>/`
   and `chrome/locale/<tag>/` folders in the XPI that the reader read. A
   plugin with no such folder gets an empty list. The list does not say
-  whether a translation is complete. An `index.json` override with the
-  field `languages` and a value such as `zh-CN, en-US` names the languages
-  of a plugin whose list is wrong or empty. As with every override, the
-  `upstream` block does not apply it. The schema stays at version 1. The
-  schema rejects fields that it does not define, so fetch any saved copy of
-  it again.
+  whether a translation is complete. An `index.json` override can have the
+  field `languages` and a value such as `zh-CN, en-US`. It records the
+  languages of a plugin whose list is wrong or empty, in the record's
+  `overrides` block. As with every override, the `upstream` block does not
+  apply it. The schema stays at version 1. The schema rejects fields that
+  it does not define, so fetch any saved copy of it again.

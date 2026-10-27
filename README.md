@@ -86,8 +86,9 @@ leaves out a folder whose name is not a language tag, and the tag `und`
 (undetermined). The list says which languages a plugin ships interface text
 for. It does not say whether a translation is complete. A plugin that writes
 its text straight into its code ships no locale folders, so its list is
-empty. A `languages` override can name its languages, as "Plugin entries"
-says. Data written before the list existed has no `languages` field.
+empty. A `languages` override in its `index.json` can record its
+languages in the record's `overrides` block, as "Plugin entries" says.
+Data written before the list existed has no `languages` field.
 
 Each record that has an `upstream` block also has a `reports` list. It
 counts the user reports on the plugin version in `upstream.version`. The

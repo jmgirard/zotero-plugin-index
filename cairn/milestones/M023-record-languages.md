@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M023: Record each plugin's interface languages
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -144,6 +144,8 @@ DESIGN follow.
 - 2026-10-27: T3: both schemas' override definitions gained `languages` and an `if`/`then` value pattern (with `"type": "string"`, which Ajv's strict mode needs beside `pattern`); a test in `test/upstream.test.ts` pins all three pattern copies to `LANGUAGE_TAG`. Planted check: with the `if`/`then` removed from `index.v1`, exactly the five rejection tests failed; restored from a copy. `pnpm test` 642 passed; `pnpm check` 0 problems.
 - 2026-10-27: T4: README "Using the data" (the `languages` paragraph), "Building the data" (a pointer to it), and "Plugin entries" (the field and value format); one CHANGELOG entry with the refetch note; DESIGN "Contract boundary", "Data sources" item 2, and the reader's Architecture note. A joined-copy search found no other list of override fields. The writing-style hook flags three older README sentences (lines 77, 332, 346) this milestone does not touch; left as they are.
 - 2026-10-27: T5: `pnpm build` on the 20 real entries with no token read 18; better-bibtex (HTTP 422 on releases page 11) and zotmoov (HTTP 403) failed on GitHub API limits, as an unauthenticated run does. 17 of the 18 list `zh-CN`; scite lists only `en-US`. The lists for zoplicate (48 tags), Jasminum, zotero-ocr, and Zotero Addons equal an `unzip -Z1` listing of the same XPIs. Zoplicate's `locale/af-ZA/zoplicate-addon.ftl` differs from `en-US` in 3 of 90 lines (zh-CN: 66), so a folder can be an untranslated copy, as README says the list cannot tell; a `languages` override can narrow such a plugin.
+- 2026-10-27: claim audit: 32 claims read, 4 corrected — README.md, CHANGELOG.md, schemas/plugins.v1.schema.json, src/upstream/reader.ts. Three said the override corrects or names languages, though nothing applies it before M024, now "records" in the `overrides` block; the reader comment said the schemas build their pattern from `LANGUAGE_TAG`, now that they copy it and a test checks the copies. The re-read found all four true and two wrap slips, fixed.
+- 2026-10-27: implement done; status review. `pnpm test` 642 passed; `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
