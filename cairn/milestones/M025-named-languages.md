@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M025: Drop locale folders naming no language
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** low   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -65,7 +65,7 @@ pattern `LANGUAGE_TAG` does not change.
 
 - AC1 → T1, T2
 - AC2 → T1, T2
-- AC3 → T2, T3
+- AC3 → T2, T3, T5
 - AC4 → T4
 
 ## Tasks
@@ -90,6 +90,8 @@ pattern `LANGUAGE_TAG` does not change.
       Search joined copies for stale wording.
 - [x] T4: Run `pnpm test` and `pnpm check`. The PR's CI run, on Node 24,
       is the Node 24 check of AC1 and AC2.
+- [x] T5: Review return 1: name the build's Node.js `Intl` data in the
+      comment on `languages` in `src/upstream/reader.ts` (near line 31).
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -113,6 +115,8 @@ pattern `LANGUAGE_TAG` does not change.
 - 2026-10-27: T4 done: `pnpm test` 681 passed, `pnpm check` 0 problems on Node 26.12.1; the Node 24 check of AC1 and AC2 is the PR's CI run at review.
 - 2026-10-27: status review; handed to /milestone-review.
 - 2026-10-27: review return 1: AC3 fails as written; the comment on `languages` in `src/upstream/reader.ts` (near line 31) does not name the build's Node.js `Intl` data.
+- 2026-10-27: T5 added for review return 1 (minor amendment; Coverage AC3 → T2, T3, T5) and done: the comment now names the build's Node.js `Intl` data. `pnpm test` 681 passed, `pnpm check` 0 problems. The claim audit's one pass stands; the new words repeat the `localeLanguages` comment it read as OK.
+- 2026-10-27: status review; handed to /milestone-review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
