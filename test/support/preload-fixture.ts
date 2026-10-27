@@ -3,7 +3,7 @@ import { appendFileSync } from "node:fs";
 import process from "node:process";
 import { fixtureFetch, loadFixture } from "./fixture-fetch.ts";
 
-// The `pnpm add-plugin`, `pnpm build`, `pnpm discover`, `pnpm discover-issue`, and `pnpm propose` tests load this file with NODE_OPTIONS=--import, so the
+// The `pnpm add-plugin`, `pnpm build`, `pnpm discover`, `pnpm discover-issue`, `pnpm propose`, and `pnpm report-issue` tests load this file with NODE_OPTIONS=--import, so the
 // command reads the recorded fixture named by ZPI_FIXTURE instead of the network. Each host
 // resolves to one public address, so the host check needs no DNS. With ZPI_REQUESTS, each
 // request's method, URL, and body is appended to that file as one line of JSON.

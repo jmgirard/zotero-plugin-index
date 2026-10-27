@@ -93,12 +93,14 @@ shows each one separately.
    the declared compatibility (`strict_min_version`, `strict_max_version`).
 3. Overrides. An override in the index corrects a fact that the author cannot
    or will not fix upstream. Each override states its reason.
-4. User reports (not built yet; the candidate "Collect works and broken user
-   reports" holds them, corrected M007). Each plugin page is to have a
-   "Works" link and a "Broken" link. Each link opens a GitHub issue form with
-   the plugin and its version filled in. The reporter adds the Zotero version
-   and submits the form. A bot adds the report to the data and closes the
-   issue.
+4. User reports. Two issue forms take a "works" or a "broken" report with
+   the plugin id, the plugin version, and the Zotero version. A bot checks
+   each report, comments, and closes the issue (M020). The counts are not
+   built yet. D-013 sets their rule, and M021 builds them. Each plugin page
+   is to have a "Works" link and a "Broken" link. Each link opens a form with
+   the plugin and its version filled in, so the reporter adds only the
+   Zotero version. The daily build is to count the report issues that the
+   bot closed as completed. No file in the repo holds a report.
 
 Inclusion bar: a public repository, a Zotero 7+ manifest, and at least one
 release with a readable `update.json`. The bot checks all three, and it
@@ -158,6 +160,10 @@ exception is a report that is abuse.
   that the templates use, `majorSupport` and `ZOTERO_MAJORS` among them, and
   `src/site/description.ts` holds `shownDescription`. Added M007; pills and
   descriptions M015.
+- Reports (`src/reports/`): `parseReport(body, labels, ids)` reads a report
+  issue's plugin id, plugin version, Zotero major, and verdict, or names the
+  first problem. `pnpm report-issue` reads the issue that `ISSUE_NUMBER`
+  names, comments, and closes it as completed or not planned. Added M020.
 
 ## Conventions
 
@@ -247,8 +253,10 @@ reused._
   A failed search ends the run before any read and leaves the state file as
   it was. The report names, for each entry written, its version and declared
   range (M008).
-- Each bot workflow runs in two jobs (M011). The read job has only read
-  permissions and a checkout with `persist-credentials: false`. It reads the
+- Each bot workflow that reads plugin repos runs in two jobs (M011). The
+  report workflow reads no plugin repo and runs in one job (M020). The read
+  job has only read permissions and a checkout with
+  `persist-credentials: false`. It reads the
   repos that anyone can name and leaves a handoff as an artifact:
   `plan.json` and `entries/<id>/` (`src/discover/handoff.ts`). The write job
   holds the write permissions, runs only `pnpm install` and `pnpm propose`,
@@ -308,6 +316,16 @@ reused._
   `issueAnswer` checks them again by repo and id, and opens the pull request
   through the same propose step, with `Closes #<issue>` in its body (M010,
   M011).
+- `.github/ISSUE_TEMPLATE/works.yml` and `broken.yml` are report forms with
+  the inputs `plugin`, `version`, and `zotero`. Each adds the label `report`
+  and its verdict label, `works` or `broken`. `.github/workflows/report-issue.yml`
+  runs `pnpm report-issue` on `issues: opened` when `report` is set, with
+  only the issue number passed through `env:`. Its one job holds
+  `contents: read` and `issues: write`, sets `cache-mode: none`, and has no
+  concurrency group. `answerReport` (`src/reports/issue.ts`) reads the
+  issue's body and labels from the API and the entry ids with its own
+  `readdir`, so a missing `plugins/` fails the run instead of refusing every
+  report. The comment puts each value from the issue in a code span (M020).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request, except those the built-in token makes, such as the
   discovery bot's (M009).
@@ -331,7 +349,10 @@ reused._
   discover read job can save caches in the default branch's scope, while
   `issues` runs get read-only cache access. `test/workflows.test.ts` fails on a
   `cache` key or an `actions/cache` step in `build.yml`, or on a build job
-  without `cache-mode: none`; `ci.yml` keeps `cache: pnpm` (M016).
+  without `cache-mode: none`; `ci.yml` keeps `cache: pnpm` (M016). It also
+  checks `report-issue.yml`: its trigger, label condition, permissions,
+  `cache-mode: none`, no cache line, no concurrency group, the issue number
+  through `env:`, and no other use of `github.event` (M020).
 - `site/` is an Astro project (D-004), and `src/site/` builds it. `pnpm site`
   reads `<out>/v1/plugins.json`, builds into a temporary directory, because
   Astro empties its output directory, and copies the pages into `<out>` beside

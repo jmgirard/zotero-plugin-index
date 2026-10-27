@@ -301,6 +301,42 @@ the same time. A concurrency group holds one running run and one pending run.
 A newer run cancels the pending run, and the issue of that run gets no
 answer.
 
+## Reporting whether a plugin works
+
+To report on a plugin, open an issue with the "Report that a plugin works"
+form or the "Report that a plugin is broken" form. Each form asks for the
+plugin id, the plugin version, and the Zotero version. The works form adds
+the labels `report` and `works`. The broken form adds the labels `report`
+and `broken`. If the repository has no such label, GitHub does not add it.
+
+When an issue with the label `report` opens, the `Answer a report` workflow
+runs `pnpm report-issue` with the issue number in `ISSUE_NUMBER`. The
+command reads the issue's body and labels from the GitHub API, and the entry
+directories under `plugins/`. If all of these hold, the bot takes the
+report:
+
+- Each of the three fields has a value.
+- The plugin id is the name of an entry directory under `plugins/`.
+- The plugin version has at most 100 characters and no spaces.
+- The first number in the Zotero version is a major from 7 to the newest
+  major in `ZOTERO_MAJORS` (`src/site/version.ts`).
+- The issue has exactly one of the labels `works` and `broken`.
+
+If the bot takes the report, it comments the plugin id, the plugin version,
+the Zotero major, and the verdict. The comment also states how the index
+will count the report. It will count a report only while it reads that
+plugin version, and once per GitHub account for each plugin and Zotero
+major. Then the bot closes the issue as completed. Otherwise, the bot
+comments the name and the message of the first problem it found, and
+closes the issue as not planned. The comment puts each value from the issue
+in a code span, so the value cannot link to a page or mention a user.
+
+If the bot cannot read the issue or `plugins/`, it sends nothing. If it
+cannot post the comment, it does not close the issue. In these cases the
+workflow run fails. A failed close also fails the run. The workflow has no
+concurrency group, so a report run does not wait for another run or cancel
+one. Its job restores no Actions cache.
+
 ## Checking entries
 
 To check every entry under `plugins/`, run:

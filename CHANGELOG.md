@@ -143,3 +143,9 @@
   is a bug that fails every record with `facts-invalid`, which is not
   build-level. The site then showed no upstream data for any record. The rule for build-level failures
   stays as it was.
+- Two issue forms take reports that a plugin version works or is broken on a
+  Zotero version. Each asks for the plugin id, the plugin version, and the
+  Zotero version. The `Answer a report` workflow runs `pnpm report-issue`,
+  which checks each report, comments, and closes the issue. It closes a
+  report it takes as completed, and any other report as not planned with
+  the problem.

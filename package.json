@@ -15,6 +15,7 @@
     "discover": "node src/discover/cli.ts",
     "discover-issue": "node src/discover/issue-cli.ts",
     "propose": "node src/discover/propose-cli.ts",
+    "report-issue": "node src/reports/issue-cli.ts",
     "site": "node src/site/cli.ts",
     "test": "tsc --noEmit && vitest run"
   },
