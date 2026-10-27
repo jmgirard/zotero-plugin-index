@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M025: Drop locale folders naming no language
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** low   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — it changes what the published data file's `languages` list holds and the docs that describe it   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m025-named-languages   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -72,11 +72,11 @@ pattern `LANGUAGE_TAG` does not change.
 <!-- owner: plan (create) / implement (check-off, minor edits); substantive
      change is amend-via-gate. -->
 
-- [ ] T1: Add the AC1 and AC2 cases to the languages table in
+- [x] T1: Add the AC1 and AC2 cases to the languages table in
       `test/upstream.test.ts` (near line 130). Run them on the unchanged
       reader and see the AC1 case fail with `img`, `js`, `qaa`, and `js-US`
       in the list; the AC2 case passes before and after, as a control.
-- [ ] T2: In `localeLanguages` (`src/upstream/reader.ts` near line 497),
+- [x] T2: In `localeLanguages` (`src/upstream/reader.ts` near line 497),
       skip a canonical tag when a module-level `Intl.DisplayNames(["en"],
       { type: "language", fallback: "none" })` gives no name for its
       language subtag. Update the comments on `languages` (near line 31)
@@ -105,6 +105,9 @@ pattern `LANGUAGE_TAG` does not change.
 - 2026-10-27: inbox sweep: 0 open issues; 3 open bot PRs (#15, #25, #28) each add a plugin, no overlap.
 - 2026-10-27: criteria audit (full): 8 findings, all fixed. AC1 dropped its "because" clause and added probes for `chrome/locale/`, upper case, `_`, and `js_US`; AC2 narrowed to exact inputs and list; AC3 added the schema description, DESIGN item 2, the Node `Intl` source, and a line-break-safe search; the override check was not built (question set), so README states overrides are not filtered.
 - 2026-10-27: criteria re-audit (full, after the question set): 3 findings, all fixed. `locale/css/` (an ISO 639-3 code that later data could name) became `locale/qaa/` (private use); AC1 added the kept 3-letter `fil`; AC2 added the unknown script `en_Qaaa`; T4 reads the PR's Node 24 CI run.
+- 2026-10-27: implement started on branch m025-named-languages.
+- 2026-10-27: T1 done: two table cases; on the unchanged reader the AC1 case failed with extra `img`, `js`, `js-US`, `qaa`, and the AC2 case passed (control).
+- 2026-10-27: T2 done: module-level `LANGUAGE_NAMES` (`Intl.DisplayNames`, `fallback: "none"`) checked on `new Intl.Locale(tag).language` inside the existing try; both comments updated. `pnpm test` 681 passed, `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

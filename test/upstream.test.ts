@@ -139,6 +139,20 @@ describe("readUpstream", () => {
     ["an alias in canonical form", { "locale/iw/a.ftl": "" }, ["he"]],
     ["no folder whose name is not a kept tag", { "locale/en-x-pirate/a.ftl": "", "locale/default/a.ftl": "", "locale/und/a.ftl": "" }, []],
     [
+      "only tags whose language has an English name",
+      {
+        "locale/en-US/a.ftl": "",
+        "locale/img/a.png": "",
+        "locale/js/a.js": "",
+        "locale/qaa/a.ftl": "",
+        "chrome/locale/IMG/a.png": "",
+        "locale/js_US/a.ftl": "",
+        "locale/fil/a.ftl": "",
+      },
+      ["en-US", "fil"],
+    ],
+    ["tags whose region or script has no name", { "chrome/locale/en_XX/a.dtd": "", "chrome/locale/en_Qaaa/a.dtd": "" }, ["en-Qaaa", "en-XX"]],
+    [
       "no tag from other paths or a directory entry",
       { "_locales/de/messages.json": "{}", "content/locale/fr/x.ftl": "", "locale/en-US.ftl": "", "locale/it/": "", "locale/it/sub/": "" },
       [],

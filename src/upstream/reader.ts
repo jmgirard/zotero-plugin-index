@@ -28,8 +28,9 @@ export interface UpstreamFacts {
   prerelease?: boolean;
   // GitHub's archived flag, left out when the repo response has no boolean.
   archived?: boolean;
-  // The language tags of the locale folders in the XPI whose manifest was read (see
-  // localeLanguages). The reader always sets it; records written before it existed have none.
+  // The language tags of the locale folders in the XPI whose manifest was read, each with a
+  // language that has an English name (see localeLanguages). The reader always sets it;
+  // records written before it existed have none.
   languages?: string[];
 }
 
@@ -488,19 +489,22 @@ export const LANGUAGE_TAG =
   "(?![Uu][Nn][Dd](?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?";
 const WHOLE_TAG = new RegExp(`^${LANGUAGE_TAG}$`, "u");
 const LOCALE_FOLDER = /^(?:chrome\/)?locale\/([^/]+)\/./;
+const LANGUAGE_NAMES = new Intl.DisplayNames(["en"], { type: "language", fallback: "none" });
 
 // The language tag of each locale folder in the zip, the <tag> of an entry name
-// locale/<tag>/<file> or chrome/locale/<tag>/<file>. A "_" in <tag> reads as "-", and a
-// <tag> that is not LANGUAGE_TAG is left out. Each tag is in the form
-// Intl.getCanonicalLocales returns, once, in code-unit order. It reads the names one header
-// at a time, so it keeps no list of the zip's entries.
+// locale/<tag>/<file> or chrome/locale/<tag>/<file>. A "_" in <tag> reads as "-". A <tag>
+// that is not LANGUAGE_TAG is left out, and so is one whose language subtag has no English
+// name in the Node.js Intl data, such as img or js; its script, region, and variant are not
+// checked. Each tag is in the form Intl.getCanonicalLocales returns, once, in code-unit
+// order. It reads the names one header at a time, so it keeps no list of the zip's entries.
 function localeLanguages(zip: Uint8Array): string[] {
   const tags = new Set<string>();
   for (const { fileName: name } of centralEntries(zip)) {
     const folder = LOCALE_FOLDER.exec(name)?.[1].replaceAll("_", "-");
     if (!folder || name.endsWith("/") || !WHOLE_TAG.test(folder)) continue;
     try {
-      tags.add(Intl.getCanonicalLocales(folder)[0]);
+      const tag = Intl.getCanonicalLocales(folder)[0];
+      if (LANGUAGE_NAMES.of(new Intl.Locale(tag).language)) tags.add(tag);
     } catch {
       // A tag that Intl rejects is left out like any other folder that is not a tag.
     }
