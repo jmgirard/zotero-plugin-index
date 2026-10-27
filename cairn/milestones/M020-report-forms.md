@@ -154,6 +154,7 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 - 2026-10-27: T6 done: README section "Reporting whether a plugin works", one CHANGELOG Unreleased bullet, and DESIGN's Function Families and Architecture entries. The form text and the bot's comment now state the counting rule without saying that the daily build counts reports, since nothing counts them until M021; M021's docs task adds that claim.
 - 2026-10-27: claim audit: 45 claims read, 6 corrected — .github/ISSUE_TEMPLATE/works.yml, broken.yml, src/reports/issue.ts, README.md (counting rule now in future tense), test/report.test.ts (test name), .github/workflows/report-issue.yml (two comments), src/reports/report.ts (an unknown id is quoted to 100 characters, with a test). The re-read found all six true.
 - 2026-10-27: implement done; status review. 531 tests pass, `pnpm check` 0 problems. M021's docs and forms text must change "will count" to the present tense once counting ships.
+- 2026-10-27: step-7 approval: m020-report-forms approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
