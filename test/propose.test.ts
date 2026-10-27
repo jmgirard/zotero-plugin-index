@@ -2,10 +2,10 @@ import { spawnSync } from "node:child_process";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { afterAll, describe, expect, test } from "vitest";
+import { afterAll, describe, expect, test, vi } from "vitest";
 import type { ReadItem, SkippedItem } from "../src/discover/discover.ts";
-import { entriesDir, planned, plannedProblem, readHandoff, writePlan } from "../src/discover/handoff.ts";
-import { body, type CheckRunner, discoverRead, pnpmCheck, proposeHandoff, type Written } from "../src/discover/propose.ts";
+import { entriesDir, planned, plannedProblem, REF_CHECK_LIMIT_MS, readHandoff, writePlan } from "../src/discover/handoff.ts";
+import { body, type CheckRunner, discoverRead, GIT_LIMIT_MS, pnpmCheck, proposeHandoff, type Written } from "../src/discover/propose.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 import { checkout as gitCheckout, git } from "./support/git-checkout.ts";
 import { pluginRepo, searchPage } from "./support/plugin-repo.ts";
@@ -71,7 +71,7 @@ function logged(path: string): { method: string; url: string; body?: string }[] 
 
 // Runs the read step and then the write step in-process against `responses`, through a
 // handoff written to disk, with a check that always passes unless one is given.
-async function twoStep(responses: Responses, gitDir = tempDir(), check?: CheckRunner, root = tempDir()) {
+async function twoStep(responses: Responses, gitDir = tempDir(), check?: CheckRunner, root = tempDir(), gitMs?: number) {
   const { fetch, requests } = fixtureFetch(responses);
   const handoff = tempDir();
   const read = await discoverRead({
@@ -97,6 +97,7 @@ async function twoStep(responses: Responses, gitDir = tempDir(), check?: CheckRu
     indexRepo: "example/index",
     gitDir,
     check: check ?? (async () => ({ status: 0, output: "checked 1 entries in x, 0 problems\n" })),
+    gitMs,
     entries,
   });
   return { read, result, posts: requests.filter(({ method }) => method === "POST"), requests };
@@ -317,6 +318,90 @@ describe("read and write step failures", () => {
     expect(result.failed).toEqual([
       { repo: "example/alpha", id: "alpha@example.org", message: `POST ${PULLS} returned a body that is not JSON` },
     ]);
+  });
+});
+
+describe("the write step's process time limits", () => {
+  // execFile's timeout runs on a timer that Vitest's fake timers do not replace, so the
+  // git limits are checked by value.
+  test("default to 30 seconds for the branch-name check and 2 minutes for other git processes", () => {
+    expect([REF_CHECK_LIMIT_MS, GIT_LIMIT_MS]).toEqual([30 * 1000, 2 * 60 * 1000]);
+  });
+
+  // example/alpha is read first, since it was pushed last.
+  const responses = (): Responses => ({
+    ...indexRepo,
+    ...passing(["beta", "alpha"]),
+    [`POST ${PULLS}`]: { status: 201, json: { html_url: "https://github.com/example/index/pull/1" } },
+  });
+
+  // Puts a shim named `name` first on PATH, or in npm_execpath for pnpm, for the call.
+  async function withShim<T>(name: "git" | "pnpm", script: string, call: () => Promise<T>): Promise<T> {
+    const shims = tempDir();
+    writeFileSync(join(shims, name), script);
+    chmodSync(join(shims, name), 0o755);
+    const saved = { PATH: process.env.PATH, npm_execpath: process.env.npm_execpath };
+    if (name === "git") process.env.PATH = `${shims}:${saved.PATH}`;
+    else process.env.npm_execpath = join(shims, name);
+    try {
+      return await call();
+    } finally {
+      for (const [key, value] of Object.entries(saved)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
+  }
+
+  test("stops a pnpm check after 5 minutes by default", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      await withShim("pnpm", "#!/bin/sh\nexec sleep 600\n", async () => {
+        let settled = false;
+        const outcome = pnpmCheck(tempDir()).then(
+          () => "resolved",
+          (error: Error) => error.message,
+        );
+        void outcome.finally(() => (settled = true));
+        await vi.advanceTimersByTimeAsync(5 * 60 * 1000 - 1);
+        expect(settled).toBe(false);
+        await vi.advanceTimersByTimeAsync(1);
+        expect(await outcome).toBe("pnpm check passed its time limit of 5 minutes");
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  test("fails one entry whose git process passes its limit, with no pull request, and proposes the next", async () => {
+    const { remote, work } = checkout();
+    const realGit = spawnSync("sh", ["-c", "command -v git"], { encoding: "utf8" }).stdout.trim();
+    // A git whose hash-object of alpha's files never exits.
+    const script = `#!/bin/sh\ncase "$*" in "hash-object -w "*alpha@example.org*) exec sleep 600;; esac\nexec "${realGit}" "$@"\n`;
+    const { result, posts } = await withShim("git", script, () => twoStep(responses(), work, undefined, undefined, 2000));
+    if (!result?.ok) throw new Error(JSON.stringify(result));
+    expect(result.failed).toEqual([
+      { repo: "example/alpha", id: "alpha@example.org", message: "git hash-object passed its time limit of 2000 ms" },
+    ]);
+    expect(result.proposed.map(({ repo }) => repo)).toEqual(["example/beta"]);
+    expect(posts).toHaveLength(1);
+    expect(git(remote, "for-each-ref", "--format=%(refname)", "refs/heads/discover")).toBe("refs/heads/discover/example/beta");
+  });
+
+  test("fails one entry whose pnpm check passes its limit, with no push or pull request, and proposes the next", async () => {
+    const { remote, work } = checkout();
+    // A pnpm whose check of alpha's directory waits on a child that never exits. Its fifth
+    // argument is the directory.
+    const script = `#!/bin/sh\nif [ -d "$5/alpha@example.org" ]; then sleep 600; fi\necho "checked 1 entries in x, 0 problems"\n`;
+    const check = (dir: string) => pnpmCheck(dir, 1000);
+    const { result, posts } = await withShim("pnpm", script, () => twoStep(responses(), work, check));
+    if (!result?.ok) throw new Error(JSON.stringify(result));
+    expect(result.failed).toEqual([
+      { repo: "example/alpha", id: "alpha@example.org", message: "pnpm check passed its time limit of 1000 ms" },
+    ]);
+    expect(result.proposed.map(({ repo }) => repo)).toEqual(["example/beta"]);
+    expect(posts).toHaveLength(1);
+    expect(git(remote, "for-each-ref", "--format=%(refname)", "refs/heads/discover")).toBe("refs/heads/discover/example/beta");
   });
 });
 

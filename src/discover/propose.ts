@@ -6,6 +6,7 @@ import process from "node:process";
 import { promisify } from "node:util";
 import type { Lookup } from "../upstream/host-guard.ts";
 import { type Fetch, githubClient, ReadFailure } from "../upstream/reader.ts";
+import { duration } from "../upstream/time-limit.ts";
 import { type DiscoverResult, type DiscoveryState, discover, indexed, type ReadItem } from "./discover.ts";
 
 const API = "https://api.github.com";
@@ -24,22 +25,47 @@ export type Written = Extract<ReadItem, { outcome: "written" }>;
 // Runs `pnpm check` on a directory and returns its exit status and output.
 export type CheckRunner = (dir: string) => Promise<{ status: number; output: string }>;
 
+// The longest one `git` process that `propose` runs, and one `pnpm check` process, may take.
+// The branch-name check of a handoff has its own limit, REF_CHECK_LIMIT_MS.
+export const GIT_LIMIT_MS = 2 * 60 * 1000;
+export const CHECK_LIMIT_MS = 5 * 60 * 1000;
+
 // Runs `pnpm check <dir>` with the pnpm that runs this command, and returns its exit
 // status and its output, stderr after stdout. The check needs no GitHub token, so it
-// gets none.
-export const pnpmCheck: CheckRunner = (dir) =>
+// gets none. Once `ms` has passed, it kills the check and every process the check
+// started, and rejects.
+export const pnpmCheck = (dir: string, ms = CHECK_LIMIT_MS): ReturnType<CheckRunner> =>
   new Promise((resolveCheck, reject) => {
     const { GITHUB_TOKEN: _token, ...env } = process.env;
+    // In a process group of its own, so the kill also reaches the node process that pnpm
+    // starts, which would otherwise keep the output open.
     const child = spawn(process.env.npm_execpath ?? "pnpm", ["--silent", "--dir", PACKAGE_ROOT, "check", dir], {
       stdio: ["ignore", "pipe", "pipe"],
       env,
+      detached: true,
     });
     let stdout = "";
     let stderr = "";
     child.stdout.on("data", (chunk) => (stdout += chunk));
     child.stderr.on("data", (chunk) => (stderr += chunk));
-    child.on("error", reject);
-    child.on("close", (code) => resolveCheck({ status: code ?? 1, output: stdout + stderr }));
+    const timer = setTimeout(() => {
+      try {
+        process.kill(-child.pid!, "SIGKILL");
+      } catch {
+        // The group has already ended.
+      }
+      child.stdout.destroy();
+      child.stderr.destroy();
+      reject(new Error(`pnpm check passed its time limit of ${duration(ms)}`));
+    }, ms);
+    child.on("error", (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      resolveCheck({ status: code ?? 1, output: stdout + stderr });
+    });
   });
 
 export interface Proposed {
@@ -95,6 +121,8 @@ export interface ProposeHandoffOptions {
   gitDir: string;
   remote?: string;
   check: CheckRunner;
+  // The longest one git process may take.
+  gitMs?: number;
   // The entries of a checked discover handoff.
   entries: Written[];
 }
@@ -211,6 +239,8 @@ export interface ProposeOptions {
   base: string;
   written: Written[];
   check: CheckRunner;
+  // The longest one git process may take.
+  gitMs?: number;
   // The index repo's issue that asked for the entries, which their pull requests close.
   issue?: number;
 }
@@ -219,8 +249,10 @@ export interface ProposeOptions {
 // the branch `discover/<owner>/<repo>` with one commit on top of the default branch that
 // adds the entry's two files, and opens a pull request from it. The commits are built
 // with a temporary index file, so the checkout's working tree and branch do not change.
+// A git process that passes `gitMs` is killed and fails its entry, or every entry for the
+// fetch.
 export async function propose(options: ProposeOptions): Promise<{ proposed: Proposed[]; failed: ProposeFailure[] }> {
-  const { fetch, indexRepo, gitDir, remote = "origin", base, written, check, issue } = options;
+  const { fetch, indexRepo, gitDir, remote = "origin", base, written, check, gitMs = GIT_LIMIT_MS, issue } = options;
   const proposed: Proposed[] = [];
   const failed: ProposeFailure[] = [];
   if (written.length === 0) return { proposed, failed };
@@ -238,8 +270,9 @@ export async function propose(options: ProposeOptions): Promise<{ proposed: Prop
     : {};
   const git = async (args: string[], env: Record<string, string> = {}) => {
     try {
-      return (await run("git", args, { cwd: gitDir, env: { ...process.env, ...env } })).stdout.trim();
+      return (await run("git", args, { cwd: gitDir, env: { ...process.env, ...env }, timeout: gitMs })).stdout.trim();
     } catch (error) {
+      if ((error as { killed?: unknown }).killed) throw new Error(`git ${args[0]} passed its time limit of ${duration(gitMs)}`);
       const { stderr } = error as { stderr?: string };
       throw new Error(`git ${args[0]} failed: ${stderr?.trim() || (error as Error).message}`);
     }

@@ -6,6 +6,7 @@ import pluginsSchema from "../../schemas/plugins.v1.schema.json" with { type: "j
 import { listEntries } from "../check/check.ts";
 import { countReports, type ReportCount } from "../reports/count.ts";
 import { type Fetch, githubClient, ReadFailure, readUpstream, type UpstreamFacts } from "../upstream/reader.ts";
+import { duration, READ_LIMIT_MS, withinLimit } from "../upstream/time-limit.ts";
 
 export interface Override {
   field: string;
@@ -44,9 +45,9 @@ const validateRecord = ajv.getSchema(`${pluginsSchema.$id}#/definitions/record`)
 // The repo whose report issues the build counts, when GITHUB_REPOSITORY is unset.
 export const INDEX_REPO = "jmgirard/zotero-plugin-index";
 
-// The longest one plugin read may take, and the time after which the build starts no
-// read. The build job stops at 30 minutes, so these leave time for the steps around it.
-export const READ_LIMIT_MS = 3 * 60 * 1000;
+// The time after which the build starts no plugin read. Each read also stops at
+// READ_LIMIT_MS. The build job stops at 30 minutes, so these leave time for the steps
+// around it.
 export const BUILD_LIMIT_MS = 18 * 60 * 1000;
 
 // `startedAt` is a performance.now() time. Its default, 0, is when the process started.
@@ -188,10 +189,8 @@ async function readRecord(
   fetch: Fetch,
   readMs: number,
 ): Promise<Pick<PluginRecord, "upstream" | "failure"> & { buildLevel?: boolean }> {
-  const limit = new AbortController();
-  const timer = setTimeout(() => limit.abort(new Error(`the read passed its time limit of ${duration(readMs)}`)), readMs);
   try {
-    const read = await readUpstream(repoUrl, fetch, { signal: limit.signal });
+    const read = await withinLimit(readMs, (signal) => readUpstream(repoUrl, fetch, { signal }));
     if (read.ok) return { upstream: read.facts };
     return { failure: { name: read.failure, message: read.message }, buildLevel: read.buildLevel };
   } catch (error) {
@@ -199,14 +198,7 @@ async function readRecord(
     // it stays in this record so the other plugins still build. It counts as build-level.
     const message = error instanceof Error ? error.message : String(error);
     return { failure: { name: "unexpected-error", message }, buildLevel: true };
-  } finally {
-    clearTimeout(timer);
   }
-}
-
-// "3 minutes" for whole minutes, else milliseconds.
-function duration(ms: number): string {
-  return ms % 60_000 === 0 ? `${ms / 60_000} minute${ms === 60_000 ? "" : "s"}` : `${ms} ms`;
 }
 
 async function readJson(path: string): Promise<{ value: unknown } | { problem: string }> {

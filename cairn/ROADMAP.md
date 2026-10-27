@@ -8,7 +8,7 @@ _Last hygiene check: 2026-10-27 (M029 done and archived; its row graduated, M026
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
 | M029 | Bound the build's read time | done | — | normal | milestones/archive/M029-build-time-limits.md |
-| M030 | Bound the discover run's time | planned | M029 | normal | milestones/M030-discover-time-limits.md |
+| M030 | Bound the discover run's time | review | M029 | normal | milestones/M030-discover-time-limits.md |
 | M028 | Keep issues open on entry write errors | done | — | normal | milestones/archive/M028-entry-write-errors.md |
 | M027 | Skip locale folders that hold no messages | done | — | normal | milestones/archive/M027-message-languages.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent

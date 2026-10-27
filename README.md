@@ -286,6 +286,20 @@ HTTP 429 or 5xx answer to the download of the XPI or the `update.json`, after
 any redirects. Such a repository is read again on the next run. To use
 another file, add `--state <file>`.
 
+The command gives each repository read 3 minutes, as `pnpm build` does. If a
+read takes longer, the command stops it and refuses the repository with
+`request-failed`. The state file does not record this refusal, so the next
+run reads the repository again. The check of the branch name with git stops
+after 30 seconds. If it takes longer, the command refuses the repository with
+`unexpected-error`, which the state file also does not record. The command
+starts no repository read after 18 minutes from its start. The `unread` field
+of the report counts each repository that it did not reach. The report also
+gets a warning that names the time limit. The command still writes its state
+file and, with `--handoff`, its handoff. These limits leave time for the
+other steps of the first job of `Discover plugins`, which GitHub stops at 30
+minutes. In the second job, `pnpm propose` has limits on each process but
+none on the whole run.
+
 ### Pull requests from the bot
 
 The `Discover plugins` workflow runs once a day in two jobs. You can also
@@ -339,6 +353,15 @@ If the push or the pull request fails for one entry, the command goes on to
 the next entry. At the end, it names each failed entry with its error and
 exits with status 1.
 
+`pnpm propose` stops each git process that fetches, builds, or pushes a
+commit after 2 minutes, and each `pnpm check` process after 5 minutes. If a
+process for one entry takes longer, that entry fails, and the command opens
+no pull request for it. If the fetch of the default branch takes longer,
+every entry fails, as when the fetch fails. The
+command also checks each branch name in the handoff with git again, with the
+30-second limit of "Finding new plugins". If that check takes longer, the
+command stops with an error before it pushes anything.
+
 Both commands read the name of the index repository from the
 `GITHUB_REPOSITORY` environment variable, which GitHub Actions sets. The
 workflow needs the repository setting "Allow GitHub Actions to create and
@@ -376,18 +399,22 @@ gives.
 
 The bot itself can fail. Its read of the repository can stop with a
 build-level failure, as "Building the data" defines it. Examples are a rate
-limit, an outage, and an error that the reader does not name. The bot can
-fail to write the entry: its directory can already be in the output
-directory (`entry-exists`), or the write can fail (`write-failed`). The
-check of the written entry can also stop with an error, `unexpected-error`.
-One example is a git that cannot start. The bot can fail to read
-`plugins/`, its own pull requests, or the default branch, or the push or the
-pull request can fail. The first job can also fail and leave no handoff.
+limit, an outage, a read stopped at 3 minutes, and an error that the reader
+does not name. The bot can fail to write the entry: its directory can
+already be in the output directory (`entry-exists`), or the write can fail
+(`write-failed`). The check of the written entry can also stop with an
+error, `unexpected-error`. Examples are a git that cannot start and a
+branch-name check stopped at 30 seconds. "Finding new plugins" gives both
+time limits. The bot can fail to read `plugins/`, its own pull requests, or
+the default branch, or the push or the pull request can fail. The git and
+`pnpm check` limits of "Pull requests from the bot" also apply. The first
+job can also fail and leave no handoff.
 Then the bot comments the error and leaves the issue open, and the workflow
 run fails. If the read of the repository, the write of the entry, or the
 check of the entry failed, the comment also gives the failure name.
 If `pnpm propose` refuses the handoff, the bot does not answer the issue,
-and the workflow run fails.
+and the workflow run fails. A check of the branch name by the command
+itself that passes its 30-second limit has the same result.
 
 A maintainer can close a bot pull request without a merge. Then the
 `Close the issue of a closed bot pull request` workflow runs
