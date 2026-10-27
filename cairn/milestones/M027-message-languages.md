@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M027: Skip locale folders that hold no messages
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — it changes what the published `languages` list holds, which the site's language line and menu show   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m027-message-languages   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -117,10 +117,10 @@ override values and the schema's tag pattern do not change.
 <!-- owner: plan (create) / implement (check-off, minor edits); substantive
      change is amend-via-gate. -->
 
-- [ ] T1: In the languages table of `test/upstream.test.ts` (about lines
+- [x] T1: In the languages table of `test/upstream.test.ts` (about lines
       131-162), give each file whose tag must stay a message line, and add
       the AC1 cases. See the new left-out cases fail on unchanged code.
-- [ ] T2: In `src/upstream/reader.ts`, split the inflate in `unzipOne` into
+- [x] T2: In `src/upstream/reader.ts`, split the inflate in `unzipOne` into
       a helper that reads one entry from its central-directory header, keep
       `unzipOne`'s failures for `manifest.json` and `messages.json`, and add
       the message check by file type. `localeLanguages` groups files by
@@ -152,6 +152,10 @@ override values and the schema's tag pattern do not change.
 - 2026-10-27: question set: dispatch the Build data workflow on main after the merge and check Zoplicate's published list — yes.
 - 2026-10-27: plan gate chose a per-type message rule over a size threshold on locale files, because a short real translation can be smaller than a stub; falsified by a listed plugin whose translated folder the rule drops, or a locale file type other than the three.
 - 2026-10-27: plan gate chose to count a file the step does not inflate as holding a message over failing the read, because no locale file failed a read before this milestone; falsified by a listed plugin whose false languages come from files over these limits.
+
+- 2026-10-27: implement started on branch m027-message-languages, cut from main at 2068a97.
+- 2026-10-27: T1: 12 AC1 cases added to the languages table, and each existing file whose tag stays now holds a message; on unchanged code the 7 left-out cases failed and the 5 kept cases passed.
+- 2026-10-27: T2: `entryAt` and `inflateEntry` split out of `zipEntry` and `unzipOne`, whose failures and messages are unchanged; `holdsMessage` judges by extension; `localeLanguages` skips a tag already kept, so it reads a tag's files only until one holds a message. The `LOCALE_MAX_BYTES` budget and the per-file limits landed with T2, since the inflate path needs them; their tests are T3. `test/build.test.ts`'s language case gave its two `.ftl` files a message line (T5's fixture update). `pnpm test` 697 passed, `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

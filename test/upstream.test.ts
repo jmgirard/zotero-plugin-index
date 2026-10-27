@@ -127,36 +127,69 @@ describe("readUpstream", () => {
     expect(result.ok && result.facts.name).toBeUndefined();
   });
 
+  // A file of each type that holds one message.
+  const FTL = "hello = Hallo\n";
+  const DTD = '<!ENTITY hello "Hallo">\n';
+
   test.each<[string, Record<string, string>, string[]]>([
-    ["two folders under locale/, in code-unit order", { "locale/zh-CN/a.ftl": "", "locale/en-US/a.ftl": "" }, ["en-US", "zh-CN"]],
-    ["a nested file under chrome/locale/ only", { "chrome/locale/fr-FR/addon/x.dtd": "" }, ["fr-FR"]],
-    ["one tag under both paths once", { "locale/de/a.ftl": "", "chrome/locale/de/b.dtd": "" }, ["de"]],
+    ["two folders under locale/, in code-unit order", { "locale/zh-CN/a.ftl": FTL, "locale/en-US/a.ftl": FTL }, ["en-US", "zh-CN"]],
+    ["a nested file under chrome/locale/ only", { "chrome/locale/fr-FR/addon/x.dtd": DTD }, ["fr-FR"]],
+    ["one tag under both paths once", { "locale/de/a.ftl": FTL, "chrome/locale/de/b.dtd": DTD }, ["de"]],
     [
       "tags with _ or other letter case in canonical form",
-      { "locale/zh_CN/a.ftl": "", "locale/zh-CN/b.ftl": "", "locale/EN-us/a.ftl": "" },
+      { "locale/zh_CN/a.ftl": FTL, "locale/zh-CN/b.ftl": FTL, "locale/EN-us/a.ftl": FTL },
       ["en-US", "zh-CN"],
     ],
-    ["an alias in canonical form", { "locale/iw/a.ftl": "" }, ["he"]],
-    ["no folder whose name is not a kept tag", { "locale/en-x-pirate/a.ftl": "", "locale/default/a.ftl": "", "locale/und/a.ftl": "" }, []],
+    ["an alias in canonical form", { "locale/iw/a.ftl": FTL }, ["he"]],
+    ["no folder whose name is not a kept tag", { "locale/en-x-pirate/a.ftl": FTL, "locale/default/a.ftl": FTL, "locale/und/a.ftl": FTL }, []],
     [
       "only tags whose language has an English name",
       {
-        "locale/en-US/a.ftl": "",
+        "locale/en-US/a.ftl": FTL,
         "locale/img/a.png": "",
         "locale/js/a.js": "",
-        "locale/qaa/a.ftl": "",
+        "locale/qaa/a.ftl": FTL,
         "chrome/locale/IMG/a.png": "",
-        "locale/js_US/a.ftl": "",
-        "locale/fil/a.ftl": "",
+        "locale/js_US/a.ftl": FTL,
+        "locale/fil/a.ftl": FTL,
       },
       ["en-US", "fil"],
     ],
-    ["tags whose region or script has no name", { "chrome/locale/en_XX/a.dtd": "", "chrome/locale/en_Qaaa/a.dtd": "" }, ["en-Qaaa", "en-XX"]],
+    ["tags whose region or script has no name", { "chrome/locale/en_XX/a.dtd": DTD, "chrome/locale/en_Qaaa/a.dtd": DTD }, ["en-Qaaa", "en-XX"]],
     [
       "no tag from other paths or a directory entry",
-      { "_locales/de/messages.json": "{}", "content/locale/fr/x.ftl": "", "locale/en-US.ftl": "", "locale/it/": "", "locale/it/sub/": "" },
+      { "_locales/de/messages.json": "{}", "content/locale/fr/x.ftl": FTL, "locale/en-US.ftl": FTL, "locale/it/": "", "locale/it/sub/": "" },
       [],
     ],
+    ["only the .ftl folder with a message", { "locale/de/a.ftl": "# Comment\n\n## Group\n### Resource\n", "locale/fr/a.ftl": FTL }, ["fr"]],
+    [
+      "only the .properties folder with a message",
+      { "locale/de/a.properties": "# Comment\n! Comment\n\t# Comment\n \t\f\n", "locale/fr/a.properties": "  hello=Hallo\n" },
+      ["fr"],
+    ],
+    [
+      "only the .dtd folder with an entity outside comments",
+      { "locale/de/a.dtd": `<!-- ${DTD} -->\n`, "locale/it/a.dtd": `<!-- open\n${DTD}`, "locale/fr/a.dtd": `<!-- c -->\n${DTD}` },
+      ["fr"],
+    ],
+    ["a folder whose .ftl file holds only a term", { "locale/de/a.ftl": "# Brand\n-brand-name = Zoplicate\n" }, ["de"]],
+    ["a folder whose .ftl message follows a byte-order mark", { "locale/de/a.ftl": `﻿${FTL}` }, ["de"]],
+    ["no folder whose .properties file holds a byte-order mark and comments", { "locale/de/a.properties": "﻿# Comment\n" }, []],
+    ["folders whose file has another extension or none", { "locale/de/icon.png": "", "locale/fr/LICENSE": "" }, ["de", "fr"]],
+    ["only the folder with a message, whatever the extension's letter case", { "locale/de/A.FTL": "# Comment\n", "locale/fr/A.FTL": FTL }, ["fr"]],
+    [
+      "only the folders with a message under chrome/locale/ and in nested folders",
+      {
+        "chrome/locale/de/a.ftl": "# Comment\n",
+        "chrome/locale/fr/a.ftl": FTL,
+        "locale/it/sub/x.ftl": "# Comment\n",
+        "locale/es/sub/x.ftl": FTL,
+      },
+      ["es", "fr"],
+    ],
+    ["a folder with a comment-only file and a file with a message", { "locale/de/a.ftl": "# Comment\n", "locale/de/b.ftl": FTL }, ["de"]],
+    ["one tag when either of its folders holds a message", { "locale/zh_CN/a.ftl": "# Comment\n", "chrome/locale/zh-CN/b.ftl": FTL }, ["zh-CN"]],
+    ["no tag when none of its folders holds a message", { "locale/zh_CN/a.ftl": "# Comment\n", "chrome/locale/zh-CN/b.ftl": "# Comment\n" }, []],
   ])("lists %s as the languages", async (_name, files, languages) => {
     const { result } = await read((r) => Object.assign(r[XPI].xpi!, files));
     expect(result.ok && result.facts.languages).toEqual(languages);
