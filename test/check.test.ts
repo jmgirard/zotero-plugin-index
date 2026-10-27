@@ -3,6 +3,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
+import { entryNameProblem } from "../src/check/check.ts";
 
 const VALID = "test/fixtures/check/valid";
 const ENTRY = "first-plugin@example.org";
@@ -57,6 +58,47 @@ function expectOnlyRule(root: string, rule: string) {
   expect(result.findings).toEqual(result.findings.map(() => ({ entry: ENTRY, rule })));
   return result;
 }
+
+// cairn/references/microsoft-naming-a-file.md lists these.
+const RESERVED = ["CON", "PRN", "AUX", "NUL", ..."123456789".split("").flatMap((n) => [`COM${n}`, `LPT${n}`])];
+
+describe("entryNameProblem", () => {
+  test("holds the 22 reserved names", () => {
+    expect(new Set(RESERVED).size).toBe(22);
+  });
+
+  test.each(RESERVED.flatMap((name) => [name, name.toLowerCase(), `${name.toLowerCase()}.tar.gz`]))(
+    "refuses the Windows name %s",
+    (name) => {
+      expect(entryNameProblem(name)).toMatch(/Windows reserves/);
+    },
+  );
+
+  test.each(["Con", "cOm1.txt"])("refuses the Windows name %s in mixed case", (name) => {
+    expect(entryNameProblem(name)).toMatch(/Windows reserves/);
+  });
+
+  test.each(["a%b@example.org", "a b@example.org", "a/b", ""])("refuses %j for its characters", (name) => {
+    expect(entryNameProblem(name)).toMatch(/holds a character/);
+  });
+
+  test.each([".x@example.org", "plugin@example.org."])("refuses %j for its dot", (name) => {
+    expect(entryNameProblem(name)).toMatch(/starts or ends with "."/);
+  });
+
+  test.each([
+    "console@example.org",
+    "com0",
+    "lpt0",
+    "com10",
+    "lpt",
+    "aux-tools@example.org",
+    "first-plugin@example.org",
+    "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}",
+  ])("accepts %s", (name) => {
+    expect(entryNameProblem(name)).toBeUndefined();
+  });
+});
 
 describe("pnpm check <root>", () => {
   test("passes a tree of valid entries", () => {

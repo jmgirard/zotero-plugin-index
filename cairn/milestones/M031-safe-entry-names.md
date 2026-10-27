@@ -44,7 +44,7 @@
 ## Tasks
 
 - [x] T1: Save the Microsoft page "Naming Files, Paths, and Namespaces" (https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file, `ms.date` 2024-08-28) to `cairn/references/sources/`. Write the source note `cairn/references/microsoft-naming-a-file.md` with the reserved names, the extension sentence, the trailing space or period sentence, and the case sentence, and add its `INDEX.md` line.
-- [ ] T2: Add `entryNameProblem` to `src/check/check.ts`, moving the pattern from `SAFE_ID` (`src/add-plugin/add-plugin.ts:10`). Add the AC1 cases to `test/check.test.ts`. These cases spawn no pnpm, so run them with `./node_modules/.bin/vitest run test/check.test.ts` while working (LESSONS M027).
+- [x] T2: Add `entryNameProblem` to `src/check/check.ts`, moving the pattern from `SAFE_ID` (`src/add-plugin/add-plugin.ts:10`). Add the AC1 cases to `test/check.test.ts`. These cases spawn no pnpm, so run them with `./node_modules/.bin/vitest run test/check.test.ts` while working (LESSONS M027).
 - [ ] T3: In `checkTree` (`src/check/check.ts:36`), add the rules `entry-name`, `entry-is-directory`, and `unique-ignoring-case` to `Rule`. Read the stray names with a separate `readdir` and `stat` pass, and leave `listEntries` as it is, since the build and `pnpm discover` call it. Export the case-set function. Add the AC2, AC3, and AC4 cases. For the AC4 CLI case, test case sensitivity in the temp directory first and skip where it is not.
 - [ ] T4: In `writeEntry` (`src/add-plugin/add-plugin.ts:27`), call `entryNameProblem`, then read `outDir` and refuse a case-insensitive match before `mkdir`. A missing `outDir` has no names. Add the AC5 cases to `test/add-plugin.test.ts`. On macOS `mkdir` already fails with `entry-exists` for a case match, so the message assertion is what tells the new check apart.
 - [ ] T5: Add the AC6 record to the site fixture in `test/fixtures/site/`. Update the site tests that list rows or count records by hand, such as "gives each row the language subtags it applies" (`test/site.test.ts:401`), and keep the record out of the archived and language cases.
@@ -65,6 +65,7 @@
 - 2026-10-28: sizing: 8 criteria, one over the advisory 7; kept as one milestone, since AC8 is the verify criterion and the 7 tasks fit one PR. M032 holds the rest of the row.
 - 2026-10-28: started /milestone-implement on branch m031-safe-entry-names, cut from main at 83d422a.
 - 2026-10-28: T1 done: saved the page to the shelf and wrote `cairn/references/microsoft-naming-a-file.md` with its INDEX line. The page lists no COM0 or LPT0.
+- 2026-10-28: T2 done: `entryNameProblem` returns a message for each kind of name and undefined for a safe one. `SAFE_ID` stays in `writeEntry` until T4 moves it. `pnpm test` 814 passed, `pnpm check` 33 entries clean.
 
 ## Decisions
 

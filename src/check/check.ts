@@ -33,6 +33,20 @@ export function compileValidators(registrySchema: object) {
 
 type Validators = ReturnType<typeof compileValidators>;
 
+// Plugin ids are email-like (name@example.org) or a {GUID}.
+const NAME_PATTERN = /^[A-Za-z0-9_@{}+.-]{1,200}$/;
+// Windows refuses these names, also with any extension, ignoring case (cairn/references/microsoft-naming-a-file.md).
+const WINDOWS_RESERVED = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i;
+
+// Why an entry directory name is unsafe, or undefined when it is safe. The id names the
+// directory, so it must stay inside plugins/, build a site page, and check out on Windows.
+export function entryNameProblem(name: string): string | undefined {
+  if (!NAME_PATTERN.test(name)) return `${JSON.stringify(name)} holds a character other than A-Z, a-z, 0-9, and _@{}+.- or is over 200 characters`;
+  if (name.startsWith(".") || name.endsWith(".")) return `${JSON.stringify(name)} starts or ends with "."`;
+  if (WINDOWS_RESERVED.test(name.split(".")[0])) return `${JSON.stringify(name)} is a name that Windows reserves`;
+  return undefined;
+}
+
 export async function checkTree(root: string, validators: Validators): Promise<CheckResult> {
   const entries = await listEntries(root);
   const findings: Finding[] = [];
