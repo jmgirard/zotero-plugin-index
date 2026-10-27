@@ -1,13 +1,13 @@
 # M032: Catch blank reasons, repeat overrides, and BOMs
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes what `pnpm check` refuses and prints for contributors' entries, and its docs
-- **Branch/PR:** —
+- **Branch/PR:** m032-override-and-bom-checks
 
 ## Goal
 
@@ -37,7 +37,7 @@
 
 ## Tasks
 
-- [ ] T1: In `checkEntry` (`src/check/check.ts:103`), replace the `/\S/` test with one for a character outside `[\s\p{Cf}]` (the `u` flag), and change the message. Add the AC1 cases to `test/check.test.ts`. These cases spawn no pnpm, so run them with `./node_modules/.bin/vitest run test/check.test.ts` while working (LESSONS M027).
+- [x] T1: In `checkEntry` (`src/check/check.ts:103`), replace the `/\S/` test with one for a character outside `[\s\p{Cf}]` (the `u` flag), and change the message. Add the AC1 cases to `test/check.test.ts`. These cases spawn no pnpm, so run them with `./node_modules/.bin/vitest run test/check.test.ts` while working (LESSONS M027).
 - [ ] T2: Add `unique-override` to `Rule` and check `overrides` pairs in `checkEntry`, keyed by `field` and `version`, with an absent `version` as its own key. Add the AC2 cases.
 - [ ] T3: In `readJson` (`src/check/check.ts:137`), test for a leading U+FEFF before `JSON.parse` and return a byte-order-mark error that `checkEntry` reports under the file's schema rule. Leave the build's own read (`src/build/build.ts:208`) as it is, since `pnpm check` runs before the build. Add the AC3 cases.
 - [ ] T4: Update README "Checking entries" and CHANGELOG Unreleased. Search a joined copy of README for each phrase (LESSONS M018).
@@ -54,6 +54,9 @@
 - 2026-10-28: plan gate chose to refuse a byte-order mark with a named message over stripping it, because the build and the registry parse the raw file; falsified by a contributor editor that cannot save JSON without the mark.
 - 2026-10-28: plan gate chose the bounded class `\s` and `\p{Cf}` over a hand list of invisible characters, because the class is a stated Unicode category; falsified by a blank reason in a real entry made of characters outside that class.
 - 2026-10-28: criteria audit (full): narrowed the goal from invisible characters to whitespace and format characters and from any byte-order mark to UTF-8; stated the new `reason-not-blank` message and wrote the discrimination case as an escape (AC1); named the indexes for three or more repeats and added the `1.0` and `1.0.0` case (AC2); split AC3 into one case per file and added a mark that is not at the start. AC4 and AC5 had no finding.
+- 2026-10-28: status in-progress; branch m032-override-and-bom-checks cut from origin/main at d475d29.
+- 2026-10-28: chose to test AC1 and AC2 through `checkTree` with an empty registry schema (`compileValidators({})`), so the cases fetch nothing and spawn no pnpm; the task line numbers moved with M031 (the override loop is now near `check.ts:160`, `readJson` near `:198`).
+- 2026-10-28: T1 done: `reason-not-blank` now reports a reason with no character outside `[\s\p{Cf}]`; the U+200B and U+200D-plus-space cases failed with no finding before the change. pnpm test 828 passed, 1 skipped; pnpm check 37 entries, 0 problems.
 
 ## Decisions
 

@@ -3,7 +3,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symli
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import { caseClashes, entryNameProblem } from "../src/check/check.ts";
+import { caseClashes, checkTree, compileValidators, entryNameProblem } from "../src/check/check.ts";
 
 const VALID = "test/fixtures/check/valid";
 const ENTRY = "first-plugin@example.org";
@@ -255,6 +255,25 @@ describe("pnpm check <root>", () => {
     expect(result.status).toBe(1);
     expect(result.findings).toEqual([{ entry: "Foo@example.org", rule: "unique-ignoring-case" }]);
     expect(result.stdout).toContain("Foo@example.org, foo@example.org");
+  });
+});
+
+// An empty registry schema passes any meta.json, so these cases call checkTree without
+// fetching the registry schema or spawning pnpm.
+async function overrideFindings(overrides: object[]) {
+  const root = treeWith((dir) => editJson(join(dir, "index.json"), (index) => (index.overrides = overrides)));
+  return (await checkTree(root, compileValidators({}))).findings;
+}
+
+describe("checkTree overrides", () => {
+  test.each(["​", "‍ "])("reason-not-blank: reason %j", async (reason) => {
+    expect(await overrideFindings([{ field: "name", value: "First", reason }])).toEqual([
+      { entry: ENTRY, rule: "reason-not-blank", message: "overrides[0].reason holds only whitespace or format characters" },
+    ]);
+  });
+
+  test("passes a reason with a format character beside a letter", async () => {
+    expect(await overrideFindings([{ field: "name", value: "First", reason: "ok​" }])).toEqual([]);
   });
 });
 

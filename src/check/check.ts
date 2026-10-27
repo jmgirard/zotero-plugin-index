@@ -161,8 +161,9 @@ async function checkEntry(dir: string, entry: string, validators: Validators): P
   if (Array.isArray(overrides)) {
     overrides.forEach((override, i) => {
       const reason = (override as { reason?: unknown } | null)?.reason;
-      if (typeof reason === "string" && reason.length > 0 && !/\S/.test(reason)) {
-        add("reason-not-blank", `overrides[${i}].reason holds only whitespace`);
+      // \p{Cf} is the Unicode format characters, such as U+200B, which print nothing.
+      if (typeof reason === "string" && reason.length > 0 && !/[^\s\p{Cf}]/u.test(reason)) {
+        add("reason-not-blank", `overrides[${i}].reason holds only whitespace or format characters`);
       }
     });
   }
