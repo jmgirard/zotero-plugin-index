@@ -203,6 +203,6 @@
   with `request-failed`. It starts no plugin read after 18 minutes. Each
   entry that it did not read gets a record that fails with the new failure
   name `not-read`. Both failures are build-level. Before, only the
-  60-second limit of each request bounded a read. If hosts that did not
+  60-second limit of each request and each host lookup bounded a read. If hosts that did not
   answer took the build past the 30-minute limit of the daily build job,
   GitHub stopped the job. The job then kept no data and deployed nothing.

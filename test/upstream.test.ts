@@ -993,6 +993,22 @@ describe("readUpstream", () => {
     expect(requests.at(-1)!.url).toBe("https://hop.example/5");
   });
 
+  test("fails as a cut read when the signal aborts at the last redirect", async () => {
+    const { responses } = loadFixture(FIXTURE);
+    redirectChain(responses, hops(6));
+    const controller = new AbortController();
+    const { fetch } = fixtureFetch(responses, (seen) => {
+      if (seen.url === "https://hop.example/5") controller.abort(new Error("the read passed its test limit"));
+    });
+    const result = await readUpstream(REPO_URL, fetch, { lookup: publicLookup, signal: controller.signal });
+    expect(result).toEqual({
+      ok: false,
+      failure: "request-failed",
+      message: "GET https://hop.example/5 failed: the read passed its test limit",
+      buildLevel: true,
+    });
+  });
+
   test("follows 5 redirects with relative Locations to the update.json", async () => {
     const { result } = await read((r) => {
       redirectChain(r, hops(5));

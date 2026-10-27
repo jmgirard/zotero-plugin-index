@@ -112,7 +112,7 @@ export async function readUpstream(
     lookup = boundLookup(lookup, signal);
   }
   try {
-    return { ok: true, facts: await read(repoUrl, fetch, downloader(fetch, lookup)) };
+    return { ok: true, facts: await read(repoUrl, fetch, downloader(fetch, lookup, signal)) };
   } catch (error) {
     if (error instanceof ReadFailure) {
       return { ok: false, failure: error.failure, message: error.message, ...(error.buildLevel && { buildLevel: true }) };
@@ -438,8 +438,9 @@ const REDIRECTS = [301, 302, 303, 307, 308];
 const MAX_REDIRECTS = 5;
 
 // Follows redirects itself, at most MAX_REDIRECTS, and checks the host of each URL
-// before it requests it.
-function downloader(fetch: Fetch, lookup: Lookup): Download {
+// before it requests it. A `signal` that aborts while a redirect's body is canceled
+// fails the download as a cut read, since the cancel hides the abort.
+function downloader(fetch: Fetch, lookup: Lookup, signal?: AbortSignal): Download {
   return async (url) => {
     if (!URL.canParse(url) || !["http:", "https:"].includes(new URL(url).protocol)) {
       fail("request-failed", `${url} is not an http or https URL`);
@@ -451,6 +452,10 @@ function downloader(fetch: Fetch, lookup: Lookup): Download {
       const response = await request(fetch, current.href, { redirect: "manual" });
       if (!REDIRECTS.includes(response.status)) return response;
       await response.body?.cancel().catch(() => {});
+      if (signal?.aborted) {
+        const reason = signal.reason instanceof Error ? signal.reason.message : String(signal.reason);
+        fail("request-failed", `GET ${current.href} failed: ${reason}`, true);
+      }
       if (redirects === MAX_REDIRECTS) fail("request-failed", `GET ${url} took more than ${MAX_REDIRECTS} redirects`);
       const location = response.headers.get("location");
       if (location === null || !URL.canParse(location, current)) {

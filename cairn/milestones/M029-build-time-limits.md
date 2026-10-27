@@ -1,6 +1,6 @@
 # M029: Bound the build's read time
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -61,6 +61,8 @@
 - 2026-10-27: T2 and T3 done in one commit, since both change the `buildData` read loop. `buildData` takes a fifth argument `{ readMs, buildMs, startedAt }`; `startedAt` is a `performance.now()` time whose default 0 is the process start, so the 18 minutes count from the start of the command. `READ_LIMIT_MS` and `BUILD_LIMIT_MS` are exported constants. Two `test/build.test.ts` cases over a three-plugin tree with a stalled XPI; with no signal passed (planted) both went red, and with the read-phase check removed (planted) the not-read case went red. `pnpm test` 720 passed, `pnpm check` clean.
 - 2026-10-27: T4 done. README "Building the data" gained a limits paragraph and two build-level list changes, the schema's failure `name` description names `not-read`, DESIGN's "Data build" line states the limits, CHANGELOG Unreleased gained one entry, and DECISIONS gained D-015 (annotating D-011). Each README phrase found once in a joined copy. `pnpm test` 720 passed, `pnpm check` clean.
 - 2026-10-27: T5 done. Branch pushed; `build.yml` dispatched on it (run 40529804385): build job success in 89 s, "build-level failures: 0 of 28 records", 28 records with 0 failed reads; the deploy job failed as off-`main` runs do (LESSONS M006).
+- 2026-10-27: claim audit: 33 claims read, 2 corrected — CHANGELOG.md (the old bound also had the lookup's 60 s limit), src/upstream/reader.ts (an abort hidden by a redirect body's cancel now fails the download as a build-level cut with the reason; `downloader` takes the signal; new test, red with the check planted out). `pnpm test` 721 passed, `pnpm check` clean.
+- 2026-10-27: all tasks done; status review.
 
 ## Decisions
 
