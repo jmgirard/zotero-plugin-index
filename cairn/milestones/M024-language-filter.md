@@ -169,6 +169,7 @@ once, in list order. A record with no `upstream` has an empty applied list. M023
 - 2026-10-27: amendment done; status set to review.
 - 2026-10-27: review return 1: the consistency gate's `weight caps` check fails — 150 plan-owned lines against a cap below 150, after the Scope amendment added a line; status set to in-progress.
 - 2026-10-27: T7 added for review return 1 (minor amendment) and done: the heaviest plan-owned section, Acceptance criteria, re-wrapped in one pass to lines of up to 96 columns; its whitespace-normalized text is identical before and after (checked against HEAD), so no criterion wording changed. `cairn_validate.py` `weight caps` passes; status set to review.
+- 2026-10-27: step-7 approval: m024-language-filter approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
