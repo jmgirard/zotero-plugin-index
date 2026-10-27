@@ -123,3 +123,16 @@ Evidence gathered 2026-10-27 on the branch after merging origin/main at 5fb6ccf 
 - AC4: `pnpm test`: 17 files, 685 tests passed; `pnpm check`: 26 entries, 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed; no principle changed, so `cairn_impact` skipped; the generic profile's consistency-gate slot names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: an older state record stays in place after a refusal that is not recorded, with its old failure name — follow-up, row "Drop stale state records on a reread" (predates the branch; no repo is hidden).
+- diff-bug #2: README.md line 271 is 88 characters, unwrapped — fix now, fixed 8e0379b.
+- diff-bug #3: the four test rows repeat one `draftEntry` branch — reject (planned change: T1 planned the four-case table, and AC1 and AC2 name both failures).
+- diff-bug #4: `expect(responses[url]).toBeDefined()` checks the fixture — reject (false: it keeps the replaced URL from silently missing the fixture, which the project's check-discrimination rule asks for).
+- blame-history #1: a download host that keeps failing makes its repo take a read of the 100-read budget every run — follow-up, row "Stop rereading hosts that keep failing" (parked; the plan's work log names this as the evidence that would falsify the choice).
+- blame-history #2: older state record kept, as diff-bug #1 — follow-up, row "Drop stale state records on a reread".
+- blame-history #3: no D-entry records the change to M008's recording rule — reject (false: M008's rule lives in its milestone, not a D-entry, and this choice is milestone-local, recorded in this work log; it changes neither D-011 nor D-012).
+- prior-review #1: budget use by repeated rereads, as blame-history #1 — follow-up, row "Stop rereading hosts that keep failing".
+- prior-review #2: README line 271 over the wrap width, a drift M009's review fixed before — fix now (same fix as diff-bug #2), fixed 8e0379b.
+- prior-review #3: the new rows check the report with `objectContaining`, not an exact match, and skip the message — reject (false: they assert repo, outcome, and failure name, the failure's identity; the message is printed text).
+- ripple #1: README.md lines 266-267, "The file records each refused repository", sits before exceptions — reject (false: the next sentences state the exceptions, as they did for GitHub API errors before the branch).
+- ripple #2: the candidate row "Retry repos refused by a download error" says all download HTTP errors — reject (planned change: the question set narrowed it to 429 and 5xx, and post-merge hygiene graduates the row).
+- Note: the prior-review reviewer reported one stray call to a session hand-off tool, which was denied; nothing changed.
