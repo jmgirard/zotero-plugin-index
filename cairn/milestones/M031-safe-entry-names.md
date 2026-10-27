@@ -90,3 +90,32 @@
 - AC7: README "Checking entries" holds `entry-name`, `entry-is-directory`, and `unique-ignoring-case` (3 matching lines in the section) and "CON, PRN, AUX, NUL, COM1 to COM9, and LPT1 to LPT9" (joined-copy grep, 1 match); "Adding a plugin" names `unsafe-id` for the Windows name `CON` and the case-only `entry-exists` match (1 match each); CHANGELOG Unreleased's last entry adds the three rules.
 - gate: `cairn_validate.py` exit 0 (WARN: 8 criteria over the advisory 7); no DESIGN principle changed, so `cairn_impact` skipped; the generic profile's consistency-gate names no toolchain checks.
 - AC8: at 90caeb2 `npx -y pnpm@12.15.0 test` 17 files, 826 passed, 1 skipped (the AC4 CLI case, run separately above); `pnpm check` 37 entries, 0 problems.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the `chmod 0o300` test fails when tests run as root — fix now, fixed 4d07a88 (skips as root)
+- diff-bug #2: `readHandoff`'s `ADDON_ID` accepts `a@b.` and `nul.x@y.org` — reject, false: `pnpm propose` runs `pnpm check`, now with `entry-name`, on each entry before any push (`src/discover/propose.ts:296`), and discover writes no such id
+- diff-bug #3: an empty name gets "holds a character" — fix now, fixed 4d07a88 ("is empty", own test)
+- diff-bug #4: messages quote the name twice — fix now, fixed 4d07a88 (messages now have no subject)
+- diff-bug #5: `entry-is-directory` says "is a file" for a FIFO or socket — fix now, fixed 4d07a88 ("is not a directory")
+- diff-bug #6: findings are no longer grouped by entry — reject, style: no criterion or doc states an order, and every finding prints
+- diff-bug #7: another process can create a case variant between `readdir` and `mkdir` — reject, edge: two processes writing one `--out` at once is outside documented and common use, and `pnpm check` then reports the pair
+- diff-bug #8: a CHANGELOG line of about 110 characters — fix now, fixed 4d07a88 (rewrapped)
+- diff-bug #9: the site test's `toContain("_x-y+z.w@{v}")` is weaker than the row-list test — fix now, fixed 4d07a88 (removed)
+- diff-bug #10: "holds the 22 reserved names" tests the test's own list — fix now, fixed 4d07a88 (removed; the 68 cases still name each reserved name)
+- diff-bug #11: 68 cases, two `writeEntry` Windows cases, and the set of three run one code path — reject, planned change: AC1, AC4, and AC5 name these cases
+- diff-bug #12: two accepted names were already accepted by `SAFE_ID` — reject, planned change: AC1 names them as cases the new reserved-name rule must leave alone
+- blame-history #1: a trailing-dot id is now refused — reject, planned change (AC1)
+- blame-history #2: a case-only `entry-exists` in `outDir` is build-level in discover — reject, false: `draftEntry` refuses an index case match first (`discover.ts:217`), and M028's rule marks `entry-exists` from `outDir` build-level
+- blame-history #3: an unreadable `outDir` now fails with `write-failed` — reject, false: the case check cannot run on a directory it cannot read, which the claim audit chose and a test pins
+- blame-history #4: the `unsafe-id` message gained text — reject, false: `test/issue.test.ts:159` still matches
+- blame-history #5: add-plugin now imports check.ts — reject, false: no cycle, and discover already loaded it
+- prior-review #1: long CHANGELOG line and long `check.ts` comment — fix now for CHANGELOG, fixed 4d07a88; reject, style, for the code comment, since src lines run past 120 characters elsewhere
+- prior-review #2: case-only `entry-exists` in `outDir` — reject, false (as blame-history #2)
+- prior-review #3: M020 rejected a case-sensitive id edge — reject, planned change (AC4, AC5)
+- prior-review #4: a root that is a file rethrows ENOTDIR — reject, false: unchanged from main
+- ripple #1: `readHandoff`'s `ADDON_ID` differs from the rule — reject, false (as diff-bug #2)
+- ripple #2: README says each line names "the entry directory", but a stray file is not one — fix now, fixed 4d07a88
+- ripple #3: README:407 and DESIGN.md say `entry-exists` is for a directory already in the output directory — reject, false: still true, and README "Adding a plugin" states the case-only match
+- ripple #4: the first CHANGELOG `pnpm check` bullet omits the new rules — reject, false: the new entry in the same Unreleased section states them
+- ripple #5: CHANGELOG:77 `entry-exists` wording — reject, false (as ripple #3)
+- ripple #6: the ROADMAP comment lost the "Candidate priority token" pointer — fix now, fixed 4d07a88
+- post-fix: at 4d07a88 `pnpm test` 825 passed, 1 skipped; `pnpm check` 37 entries, 0 problems. AC1's evidence stands without the removed self-test; the empty name now has its own case.
