@@ -12,8 +12,8 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { afterAll, describe, expect, test } from "vitest";
-import { type DiscoveryState, discover, type ReadItem } from "../src/discover/discover.ts";
+import { afterAll, describe, expect, test, vi } from "vitest";
+import { type DiscoveryState, discover, draftEntry, type ReadItem } from "../src/discover/discover.ts";
 import { githubClient } from "../src/upstream/reader.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 import { pluginRepo, searchPage } from "./support/plugin-repo.ts";
@@ -69,12 +69,16 @@ interface RunOptions {
   limit?: number;
   budget?: number;
   now?: Date;
+  readMs?: number;
+  runMs?: number;
+  startedAt?: number;
 }
 
 async function runResult(responses: Responses, options: RunOptions = {}) {
   const { root = tempDir(), outDir = tempDir(), state = {}, skip = new Set<string>(), limit = 50, budget = 100, now = NOW } = options;
+  const { readMs, runMs, startedAt } = options;
   const { fetch, requests } = fixtureFetch(responses);
-  const result = await discover({ root, outDir, fetch, lookup: publicLookup, state, skip, limit, budget, now });
+  const result = await discover({ root, outDir, fetch, lookup: publicLookup, state, skip, limit, budget, now, readMs, runMs, startedAt });
   return { result, requests };
 }
 
@@ -279,6 +283,73 @@ describe("the limit and the budget", () => {
     const { reads, report } = await run(responses(), { budget: 3 });
     expect(reads).toEqual(["example/p7", "example/p6", "example/p5"]);
     expect(report.unread).toBe(4);
+  });
+});
+
+describe("the time limits", () => {
+  // Three passing repos, newest pushed first: example/t3, then example/t2, whose XPI never
+  // answers, then example/t1.
+  const repos: [string, string][] = [
+    ["example/t3", "2026-10-03T00:00:00Z"],
+    ["example/t2", "2026-10-02T00:00:00Z"],
+    ["example/t1", "2026-10-01T00:00:00Z"],
+  ];
+  const stalledXpi = "https://github.com/example/t2/releases/download/v1.0.0/plugin.xpi";
+  function stalled(): Responses {
+    const responses: Responses = Object.assign(searched(repos), ...repos.map(([name], i) => pluginRepo(name, `t${3 - i}@example.org`)));
+    responses[stalledXpi].stall = "headers";
+    return responses;
+  }
+  // Records from a run before each repo's last push, so the run reads both repos again.
+  const before = { pushedAt: "2026-09-01T00:00:00Z", failure: "no-release" as const, checkedAt: "2026-09-01T00:00:00Z" };
+  const state: DiscoveryState = { "example/t2": before, "example/t1": before };
+
+  test("refuses a read that passes its limit as request-failed, keeps its record, and reads the next repo", async () => {
+    const { reads, report, state: after } = await run(stalled(), { state, readMs: 200 });
+    expect(reads).toEqual(["example/t3", "example/t2", "example/t1"]);
+    expect(report.read.map((item: ReadItem) => [item.repo, item.outcome === "written" ? "written" : item.failure])).toEqual([
+      ["example/t3", "written"],
+      ["example/t2", "request-failed"],
+      ["example/t1", "written"],
+    ]);
+    expect(report.read[1]).toMatchObject({ message: expect.stringContaining("passed its time limit of 200 ms") });
+    expect(after).toEqual({ "example/t2": before });
+  });
+
+  test("marks a read that passes its limit as build-level", async () => {
+    const { fetch } = fixtureFetch(stalled());
+    const drafted = await draftEntry("https://github.com/example/t2", { fetch, lookup: publicLookup, outDir: tempDir(), ids: new Set(), readMs: 200 });
+    expect(drafted).toMatchObject({ ok: false, failure: "request-failed", recorded: false, buildLevel: true });
+  });
+
+  test("starts no read once the run limit has passed, counts the rest as unread, and warns", async () => {
+    const limits = { readMs: 1500, runMs: 1000, startedAt: performance.now() };
+    const { reads, report, state: after } = await run(stalled(), { state, ...limits });
+    expect(reads).toEqual(["example/t3", "example/t2"]);
+    expect(report.unread).toBe(1);
+    expect(report.warnings).toContainEqual(expect.stringContaining("reads no repo after 1000 ms, its time limit"));
+    expect(after).toEqual(state);
+  });
+
+  test("names the default limits of 3 minutes for a read and 18 minutes for the run", async () => {
+    let reached!: () => void;
+    const waiting = new Promise<void>((resolve) => (reached = resolve));
+    const { fetch } = fixtureFetch(stalled(), (seen) => seen.url === stalledXpi && reached());
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      const pending = draftEntry("https://github.com/example/t2", { fetch, lookup: publicLookup, outDir: tempDir(), ids: new Set() });
+      // The clock moves only once the read waits on the stalled XPI.
+      await waiting;
+      await vi.advanceTimersByTimeAsync(3 * 60 * 1000);
+      expect(await pending).toMatchObject({ failure: "request-failed", message: expect.stringContaining("time limit of 3 minutes") });
+    } finally {
+      vi.useRealTimers();
+    }
+
+    const { reads, report } = await run(stalled(), { startedAt: performance.now() - 18 * 60 * 1000 });
+    expect(reads).toEqual([]);
+    expect(report.unread).toBe(3);
+    expect(report.warnings).toContainEqual(expect.stringContaining("reads no repo after 18 minutes, its time limit"));
   });
 });
 

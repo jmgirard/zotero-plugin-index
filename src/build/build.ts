@@ -205,7 +205,7 @@ async function readRecord(
 }
 
 // "3 minutes" for whole minutes, else milliseconds.
-function duration(ms: number): string {
+export function duration(ms: number): string {
   return ms % 60_000 === 0 ? `${ms / 60_000} minute${ms === 60_000 ? "" : "s"}` : `${ms} ms`;
 }
 

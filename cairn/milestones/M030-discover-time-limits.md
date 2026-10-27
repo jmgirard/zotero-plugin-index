@@ -1,13 +1,13 @@
 # M030: Bound the discover run's time
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** M029
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes which repos the discover bot reads and proposes, and its docs
-- **Branch/PR:** —
+- **Branch/PR:** m030-discover-time-limits
 
 ## Goal
 
@@ -37,8 +37,8 @@ A discover run stops new repo reads at a time limit and still saves its state an
 
 ## Tasks
 
-- [ ] T1: In `discover` (`src/discover/discover.ts:114`), check the time since the run started before each read. Past 18 minutes, set `unread` and add a warning that names the limit. Take the limit as an option, so a test can set it short. Use "time limit" in the text, since `--budget` already names a repo count. Add the cut case to `test/discover.test.ts`, in process, since its CLI tests spawn with a 50-second timeout.
-- [ ] T2: In `draftEntry` (`src/discover/discover.ts:175`), pass `readUpstream` M029's 3-minute signal. Add the stalled-repo case to `test/discover.test.ts`, with an input state that holds a record for the stalled repo.
+- [x] T1: In `discover` (`src/discover/discover.ts:114`), check the time since the run started before each read. Past 18 minutes, set `unread` and add a warning that names the limit. Take the limit as an option, so a test can set it short. Use "time limit" in the text, since `--budget` already names a repo count. Add the cut case to `test/discover.test.ts`, in process, since its CLI tests spawn with a 50-second timeout.
+- [x] T2: In `draftEntry` (`src/discover/discover.ts:175`), pass `readUpstream` M029's 3-minute signal. Add the stalled-repo case to `test/discover.test.ts`, with an input state that holds a record for the stalled repo.
 - [ ] T3: Give the `execFile` of the branch-name check (`src/discover/handoff.ts:185`) a 30-second `timeout`. A kill gives no exit code 1, so `entryProblem` throws and `draftEntry` refuses with `unexpected-error`. In `src/discover/propose.ts`, give the `git` helper's `execFile` (line 241) a 2-minute `timeout`. Make `pnpmCheck` (line 30) stop its child after 5 minutes and reject when it kills the child, so no branch is pushed for that entry. Take the limits as options, so tests can set them short. Test with stub commands that never exit, and restore any planted file from a copy (LESSONS M010, M022).
 - [ ] T4: Update README "Finding new plugins", "Pull requests from the bot", and "Proposing a plugin with an issue", DESIGN.md's "Discovery" line, and CHANGELOG Unreleased. Search a joined copy of README for each phrase (LESSONS M018).
 - [ ] T5: Run `pnpm test` and `pnpm check` (LESSONS M001, M027). The discover read job runs only on the default branch, so a dispatch on the branch checks nothing.
@@ -51,6 +51,9 @@ A discover run stops new repo reads at a time limit and still saves its state an
 - 2026-10-27: question set: run workflows by dispatch on the milestone branch — yes. Add a new npm package — no; stop and ask if one is needed.
 - 2026-10-27: collision: candidate row "Bound the time of a discover run" absorbed. Parked row "Stop rereading hosts that keep failing" stays, since a limit does not stop a daily reread.
 - 2026-10-27: criteria audit (full), M030 part: took "time limit" over "time budget" (AC1), the in-process test (AC1), the unchanged state record (AC2), the scope narrowed to `pnpm discover` with a README pointer for issue runs (AC2, AC4), a rejecting `pnpmCheck` (AC3), the fetch case and the one-entry wording (AC3), fixed limit values (AC3), and the README placement (AC4). Kept the `git check-ref-format` limit and stated its `pnpm propose` outcome (exit before any push through `readHandoff`), since ROADMAP's 60-line cap leaves no room for a parked row. AC5 had no finding.
+- 2026-10-27: started; branch `m030-discover-time-limits` cut from main at b5614f6.
+- 2026-10-27: T1+T2 in one commit, since both change the same read loop. API: `discover` takes `readMs`, `runMs`, and `startedAt` (performance.now() time, default 0 as in `buildData`); `draftEntry` takes `readMs`; `RUN_LIMIT_MS` (18 min) is new in `discover.ts`, and `READ_LIMIT_MS` and `duration` come from `src/build/build.ts` (`duration` now exported). The time check sits beside the budget check, so `unread` counts every candidate left, as the budget cut does.
+- 2026-10-27: T1+T2 tests: 4 cases in `test/discover.test.ts` "the time limits" (per-read cut with kept record, build-level mark through `draftEntry`, run cut with unread and warning, both defaults under fake timers). Planted no signal and no run check on a copy: each plant failed its cases; restored. `pnpm test` 726 passed, `pnpm check` 0 problems.
 
 ## Decisions
 

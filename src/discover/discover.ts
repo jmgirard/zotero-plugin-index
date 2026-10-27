@@ -1,6 +1,7 @@
 import { readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { type WriteResult, writeEntry } from "../add-plugin/add-plugin.ts";
+import { duration, READ_LIMIT_MS } from "../build/build.ts";
 import { listEntries } from "../check/check.ts";
 import type { Lookup } from "../upstream/host-guard.ts";
 import { type Failure, type Fetch, githubClient, ReadFailure, readUpstream } from "../upstream/reader.ts";
@@ -12,6 +13,9 @@ export const TOPICS = ["zotero-plugin", "zotero-addon"];
 const SEARCH_MAX = 1000;
 // A refused repo is read again after this long, even when it was not pushed.
 const RECHECK_MS = 30 * 24 * 60 * 60 * 1000;
+// The time after which a run starts no repo read. The discover job stops at 30 minutes,
+// so this leaves time to write the state and for the steps around it.
+export const RUN_LIMIT_MS = 18 * 60 * 1000;
 
 export type DiscoveryFailure = Failure | Extract<WriteResult, { ok: false }>["failure"] | "not-proposable" | "unexpected-error";
 
@@ -53,7 +57,8 @@ export interface SkippedItem {
 export interface Report {
   read: ReadItem[];
   skipped: SkippedItem[];
-  // Candidates the run did not reach because it hit the limit or the budget.
+  // Candidates the run did not reach because it hit the limit, the budget, or the time
+  // limit.
   unread: number;
   warnings: string[];
 }
@@ -74,6 +79,12 @@ export interface DiscoverOptions {
   limit: number;
   budget: number;
   now?: Date;
+  // The longest one repo read may take, and the time after `startedAt` from which the run
+  // starts no read. `startedAt` is a performance.now() time. Its default, 0, is when the
+  // process started.
+  readMs?: number;
+  runMs?: number;
+  startedAt?: number;
 }
 
 export type DiscoverResult = { ok: true; state: DiscoveryState; report: Report } | { ok: false; message: string };
@@ -85,11 +96,13 @@ interface Candidate {
 }
 
 // Searches both topics and reads each repo the index does not have, newest pushed first,
-// until it has written `limit` entries or read `budget` repos. A failed search ends the
-// run before any read. The input state is not changed; the result carries the new one,
-// which keeps records only for repos that the search found and the index lacks.
+// until it has written `limit` entries, read `budget` repos, or passed `runMs`. A failed
+// search ends the run before any read. The input state is not changed; the result carries
+// the new one, which keeps records only for repos that the search found and the index
+// lacks.
 export async function discover(options: DiscoverOptions): Promise<DiscoverResult> {
   const { root, outDir, fetch, lookup, skip, limit, budget, now = new Date() } = options;
+  const { readMs = READ_LIMIT_MS, runMs = RUN_LIMIT_MS, startedAt = 0 } = options;
   const warnings: string[] = [];
   let candidates: Candidate[];
   try {
@@ -116,6 +129,11 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
       report.unread = candidates.length - at;
       break;
     }
+    if (performance.now() - startedAt >= runMs) {
+      report.unread = candidates.length - at;
+      warnings.push(`the run reads no repo after ${duration(runMs)}, its time limit, so it did not reach ${report.unread} repos`);
+      break;
+    }
     if (index.repos.has(repo)) {
       report.skipped.push({ repo, reason: "in-index" });
       continue;
@@ -131,7 +149,7 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
       continue;
     }
 
-    const drafted = await draftEntry(repoUrl, { fetch, lookup, outDir, ids: index.ids, pendingIds: options.pendingIds });
+    const drafted = await draftEntry(repoUrl, { fetch, lookup, outDir, ids: index.ids, pendingIds: options.pendingIds, readMs });
     if (!drafted.ok) {
       const { failure, message } = drafted;
       if (drafted.recorded) state[repo] = { pushedAt, failure, checkedAt: now.toISOString() };
@@ -167,13 +185,15 @@ export interface DraftOptions {
   // requests add.
   ids: Set<string>;
   pendingIds?: Set<string>;
+  // The longest the read of the repo may take.
+  readMs?: number;
 }
 
 // Reads one repo and writes its entry to outDir, unless the index or an open pull
 // request already has its plugin id. `repoUrl` in the result is the URL GitHub gives
-// for the repo.
+// for the repo. A read that passes `readMs` fails as request-failed, marked build-level.
 export async function draftEntry(repoUrl: string, options: DraftOptions): Promise<Drafted> {
-  const { fetch, lookup, outDir, ids, pendingIds } = options;
+  const { fetch, lookup, outDir, ids, pendingIds, readMs = READ_LIMIT_MS } = options;
   const refuse = (failure: DiscoveryFailure, message: string, recorded = !NOT_RECORDED.has(failure), buildLevel = false): Drafted => ({
     ok: false,
     failure,
@@ -182,11 +202,15 @@ export async function draftEntry(repoUrl: string, options: DraftOptions): Promis
     ...(buildLevel && { buildLevel: true }),
   });
   let read: Awaited<ReturnType<typeof readUpstream>>;
+  const timeLimit = new AbortController();
+  const timer = setTimeout(() => timeLimit.abort(new Error(`the read passed its time limit of ${duration(readMs)}`)), readMs);
   try {
-    read = await readUpstream(repoUrl, fetch, { lookup });
+    read = await readUpstream(repoUrl, fetch, { lookup, signal: timeLimit.signal });
   } catch (error) {
     // A bug in the reader, not a fact about the repo.
     return refuse("unexpected-error", `reading ${repoUrl} threw: ${(error as Error).message}`, false, true);
+  } finally {
+    clearTimeout(timer);
   }
   if (!read.ok) return refuse(read.failure, read.message, !read.buildLevel && !NOT_RECORDED.has(read.failure), read.buildLevel);
   const { id, version, strictMinVersion, strictMaxVersion } = read.facts;
