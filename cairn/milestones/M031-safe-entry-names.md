@@ -49,7 +49,7 @@
 - [x] T4: In `writeEntry` (`src/add-plugin/add-plugin.ts:27`), call `entryNameProblem`, then read `outDir` and refuse a case-insensitive match before `mkdir`. A missing `outDir` has no names. Add the AC5 cases to `test/add-plugin.test.ts`. On macOS `mkdir` already fails with `entry-exists` for a case match, so the message assertion is what tells the new check apart.
 - [x] T5: Add the AC6 record to the site fixture in `test/fixtures/site/`. Update the site tests that list rows or count records by hand, such as "gives each row the language subtags it applies" (`test/site.test.ts:401`), and keep the record out of the archived and language cases.
 - [x] T6: Update README "Checking entries" and "Adding a plugin", DESIGN.md's "Entry checks" line, and CHANGELOG Unreleased. Search a joined copy of README for each phrase (LESSONS M018).
-- [ ] T7: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` (LESSONS M001). Plant each new rule's defect from a copy of the file and restore from the copy (LESSONS M010).
+- [x] T7: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` (LESSONS M001). Plant each new rule's defect from a copy of the file and restore from the copy (LESSONS M010).
 
 ## Work log
 
@@ -70,6 +70,9 @@
 - 2026-10-28: T4 done: `writeEntry` calls `entryNameProblem` (the `unsafe-id` message keeps "cannot name a directory" and adds the problem) and refuses a name in `outDir` that differs from the id only by case, before any `mkdir`. An exact match still reaches `mkdir`'s `entry-exists`, as before. `SAFE_ID` is gone. `pnpm test` 823 passed, 1 skipped.
 - 2026-10-28: T5 done: the site fixture's last record is the not-read record `_x-y+z.w@{v}`, so it adds no language or archived fact; the row-list test gained its row and the fixture test asserts the id. `pnpm test` 825 passed, 1 skipped.
 - 2026-10-28: T6 done: README "Checking entries" lists the three rules and the 22 Windows names; "Adding a plugin" states the `unsafe-id` and `entry-exists` cases; DESIGN.md's "Entry checks" line and CHANGELOG Unreleased have the change. The CHANGELOG claim that a `%` or space id fails `pnpm site` is checked by a T7 plant.
+- 2026-10-28: T7: a site build of the fixture with its last id set to `a%b@example.org` logged "Invalid URL encoding" and exited 0, and one with `a b@example.org` exited 0; both wrote every page, so the M007-review NoMatchingStaticPathFound failure does not reproduce on Astro 7.4.2. The CHANGELOG clause saying such ids made `pnpm site` fail is removed.
+- 2026-10-28: T7: planted from copies, each restored: no Windows names (69 red), no trailing dot, no `entry-name` push, no stray files, sets of 3 only, no `writeEntry` case match, and `writeEntry` skipping Windows names each turned their tests red. On a case-sensitive APFS disk image as TMPDIR, the CLI case-clash test ran and passed, and turned red with the clash loop removed.
+- 2026-10-28: T7 done: `pnpm test` 825 passed, 1 skipped (the case-sensitive CLI test on this volume); `pnpm check` 33 entries, 0 problems; `cairn_validate` passes with the known 8-criteria warning.
 
 ## Decisions
 
