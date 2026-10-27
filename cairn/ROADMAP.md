@@ -7,6 +7,8 @@ _Last hygiene check: 2026-10-27 (M022 done and archived; 2 rows graduated, 1 add
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
+| M023 | Record each plugin's interface languages | planned | — | normal | milestones/M023-record-languages.md |
+| M024 | Filter the home list by interface language | planned | M023 | normal | milestones/M024-language-filter.md |
 | M022 | Fix two gaps of the issue bot | done | — | normal | milestones/archive/M022-issue-bot-fixes.md |
 | M021 | Show report counts on the plugin pages | done | M020 | normal | milestones/archive/M021-report-counts.md |
 | M020 | Answer report issues from two forms | done | — | normal | milestones/archive/M020-report-forms.md |

@@ -160,3 +160,15 @@ build-level failures or when every record fails. The cost is that GitHub's
 answer when the repo's issues are turned off stops every deploy until the
 maintainer turns them back on. The data gains `reports` as an optional field
 of schema v1 under D-006 and D-007.
+
+### D-014: The home page carries one language-filter script, superseding D-009
+
+2026-10-27, M023 and M024 plan. At the plan question set the user chose a
+language menu on the home list, run by a script, over one static page per
+language and over no filter. D-009 recorded that the pages carry no script
+after M015 removed the version field. The home page now carries one script.
+It shows the menu, hides the rows of other languages, and keeps the choice in
+the URL. The menu is hidden in the HTML, so without JavaScript the home page
+shows the full list and no menu, and each page still reads without
+JavaScript, as D-004 says. The other pages carry no script. The menu's
+options and counts are written at build, so the script reads no data file.
