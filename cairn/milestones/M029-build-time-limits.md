@@ -7,7 +7,7 @@
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes which records the published data carries and when the daily build deploys
-- **Branch/PR:** m029-build-time-limits
+- **Branch/PR:** m029-build-time-limits, https://github.com/jmgirard/zotero-plugin-index/pull/46
 
 ## Goal
 
