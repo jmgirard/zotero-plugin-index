@@ -118,6 +118,7 @@ report issues left open".
 - 2026-10-27: T4 done: `npx -y pnpm@12.15.0 test` 17 files, 711 passed; `npx -y pnpm@12.15.0 check` 28 entries, 0 problems.
 - 2026-10-27: claim audit: 18 claims read, 7 corrected — README.md, cairn/DESIGN.md, src/discover/handoff.ts, src/discover/issue.ts, test/issue.test.ts. Four comments said "cannot be written", which also reads as `unsafe-id`, and now name `entry-exists` and `write-failed`; README names the check among failures whose name the comment gives; DESIGN "as do"; the AC1/AC2 test checks the message in the comment body. The same reader re-read the 7 once and found them true. After the fixes `pnpm test` 711 passed and `pnpm check` 0 problems (commit bbd5707).
 - 2026-10-27: implement complete; status review.
+- 2026-10-27: step-7 approval: m028-entry-write-errors approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
