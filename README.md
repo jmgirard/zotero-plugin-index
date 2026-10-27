@@ -366,24 +366,28 @@ same way as for `Discover plugins`. The body of the pull request contains
 `Closes #<issue>`. Thus a merge of the pull request closes the issue. The bot
 comments the link to the pull request on the issue.
 
-The bot can also find no URL in the issue body, or fail to write the entry.
-Its read of the repository can also fail for a reason that is not
-build-level. Then it comments the failure name and its message, and it
-closes the issue as not planned. A failed read includes a GitHub API
+The bot can also find no URL in the issue body. It can find that an entry or
+an open bot pull request already has the plugin's id, or that the id cannot
+name a directory. Its read of the repository can also fail for a reason
+that is not build-level. Then it comments the failure name and its message,
+and it closes the issue as not planned. A failed read includes a GitHub API
 answer of HTTP 404, which a repository that does not exist or is private
 gives.
 
 The bot itself can fail. Its read of the repository can stop with a
 build-level failure, as "Building the data" defines it. Examples are a rate
-limit, an outage, and an error that the reader does not name. The check of
-the written entry can also stop with an error, `unexpected-error`, for
-example when git cannot start. The bot can fail to read `plugins/`, its own
-pull requests, or the default branch, or the push or the pull request can
-fail. The first job can also fail and leave no handoff.
+limit, an outage, and an error that the reader does not name. The bot can
+fail to write the entry: its directory can already be in the output
+directory (`entry-exists`), or the write can fail (`write-failed`). The
+check of the written entry can also stop with an error, `unexpected-error`.
+One example is a git that cannot start. The bot can fail to read
+`plugins/`, its own pull requests, or the default branch, or the push or the
+pull request can fail. The first job can also fail and leave no handoff.
 Then the bot comments the error and leaves the issue open, and the workflow
-run fails. If the read of the repository failed, the comment also gives the
-failure name. If `pnpm propose` refuses the handoff, the bot does not answer
-the issue, and the workflow run fails.
+run fails. If the read of the repository, the write of the entry, or the
+check of the entry failed, the comment also gives the failure name.
+If `pnpm propose` refuses the handoff, the bot does not answer the issue,
+and the workflow run fails.
 
 A maintainer can close a bot pull request without a merge. Then the
 `Close the issue of a closed bot pull request` workflow runs
