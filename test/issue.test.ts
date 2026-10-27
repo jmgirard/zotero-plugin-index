@@ -81,7 +81,7 @@ async function runIssue(
   const sent = requests
     .filter(({ method }) => method !== "GET")
     .map(({ method, url, body: payload }) => ({ method, url, ...JSON.parse(payload!) }));
-  return { result, sent, gets: requests.filter(({ method }) => method === "GET").map(({ url }) => url) };
+  return { outcome, result, sent, gets: requests.filter(({ method }) => method === "GET").map(({ url }) => url) };
 }
 
 describe("parseIssueBody", () => {
@@ -272,6 +272,24 @@ describe("an issue run's read failures that point at the bot", () => {
     expect(result.status).toBe(1);
     expect(sent).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringContaining(`could not finish`) }]);
     expect(sent[0].body).toMatch(new RegExp(`\`${failure}\`: \`[^\`]*${message}`));
+  });
+
+  test("comments the failure name and message, leaves the issue open, and returns 1 when the entry check throws", async () => {
+    // With no git on PATH, the entry check's `git check-ref-format` cannot start.
+    const gitDir = checkout(tempDir()).work;
+    const path = process.env.PATH;
+    process.env.PATH = tempDir();
+    let run: Awaited<ReturnType<typeof runIssue>>;
+    try {
+      run = await runIssue(rendered("https://github.com/example/alpha"), { ...indexRepo, ...pluginRepo("example/alpha", "alpha@example.org"), ...opened }, { gitDir });
+    } finally {
+      process.env.PATH = path;
+    }
+    const { outcome, result, sent } = run;
+    expect(outcome).toMatchObject({ outcome: "failed", failure: "unexpected-error", message: expect.stringMatching(/^checking the entry of .* threw: .*ENOENT/) });
+    expect(result.status).toBe(1);
+    expect(sent).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(/^The bot could not finish/) }]);
+    expect(sent[0].body).toMatch(/`unexpected-error`: ` ?checking the entry of [^`]*ENOENT[^`]*`/);
   });
 
   test.each([

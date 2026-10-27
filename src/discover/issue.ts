@@ -47,8 +47,9 @@ export interface IssueReadOptions {
 // that the index or a bot pull request already has, it reads nothing. If the parser or
 // draftEntry refuses, the outcome names the failure; that includes a GitHub HTTP 404
 // for a repo that does not exist. If the read of the repo stops with a failure that the
-// reader marks build-level, such as a rate limit, or throws, the outcome is `failed`
-// with the failure name, so the write step leaves the issue open and the run fails. If
+// reader marks build-level, such as a rate limit, or throws, or the check of the drafted
+// entry throws, the outcome is `failed` with the failure name, so the write step leaves
+// the issue open and the run fails. If
 // the bot cannot read the index, its pull requests, or the default branch, the outcome
 // is `failed` too.
 // A message is cut to what a comment quotes, so a long one cannot make the handoff too
@@ -89,8 +90,10 @@ async function readOutcome(options: IssueReadOptions): Promise<IssueOutcome> {
   const drafted = await draftEntry(parsed.url, { ...options, ids: index.ids, pendingIds: pulls.ids });
   if (!drafted.ok) {
     const { failure, message } = drafted;
-    // A rate limit or an outage says nothing about the plugin, so the issue stays open.
-    return drafted.buildLevel ? { outcome: "failed", failure, message } : { outcome: "refused", failure, message };
+    // A rate limit, an outage, or an entry check that throws says nothing about the
+    // plugin, so the issue stays open.
+    const failed = drafted.buildLevel || failure === "unexpected-error";
+    return failed ? { outcome: "failed", failure, message } : { outcome: "refused", failure, message };
   }
   // A renamed repo answers for its old name, and GitHub gives its new one. The reader
   // read the given URL, so it is a GitHub repo URL.

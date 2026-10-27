@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M022: Fix two gaps of the issue bot
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — it changes how the bot answers "Add a plugin" issues on GitHub   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m022-issue-bot-fixes   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -109,7 +109,7 @@ merge. README, CHANGELOG, and DESIGN follow.
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
 
-- [ ] T1: Write the test that makes the entry check throw in an issue run,
+- [x] T1: Write the test that makes the entry check throw in an issue run,
       then the change in `readOutcome` (`src/discover/issue.ts`).
 - [ ] T2: Write the tests of `pnpm close-issue` against recorded responses,
       then the command and its `package.json` script, reusing `githubClient`
@@ -130,6 +130,8 @@ merge. README, CHANGELOG, and DESIGN follow.
 - 2026-10-27: plan kept AC1 to the entry check's `unexpected-error`, as the row states, and filed the output-directory refusals as the new candidate "Keep issues open on entry write errors".
 - 2026-10-27: plan gate chose `pull_request_target` over `pull_request` for the close workflow, because it runs the default branch's file even when the pull request conflicts and runs no pull request code; falsified by evidence that the job checks out or runs code from the pull request.
 - 2026-10-27: lessons used: 2026-10-25 (M002) recorded responses, 2026-10-26 (M009) the built-in token starts no workflow run, 2026-10-26 (M018) search joined text.
+- 2026-10-27: branch m022-issue-bot-fixes cut from main at 02c2a78; status in-progress.
+- 2026-10-27: T1 done. `readOutcome` maps an `unexpected-error` refusal to `failed`, rather than marking it build-level in `draftEntry`, so the discover run keeps its handling. The test hides git from PATH so `git check-ref-format` cannot start; it failed before the change with outcome `refused`. `runIssue` now also returns the read outcome.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
