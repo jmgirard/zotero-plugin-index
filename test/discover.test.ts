@@ -231,6 +231,26 @@ describe("the discovery state", () => {
     expect(state).toEqual({});
   });
 
+  // A 429 or 5xx answer from a download host says nothing about the repo, unlike a 404.
+  test.each([
+    ["update.json", 429, "update-json-http-error", false],
+    ["XPI", 503, "xpi-unreadable", false],
+    ["update.json", 404, "update-json-http-error", true],
+    ["XPI", 404, "xpi-unreadable", true],
+  ])("an HTTP error answer for the %s, status %i, fails with %s, kept in the state: %s", async (file, status, failure, kept) => {
+    const repo = "example/downloads";
+    const responses = { ...searched([[repo, "2026-10-01T00:00:00Z"]]), ...pluginRepo(repo, "downloads@example.org") };
+    const url =
+      file === "XPI"
+        ? `https://github.com/${repo}/releases/download/v1.0.0/plugin.xpi`
+        : `https://raw.githubusercontent.com/${repo}/main/update.json`;
+    expect(responses[url]).toBeDefined();
+    responses[url] = { status, text: "error" };
+    const { state, report } = await run(responses);
+    expect(report.read).toContainEqual(expect.objectContaining({ repo, outcome: "refused", failure }));
+    expect(state).toEqual(kept ? { [repo]: { pushedAt: "2026-10-01T00:00:00Z", failure, checkedAt: NOW.toISOString() } } : {});
+  });
+
   test("drops records of repos the search no longer finds or the index now has", async () => {
     // example/no-release was pushed at this time in the search fixture, so its record stays.
     const record = { pushedAt: "2026-10-17T10:00:00Z", failure: "no-release" as const, checkedAt: NOW.toISOString() };

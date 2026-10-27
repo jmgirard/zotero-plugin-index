@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M026: Retry repos refused by a download error
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — it changes which repos the daily discovery reads again, and the README rule that describes it   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m026-retry-download-errors   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -68,7 +68,7 @@ describe the state file, so it does not change.
 <!-- owner: plan (create) / implement (check-off, minor edits); substantive
      change is amend-via-gate. -->
 
-- [ ] T1: In "the discovery state" describe of `test/discover.test.ts`
+- [x] T1: In "the discovery state" describe of `test/discover.test.ts`
       (near line 196), add a table of four cases built from `pluginRepo`
       with one answer replaced: the `update.json` URL answering 429 or
       404, and the XPI URL answering 503 or 404, each run from an empty
@@ -78,7 +78,7 @@ describe the state file, so it does not change.
       forwards the reader's mark. Run them on the unchanged code: the 429
       and 503 cases fail with a record present; the 404 cases pass, as
       controls.
-- [ ] T2: In `draftEntry` (`src/discover/discover.ts` near line 186),
+- [x] T2: In `draftEntry` (`src/discover/discover.ts` near line 186),
       pass `recorded` as false when `read.buildLevel` is set. Update the
       comment above `NOT_RECORDED` (near line 18) and on `Drafted` (near
       line 152).
@@ -101,6 +101,9 @@ describe the state file, so it does not change.
 - 2026-10-27: inbox sweep: 0 open issues; 3 open bot PRs (#15, #25, #28) each add a plugin, no overlap.
 - 2026-10-27: changelog: none, since the "Unreleased" discovery entry does not describe the state file.
 - 2026-10-27: criteria audit (full, fresh Opus reader): 3 findings, all fixed. AC1 claimed no record even where an earlier run's record survives an unrecorded refusal (the code keeps it, and the repo is still read again since its `pushedAt` or age no longer matches), so AC1 and AC2 narrowed to a run from an empty state, with no code change. AC1 and AC2 dropped their test-file clauses, which bound an instrument; T1 holds the cases. One status per URL stands for the 429/5xx family, so T1 cites the existing `buildLevelStatus` range test. README wording note taken into T3.
+- 2026-10-27: started on branch m026-retry-download-errors, cut from main at 236a45c.
+- 2026-10-27: T1 done: a four-row table in "the discovery state" tests. On the unchanged code the 429 and 503 rows failed with the repo's record present in the state, and the two 404 rows passed.
+- 2026-10-27: T2 done: `draftEntry` passes `recorded` false for a reader failure marked build-level; comments on `NOT_RECORDED` and `Drafted` updated. `pnpm test` 685 passed, `pnpm check` 23 entries, 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
