@@ -1,8 +1,9 @@
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
+import { caseClashes, entryNameProblem } from "../src/check/check.ts";
 
 const VALID = "test/fixtures/check/valid";
 const ENTRY = "first-plugin@example.org";
@@ -50,6 +51,25 @@ function runCheck(root: string, cwd?: string) {
   return { status: result.status, stdout: result.stdout, stderr: result.stderr, findings };
 }
 
+// A copy of the valid tree with more entries copied from ENTRY, each id set to its name.
+function treeWithEntries(names: string[]): string {
+  const root = treeWith(() => {});
+  for (const name of names) {
+    cpSync(join(root, ENTRY), join(root, name), { recursive: true });
+    editJson(join(root, name, "meta.json"), (meta) => (meta.id = name));
+  }
+  return root;
+}
+
+// macOS volumes are case-insensitive by default, so two names that differ by case are one directory there.
+const caseSensitive = (() => {
+  const dir = mkdtempSync(join(tmpdir(), "zpi-case-"));
+  mkdirSync(join(dir, "a"));
+  const sensitive = !existsSync(join(dir, "A"));
+  rmSync(dir, { recursive: true, force: true });
+  return sensitive;
+})();
+
 function expectOnlyRule(root: string, rule: string) {
   const result = runCheck(root);
   expect(result.status).toBe(1);
@@ -57,6 +77,47 @@ function expectOnlyRule(root: string, rule: string) {
   expect(result.findings).toEqual(result.findings.map(() => ({ entry: ENTRY, rule })));
   return result;
 }
+
+// cairn/references/microsoft-naming-a-file.md lists these.
+const RESERVED = ["CON", "PRN", "AUX", "NUL", ..."123456789".split("").flatMap((n) => [`COM${n}`, `LPT${n}`])];
+
+describe("entryNameProblem", () => {
+  test.each(RESERVED.flatMap((name) => [name, name.toLowerCase(), `${name.toLowerCase()}.tar.gz`]))(
+    "refuses the Windows name %s",
+    (name) => {
+      expect(entryNameProblem(name)).toMatch(/Windows reserves/);
+    },
+  );
+
+  test.each(["Con", "cOm1.txt"])("refuses the Windows name %s in mixed case", (name) => {
+    expect(entryNameProblem(name)).toMatch(/Windows reserves/);
+  });
+
+  test.each(["a%b@example.org", "a b@example.org", "a/b"])("refuses %j for its characters", (name) => {
+    expect(entryNameProblem(name)).toMatch(/holds a character/);
+  });
+
+  test("refuses the empty name", () => {
+    expect(entryNameProblem("")).toBe("is empty");
+  });
+
+  test.each([".x@example.org", "plugin@example.org."])("refuses %j for its dot", (name) => {
+    expect(entryNameProblem(name)).toMatch(/starts or ends with "."/);
+  });
+
+  test.each([
+    "console@example.org",
+    "com0",
+    "lpt0",
+    "com10",
+    "lpt",
+    "aux-tools@example.org",
+    "first-plugin@example.org",
+    "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}",
+  ])("accepts %s", (name) => {
+    expect(entryNameProblem(name)).toBeUndefined();
+  });
+});
 
 describe("pnpm check <root>", () => {
   test("passes a tree of valid entries", () => {
@@ -161,5 +222,52 @@ describe("pnpm check <root>", () => {
       }),
     );
     expectOnlyRule(root, "reason-not-blank");
+  });
+
+  test("entry-name: entries whose names are unsafe", () => {
+    const result = runCheck(treeWithEntries(["a%b@example.org", "CON"]));
+    expect(result.status).toBe(1);
+    expect(result.findings).toEqual([
+      { entry: "CON", rule: "entry-name" },
+      { entry: "a%b@example.org", rule: "entry-name" },
+    ]);
+  });
+
+  test("entry-is-directory: a file beside the entries", () => {
+    const root = treeWith(() => {});
+    writeFileSync(join(root, "stray.json"), "{}");
+    const result = runCheck(root);
+    expect(result.status).toBe(1);
+    expect(result.findings).toEqual([{ entry: "stray.json", rule: "entry-is-directory" }]);
+    expect(result.stdout).toContain("checked 2 entries");
+  });
+
+  test("a broken symlink keeps files-present and gets no entry-is-directory", () => {
+    const root = treeWith(() => {});
+    symlinkSync(join(root, "missing"), join(root, "broken@example.org"));
+    const result = runCheck(root);
+    expect(result.findings).toEqual([{ entry: "broken@example.org", rule: "files-present" }]);
+  });
+
+  test.skipIf(!caseSensitive)("unique-ignoring-case: entries whose names differ only by case", () => {
+    const root = treeWithEntries(["Foo@example.org", "foo@example.org"]);
+    const result = runCheck(root);
+    expect(result.status).toBe(1);
+    expect(result.findings).toEqual([{ entry: "Foo@example.org", rule: "unique-ignoring-case" }]);
+    expect(result.stdout).toContain("Foo@example.org, foo@example.org");
+  });
+});
+
+describe("caseClashes", () => {
+  test("finds two names that differ only by case", () => {
+    expect(caseClashes(["foo@example.org", "Foo@example.org"])).toEqual([["Foo@example.org", "foo@example.org"]]);
+  });
+
+  test("finds a set of three", () => {
+    expect(caseClashes(["a@x.org", "b@x.org", "A@X.ORG", "A@x.org"])).toEqual([["A@X.ORG", "A@x.org", "a@x.org"]]);
+  });
+
+  test("finds none for names that differ by more than case", () => {
+    expect(caseClashes(["foo@example.org", "foo2@example.org"])).toEqual([]);
   });
 });

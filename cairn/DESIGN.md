@@ -140,7 +140,9 @@ exception is a report that is abuse.
 
 - Entry checks (`src/check/`): `pnpm check [dir]` checks each entry
   directory under `plugins/`, or under `dir`, and prints one line for each
-  problem. Added M001.
+  problem. Added M001. It also refuses a file beside the entries, a
+  directory name that `entryNameProblem` refuses, and names that differ
+  only in case; `writeEntry` refuses the same ids (M031).
 - Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch, {
   lookup, signal })` returns the facts of one GitHub repo, or one named
   inclusion-bar failure. The optional `lookup` resolves download hosts for

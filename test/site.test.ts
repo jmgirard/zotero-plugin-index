@@ -65,8 +65,7 @@ describe("pnpm site", () => {
     const validate = new Ajv({ allErrors: true }).compile(pluginsSchema);
     expect(validate(fixture), JSON.stringify(validate.errors)).toBe(true);
     expect(ids).toContain("first-plugin@example.org");
-    expect(ids.some((id) => /^\{[0-9a-f-]+\}$/.test(id))).toBe(true);
-    expect(fixture.plugins.some((plugin) => "failure" in plugin)).toBe(true);
+    expect(ids.some((id) => /^\{[0-9a-f-]+\}$/.test(id))).toBe(true);    expect(fixture.plugins.some((plugin) => "failure" in plugin)).toBe(true);
   });
 
   test("exits 0", () => {
@@ -411,6 +410,7 @@ describe("the home page", () => {
       ["no-range-plugin@example.org", "de fr"],
       ["min-only-plugin@example.org", "zh"],
       ["locale-plugin@example.org", "es pt"],
+      ["_x-y+z.w@{v}", ""],
     ]);
   });
 

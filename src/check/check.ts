@@ -8,7 +8,10 @@ export type Rule =
   | "registry-schema"
   | "index-schema"
   | "id-matches-directory"
-  | "reason-not-blank";
+  | "reason-not-blank"
+  | "entry-name"
+  | "entry-is-directory"
+  | "unique-ignoring-case";
 
 export interface Finding {
   entry: string;
@@ -33,10 +36,30 @@ export function compileValidators(registrySchema: object) {
 
 type Validators = ReturnType<typeof compileValidators>;
 
+// Plugin ids are email-like (name@example.org) or a {GUID}.
+const NAME_PATTERN = /^[A-Za-z0-9_@{}+.-]{1,200}$/;
+// Windows refuses these names, also with any extension, ignoring case (cairn/references/microsoft-naming-a-file.md).
+const WINDOWS_RESERVED = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i;
+
+// Why an entry directory name is unsafe, or undefined when it is safe. The id names the
+// directory, so it must stay inside plugins/, build a site page, and check out on Windows.
+export function entryNameProblem(name: string): string | undefined {
+  if (name === "") return "is empty";
+  if (!NAME_PATTERN.test(name)) return "holds a character other than A-Z, a-z, 0-9, and _@{}+.- or is over 200 characters";
+  if (name.startsWith(".") || name.endsWith(".")) return 'starts or ends with "."';
+  if (WINDOWS_RESERVED.test(name.split(".")[0])) return "is a name that Windows reserves";
+  return undefined;
+}
+
 export async function checkTree(root: string, validators: Validators): Promise<CheckResult> {
   const entries = await listEntries(root);
-  const findings: Finding[] = [];
+  const findings: Finding[] = await strayFiles(root);
+  for (const names of caseClashes(entries.map((entry) => entry.name))) {
+    findings.push({ entry: names[0], rule: "unique-ignoring-case", message: `names equal ignoring case: ${names.join(", ")}` });
+  }
   for (const { name, readError } of entries) {
+    const nameProblem = entryNameProblem(name);
+    if (nameProblem) findings.push({ entry: name, rule: "entry-name", message: nameProblem });
     if (readError) {
       findings.push({ entry: name, rule: "files-present", message: `cannot read the entry: ${readError}` });
       continue;
@@ -44,6 +67,44 @@ export async function checkTree(root: string, validators: Validators): Promise<C
     findings.push(...(await checkEntry(join(root, name), name, validators)));
   }
   return { checked: entries.length, findings };
+}
+
+// The sets of two or more names that are equal ignoring case, each sorted, in order of
+// their first names. Windows and macOS check out such names as one directory.
+export function caseClashes(names: string[]): string[][] {
+  const byLower = new Map<string, string[]>();
+  for (const name of names) {
+    const key = name.toLowerCase();
+    byLower.set(key, [...(byLower.get(key) ?? []), name]);
+  }
+  return [...byLower.values()]
+    .filter((set) => set.length > 1)
+    .map((set) => set.sort())
+    .sort((a, b) => (a[0] < b[0] ? -1 : 1));
+}
+
+// The names under root, other than those that start with ".", that are not directories. `listEntries` skips them, so the build and
+// discover never read them. A name that stat cannot read is left to `listEntries`.
+async function strayFiles(root: string): Promise<Finding[]> {
+  let names: string[];
+  try {
+    names = await readdir(root);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw error;
+  }
+  const findings: Finding[] = [];
+  for (const name of names.sort()) {
+    if (name.startsWith(".")) continue;
+    try {
+      if (!(await stat(join(root, name))).isDirectory()) {
+        findings.push({ entry: name, rule: "entry-is-directory", message: "is not a directory" });
+      }
+    } catch {
+      // Reported as files-present through listEntries.
+    }
+  }
+  return findings;
 }
 
 export interface ListedEntry {

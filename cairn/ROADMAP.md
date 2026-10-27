@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-27 (M030 done and archived; its row graduated, M027
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M031 | Refuse unsafe entry names | planned | — | normal | milestones/M031-safe-entry-names.md |
+| M031 | Refuse unsafe entry names | review | — | normal | milestones/M031-safe-entry-names.md |
 | M032 | Catch blank reasons, repeat overrides, and BOMs | planned | — | normal | milestones/M032-override-and-bom-checks.md |
 | M030 | Bound the discover run's time | done | M029 | normal | milestones/archive/M030-discover-time-limits.md |
 | M029 | Bound the build's read time | done | — | normal | milestones/archive/M029-build-time-limits.md |
@@ -33,6 +33,7 @@ _Last hygiene check: 2026-10-27 (M030 done and archived; its row graduated, M027
 - [low] Fail issue runs with no plugins folder: `indexed` in `src/discover/discover.ts` reads entries through `listEntries`, which returns no entries for a missing `plugins/`, so an "Add a plugin" run treats the index as empty (M020 review) — added 2026-10-27 — M020
 - [low] Check the restored discovery state: the discover read job restores `discovery-state-` by prefix from the default branch's cache in the same job that reads repos anyone can tag, so a job that a crafted repo took over could save a state entry that hides repos from later runs for up to 30 days; check the restored state's shape or keep the state outside the cache (M016 review) — added 2026-10-26 — M009, M016
 - [low] Block more IPv6 ranges in the host check: the M004 host check lets through ::ffff:0:0:0/96 (SIIT), 64:ff9b:1::/48 (local NAT64), 100::/64, 2001::/23 (Teredo included), fec0::/10, 3fff::/20, 5f00::/16, and 192.88.99.0/24; the translated ones reach a private address only on a NAT64 or SIIT network (M004 review) — added 2026-10-25 — M004
+- [low] Name the failure when --out is a file: when `--out` names a file, `readdir` in `writeEntry` gives ENOTDIR, `mkdir(outDir, { recursive: true })` then fails with EEXIST, and `pnpm add-plugin` reports `entry-exists` with "<outDir>/<id> already exists", which is untrue; main does the same (M031 claim audit) — added 2026-10-28 — M002, M031
 - [low] Order releases with bad dates safely: the reader sorts releases by `Date.parse(published_at)`, and an invalid date gives NaN, which leaves the sort order undefined, so "newest" and the stable pick can name the wrong release; GitHub gives a valid date for each published release, and no test covers it (M014 review) — added 2026-10-26 — M014
 - [low] State the bar for the release read: DESIGN.md says the inclusion bar needs "at least one release with a readable `update.json`", but the reader checks only the release it reads, so a plugin is refused when that release fails and another release passes (M014 review) — added 2026-10-26 — M014
 - [low] Shorten the languages override error: a `languages` override value that the pattern rejects makes `pnpm check` print two lines, one holding the whole 420-character pattern and one saying it must match the `then` schema; print one short line (M023 review) — added 2026-10-27 — M023
@@ -50,8 +51,7 @@ _Last hygiene check: 2026-10-27 (M030 done and archived; its row graduated, M027
 <!-- unnumbered ideas; one line each, ordered high → normal → low → parked:
      - [high] short title: detail — added YYYY-MM-DD — links   (no token: normal)
      - [parked] short title: detail; promote when <condition> — added YYYY-MM-DD — links
-     the opening token is `[high]`/`[low]`/`[parked]` or absent (`normal`); `[parked]` marks a row whose
-     promotion condition has not held — tracking-rules "Candidate priority token";
+     opening token `[high]`/`[low]`/`[parked]` or absent (`normal`); `[parked]`: promotion condition not held (tracking-rules "Candidate priority token");
      open each row with its short title, the words the cairn pane shows, then `: `;
      the title is one sentence with no ending period, at least 5 words and at most 40 characters,
      ending with `(#N)` for a row written for GitHub issue N, such as
