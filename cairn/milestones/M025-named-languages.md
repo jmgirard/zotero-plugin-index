@@ -137,3 +137,26 @@ Pass 2 (2026-10-27, branch at 0eb06fc, main not moved):
 - AC3: the comments on `languages` (lines 31-33) and `localeLanguages`, README, CHANGELOG, the schema description, and DESIGN item 2 and the reader paragraph each name an English name in the Node.js `Intl` data; README states overrides are not checked; the joined README holds 0 matches of "does not check that a tag names".
 - AC1, AC2, AC4 at 0eb06fc: `pnpm test` 17 files, 681 tests passed (both new table cases among them); `pnpm check` 20 entries, 0 problems.
 - Gate: `cairn_validate` all checks passed.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: `locale/zxx/` and `locale/mul/` are kept, since `DisplayNames` names them "No linguistic content" and "Multiple languages" — follow-up, new row "Drop zxx and mul from the languages".
+- diff-bug #2: the check reads `Intl.Locale`'s alias-mapped language (`tw` → `ak`) while the docs say "its language subtag" — reject (false): that is the subtag reading the site's `subtags` also uses, and no tag was found whose outcome differs.
+- diff-bug #3: Node 24 is not checked locally — reject (planned change): T4 routes it to the PR's Node 24 CI run at merge.
+- diff-bug #4: the AC1 case repeats the drop path (`img`, `js`, `qaa`, `IMG`) — reject (planned change): AC1 names these inputs, which the plan audit asked for to vary form.
+- diff-bug #5: the AC2 case's two inputs repeat one keep path — reject (planned change): AC2 names both inputs.
+- diff-bug #6: "the build" is ambiguous, since the filter runs in the reader — reject (false): `pnpm build` runs the reader that writes the published list.
+- blame-history #1: real languages with no English name, such as `cdo` and `mnw`, are dropped — reject (planned change): the user accepted this at the plan's question set; recorded as a Known issue at hygiene.
+- blame-history #2: an override tag such as `js` still shows as "js (1)" — reject (planned change): the user chose the read list only; Scope Out and README say so.
+- blame-history #3: output depends on the runtime's Intl data, Node 24 unverified — reject (planned change): DESIGN records the risk; T4 reads the Node 24 CI run.
+- blame-history #4: the v1 `languages` meaning narrows with no schema version change — reject (planned change): the feature is under "Unreleased", and D-006/D-007 let v1 content change.
+- blame-history #5: an overlong CHANGELOG line, and no comment on `LANGUAGE_NAMES` — reject (style).
+- prior-review #1: comment and code lines of 85-93 columns in `reader.ts` — reject (style): no formatter, and main has 71 lines over 90 columns.
+- prior-review #2: an 82-column CHANGELOG line — reject (style).
+- prior-review #3: "no such folder" in CHANGELOG and the schema can read as only absent folders — fix now: CHANGELOG now says "If no tag is left, the list is empty"; the schema's "such folder" refers back to the folders the same sentence filters.
+- prior-review #4: the site shows override tags with no name by code — reject (planned change): Scope Out.
+- ripple #1: DESIGN's reader paragraph first says it records the folder tags, then qualifies it — reject (false): the next sentence of the same paragraph states the filter.
+- ripple #2: the docs name "the build" as the Node source, but discover and add-plugin also run the reader — reject (false): only the build publishes the list.
+- ripple #3: DESIGN line 36 says the locale folders "name" the languages — reject (false): a folder whose language has no name names no language.
+- ripple #4: README's first sentence about the list is qualified two sentences later — reject (false): the same paragraph states the rule.
+- ripple #5: ROADMAP row "Drop locale folders naming no language" describes the old behavior — reject (planned change): post-merge hygiene graduates it.
+- ripple #6: README line 110 still holds — noted, requests nothing.
+- snapshot: the changed-path list holds no `_snaps` or `__snapshots__` path.

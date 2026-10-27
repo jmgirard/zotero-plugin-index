@@ -170,7 +170,7 @@
   and `chrome/locale/<tag>/` folders in the XPI that the reader read. If a
   tag's language has no English name in the build's Node.js `Intl` data, the
   list leaves the tag out. So a folder such as `locale/img/` adds no
-  language. A plugin with no such folder gets an empty list. The list does not say
+  language. If no tag is left, the list is empty. The list does not say
   whether a translation is complete. An `index.json` override can have the
   field `languages` and a value such as `zh-CN, en-US`. It records the
   languages of a plugin whose list is wrong or empty, in the record's
