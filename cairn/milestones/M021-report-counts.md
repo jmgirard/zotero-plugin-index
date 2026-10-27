@@ -163,6 +163,7 @@ throwaway accounts.
 - 2026-10-27: status review; all 5 tasks done, `pnpm test` (589 tests) and `pnpm check` pass.
 - 2026-10-27: review return 1: AC6 — DESIGN.md's Contract boundary names the `reports` field but not the build's read of the report issues; Function Families and the `build.yml` paragraph name both. Status in-progress.
 - 2026-10-27: minor amendment: added T6 for review return 1, mapped to AC6 and AC7 in Coverage. T6 done: the Contract boundary now says the daily build counts `reports` from its read of the closed report issues, and a failed read deploys nothing. `pnpm test` (589) and `pnpm check` pass. Status review.
+- 2026-10-27: step-7 approval: m021-report-counts approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
