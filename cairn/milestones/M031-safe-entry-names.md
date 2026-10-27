@@ -75,6 +75,7 @@
 - 2026-10-28: T7 done: `pnpm test` 825 passed, 1 skipped (the case-sensitive CLI test on this volume); `pnpm check` 33 entries, 0 problems; `cairn_validate` passes with the known 8-criteria warning.
 - 2026-10-28: claim audit: 31 claims read, 4 corrected — CHANGELOG.md, README.md, src/check/check.ts, src/add-plugin/add-plugin.ts. `pnpm check` skips names that start with ".", so the docs now say only "ends with"; `namesIn` now throws on a read error other than ENOENT or ENOTDIR, which `writeEntry` returns as `write-failed`, with a new test. The re-read found all four hold. The reader's note that an `--out` that is a file reports `entry-exists` (as on main) became candidate row "Name the failure when --out is a file".
 - 2026-10-28: implement done: `pnpm test` 826 passed, 1 skipped; `pnpm check` 33 entries, 0 problems. Status set to review.
+- 2026-10-28: step-7 approval: m031-safe-entry-names approved for merge
 
 ## Decisions
 
