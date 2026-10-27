@@ -1,0 +1,8 @@
+{
+  "id": "flexannotate@justanotherjurastudent.github.io",
+  "name": "FlexAnnotate",
+  "description": "FlexAnnotate: print annotations, citation-only insertion, Citavi import and an annotation organizer for Zotero.",
+  "homepage": "https://github.com/justanotherjurastudent/zotero_flexAnnotations#readme",
+  "repoUrl": "https://github.com/justanotherjurastudent/zotero_FlexAnnotate",
+  "updateUrl": "https://github.com/justanotherjurastudent/zotero_flexAnnotations/releases/download/release/update.json"
+}
