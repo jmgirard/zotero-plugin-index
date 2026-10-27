@@ -103,8 +103,8 @@ In an `.ftl` file, a message is a Fluent message or term line, such as
 and not a `#` or `!` comment. In a `.dtd` file, it is an `<!ENTITY` outside
 `<!-- -->` comments. A file of any other type counts. So a folder whose
 files hold only comments, as some plugins ship for each language that
-Zotero supports, adds no language. The build reads about 8 MiB of locale
-files at most from each XPI. A file that it does not read, or cannot inflate,
+Zotero supports, adds no language. The build inflates at most about 9 MiB
+of locale files from each XPI. A file that it does not read, or cannot inflate,
 counts as holding a message. The build writes each
 tag in its standard form, so `zh_CN` becomes `zh-CN`, and sorts the list. It
 leaves out a folder whose name does not have the form of a language tag, and
@@ -233,9 +233,11 @@ host, and what it unzips from the XPI:
   with `xpi-unreadable`. The command inflates 16 KiB of that data at a time
   and stops after the first 16 KiB whose output passes that size.
 - A file in a locale folder fails nothing. The command inflates it 1 KiB at
-  a time to find a message, and stops after about 8 MiB of locale output
-  for each XPI. A locale file over 1 MiB, past that total, or not readable
-  counts as holding a message.
+  a time to find a message. For each file it counts the largest of the
+  declared size, the compressed size, and the output. It does not inflate a
+  locale file that takes that count for the XPI past 8 MiB. One file that
+  inflates past its declared size can add about 1 MiB more. A locale file
+  over 1 MiB, past that count, or not readable counts as holding a message.
 
 Before the command requests the XPI, the `update.json`, or a redirect target,
 it checks the host. The read fails with `host-refused` for `localhost` and

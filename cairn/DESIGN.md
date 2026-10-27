@@ -252,8 +252,9 @@ reused._
   The reader copies the repo response's `archived` value into its facts only
   when it is a boolean (M013).
   The reader caps the XPI at 50 MiB, each unzipped file at 1 MiB, and the
-  `update.json` at 1 MiB. A locale file over 1 MiB is not unzipped and
-  counts as holding a message (M027). `src/upstream/host-guard.ts` refuses a download
+  `update.json` at 1 MiB. A locale file whose declared or compressed size is
+  over 1 MiB is not unzipped, and one that inflates past its declared size
+  stops within one 1 KiB push; both count as holding a message (M027). `src/upstream/host-guard.ts` refuses a download
   host in a loopback, private, or reserved range, by its literal address or
   by each address that DNS returns. The reader follows download redirects
   itself, at most 5, and checks each one (M004). If an XPI's zip claims

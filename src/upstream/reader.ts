@@ -493,8 +493,9 @@ const WHOLE_TAG = new RegExp(`^${LANGUAGE_TAG}$`, "u");
 const LOCALE_FOLDER = /^(?:chrome\/)?locale\/([^/]+)\/./;
 const LANGUAGE_NAMES = new Intl.DisplayNames(["en"], { type: "language", fallback: "none" });
 
-// The most that localeLanguages inflates from the locale files of one XPI, counted for each
-// file as the largest of its declared size, its compressed size, and its output.
+// The locale total past which localeLanguages inflates no further file of one XPI, counted for
+// each file as the largest of its declared size, its compressed size, and its output. One
+// file can take the total about 1 MiB past it.
 // The locale files of the listed plugins took at most 562,599 bytes (observed 2026-10-27).
 export const LOCALE_MAX_BYTES = 8 * 1024 * 1024;
 // localeLanguages inflates 1 KiB of input at a time, so deflate's limit of about 1032 bytes
