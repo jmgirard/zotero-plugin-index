@@ -164,3 +164,14 @@
   no data file, and the daily build deploys nothing. The schema now defines
   `reports`. If you validate against a saved copy of the schema, fetch it
   again.
+- The data records the interface languages of each plugin. The record's
+  `upstream` block in `v1/plugins.json` now has a `languages` list, such as
+  `["en-US", "zh-CN"]`. It holds the language tags of the `locale/<tag>/`
+  and `chrome/locale/<tag>/` folders in the XPI that the reader read. A
+  plugin with no such folder gets an empty list. The list does not say
+  whether a translation is complete. An `index.json` override can have the
+  field `languages` and a value such as `zh-CN, en-US`. It records the
+  languages of a plugin whose list is wrong or empty, in the record's
+  `overrides` block. As with every override, the `upstream` block does not
+  apply it. The schema stays at version 1. The schema rejects fields that
+  it does not define, so fetch any saved copy of it again.

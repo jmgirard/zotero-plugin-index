@@ -67,6 +67,7 @@
         "strictMaxVersion": "8.*",
         "updateUrl": "https://raw.githubusercontent.com/example/passing/main/update.json",
         "updateHost": "raw.githubusercontent.com",
+        "languages": [],
         "repoUrl": "https://github.com/example/passing",
         "repoCreatedAt": "2025-01-10T09:00:00Z",
         "openIssues": 0,

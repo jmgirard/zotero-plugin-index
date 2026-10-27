@@ -131,6 +131,24 @@ describe("pnpm check <root>", () => {
     expect(result.stdout).toContain(path);
   });
 
+  test.each(["Chinese (China)", "zh-CN,,en", "abcd", "en-u-ca-gregory", "UND"])(
+    "index-schema: a languages override with the value %j",
+    (value) => {
+      const root = treeWith((dir) =>
+        editJson(join(dir, "index.json"), (index) => (index.overrides = [{ field: "languages", value, reason: "r" }])),
+      );
+      const result = expectOnlyRule(root, "index-schema");
+      expect(result.stdout).toContain("/overrides/0/value");
+    },
+  );
+
+  test("passes a languages override with the value zh-CN, en-US", () => {
+    const root = treeWith((dir) =>
+      editJson(join(dir, "index.json"), (index) => (index.overrides = [{ field: "languages", value: "zh-CN, en-US", reason: "r" }])),
+    );
+    expect(runCheck(root).status).toBe(0);
+  });
+
   test("id-matches-directory: meta.json id differs from the directory", () => {
     const root = treeWith((dir) => editJson(join(dir, "meta.json"), (meta) => (meta.id = "other@example.org")));
     expectOnlyRule(root, "id-matches-directory");

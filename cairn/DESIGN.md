@@ -30,8 +30,13 @@ Each plugin page shows facts that a reader can check. These facts are the
 declared range of Zotero versions, source availability, whether GitHub marks
 the repository archived (when GitHub's response says), repository age, the
 release the index read and whether it is a prerelease (corrected M014),
-release count, open issues, the host of the `update.json` file, and the
+release count, open issues, the host of the `update.json` file, the
 counted user reports on the release the index read (M021).
+The data also carries the interface languages that the read XPI's locale
+folders name (M023). They say which languages a plugin ships interface text
+for, not whether a translation is complete. A `languages` override records
+them for a plugin whose list is wrong or empty. The plugin page and the
+home list do not show them yet.
 The page shows the name, the description, the version pills, the declared
 range, the user reports on the release the index read with a "Works" and a
 "Broken" link (M021), and the repository and releases links first. The other facts sit in a
@@ -88,7 +93,8 @@ shows each one separately.
    request.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
    `manifest.json` in the newest stable release that has an `.xpi` file,
-   and the `update.json` that the manifest names (corrected M002, M014). A
+   the names of that XPI's locale folders (M023), and the `update.json`
+   that the manifest names (corrected M002, M014). A
    stable release is one that GitHub does not mark as a prerelease. If no
    stable release has an `.xpi` file, the bot reads the newest release that
    has one. If the stable release is not a Zotero 7+ build (`no-manifest`,
@@ -253,6 +259,13 @@ reused._
   `xpi-unreadable` once the output passes the unzipped size that the zip
   declares, because `unzipSync` decodes the whole stream however far it runs
   past that size (M012).
+  The reader walks the same central directory once more, one header at a
+  time, inflates nothing more, and records as `languages` the tags of the
+  `locale/<tag>/` and `chrome/locale/<tag>/` folders that hold a file. So
+  each XPI takes up to three walks over the claimed count: for
+  `manifest.json`, the default locale's `messages.json`, and the names. A
+  tag counts when it matches `LANGUAGE_TAG`. Both schemas copy that pattern
+  into their `languages` patterns, and a test checks the copies (M023).
 - `src/discover/` pages through GitHub's repository search for each topic
   with the reader's GitHub client, which `src/upstream/reader.ts` exports.
   The search is sorted by last update, so pages do not shift between

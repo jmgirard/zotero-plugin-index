@@ -439,6 +439,20 @@ describe("buildData", () => {
     });
   });
 
+  test("writes the reader's language list, with tags or empty, and the output passes the schema", async () => {
+    const recorded = responses();
+    const xpi = recorded["https://github.com/example/second-plugin/releases/download/v1.0.0/second-plugin.xpi"].xpi!;
+    Object.assign(xpi, { "locale/zh-CN/a.ftl": "", "locale/en-US/a.ftl": "" });
+    const result = await buildData(TREE, fixtureFetch(recorded).fetch);
+    if (!result.ok) throw new Error(result.problems.join("\n"));
+    const output: Output = JSON.parse(result.text);
+    expect([record(output, SECOND)?.upstream?.languages, record(output, BETTER_NOTES)?.upstream?.languages]).toEqual([
+      ["en-US", "zh-CN"],
+      [],
+    ]);
+    expect(checkOutput(output)).toEqual([]);
+  });
+
   test("records facts that the schema rejects as facts-invalid and goes on", async () => {
     const recorded = responses();
     const repo = recorded["https://api.github.com/repos/example/second-plugin"].json as Record<string, unknown>;
