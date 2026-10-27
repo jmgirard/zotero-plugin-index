@@ -121,7 +121,7 @@ CHANGELOG, and DESIGN describe the forms and the bot.
       template error.
 - [x] T3: Write the tests of `parseReport`, then `src/reports/report.ts`.
       The Zotero bound reads `ZOTERO_MAJORS` from `src/site/version.ts`.
-- [ ] T4: Write the tests of the command against recorded responses, then
+- [x] T4: Write the tests of the command against recorded responses, then
       the command and its `package.json` script. Reuse `githubClient` and
       `code()`.
 - [ ] T5: Write `report-issue.yml` and its checks in
@@ -149,6 +149,7 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 - 2026-10-27: T1 done: created the labels `report`, `works`, `broken`, and `not-counted` with `gh label create`; `gh label list` shows all four.
 - 2026-10-27: T2 done: `works.yml` and `broken.yml`, with the input labels "Plugin id", "Plugin version", and "Zotero version", titles "Report: works" and "Report: broken". GitHub's file view of both on the branch at d4a2e5d shows the form preview and no template error.
 - 2026-10-27: T3 done: `parseReport` returns the first problem it finds, in input order and then plugin id, version, Zotero version, verdict; problem names `missing-heading`, `no-response`, `unknown-plugin`, `bad-plugin-version`, `bad-zotero-version`, `bad-verdict`. A planted removal of the upper Zotero bound failed exactly the "above the newest major" test. 514 tests pass, `pnpm check` 0 problems.
+- 2026-10-27: T4 done: `answerReport` in `src/reports/issue.ts` and `pnpm report-issue` (`src/reports/issue-cli.ts`). It reads the entry ids with its own `readdir`, because `listEntries` returns an empty list for a missing directory, which would refuse every report as an unknown plugin. Seven in-process tests and two spawned-command tests; 523 tests pass.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
