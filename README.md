@@ -307,7 +307,7 @@ To report on a plugin, open an issue with the "Report that a plugin works"
 form or the "Report that a plugin is broken" form. Each form asks for the
 plugin id, the plugin version, and the Zotero version. The works form adds
 the labels `report` and `works`. The broken form adds the labels `report`
-and `broken`.
+and `broken`. If the repository has no such label, GitHub does not add it.
 
 When an issue with the label `report` opens, the `Answer a report` workflow
 runs `pnpm report-issue` with the issue number in `ISSUE_NUMBER`. The

@@ -21,13 +21,19 @@ function cacheLines(text: string): string[] {
     .filter((line) => uses.test(line) || key.test(line));
 }
 
-// Each `${{ }}` expression's use of `github.event` that is not `github.event.issue.number`
-// or `github.event.issue.labels`, such as the body, the title, or the whole event.
+// Each use of the event in a `${{ }}` expression or an `if:` value, which GitHub reads as
+// an expression without the braces, other than `github.event.issue.number` and
+// `github.event.issue.labels`: the body, the title, or the whole event, and a bare
+// `github`, which holds the event too.
 function otherEventUses(text: string): string[] {
-  const expressions = [...text.matchAll(/\$\{\{([^}]*)\}\}/g)].map(([, inner]) => inner);
+  const expressions = [
+    ...[...text.matchAll(/\$\{\{([\s\S]*?)\}\}/g)].map(([, inner]) => inner),
+    ...[...text.matchAll(/^\s*if\s*:(.*)$/gm)].map(([, value]) => value),
+  ];
   return expressions.flatMap((inner) =>
-    [...inner.matchAll(/github\s*\.\s*event\b(?:\s*(?:\.\s*[\w-]+|\[[^\]]*\]))*/g)]
+    [...inner.matchAll(/\bgithub\b(?:\s*(?:\.\s*[\w-]+|\[[^\]]*\]))*/g)]
       .map(([use]) => use.replace(/\s/g, ""))
+      .filter((use) => /^github(?:$|\.event\b|\[["']event["']\])/.test(use))
       .filter((use) => !/^github\.event\.issue\.(?:number|labels)\b/.test(use)),
   );
 }
@@ -77,7 +83,7 @@ describe("report-issue.yml", () => {
   const answer = jobText(report, "answer");
 
   test("runs on opened issues only, and its one job only for the label report", () => {
-    expect(report).toMatch(/^on:\n {2}issues:\n {4}types: \[opened\]\n\n/m);
+    expect(report.match(/^on:\n((?: .*\n|\n)*?)(?=^\S)/m)?.[1].trim()).toBe("issues:\n    types: [opened]");
     expect(report.slice(report.indexOf("\njobs:\n")).match(/^ {2}[\w-]+:$/gm)).toEqual(["  answer:"]);
     expect(answer).toMatch(/^ {4}if: contains\(github\.event\.issue\.labels\.\*\.name, 'report'\)$/m);
   });
@@ -103,7 +109,18 @@ describe("report-issue.yml", () => {
     ["the title", "${{github.event.issue.title}}", "github.event.issue.title"],
     ["an index", "${{ github.event['issue'].body }}", "github.event['issue'].body"],
     ["the whole event", "${{ toJSON(github.event) }}", "github.event"],
+    ["the body inside a format string with braces", "${{ format('{0}', github.event.issue.body) }}", "github.event.issue.body"],
+    ["an index on the context", "${{ github['event'].issue.body }}", "github['event'].issue.body"],
+    ["the whole context", "${{ toJSON(github) }}", "github"],
   ])("finds an expression that uses %s", (_name, line, use) => {
     expect(otherEventUses(`run: echo "${line}"`)).toEqual([use]);
+  });
+
+  test("finds the body in an if: value without braces", () => {
+    expect(otherEventUses("    if: contains(github.event.issue.body, 'x')\n")).toEqual(["github.event.issue.body"]);
+  });
+
+  test("leaves other contexts alone", () => {
+    expect(otherEventUses("run: echo ${{ github.repository }} ${{ github.event_name }} ${{ secrets.GITHUB_TOKEN }}\n")).toEqual([]);
   });
 });

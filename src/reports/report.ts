@@ -18,8 +18,7 @@ export type ReportProblem = "missing-heading" | "no-response" | "unknown-plugin"
 
 export type ReportResult = { ok: true; report: Report } | { ok: false; problem: ReportProblem; message: string };
 
-// The longest plugin version a report can name, and the most of an unknown plugin id that
-// a problem message quotes, so the value cannot fill the bot's comment.
+// The longest plugin version a report can name, so the value cannot fill the bot's comment.
 const VERSION_MAX = 100;
 const NEWEST_MAJOR = Math.max(...ZOTERO_MAJORS.map(Number));
 
@@ -35,17 +34,15 @@ export function parseReport(body: string, labels: readonly string[], ids: Readon
     values[id] = value.value;
   }
   const { plugin, version, zotero } = values as Record<keyof typeof REPORT_LABELS, string>;
-  if (!ids.has(plugin)) {
-    const quoted = plugin.length > VERSION_MAX ? `${plugin.slice(0, VERSION_MAX)}…` : plugin;
-    return problem("unknown-plugin", `the index has no plugin with the id ${quoted}`);
-  }
+  // The message quotes no text from the issue, so the bot never repeats what a reporter typed.
+  if (!ids.has(plugin)) return problem("unknown-plugin", "the index has no plugin with that id");
   if (version.length > VERSION_MAX || /\s/.test(version)) {
     return problem("bad-plugin-version", `the plugin version must be at most ${VERSION_MAX} characters with no spaces`);
   }
   const major = zotero.match(/\d+/)?.[0];
   const zoteroMajor = major === undefined ? NaN : Number(major);
   if (!(zoteroMajor >= 7 && zoteroMajor <= NEWEST_MAJOR)) {
-    return problem("bad-zotero-version", `the Zotero version must start with a major from 7 to ${NEWEST_MAJOR}`);
+    return problem("bad-zotero-version", `the first number in the Zotero version must be a major from 7 to ${NEWEST_MAJOR}`);
   }
   const verdicts = (["works", "broken"] as const).filter((verdict) => labels.includes(verdict));
   if (verdicts.length !== 1) return problem("bad-verdict", "the issue must have exactly one of the labels works and broken");

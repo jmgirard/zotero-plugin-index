@@ -39,7 +39,9 @@ export async function answerReport(options: ReportAnswerOptions): Promise<Report
   try {
     const record = (await github.json(issueUrl)) as { body?: unknown; labels?: unknown };
     body = typeof record?.body === "string" ? record.body : "";
-    labels = (Array.isArray(record?.labels) ? record.labels : []).map((label) => (typeof label === "string" ? label : label?.name));
+    labels = (Array.isArray(record?.labels) ? record.labels : [])
+      .map((label) => (typeof label === "string" ? label : label?.name))
+      .filter((name): name is string => typeof name === "string");
     ids = await entryIds(root);
   } catch (error) {
     return { status: 1, errors: [(error as Error).message] };
@@ -51,7 +53,7 @@ export async function answerReport(options: ReportAnswerOptions): Promise<Report
   if (parsed.ok) {
     const { plugin, version, zoteroMajor, verdict } = parsed.report;
     comment = [
-      `The bot took this report: ${code(plugin)} version ${code(version)} ${verdict} on Zotero ${code(String(zoteroMajor))}.`,
+      `The bot took this report: ${code(plugin)} version ${code(version)} ${verdict === "works" ? "works" : "is broken"} on Zotero ${code(String(zoteroMajor))}.`,
       "",
       "The index will show report counts on its plugin pages. It will count this report only while it reads that plugin version, and once per GitHub account for each plugin and Zotero major.",
     ].join("\n");

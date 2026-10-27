@@ -93,12 +93,14 @@ shows each one separately.
    the declared compatibility (`strict_min_version`, `strict_max_version`).
 3. Overrides. An override in the index corrects a fact that the author cannot
    or will not fix upstream. Each override states its reason.
-4. User reports (not built yet; the candidate "Collect works and broken user
-   reports" holds them, corrected M007). Each plugin page is to have a
-   "Works" link and a "Broken" link. Each link opens a GitHub issue form with
-   the plugin and its version filled in. The reporter adds the Zotero version
-   and submits the form. A bot adds the report to the data and closes the
-   issue.
+4. User reports. Two issue forms take a "works" or a "broken" report with
+   the plugin id, the plugin version, and the Zotero version. A bot checks
+   each report, comments, and closes the issue (M020). The counts are not
+   built yet. D-013 sets their rule, and M021 builds them. Each plugin page
+   is to have a "Works" link and a "Broken" link. Each link opens a form with
+   the plugin and its version filled in, so the reporter adds only the
+   Zotero version. The daily build is to count the report issues that the
+   bot closed as completed. No file in the repo holds a report.
 
 Inclusion bar: a public repository, a Zotero 7+ manifest, and at least one
 release with a readable `update.json`. The bot checks all three, and it
@@ -251,8 +253,10 @@ reused._
   A failed search ends the run before any read and leaves the state file as
   it was. The report names, for each entry written, its version and declared
   range (M008).
-- Each bot workflow runs in two jobs (M011). The read job has only read
-  permissions and a checkout with `persist-credentials: false`. It reads the
+- Each bot workflow that reads plugin repos runs in two jobs (M011). The
+  report workflow reads no plugin repo and runs in one job (M020). The read
+  job has only read permissions and a checkout with
+  `persist-credentials: false`. It reads the
   repos that anyone can name and leaves a handoff as an artifact:
   `plan.json` and `entries/<id>/` (`src/discover/handoff.ts`). The write job
   holds the write permissions, runs only `pnpm install` and `pnpm propose`,
@@ -345,7 +349,10 @@ reused._
   discover read job can save caches in the default branch's scope, while
   `issues` runs get read-only cache access. `test/workflows.test.ts` fails on a
   `cache` key or an `actions/cache` step in `build.yml`, or on a build job
-  without `cache-mode: none`; `ci.yml` keeps `cache: pnpm` (M016).
+  without `cache-mode: none`; `ci.yml` keeps `cache: pnpm` (M016). It also
+  checks `report-issue.yml`: its trigger, label condition, permissions,
+  `cache-mode: none`, no cache line, no concurrency group, the issue number
+  through `env:`, and no other use of `github.event` (M020).
 - `site/` is an Astro project (D-004), and `src/site/` builds it. `pnpm site`
   reads `<out>/v1/plugins.json`, builds into a temporary directory, because
   Astro empties its output directory, and copies the pages into `<out>` beside

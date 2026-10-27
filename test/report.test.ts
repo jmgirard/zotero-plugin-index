@@ -85,16 +85,11 @@ describe("parseReport", () => {
     });
   });
 
-  test("names a plugin id that no entry has, and quotes at most 100 characters of it", () => {
+  test("names a plugin id that no entry has, without quoting it", () => {
     expect(parseReport(rendered({ ...valid, plugin: "gamma@example.org" }), ["report", "works"], IDS)).toEqual({
       ok: false,
       problem: "unknown-plugin",
-      message: "the index has no plugin with the id gamma@example.org",
-    });
-    expect(parseReport(rendered({ ...valid, plugin: "g".repeat(5000) }), ["report", "works"], IDS)).toEqual({
-      ok: false,
-      problem: "unknown-plugin",
-      message: `the index has no plugin with the id ${"g".repeat(100)}…`,
+      message: "the index has no plugin with that id",
     });
   });
 
@@ -166,8 +161,14 @@ describe("answering a report issue", () => {
     const { result, sent } = await runReport(issueResponses(rendered({ ...valid, plugin: "gamma@example.org" }), ["report", "broken"]));
     expect(result).toMatchObject({ status: 0, errors: [] });
     expect(sent[0].body.body).toContain("`unknown-plugin`");
-    expect(sent[0].body.body).toContain(code("the index has no plugin with the id gamma@example.org"));
+    expect(sent[0].body.body).toContain(code("the index has no plugin with that id"));
+    expect(sent[0].body.body).not.toContain("gamma@example.org");
     expect(sent[1]).toEqual({ method: "PATCH", url: ISSUE, body: { state: "closed", state_reason: "not_planned" } });
+  });
+
+  test("says that the plugin is broken for a broken report", async () => {
+    const { sent } = await runReport(issueResponses(rendered(valid), ["report", "broken"]));
+    expect(sent[0].body.body).toContain(`${code("1.2.0")} is broken on Zotero ${code("7")}`);
   });
 
   test("puts a plugin version that holds a backtick and a Markdown link in a code span", async () => {
@@ -233,7 +234,7 @@ function pnpmReport(responses: Responses) {
 
 describe("pnpm report-issue", () => {
   // A real entry, since the command reads the entry ids from the repo's plugins directory.
-  const plugin = readdirSync(resolve(ROOT, "plugins")).find((name) => !name.startsWith("."))!;
+  const plugin = readdirSync(resolve(ROOT, "plugins"), { withFileTypes: true }).find((entry) => entry.isDirectory() && !entry.name.startsWith("."))!.name;
 
   test("closes a valid report as completed and exits 0", () => {
     const { result, sent } = pnpmReport(issueResponses(rendered({ ...valid, plugin }), ["report", "works"]));
