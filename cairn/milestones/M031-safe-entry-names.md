@@ -48,7 +48,7 @@
 - [x] T3: In `checkTree` (`src/check/check.ts:36`), add the rules `entry-name`, `entry-is-directory`, and `unique-ignoring-case` to `Rule`. Read the stray names with a separate `readdir` and `stat` pass, and leave `listEntries` as it is, since the build and `pnpm discover` call it. Export the case-set function. Add the AC2, AC3, and AC4 cases. For the AC4 CLI case, test case sensitivity in the temp directory first and skip where it is not.
 - [x] T4: In `writeEntry` (`src/add-plugin/add-plugin.ts:27`), call `entryNameProblem`, then read `outDir` and refuse a case-insensitive match before `mkdir`. A missing `outDir` has no names. Add the AC5 cases to `test/add-plugin.test.ts`. On macOS `mkdir` already fails with `entry-exists` for a case match, so the message assertion is what tells the new check apart.
 - [x] T5: Add the AC6 record to the site fixture in `test/fixtures/site/`. Update the site tests that list rows or count records by hand, such as "gives each row the language subtags it applies" (`test/site.test.ts:401`), and keep the record out of the archived and language cases.
-- [ ] T6: Update README "Checking entries" and "Adding a plugin", DESIGN.md's "Entry checks" line, and CHANGELOG Unreleased. Search a joined copy of README for each phrase (LESSONS M018).
+- [x] T6: Update README "Checking entries" and "Adding a plugin", DESIGN.md's "Entry checks" line, and CHANGELOG Unreleased. Search a joined copy of README for each phrase (LESSONS M018).
 - [ ] T7: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` (LESSONS M001). Plant each new rule's defect from a copy of the file and restore from the copy (LESSONS M010).
 
 ## Work log
@@ -69,6 +69,7 @@
 - 2026-10-28: T3 done: `checkTree` reports `entry-name` per entry, `entry-is-directory` from a separate `strayFiles` pass, and `unique-ignoring-case` from the exported `caseClashes`; `listEntries` is unchanged. Added a broken-symlink case for AC3. `pnpm test` 820 passed, 1 skipped: the CLI case-clash test skips on this macOS volume.
 - 2026-10-28: T4 done: `writeEntry` calls `entryNameProblem` (the `unsafe-id` message keeps "cannot name a directory" and adds the problem) and refuses a name in `outDir` that differs from the id only by case, before any `mkdir`. An exact match still reaches `mkdir`'s `entry-exists`, as before. `SAFE_ID` is gone. `pnpm test` 823 passed, 1 skipped.
 - 2026-10-28: T5 done: the site fixture's last record is the not-read record `_x-y+z.w@{v}`, so it adds no language or archived fact; the row-list test gained its row and the fixture test asserts the id. `pnpm test` 825 passed, 1 skipped.
+- 2026-10-28: T6 done: README "Checking entries" lists the three rules and the 22 Windows names; "Adding a plugin" states the `unsafe-id` and `entry-exists` cases; DESIGN.md's "Entry checks" line and CHANGELOG Unreleased have the change. The CHANGELOG claim that a `%` or space id fails `pnpm site` is checked by a T7 plant.
 
 ## Decisions
 

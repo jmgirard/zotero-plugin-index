@@ -213,7 +213,11 @@ and a message, then exits with status 1. Two failure names are `fork` and
 command writes its entry. The `Failure` type in `src/upstream/reader.ts`
 lists each failure name for reading a plugin. The `WriteResult` type in
 `src/add-plugin/add-plugin.ts` adds `entry-exists`, `unsafe-id`, and
-`write-failed`.
+`write-failed`. If the rule `entry-name` of "Checking entries" refuses the
+id as a directory name, the command fails with `unsafe-id`. An example is
+the Windows name `CON`. If an entry has the id as its name, the command fails
+with `entry-exists`. A name that differs from the id only in case also
+counts.
 
 The command limits what it downloads from the plugin's release and update
 host, and what it unzips from the XPI:
@@ -487,6 +491,19 @@ The command prints one line for each problem, with the entry directory and
 the rule that failed, then a summary line. If it finds a problem or cannot
 load the registry schema, it exits with status 1. To check
 the entries in another directory, give its path: `pnpm check <dir>`.
+
+The command skips each name that starts with `.`, such as `.idea`. Three
+rules check the names in the directory:
+
+- `entry-is-directory`: each other name must be a directory.
+- `entry-name`: a directory name holds only the letters A to Z and a to z,
+  the digits, and `_ @ { } + . -`, at most 200 characters. It must not start
+  or end with `.`. The part before its first `.` must not be one of the
+  names that Windows reserves, in any case: CON, PRN, AUX, NUL, COM1 to
+  COM9, and LPT1 to LPT9. For example, `nul.tar.gz` is refused.
+- `unique-ignoring-case`: two directory names must not differ only in case,
+  because Windows and macOS check them out as one directory. The line names
+  every directory of the set.
 
 The first run downloads the registry schema into `.cache/`, so that run needs
 a network connection. The command refuses a downloaded or cached schema whose

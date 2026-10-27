@@ -219,3 +219,13 @@
   that the 30-minute limit of the `Discover plugins` job stopped wrote no
   new state and no handoff. The next run then read the same repositories
   first.
+- `pnpm check` checks the names in the entry directory with three new
+  rules. `entry-is-directory` refuses a file beside the entries, such as
+  `plugins/stray.json`. Before, the command skipped such a file and exited
+  with status 0. `entry-name` refuses a directory name with a character
+  outside `A-Z a-z 0-9 _ @ { } + . -`, such as `%` or a space, which made
+  `pnpm site` fail. It also refuses a name that starts or ends with `.`, and
+  a name that Windows reserves, such as `CON` or `nul.tar.gz`.
+  `unique-ignoring-case` refuses two directory names that differ only in
+  case. `pnpm add-plugin` and `pnpm discover` refuse the same ids with
+  `unsafe-id` and `entry-exists`.
