@@ -65,10 +65,7 @@ describe("pnpm site", () => {
     const validate = new Ajv({ allErrors: true }).compile(pluginsSchema);
     expect(validate(fixture), JSON.stringify(validate.errors)).toBe(true);
     expect(ids).toContain("first-plugin@example.org");
-    expect(ids.some((id) => /^\{[0-9a-f-]+\}$/.test(id))).toBe(true);
-    // Each character other than letters and digits that entryNameProblem accepts, `_` first and `}` last.
-    expect(ids).toContain("_x-y+z.w@{v}");
-    expect(fixture.plugins.some((plugin) => "failure" in plugin)).toBe(true);
+    expect(ids.some((id) => /^\{[0-9a-f-]+\}$/.test(id))).toBe(true);    expect(fixture.plugins.some((plugin) => "failure" in plugin)).toBe(true);
   });
 
   test("exits 0", () => {

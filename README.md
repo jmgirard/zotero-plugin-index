@@ -487,8 +487,8 @@ To check every entry under `plugins/`, run:
 pnpm check
 ```
 
-The command prints one line for each problem, with the entry directory and
-the rule that failed, then a summary line. If it finds a problem or cannot
+The command prints one line for each problem, then a summary line. Each
+line names the entry directory or file and the rule that failed. If it finds a problem or cannot
 load the registry schema, it exits with status 1. To check
 the entries in another directory, give its path: `pnpm check <dir>`.
 

@@ -159,7 +159,8 @@ describe("writeEntry", () => {
     expect(readdirSync(out)).toEqual(["Foo@example.org"]);
   });
 
-  test("returns write-failed when the output directory cannot be read", async () => {
+  // Root reads a directory whatever its mode.
+  test.skipIf(process.getuid?.() === 0)("returns write-failed when the output directory cannot be read", async () => {
     const out = tempDir();
     chmodSync(out, 0o300);
     try {

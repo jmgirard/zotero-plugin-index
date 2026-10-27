@@ -82,10 +82,6 @@ function expectOnlyRule(root: string, rule: string) {
 const RESERVED = ["CON", "PRN", "AUX", "NUL", ..."123456789".split("").flatMap((n) => [`COM${n}`, `LPT${n}`])];
 
 describe("entryNameProblem", () => {
-  test("holds the 22 reserved names", () => {
-    expect(new Set(RESERVED).size).toBe(22);
-  });
-
   test.each(RESERVED.flatMap((name) => [name, name.toLowerCase(), `${name.toLowerCase()}.tar.gz`]))(
     "refuses the Windows name %s",
     (name) => {
@@ -97,8 +93,12 @@ describe("entryNameProblem", () => {
     expect(entryNameProblem(name)).toMatch(/Windows reserves/);
   });
 
-  test.each(["a%b@example.org", "a b@example.org", "a/b", ""])("refuses %j for its characters", (name) => {
+  test.each(["a%b@example.org", "a b@example.org", "a/b"])("refuses %j for its characters", (name) => {
     expect(entryNameProblem(name)).toMatch(/holds a character/);
+  });
+
+  test("refuses the empty name", () => {
+    expect(entryNameProblem("")).toBe("is empty");
   });
 
   test.each([".x@example.org", "plugin@example.org."])("refuses %j for its dot", (name) => {

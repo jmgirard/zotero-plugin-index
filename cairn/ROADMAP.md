@@ -51,7 +51,7 @@ _Last hygiene check: 2026-10-27 (M030 done and archived; its row graduated, M027
 <!-- unnumbered ideas; one line each, ordered high → normal → low → parked:
      - [high] short title: detail — added YYYY-MM-DD — links   (no token: normal)
      - [parked] short title: detail; promote when <condition> — added YYYY-MM-DD — links
-     opening token `[high]`/`[low]`/`[parked]` or absent (`normal`); `[parked]`: promotion condition not held (tracking-rules);
+     opening token `[high]`/`[low]`/`[parked]` or absent (`normal`); `[parked]`: promotion condition not held (tracking-rules "Candidate priority token");
      open each row with its short title, the words the cairn pane shows, then `: `;
      the title is one sentence with no ending period, at least 5 words and at most 40 characters,
      ending with `(#N)` for a row written for GitHub issue N, such as

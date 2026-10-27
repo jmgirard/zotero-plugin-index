@@ -27,7 +27,7 @@ export async function writeEntry(outDir: string, facts: UpstreamFacts): Promise<
   // rule applies to it.
   const problem = entryNameProblem(facts.id);
   if (problem) {
-    return { ok: false, failure: "unsafe-id", message: `the id ${JSON.stringify(facts.id)} cannot name a directory: ${problem}` };
+    return { ok: false, failure: "unsafe-id", message: `the id ${JSON.stringify(facts.id)} cannot name a directory: it ${problem}` };
   }
   // A case-sensitive file system would let both directories exist, and Windows and macOS
   // checkouts would then hold one of them.
