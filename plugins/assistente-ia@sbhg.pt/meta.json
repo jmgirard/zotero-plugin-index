@@ -1,0 +1,8 @@
+{
+  "id": "assistente-ia@sbhg.pt",
+  "name": "Assistente IA",
+  "description": "Assistente de leitura científica / research reading assistant: resumos, avaliação crítica, fichas, comparação de PDFs, revisão de literatura e lacunas, com citações à página. Gemini, ChatGPT ou IAEdu, com contas gratuitas ou pagas.",
+  "homepage": "https://github.com/serbernardo/zotero-assistente-ia",
+  "repoUrl": "https://github.com/serbernardo/zotero-assistente-ia",
+  "updateUrl": "https://github.com/serbernardo/zotero-assistente-ia/releases/latest/download/updates.json"
+}
