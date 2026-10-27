@@ -63,8 +63,10 @@ saved copy must fetch the schema again after such a change. The URL is
 `https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json`, and the
 schemas are under `https://jmgirard.github.io/zotero-plugin-index/schemas/`,
 each schema's `$id` being its own URL (M006). Each record that has
-`upstream` carries the report counts in the optional `reports` field
-(D-013, M021).
+`upstream` carries the report counts in the optional `reports` field. The
+daily build counts them from its read of the index repo's closed report
+issues, and a build that cannot read those issues deploys nothing (D-013,
+M021).
 
 Out of scope: install buttons, mirrors for regions that cannot reach GitHub,
 user accounts, and a combined compatibility verdict.

@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M021: Show report counts on the plugin pages
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M020   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -116,8 +116,8 @@ throwaway accounts.
 - AC3 → T2
 - AC4 → T3
 - AC5 → T4
-- AC6 → T5
-- AC7 → T1, T2, T3, T4, T5
+- AC6 → T5, T6
+- AC7 → T1, T2, T3, T4, T5, T6
 
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
@@ -136,6 +136,8 @@ throwaway accounts.
       local server (LESSONS, M015).
 - [x] T5: Write the README, CHANGELOG, and DESIGN text. Search joined copies
       of the files for the old and new phrases (LESSONS, M018).
+- [x] T6: Name the build's read of the report issues in DESIGN.md's
+      Contract boundary (review return 1).
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -160,6 +162,7 @@ throwaway accounts.
 - 2026-10-27: claim audit: 52 claims read, 1 corrected — CHANGELOG.md (the `reports` items cover only majors with a counted report, and only pages of read plugins show the counts and links).
 - 2026-10-27: status review; all 5 tasks done, `pnpm test` (589 tests) and `pnpm check` pass.
 - 2026-10-27: review return 1: AC6 — DESIGN.md's Contract boundary names the `reports` field but not the build's read of the report issues; Function Families and the `build.yml` paragraph name both. Status in-progress.
+- 2026-10-27: minor amendment: added T6 for review return 1, mapped to AC6 and AC7 in Coverage. T6 done: the Contract boundary now says the daily build counts `reports` from its read of the closed report issues, and a failed read deploys nothing. `pnpm test` (589) and `pnpm check` pass. Status review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
