@@ -52,6 +52,10 @@ describe("build.yml", () => {
     expect(cacheLines(build)).toEqual([]);
   });
 
+  test("gives the build job contents read and issues read, and no other permission", () => {
+    expect(jobText(build, "build")).toMatch(/^ {4}permissions:\n {6}contents: read\n {6}issues: read\n {4}\S/m);
+  });
+
   test("sets cache-mode none on the build job", () => {
     expect(jobText(build, "build")).toMatch(/^ {4}cache-mode: none$/m);
   });
@@ -102,6 +106,11 @@ describe("report-issue.yml", () => {
   test("passes the issue number through env, and no other part of the event", () => {
     expect(answer).toMatch(/^ {8}env:\n(?: {10}\S.*\n)* {10}ISSUE_NUMBER: \$\{\{ github\.event\.issue\.number \}\}$/m);
     expect(otherEventUses(report)).toEqual([]);
+  });
+
+  // The build counts only reports closed by github-actions[bot], the GITHUB_TOKEN's account.
+  test("runs pnpm report-issue with the built-in GITHUB_TOKEN", () => {
+    expect(answer).toMatch(/^ {6}- run: pnpm report-issue\n {8}env:\n {10}GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}$/m);
   });
 
   test.each([

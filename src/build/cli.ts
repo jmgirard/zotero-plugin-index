@@ -20,9 +20,16 @@ async function main(): Promise<number> {
   const root = positional[0] ? resolve(cwd, positional[0]) : "plugins";
   const outDir = out ? resolve(cwd, out) : "dist";
 
-  const built = await buildData(root, (url, init) => fetch(url, init));
+  // A message can hold upstream text, such as an update_url. Each goes on one line, so no
+  // part of it starts a line that GitHub Actions reads as a workflow command.
+  const oneLine = (text: string) => text.replace(/[\r\n]+/g, " ");
+
+  // GitHub Actions names the repo the workflow runs in. An empty value reads as unset.
+  const built = await buildData(root, (url, init) => fetch(url, init), undefined, process.env.GITHUB_REPOSITORY || undefined);
+  // An invalid entry, a failed read of the report issues, or output that the schema
+  // rejects writes no file and exits 1, so the daily build deploys nothing.
   if (!built.ok) {
-    for (const problem of built.problems) console.error(problem);
+    for (const problem of built.problems) console.error(oneLine(problem));
     console.error("wrote no file");
     return 1;
   }
@@ -32,9 +39,6 @@ async function main(): Promise<number> {
     return 1;
   }
   const failed = built.data.plugins.filter((plugin) => plugin.failure);
-  // A message can hold upstream text, such as an update_url. Each goes on one line, so no
-  // part of it starts a line that GitHub Actions reads as a workflow command.
-  const oneLine = (text: string) => text.replace(/[\r\n]+/g, " ");
   for (const { id, failure } of failed) console.log(`${id}: ${failure!.name}: ${oneLine(failure!.message)}`);
   const counts = new Map<string, number>();
   for (const { failure } of failed) counts.set(failure!.name, (counts.get(failure!.name) ?? 0) + 1);

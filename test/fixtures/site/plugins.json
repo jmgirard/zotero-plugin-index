@@ -31,6 +31,10 @@
         "prerelease": false,
         "archived": false
       },
+      "reports": [
+        { "zoteroMajor": 7, "works": 3, "broken": 1 },
+        { "zoteroMajor": 8, "works": 0, "broken": 2 }
+      ],
       "overrides": [
         {
           "field": "strict_max_version",
@@ -64,6 +68,7 @@
         "prerelease": true,
         "archived": true
       },
+      "reports": [],
       "overrides": []
     },
     {
@@ -72,7 +77,7 @@
       "upstream": {
         "id": "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}",
         "name": "GUID Plugin",
-        "version": "3.0.0",
+        "version": "3.0.0+r1",
         "strictMinVersion": "9.0",
         "strictMaxVersion": "9.*",
         "updateUrl": "https://github.com/example/guid-plugin/releases/download/release/update.json",

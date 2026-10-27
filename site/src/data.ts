@@ -58,6 +58,17 @@ export function overrideUsed(record: PluginRecord, override: Override): boolean 
   return usedOverride(record, override.field) === override;
 }
 
+// The index repo's page for a new issue, where the report forms live.
+const NEW_ISSUE = "https://github.com/jmgirard/zotero-plugin-index/issues/new";
+
+// The new-issue page with the works.yml or broken.yml form, its plugin and version fields
+// filled in with the record's id and the version the index read.
+export function reportHref(record: PluginRecord, verdict: "works" | "broken"): string {
+  const fields = [`template=${verdict}.yml`, `plugin=${encodeURIComponent(record.id)}`];
+  if (record.upstream) fields.push(`version=${encodeURIComponent(record.upstream.version)}`);
+  return `${NEW_ISSUE}?${fields.join("&")}`;
+}
+
 // Only an http or https URL becomes a link; repoUrl in meta.json is any string.
 export function safeHref(url: string): string | undefined {
   return /^https?:\/\//i.test(url) ? url : undefined;

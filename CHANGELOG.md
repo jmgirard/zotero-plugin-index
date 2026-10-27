@@ -148,4 +148,16 @@
   Zotero version. The `Answer a report` workflow runs `pnpm report-issue`,
   which checks each report, comments, and closes the issue. It closes a
   report it takes as completed, and any other report as not planned with
-  the problem.
+  the problem. `pnpm build` reads the closed report issues before it reads
+  any plugin. It writes a new optional `reports` field on each record that
+  has an `upstream` block. The field has the numbers of "works" and
+  "broken" reports for each Zotero major with a counted report. Only
+  reports on the plugin version that the index read count. For each plugin
+  and Zotero major, only the newest report of each GitHub account counts.
+  README "Using the data" gives the whole rule. The page of each plugin
+  that the index read shows the counts, a "Works" link, and a "Broken"
+  link. The links open the forms with the plugin id and the version filled
+  in. If the build cannot read the report issues, it writes
+  no data file, and the daily build deploys nothing. The schema now defines
+  `reports`. If you validate against a saved copy of the schema, fetch it
+  again.

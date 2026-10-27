@@ -35,11 +35,19 @@ that the index read replaces the manifest description. The name check does
 not apply to an override.
 
 Each plugin has its own page. The page shows the name, the description, the
-pills, the declared range, and links to the repository and its releases. A
-closed "Details" section follows. It holds the plugin id, facts about the
+pills, the declared range, the user reports, and links to the repository and
+its releases. A closed "Details" section follows. It holds the plugin id, facts about the
 repository and its releases, and the overrides of the index for the plugin.
 If the last build failed to read a plugin, its page shows the failure in place
 of the pills.
+
+The user reports part of a page names the plugin version that the index
+read. For each Zotero major with a counted report, it shows the number of
+"works" reports and of "broken" reports. "Using the data" says which
+reports count. If no report counts, the page says that the version has no
+reports yet. A "Works" link and a "Broken" link open the report forms on
+GitHub with the plugin id and that version filled in. The page of a plugin
+whose read failed shows no reports and no links.
 
 The index lists a plugin whose GitHub repository is archived. Its row on the
 home page shows "(archived)" after its name. The Details section of its page
@@ -61,12 +69,38 @@ A daily build updates the data. If more than half of the records carry a
 build-level failure, such as a rate limit or a network error, the build
 deploys nothing. "Building the data" below says which failures are
 build-level. If every record carries a failure, whatever its name, the build
-also deploys nothing. If the site build fails, the build also
+also deploys nothing. If the build cannot read the report issues, or the
+site build fails, the build also
 deploys nothing. The data from the last good build then stays in place. "Building the data" below describes the file. A breaking
 change to the file gets a new schema version under a new path, such as `v2/`.
 By this project's rule, a new optional field does not get a new schema
 version. The schema rejects fields that it does not define. If you validate
 against a saved copy of the schema, fetch it again after such a change.
+
+Each record that has an `upstream` block also has a `reports` list. It
+counts the user reports on the plugin version in `upstream.version`. The
+list has one item for each Zotero major with at least one counted report,
+ordered by major, such as `{ "zoteroMajor": 7, "works": 3, "broken": 1 }`.
+If no report counts, the list is empty. A report is a closed issue of this
+repository with the label `report`. The build drops a report in each of
+these cases:
+
+- It is a pull request.
+- It was not closed as completed.
+- It was not closed by `github-actions[bot]`, the account that the report
+  bot closes issues as. A report that someone reopens and closes again is
+  dropped.
+- It has the label `not-counted`.
+- It fails the bot's checks, as "Reporting whether a plugin works" lists
+  them.
+- Its plugin version is not the version in the record's `upstream.version`.
+
+Of one GitHub account's remaining reports on one plugin and Zotero major,
+only the newest counts. The account is known by its user id, so a renamed
+account stays one account. If two such reports have the same creation time,
+the one with the higher issue number counts. The count follows each issue's
+current text, so a reporter who edits a closed report changes the count.
+When the index reads a new release of a plugin, its counts start over.
 
 ## Plugin entries
 
@@ -324,9 +358,10 @@ report:
 
 If the bot takes the report, it comments the plugin id, the plugin version,
 the Zotero major, and the verdict. The comment also states how the index
-will count the report. It will count a report only while it reads that
-plugin version, and once per GitHub account for each plugin and Zotero
-major. Then the bot closes the issue as completed. Otherwise, the bot
+counts the report. It counts a report only while it reads that plugin
+version, and once per GitHub account for each plugin and Zotero major.
+"Using the data" above gives the whole rule. Then the bot closes the issue
+as completed. Otherwise, the bot
 comments the name and the message of the first problem it found, and
 closes the issue as not planned. The comment puts each value from the issue
 in a code span, so the value cannot link to a page or mention a user.
@@ -362,8 +397,11 @@ To build the data file, run:
 pnpm build
 ```
 
-The command reads each entry under `plugins/`, then reads each plugin from
-GitHub in the same way as `pnpm add-plugin`. It writes one file,
+The command reads each entry under `plugins/`. Then it reads every page of
+the closed issues with the label `report`. It reads them from the
+repository that `GITHUB_REPOSITORY` names. If that variable is not set, it
+reads them from `jmgirard/zotero-plugin-index`. Then it reads each plugin
+from GitHub in the same way as `pnpm add-plugin`. It writes one file,
 `dist/v1/plugins.json`. The file has a `schemaVersion` of `1`, a
 `generatedAt` time, and one record for each entry. Each record keeps the
 upstream facts in an `upstream` block and the overrides of the entry, with
@@ -372,7 +410,9 @@ their reasons, in an `overrides` block. The schema for the file is
 GitHub response for the repository says whether it is archived, the
 `upstream` block has an `archived` field, `true` or `false`. The `upstream`
 block also has a `prerelease` field, `true` or `false`. It says whether
-GitHub marks the release that the reader read as a prerelease.
+GitHub marks the release that the reader read as a prerelease. Each record
+with an `upstream` block has a `reports` list, which "Using the data"
+describes.
 
 If the read of a plugin fails, its record has no `upstream` block. The
 record has a `failure` block with the failure name and a message. If the
@@ -408,6 +448,9 @@ The command writes no data file and exits with status 1 in these cases:
 
 - It finds no entries, or it cannot read the entry directory.
 - An entry is not valid, for example a `meta.json` with no `repoUrl`.
+- It cannot read a page of the report issues, for example after an HTTP
+  error, a network error, or an answer that is not a list. It prints a line
+  that names the failure, and it reads no plugin.
 - The file it built is not valid against the schema.
 - It cannot write the schema copies or the data file.
 

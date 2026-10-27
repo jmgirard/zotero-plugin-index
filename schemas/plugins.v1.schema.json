@@ -43,6 +43,11 @@
           "description": "The facts read from the plugin's GitHub repo, its releases, and its release XPI, after a check that its update.json lists the plugin id. Present when the read succeeds.",
           "$ref": "#/definitions/upstream"
         },
+        "reports": {
+          "description": "The counted user reports on the plugin version in upstream: one item for each Zotero major with at least one counted report, ordered by major. A report is a closed issue of the index repo with the label report; README \"Using the data\" gives the counting rule. Present on each record with upstream since the build counts reports.",
+          "type": "array",
+          "items": { "$ref": "#/definitions/reportCount" }
+        },
         "failure": {
           "description": "Why the upstream read failed. Present when the read fails, in place of upstream.",
           "type": "object",
@@ -101,6 +106,16 @@
           "description": "Whether GitHub marks the repo archived. Absent when the GitHub response gives no boolean.",
           "type": "boolean"
         }
+      }
+    },
+    "reportCount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["zoteroMajor", "works", "broken"],
+      "properties": {
+        "zoteroMajor": { "description": "The Zotero major the reports name, such as 7.", "type": "integer", "minimum": 7 },
+        "works": { "description": "Counted reports that the plugin works on this major.", "type": "integer", "minimum": 0 },
+        "broken": { "description": "Counted reports that the plugin is broken on this major.", "type": "integer", "minimum": 0 }
       }
     },
     "override": {
