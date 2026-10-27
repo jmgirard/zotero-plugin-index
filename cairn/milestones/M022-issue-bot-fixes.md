@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M022: Fix two gaps of the issue bot
 
-- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -43,7 +43,7 @@ merge. README, CHANGELOG, and DESIGN follow.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: When the entry check throws while an issue run drafts the entry
+- [x] AC1: When the entry check throws while an issue run drafts the entry
       (`plannedProblem` in `draftEntry`), `issueRead` returns the outcome
       `failed` with the failure `unexpected-error`. Given that outcome,
       `issueAnswer` posts one comment that begins "The bot could not finish"
@@ -52,7 +52,7 @@ merge. README, CHANGELOG, and DESIGN follow.
       `test/issue.test.ts` shows this. The tests in the describe blocks "an
       issue run" and "an issue run's refusals with names the reader gives"
       pass unchanged.
-- [ ] AC2: `pnpm close-issue` with `PR_NUMBER` set reads that pull request
+- [x] AC2: `pnpm close-issue` with `PR_NUMBER` set reads that pull request
       from the GitHub API. It acts only when the pull request is closed and
       not merged, its head branch starts with `discover/` in the index repo,
       and its body has exactly one line, outside code fences, that is exactly
@@ -72,7 +72,7 @@ merge. README, CHANGELOG, and DESIGN follow.
       only inside the check-output fence, an item that is a pull request, a
       closed issue, an issue without the label, no bot comment with the URL,
       and an earlier closing comment), and each of the five failures.
-- [ ] AC3: `.github/workflows/close-add-plugin-issue.yml` runs on
+- [x] AC3: `.github/workflows/close-add-plugin-issue.yml` runs on
       `pull_request_target` of type `closed` only. Its one job's `if:` is
       exactly `github.event.pull_request.merged == false &&
       startsWith(github.event.pull_request.head.ref, 'discover/') &&
@@ -95,7 +95,7 @@ merge. README, CHANGELOG, and DESIGN follow.
       bullet that holds "Anyone can also propose a plugin" says the same two
       things. DESIGN.md's Function Families and its paragraph on
       `add-plugin-issue.yml` name `pnpm close-issue` and the new workflow.
-- [ ] AC5: `pnpm test` (type check, then Vitest) and `pnpm check` pass.
+- [x] AC5: `pnpm test` (type check, then Vitest) and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate -->
@@ -137,9 +137,16 @@ merge. README, CHANGELOG, and DESIGN follow.
 - 2026-10-27: T4 done. README drops the stale `unexpected-error` sentence, adds the entry-check error to the bot-failure paragraph, and adds a paragraph on `pnpm close-issue`; the CHANGELOG bullet and DESIGN's Discovery family and `add-plugin-issue.yml` paragraph follow. Joined-copy searches found the old sentence 0 times and each new phrase once per file.
 - 2026-10-27: claim audit: 54 claims read, 2 corrected — test/close-issue.test.ts (the outside-the-fence test now plants a decoy `Closes #7` inside the fence), src/discover/close-issue.ts (skip message "is not an issue"); the reader re-read both and found them true. It could not confirm the existing premise that GitHub enforces `cache-mode: none`, which report-issue.yml and DESIGN already state.
 - 2026-10-27: all tasks done; `pnpm test` (625 tests) and `pnpm check` pass; status review.
+- 2026-10-27: review return 1: AC4 fails as written — DESIGN.md's Function Families does not name `.github/workflows/close-add-plugin-issue.yml`.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
 
 ## Review
 <!-- owner: review · exclusive -->
+
+- AC1: verified 2026-10-27. `test/issue.test.ts` "comments the failure name and message, leaves the issue open, and returns 1 when the entry check throws" passes: outcome `failed`/`unexpected-error`, one comment starting "The bot could not finish" with both code spans, no PATCH, status 1. The "an issue run" and "an issue run's refusals with names the reader gives" blocks pass with no lines changed (`git diff main...HEAD -- test/issue.test.ts` touches only `runIssue`'s return and the other block).
+- AC2: verified 2026-10-27. `test/close-issue.test.ts`: the acting case, 12 send-nothing cases (each named in AC2), the outside-fence read, and the five failures pass; `pnpm close-issue` exits 0 on the acting case and 1 on a failed close.
+- AC3: verified 2026-10-27. The six `close-add-plugin-issue.yml` tests in `test/workflows.test.ts` pass; Ruby's YAML reads the trigger, `if:`, permissions, and checkout as written.
+- AC4: FAILED 2026-10-27. README, CHANGELOG, and DESIGN's `add-plugin-issue.yml` paragraph hold the required text, but DESIGN's Function Families names `pnpm close-issue` and not `close-add-plugin-issue.yml`.
+- AC5: verified 2026-10-27. `pnpm test` 16 files, 625 tests pass; `pnpm check` 20 entries, 0 problems.
