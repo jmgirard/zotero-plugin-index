@@ -158,3 +158,45 @@ merge. README, CHANGELOG, and DESIGN follow.
 - pass 2 (after review return 1), 2026-10-27, at 4724a77: `pnpm test` 16 files, 625 tests pass and `pnpm check` 20 entries, 0 problems, so AC1, AC2, AC3, and AC5 hold as recorded above.
 - AC4: verified 2026-10-27 (pass 2). Joined copies: README's section holds the entry-check error, "leaves the issue open", the closed-without-a-merge paragraph, and "closes that issue as not planned", and the old `unexpected-error` sentence 0 times; the CHANGELOG Unreleased bullet holds both changes; DESIGN's Function Families and its `add-plugin-issue.yml` paragraph each name `pnpm close-issue` and `close-add-plugin-issue.yml` once.
 - gate: `cairn_validate.py` exit 0, all checks passed; generic profile names no toolchain checks; no principle changed, so no `cairn_impact`.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: a close that fails after the comment posts cannot be retried, since a rerun sees its own closing comment and skips; AC2 asks for that skip — follow-up to the new candidate row "Make close-issue safe on retry and races"
+- diff-bug #2: two runs for one pull request (close, reopen, close) can both pass the closing-comment check and post twice; the workflow has no concurrency group — fix now
+- diff-bug #3: a pull request reopened between the read and the close still gets its issue closed as not planned — follow-up to the new candidate row "Make close-issue safe on retry and races"
+- diff-bug #4: a maintainer's close of the issue as completed between the read and the PATCH is overwritten as not planned — follow-up to the new candidate row "Make close-issue safe on retry and races"
+- diff-bug #5: a pull request closed before the issue run's comment lands, or whose comment failed, leaves the issue open — follow-up to the new candidate row "Make close-issue safe on retry and races"
+- diff-bug #6: the issue comment that names only the branch (no `html_url` in the create answer), or a renamed repo, never matches the URL, so the issue stays open — follow-up to the new candidate row "Make close-issue safe on retry and races"
+- diff-bug #7: the "closed without a merge" phrase is shared with the issue run's "known" answer — reject (false): that answer is posted only on another issue, which it closes, so no current comment reaches the check
+- diff-bug #8: an unreadable item (404, 410, a transferred issue) fails the run on every rerun — reject (planned change): AC2 sets exit 1 for a failed issue read
+- diff-bug #9: the fence parser opens a fence on a backtick info string that holds a backtick, and counts a `Closes` line inside an HTML comment — follow-up to the new candidate row "Make close-issue safe on retry and races"
+- diff-bug #10: the `cache-mode: none` premise is unverified — reject (planned change): AC3 requires the key, and D-010 and report-issue.yml already rest on it
+- diff-bug #11: README leaves out the one-Closes-line and earlier-closing-comment conditions — fix now
+- diff-bug #12a: the made-up line in the workflows test repeats the helper's checks — reject (false): it shows the new pull_request allow-list can fail, which the report cases do not
+- diff-bug #12b: the CLI's extra-argument usage branch has no test — fix now
+- diff-bug #12c: the merged case sets `merged` and `merged_at` together — reject (style): GitHub's answer for a merged pull request carries both
+- diff-bug #12d: one case covers a non-bot author and the digit boundary together — reject (style): each fails the case on its own, as the planted-defect run showed for the boundary
+- diff-bug #12e: the entry-check test's comment pattern allows an optional space that `code()` always writes; ENOENT is platform-dependent — fix now (exact space); the ENOENT part rejected (false): Node reports ENOENT for a missing executable on Linux and macOS
+- diff-bug #13: (b) no skill procedure changed — noted
+- blame-history #1: the `unexpected-error` mapping sits in `readOutcome` rather than as a build-level mark in `draftEntry` — reject (planned change): T1 names `readOutcome`, and that keeps the discover run's handling unchanged
+- blame-history #2: the reversal of M019's scope has no D-entry — reject (false): M019 left the case out of scope with a candidate row; no decision recorded it
+- blame-history #3: the `IssueOutcome` `failed` comment in `handoff.ts` covers only the repo read — fix now
+- blame-history #4: `otherEventUses` now matches exact chains, which is stricter — reject (false): no defect; no current use breaks
+- blame-history #5: `discover/` stays hardcoded in `handoff.ts` beside the exported `PREFIX` — reject (style): pre-existing lines the diff does not touch
+- blame-history #6: the `issueRead` comment has a stranded "If" at a line end — fix now
+- blame-history #7: the preload comment line is long — reject (style)
+- prior-review #1: overlapping runs can comment twice, as M020's review found for reports — fix now (same fix as diff-bug #2)
+- prior-review #2: the `cache-mode: none` premise repeats in a new file — reject (planned change): as diff-bug #10
+- prior-review #3: the entry-check change reverses M019's stated scope — reject (planned change): the row "Keep issues open on entry-check errors" asked for it
+- prior-review #4: the stranded "If" — fix now (same fix as blame-history #6)
+- ripple #1: the candidate row "Close the issue when its pull request closes" is still listed — reject (planned change): step 9 graduates the rows this milestone started
+- ripple #2: the candidate row "Keep issues open on entry-check errors" is still listed — reject (planned change): as ripple #1
+- ripple #3: CHANGELOG "The issue closes when that pull request merges." reads as the only closing path — reject (false): it is still true, and the same bullet now adds the no-merge close
+- ripple #4: the issue run's comment "This issue closes when that pull request merges." says nothing of the no-merge close — fix now, adding the sentence only when the comment holds the URL that `pnpm close-issue` matches
+- ripple #5: the `IssueOutcome` comment in `handoff.ts` — fix now (same fix as blame-history #3)
+- ripple #6: the `issueAnswer` header comment names only a read of the repo — fix now
+- ripple #7: README's discovery text on a closed bot pull request does not name the issue — reject (false): still true, and the issue section states the close
+- ripple #8: DESIGN Data sources line on a closed bot pull request — reject (false): as ripple #7
+- ripple #9: CHANGELOG line on a closed bot pull request — reject (false): as ripple #7
+- ripple #10: the pull request body's closing sentence does not name the issue — reject (false): still true; the issue's own comment now states the close (ripple #4)
+- ripple #11: the add-plugin form text lists the closing cases — reject (false): still true; it never listed the bot's own failures
+- ripple #12: README "Both commands read ... `GITHUB_REPOSITORY`" — reject (false): still true of the two commands it names
+- ripple #13: DESIGN's one-job note names only the report workflow — reject (false): incomplete, not wrong
