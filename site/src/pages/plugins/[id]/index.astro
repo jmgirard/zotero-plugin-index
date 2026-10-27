@@ -8,6 +8,7 @@ import {
   loadData,
   overrideUsed,
   rangeText,
+  reportHref,
   safeHref,
   shownDescription,
   upstreamValue,
@@ -20,6 +21,8 @@ export function getStaticPaths() {
 
 const { record } = Astro.props as { record: PluginRecord };
 const { upstream, failure, overrides } = record;
+// Data written before the build counted reports has no reports field.
+const reports = record.reports ?? [];
 const repoUrl = upstream?.repoUrl ?? record.repoUrl;
 const repoHref = safeHref(repoUrl);
 const description = shownDescription(record);
@@ -43,6 +46,29 @@ const { min, max } = declaredRange(record);
       <p class="range">
         Declared range: <span data-fact="declared-range">{rangeText(record)}</span>
       </p>
+    )
+  }
+  {
+    upstream && (
+      <section class="reports" data-reports>
+        <p data-fact="report-version">User reports on version {upstream.version}, the version the index read</p>
+        {reports.length > 0 ? (
+          <ul class="report-counts">
+            {reports.map(({ zoteroMajor, works, broken }) => (
+              <li data-report-major={zoteroMajor}>
+                Zotero {zoteroMajor}: {works} works, {broken} broken
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="status" data-fact="no-reports">No reports on this version yet.</p>
+        )}
+        <p class="report-links">
+          Tried this version on Zotero? Report that it{" "}
+          <a data-report="works" href={reportHref(record, "works")}>Works</a> or is{" "}
+          <a data-report="broken" href={reportHref(record, "broken")}>Broken</a>.
+        </p>
+      </section>
     )
   }
   <ul class="links">

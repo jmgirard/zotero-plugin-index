@@ -165,6 +165,69 @@ describe("the site fixture", () => {
     for (const support of ["all", "some", "none"]) {
       expect(pilled.some((record) => ZOTERO_MAJORS.some((major) => majorSupport(record, major) === support)), support).toBe(true);
     }
+    expect(records.some((record) => (record.reports?.length ?? 0) > 0)).toBe(true);
+    expect(records.some((record) => record.upstream && record.reports?.length === 0)).toBe(true);
+    expect(records.some((record) => record.upstream && !("reports" in record))).toBe(true);
+  });
+});
+
+// The href of the report link `verdict` in a page, with the HTML escapes undone.
+function reportLink(html: string, verdict: string): string | undefined {
+  const href = new RegExp(`<a data-report="${verdict}" href="([^"]*)"`).exec(html)?.[1];
+  return href?.replace(/&amp;/g, "&");
+}
+
+describe("the report block", () => {
+  test("shows the version the index read and the counts on each major", () => {
+    const html = page("first-plugin@example.org");
+    expect(fact(html, "report-version")).toBe("User reports on version 1.2.0, the version the index read");
+    const counts = [...html.matchAll(/<li data-report-major="(\d+)">(.*?)<\/li>/gs)].map(([, major, text]) => [major, text.replace(/\s+/g, " ").trim()]);
+    expect(counts).toEqual([
+      ["7", "Zotero 7: 3 works, 1 broken"],
+      ["8", "Zotero 8: 0 works, 2 broken"],
+    ]);
+    expect(html).not.toMatch(/\sdata-fact="no-reports"/);
+  });
+
+  test.each([
+    ["an empty reports list", "old-plugin@example.org", "0.4.1"],
+    ["no reports field", "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "3.0.0+r1"],
+  ])("says the version has no reports yet for a record with %s", (_, id, version) => {
+    const html = page(id);
+    expect(fact(html, "report-version")).toBe(`User reports on version ${escaped(version)}, the version the index read`);
+    expect(fact(html, "no-reports")).toBe("No reports on this version yet.");
+    expect(html).not.toMatch(/\sdata-report-major="/);
+  });
+
+  test.each(records.filter((record) => record.upstream).map((record) => record.id))(
+    "links %s to both report forms with its id and version filled in",
+    (id) => {
+      const record = records.find((r) => r.id === id)!;
+      for (const verdict of ["works", "broken"]) {
+        const href = reportLink(page(id), verdict)!;
+        const url = new URL(href);
+        expect(`${url.origin}${url.pathname}`).toBe("https://github.com/jmgirard/zotero-plugin-index/issues/new");
+        expect([...url.searchParams.entries()]).toEqual([
+          ["template", `${verdict}.yml`],
+          ["plugin", id],
+          ["version", record.upstream!.version],
+        ]);
+      }
+      expect(page(id)).toMatch(/<a data-report="works" href="[^"]*">Works<\/a>/);
+      expect(page(id)).toMatch(/<a data-report="broken" href="[^"]*">Broken<\/a>/);
+    },
+  );
+
+  test("URL-encodes an id and a version that need it", () => {
+    const href = reportLink(page("{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}"), "works")!;
+    expect(href.slice(href.indexOf("?") + 1)).toBe("template=works.yml&plugin=%7Bc2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b%7D&version=3.0.0%2Br1");
+  });
+
+  test("shows neither counts nor links for a record that was not read", () => {
+    const html = page("broken-plugin@example.org");
+    expect(html).not.toMatch(/\sdata-reports[\s>]/);
+    expect(html).not.toMatch(/\sdata-report="/);
+    expect(html).not.toMatch(/\sdata-fact="(?:report-version|no-reports)"/);
   });
 });
 
@@ -180,6 +243,7 @@ describe("the plugin page", () => {
       ...(description ? [`<p class="description" data-description>${escaped(description)}</p>`] : []),
       support,
       ...(hasBound(record) ? ['data-fact="declared-range"'] : []),
+      ...(record.upstream ? ["<section class=\"reports\" data-reports>"] : []),
       'data-fact="repository"',
       ...(record.upstream ? ['data-fact="releases"'] : []),
       "<details>",
@@ -262,7 +326,7 @@ describe("the plugin page", () => {
   test.each([
     ["old-plugin@example.org", "0.4.1, published 2024-07-01 (prerelease)"],
     ["first-plugin@example.org", "1.2.0, published 2026-09-30"],
-    ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "3.0.0, published 2026-10-01"],
+    ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "3.0.0+r1, published 2026-10-01"],
   ])("marks the release of %s as a prerelease only when the record says so", (id, text) => {
     expect(fact(page(id), "latest-release")).toBe(text);
   });
