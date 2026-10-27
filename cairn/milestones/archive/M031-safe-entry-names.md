@@ -1,0 +1,11 @@
+# M031: Refuse unsafe entry names
+
+**Status:** done (2026-10-28, PR #58 https://github.com/jmgirard/zotero-plugin-index/pull/58)
+
+**Goal:** `pnpm check` and `writeEntry` refuse entry names outside the id pattern, names that Windows reserves, and names that equal another entry's name ignoring case, and `pnpm check` reports stray files under `plugins/`.
+
+**Outcome:** `entryNameProblem(name)` in `src/check/check.ts` holds the id pattern `^[A-Za-z0-9_@{}+.-]{1,200}$` (moved from `SAFE_ID` in `src/add-plugin/add-plugin.ts`), refuses an empty name, a leading or trailing `.`, and a part before the first `.` equal, ignoring case, to CON, PRN, AUX, NUL, COM1–9, or LPT1–9 (source note `cairn/references/microsoft-naming-a-file.md`). It returns a subject-less message. `checkTree` adds three rules: `entry-name` per `listEntries` name, `entry-is-directory` from a separate `strayFiles` pass (`listEntries` unchanged, so the build and discover still skip stray files), and `unique-ignoring-case` from the exported `caseClashes`, one line per set, entry the first name in sort order. `writeEntry` returns `unsafe-id` with "cannot name a directory: it …", `entry-exists` for a name in `outDir` that differs only by case, and `write-failed` "cannot read" when `readdir` of `outDir` fails other than ENOENT or ENOTDIR. The site fixture gained the not-read record `_x-y+z.w@{v}`. The CLI case-clash test skips on a case-insensitive volume and runs on Linux CI. README "Checking entries" and "Adding a plugin", DESIGN.md's "Entry checks" line, and CHANGELOG state the rules. A `%` or space id no longer fails `pnpm site` on Astro 7.4.2 (a `%` logs "Invalid URL encoding" and exits 0), so CHANGELOG does not claim it.
+
+**Decisions:** none.
+
+**Review:** Claim audit: 31 claims, 4 corrected (dot-name wording, the `namesIn` error rule with a new test). Four-lens pass, 27 findings: 10 fixed in 4d07a88 (root-run skip for the `chmod` test, "is empty", subject-less messages, "is not a directory", two weak tests removed, CHANGELOG rewrap, README line wording, ROADMAP pointer), 17 rejected (1 edge: two processes writing one `--out`). Implement added row "Name the failure when --out is a file". Hygiene: row "Catch stray and unportable entry files" narrowed to M032's part; M028 row pruned; 5 lessons marked used M031; 1 captured; lesson 2026-10-25 (M002, used M022) evicted by rank.
