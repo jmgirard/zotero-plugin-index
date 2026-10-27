@@ -47,10 +47,10 @@ export interface IssueReadOptions {
 // that the index or a bot pull request already has, it reads nothing. If the parser or
 // draftEntry refuses, the outcome names the failure; that includes a GitHub HTTP 404
 // for a repo that does not exist. If the read of the repo stops with a failure that the
-// reader marks build-level, such as a rate limit, or throws, the outcome is `failed`
-// with the failure name, so the write step leaves the issue open and the run fails. If
-// the bot cannot read the index, its pull requests, or the default branch, the outcome
-// is `failed` too.
+// reader marks build-level, such as a rate limit, or throws, or the check of the drafted
+// entry throws, the outcome is `failed` with the failure name, so the write step leaves
+// the issue open and the run fails. If the bot cannot read the index, its pull requests,
+// or the default branch, the outcome is `failed` too.
 // A message is cut to what a comment quotes, so a long one cannot make the handoff too
 // large for the write step.
 export async function issueRead(options: IssueReadOptions): Promise<IssueOutcome> {
@@ -89,8 +89,10 @@ async function readOutcome(options: IssueReadOptions): Promise<IssueOutcome> {
   const drafted = await draftEntry(parsed.url, { ...options, ids: index.ids, pendingIds: pulls.ids });
   if (!drafted.ok) {
     const { failure, message } = drafted;
-    // A rate limit or an outage says nothing about the plugin, so the issue stays open.
-    return drafted.buildLevel ? { outcome: "failed", failure, message } : { outcome: "refused", failure, message };
+    // A rate limit, an outage, or an entry check that throws says nothing about the
+    // plugin, so the issue stays open.
+    const failed = drafted.buildLevel || failure === "unexpected-error";
+    return failed ? { outcome: "failed", failure, message } : { outcome: "refused", failure, message };
   }
   // A renamed repo answers for its old name, and GitHub gives its new one. The reader
   // read the given URL, so it is a GitHub repo URL.
@@ -131,7 +133,8 @@ export interface IssueRunResult {
 // plugin id, since they can change while the read step runs, and the index in its
 // checkout, which is the commit the read step saw. Then it opens a pull request that
 // closes the issue when it merges, or closes the issue. Each answer is a comment on the
-// issue. If the read step failed, a build-level or thrown read of the repo included, or
+// issue. If the read step failed, a build-level or thrown read of the repo and a thrown
+// check of the drafted entry included, or
 // the bot cannot read the index, its pull requests, or the default branch, or the push
 // or the pull request fails, the comment says so and the issue stays open, and the
 // status is 1.
@@ -207,8 +210,11 @@ export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRun
   if (result.failed.length > 0) return failed(result.failed[0].message);
   const { url, branch } = result.proposed[0];
   // The create request's answer can lack the URL; the branch still names the pull request.
-  const opened = url || `a pull request from the branch \`${branch}\``;
-  return answer(`The bot opened ${opened}. This issue closes when that pull request merges.`);
+  // `pnpm close-issue` closes the issue only when this comment holds the URL.
+  if (!url) return answer(`The bot opened a pull request from the branch \`${branch}\`. This issue closes when that pull request merges.`);
+  return answer(
+    `The bot opened ${url}. This issue closes when that pull request merges. If that pull request is closed without a merge, the bot closes this issue as not planned.`,
+  );
 }
 
 // The lowercase owner/repo of a URL on github.com, which the reader would read.

@@ -81,7 +81,7 @@ async function runIssue(
   const sent = requests
     .filter(({ method }) => method !== "GET")
     .map(({ method, url, body: payload }) => ({ method, url, ...JSON.parse(payload!) }));
-  return { result, sent, gets: requests.filter(({ method }) => method === "GET").map(({ url }) => url) };
+  return { outcome, result, sent, gets: requests.filter(({ method }) => method === "GET").map(({ url }) => url) };
 }
 
 describe("parseIssueBody", () => {
@@ -136,7 +136,9 @@ describe("an issue run", () => {
     expect(sent.map(({ method, url }) => `${method} ${url}`)).toEqual([`POST ${PULLS}`, `POST ${COMMENTS}`]);
     expect(sent[0]).toMatchObject({ head: "discover/example/alpha", base: "main" });
     expect(sent[0].body).toContain("Closes #7");
-    expect(sent[1].body).toContain("https://github.com/example/index/pull/9");
+    expect(sent[1].body).toBe(
+      "The bot opened https://github.com/example/index/pull/9. This issue closes when that pull request merges. If that pull request is closed without a merge, the bot closes this issue as not planned.",
+    );
   });
 
   test.each([
@@ -274,6 +276,24 @@ describe("an issue run's read failures that point at the bot", () => {
     expect(sent[0].body).toMatch(new RegExp(`\`${failure}\`: \`[^\`]*${message}`));
   });
 
+  test("comments the failure name and message, leaves the issue open, and returns 1 when the entry check throws", async () => {
+    // With no git on PATH, the entry check's `git check-ref-format` cannot start.
+    const gitDir = checkout(tempDir()).work;
+    const path = process.env.PATH;
+    process.env.PATH = tempDir();
+    let run: Awaited<ReturnType<typeof runIssue>>;
+    try {
+      run = await runIssue(rendered("https://github.com/example/alpha"), { ...indexRepo, ...pluginRepo("example/alpha", "alpha@example.org"), ...opened }, { gitDir });
+    } finally {
+      process.env.PATH = path;
+    }
+    const { outcome, result, sent } = run;
+    expect(outcome).toMatchObject({ outcome: "failed", failure: "unexpected-error", message: expect.stringMatching(/^checking the entry of .* threw: .*ENOENT/) });
+    expect(result.status).toBe(1);
+    expect(sent).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(/^The bot could not finish/) }]);
+    expect(sent[0].body).toMatch(/`unexpected-error`: ` checking the entry of [^`]*ENOENT[^`]* `/);
+  });
+
   test.each([
     ["a GitHub API HTTP 404", { [ALPHA]: { status: 404, text: "Not Found" } }, "github-http-error"],
     ["an update.json HTTP 404", { [UPDATE]: { status: 404, text: "Not Found" } }, "update-json-http-error"],
@@ -316,7 +336,7 @@ describe("an issue run's answers", () => {
       [`POST ${PULLS}`]: { status: 201, json: {} },
     });
     expect(result.status).toBe(0);
-    expect(sent.at(-1)!.body).toContain("a pull request from the branch `discover/example/alpha`");
+    expect(sent.at(-1)!.body).toBe("The bot opened a pull request from the branch `discover/example/alpha`. This issue closes when that pull request merges.");
   });
 
   test("cuts a long message short, so the comment stays under GitHub's limit", async () => {

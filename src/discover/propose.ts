@@ -10,7 +10,7 @@ import { type DiscoverResult, type DiscoveryState, discover, indexed, type ReadI
 
 const API = "https://api.github.com";
 // The bot's branches are `discover/<owner>/<repo>`, lowercase.
-const PREFIX = "discover/";
+export const PREFIX = "discover/";
 // The github-actions[bot] account's name and noreply email, so GitHub links the commits
 // to that account.
 const BOT = { name: "github-actions[bot]", email: "41898282+github-actions[bot]@users.noreply.github.com" };

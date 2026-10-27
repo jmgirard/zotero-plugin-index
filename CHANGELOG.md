@@ -71,8 +71,11 @@
   the reason and closes the issue. It does the same for a repository that the
   index or a bot pull request already has. The bot's read of the repository
   can stop with a build-level failure, such as a GitHub rate limit or outage.
-  It can also stop with an error that the reader does not name. Then the bot
+  It can also stop with an error that the reader does not name, and the
+  check of the entry that the bot wrote can stop with an error. Then the bot
   comments the failure and leaves the issue open, and the workflow run fails.
+  If a maintainer closes the bot's pull request without a merge, the bot
+  comments on the issue and closes it as not planned.
 - The bot reads the repositories that anyone can name in a job that cannot
   write to the index repository. The `Discover plugins` and `Add a plugin
   from an issue` workflows each run a read job with read-only permissions and

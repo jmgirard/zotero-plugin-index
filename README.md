@@ -315,18 +315,34 @@ Its read of the repository can also fail for a reason that is not
 build-level. Then it comments the failure name and its message, and it
 closes the issue as not planned. A failed read includes a GitHub API
 answer of HTTP 404, which a repository that does not exist or is private
-gives. An `unexpected-error` from the check of the written entry also closes
-the issue, as a failed write does.
+gives.
 
 The bot itself can fail. Its read of the repository can stop with a
 build-level failure, as "Building the data" defines it. Examples are a rate
-limit, an outage, and an error that the reader does not name. It can fail to
-read `plugins/`, its own pull requests, or the default branch, or the push or
-the pull request can fail. The first job can also fail and leave no handoff.
+limit, an outage, and an error that the reader does not name. The check of
+the written entry can also stop with an error, `unexpected-error`, for
+example when git cannot start. The bot can fail to read `plugins/`, its own
+pull requests, or the default branch, or the push or the pull request can
+fail. The first job can also fail and leave no handoff.
 Then the bot comments the error and leaves the issue open, and the workflow
 run fails. If the read of the repository failed, the comment also gives the
 failure name. If `pnpm propose` refuses the handoff, the bot does not answer
 the issue, and the workflow run fails.
+
+A maintainer can close a bot pull request without a merge. Then the
+`Close the issue of a closed bot pull request` workflow runs
+`pnpm close-issue` with the pull request number in `PR_NUMBER`. The bot
+comments on the issue that the `Closes #<issue>` line of the pull request
+names, and closes that issue as not planned. The command acts only on a pull
+request from a `discover/` branch of the index repository whose body has
+exactly one `Closes #<issue>` line outside code blocks. The issue must be
+open, have the label `add-plugin`, and have a bot comment with the link to
+the pull request. If the bot already commented that the pull request was
+closed without a merge, the command does nothing. One run at a time handles
+each pull request. The workflow runs on `pull_request_target`, so it runs its
+file from the default branch and runs no code from the pull request. A pull
+request that the bot's own token closes starts no workflow run, so its issue
+stays open.
 
 The first job gets the issue body in the `ISSUE_BODY` environment variable.
 The second job gets the issue number in `ISSUE_NUMBER`. The workflow runs in the

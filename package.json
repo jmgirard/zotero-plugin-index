@@ -12,6 +12,7 @@
     "add-plugin": "node src/add-plugin/cli.ts",
     "build": "node src/build/cli.ts",
     "check": "node src/check/cli.ts",
+    "close-issue": "node src/discover/close-issue-cli.ts",
     "discover": "node src/discover/cli.ts",
     "discover-issue": "node src/discover/issue-cli.ts",
     "propose": "node src/discover/propose-cli.ts",
