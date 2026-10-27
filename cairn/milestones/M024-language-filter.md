@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M024: Filter the home list by interface language
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M023   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -43,69 +43,57 @@ once, in list order. A record with no `upstream` has an empty applied list. M023
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [x] AC1: Each plugin page whose record has `upstream` shows an "Interface
-      languages" fact (`data-fact="languages"`) outside the Details section.
-      It comes after the declared-range line if the page has one, and before
-      the reports section. The fact names each tag of the applied list by
+- [x] AC1: Each plugin page whose record has `upstream` shows an "Interface languages" fact
+      (`data-fact="languages"`) outside the Details section. It comes after the declared-range
+      line if the page has one, and before the reports section. The fact names each tag of the
+      applied list by
       `new Intl.DisplayNames(["en"], { type: "language", languageDisplay: "standard" }).of(tag)`,
-      in list order, joined by `, `. If the list is empty, the fact says
-      "None declared". Tests in `test/site.test.ts` check the fact's text for
-      six records against text written in the test:
+      in list order, joined by `, `. If the list is empty, the fact says "None declared". Tests
+      in `test/site.test.ts` check the fact's text for six records against text written in the
+      test:
       - two tags in `upstream.languages`, `[]`, and no `languages` field;
-      - an override with no version whose value `fr, de` is out of
-        code-unit order, shown in that order;
+      - an override with no version whose value `fr, de` is out of code-unit order, shown in
+        that order;
       - an override for another version only, so the upstream list shows;
-      - an override for the version read beside one with no version, where
-        the version-specific override's list shows.
-      In the Overrides table, a `languages` override shows the upstream list
-      joined by `, ` as its upstream value. If that list is empty or absent,
-      the table shows "none". Tests check the table for an empty and a
-      non-empty upstream list.
-- [x] AC2: The built home page holds a `<label>` and a
-      `<select data-language-filter>` inside one element with the `hidden`
-      attribute. The first option is "All languages", with the value `""`.
-      Then comes one option for each subtag that some row carries. The
-      option's value is the subtag. Its text, written at build, is
-      `DisplayNames.of(subtag)`, with the `DisplayNames` of AC1. A space
-      follows, then the number of rows that carry the subtag in parentheses,
-      such as `Chinese (2)`. These options are sorted by text in code-unit
-      order. Each plugin row carries `data-languages`. Its value is the
-      language subtags (`new Intl.Locale(tag).language`) of the row's
-      applied list, each once, in code-unit order, joined by single spaces.
-      A test over the site fixture checks each row's `data-languages="`
-      attribute and each option's value and text against values written in
-      the test. The fixture holds a record with `zh-CN` and `zh-TW`, counted
-      once under `zh`. It also holds a record whose read failed, whose row
-      carries `data-languages=""`.
-- [x] AC3: The home page's script removes that `hidden` attribute. When the
-      visitor picks an option, the script shows each row whose
-      `data-languages`, split on spaces, contains the option's value, and
-      hides each other row. "All languages" shows every row. The script then
-      sets the URL's `language` query parameter to the value, keeping the
-      path, and removes the parameter for "All languages". When the page
-      loads with a `language` parameter equal to an option's value, the
-      script selects that option and applies the same filter. With any other
-      value, it selects "All languages" and shows every row. A function in
-      `src/site/` decides whether a row shows. Tests in `test/` cover six
-      inputs: a subtag the row carries, `""`, a row with an empty
-      `data-languages`, `en` against a row that carries only `ken`, and a
-      row with several subtags whose match is not the first. The sixth is a
-      value that no option has, where the page shows every row. A browser
-      check on the site built from the fixture, served on this machine with
-      the output directory at `/zotero-plugin-index/`, shows four things.
-      Loading the home page shows the menu. Picking Chinese leaves visible
-      exactly the fixture rows the test lists for `zh`, and the URL then
-      ends with `?language=zh`. Picking "All languages" shows every row and
-      drops the parameter. Loading `?language=xx` selects "All languages"
-      and shows every row.
-- [x] AC4: No page built from the site fixture, other than the home page,
-      holds a `<script` element. A test reads every `.html` file of that
-      build to show it.
-- [x] AC5: README "The site" describes the language menu, the `language`
-      query parameter, the full list that shows without JavaScript, and the
-      plugin page fact. The `## Unreleased` entry of `CHANGELOG.md` for the
-      language list names them. If a release took that entry, a new entry
-      names them.
+      - an override for the version read beside one with no version, where the version-specific
+        override's list shows.
+      In the Overrides table, a `languages` override shows the upstream list joined by `, ` as
+      its upstream value. If that list is empty or absent, the table shows "none". Tests check
+      the table for an empty and a non-empty upstream list.
+- [x] AC2: The built home page holds a `<label>` and a `<select data-language-filter>` inside
+      one element with the `hidden` attribute. The first option is "All languages", with the
+      value `""`. Then comes one option for each subtag that some row carries. The option's
+      value is the subtag. Its text, written at build, is `DisplayNames.of(subtag)`, with the
+      `DisplayNames` of AC1. A space follows, then the number of rows that carry the subtag in
+      parentheses, such as `Chinese (2)`. These options are sorted by text in code-unit order.
+      Each plugin row carries `data-languages`. Its value is the language subtags
+      (`new Intl.Locale(tag).language`) of the row's applied list, each once, in code-unit
+      order, joined by single spaces. A test over the site fixture checks each row's
+      `data-languages="` attribute and each option's value and text against values written in
+      the test. The fixture holds a record with `zh-CN` and `zh-TW`, counted once under `zh`. It
+      also holds a record whose read failed, whose row carries `data-languages=""`.
+- [x] AC3: The home page's script removes that `hidden` attribute. When the visitor picks an
+      option, the script shows each row whose `data-languages`, split on spaces, contains the
+      option's value, and hides each other row. "All languages" shows every row. The script then
+      sets the URL's `language` query parameter to the value, keeping the path, and removes the
+      parameter for "All languages". When the page loads with a `language` parameter equal to an
+      option's value, the script selects that option and applies the same filter. With any other
+      value, it selects "All languages" and shows every row. A function in `src/site/` decides
+      whether a row shows. Tests in `test/` cover six inputs: a subtag the row carries, `""`, a
+      row with an empty `data-languages`, `en` against a row that carries only `ken`, and a row
+      with several subtags whose match is not the first. The sixth is a value that no option
+      has, where the page shows every row. A browser check on the site built from the fixture,
+      served on this machine with the output directory at `/zotero-plugin-index/`, shows four
+      things. Loading the home page shows the menu. Picking Chinese leaves visible exactly the
+      fixture rows the test lists for `zh`, and the URL then ends with `?language=zh`. Picking
+      "All languages" shows every row and drops the parameter. Loading `?language=xx` selects
+      "All languages" and shows every row.
+- [x] AC4: No page built from the site fixture, other than the home page, holds a `<script`
+      element. A test reads every `.html` file of that build to show it.
+- [x] AC5: README "The site" describes the language menu, the `language` query parameter, the
+      full list that shows without JavaScript, and the plugin page fact. The `## Unreleased`
+      entry of `CHANGELOG.md` for the language list names them. If a release took that entry, a
+      new entry names them.
 - [x] AC6: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
@@ -147,6 +135,7 @@ once, in list order. A record with no `upstream` has an empty applied list. M023
 - [x] T6: README "The site", the CHANGELOG entry, and DESIGN ("Contract
       boundary", and the Architecture line that says the pages carry no
       script). Run `pnpm test` and `pnpm check`.
+- [x] T7: Bring this file's plan-owned body under 150 lines (review return 1).
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -179,6 +168,7 @@ once, in list order. A record with no `upstream` has an empty applied list. M023
 - 2026-10-27: claim audit: 64 claims read, 0 corrected — README.md, CHANGELOG.md, src/site/languages.ts, src/site/language-filter.ts, site/src/data.ts, site/src/pages/index.astro, test names; a second pass after the review's fixes added prose. The reader's own `test/site.test.ts` run failed at its `pnpm site` step in its sandbox; here `pnpm test` (676) and `pnpm check` pass.
 - 2026-10-27: amendment done; status set to review.
 - 2026-10-27: review return 1: the consistency gate's `weight caps` check fails — 150 plan-owned lines against a cap below 150, after the Scope amendment added a line; status set to in-progress.
+- 2026-10-27: T7 added for review return 1 (minor amendment) and done: the heaviest plan-owned section, Acceptance criteria, re-wrapped in one pass to lines of up to 96 columns; its whitespace-normalized text is identical before and after (checked against HEAD), so no criterion wording changed. `cairn_validate.py` `weight caps` passes; status set to review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
