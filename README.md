@@ -322,10 +322,10 @@ report:
 - The issue has exactly one of the labels `works` and `broken`.
 
 If the bot takes the report, it comments the plugin id, the plugin version,
-the Zotero major, and the verdict. The comment also states the counting
-rule. A report counts only while the index reads that plugin version. It
-counts once per GitHub account for each plugin and Zotero major. Then the
-bot closes the issue as completed. Otherwise, the bot comments the name and the message of the
+the Zotero major, and the verdict. The comment also states how the index
+will count the report. It will count a report only while it reads that
+plugin version, and once per GitHub account for each plugin and Zotero
+major. Then the bot closes the issue as completed. Otherwise, the bot comments the name and the message of the
 first problem it found, and closes the issue as not planned. The comment
 puts each value from the issue in a code span, so the value cannot link to
 a page or mention a user.

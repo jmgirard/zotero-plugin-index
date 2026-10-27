@@ -18,7 +18,8 @@ export type ReportProblem = "missing-heading" | "no-response" | "unknown-plugin"
 
 export type ReportResult = { ok: true; report: Report } | { ok: false; problem: ReportProblem; message: string };
 
-// The longest plugin version a report can name, so a report cannot fill a comment.
+// The longest plugin version a report can name, and the most of an unknown plugin id that
+// a problem message quotes, so the value cannot fill the bot's comment.
 const VERSION_MAX = 100;
 const NEWEST_MAJOR = Math.max(...ZOTERO_MAJORS.map(Number));
 
@@ -34,7 +35,10 @@ export function parseReport(body: string, labels: readonly string[], ids: Readon
     values[id] = value.value;
   }
   const { plugin, version, zotero } = values as Record<keyof typeof REPORT_LABELS, string>;
-  if (!ids.has(plugin)) return problem("unknown-plugin", `the index has no plugin with the id ${plugin}`);
+  if (!ids.has(plugin)) {
+    const quoted = plugin.length > VERSION_MAX ? `${plugin.slice(0, VERSION_MAX)}…` : plugin;
+    return problem("unknown-plugin", `the index has no plugin with the id ${quoted}`);
+  }
   if (version.length > VERSION_MAX || /\s/.test(version)) {
     return problem("bad-plugin-version", `the plugin version must be at most ${VERSION_MAX} characters with no spaces`);
   }

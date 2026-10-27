@@ -53,7 +53,7 @@ export async function answerReport(options: ReportAnswerOptions): Promise<Report
     comment = [
       `The bot took this report: ${code(plugin)} version ${code(version)} ${verdict} on Zotero ${code(String(zoteroMajor))}.`,
       "",
-      "The report counts only while the index reads that plugin version, and once per GitHub account for each plugin and Zotero major.",
+      "The index will show report counts on its plugin pages. It will count this report only while it reads that plugin version, and once per GitHub account for each plugin and Zotero major.",
     ].join("\n");
     close = "completed";
   } else {

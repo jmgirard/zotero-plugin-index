@@ -12,13 +12,12 @@ permissions: {}
 
 jobs:
   answer:
-    # Only issues from works.yml and broken.yml, which add the label `report`.
+    # Only issues opened with the label `report`, which works.yml and broken.yml add.
     if: contains(github.event.issue.labels.*.name, 'report')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # This job comments on and closes issues, so it restores and saves no Actions cache,
-    # as the build job of `Build data` does not. GitHub enforces this mode with the job's
-    # cache token.
+    # like the build job of `Build data`. GitHub's cache service enforces this mode.
     cache-mode: none
     permissions:
       contents: read

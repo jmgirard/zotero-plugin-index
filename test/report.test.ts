@@ -85,10 +85,16 @@ describe("parseReport", () => {
     });
   });
 
-  test("names a plugin id that no entry has", () => {
-    expect(parseReport(rendered({ ...valid, plugin: "gamma@example.org" }), ["report", "works"], IDS)).toMatchObject({
+  test("names a plugin id that no entry has, and quotes at most 100 characters of it", () => {
+    expect(parseReport(rendered({ ...valid, plugin: "gamma@example.org" }), ["report", "works"], IDS)).toEqual({
       ok: false,
       problem: "unknown-plugin",
+      message: "the index has no plugin with the id gamma@example.org",
+    });
+    expect(parseReport(rendered({ ...valid, plugin: "g".repeat(5000) }), ["report", "works"], IDS)).toEqual({
+      ok: false,
+      problem: "unknown-plugin",
+      message: `the index has no plugin with the id ${"g".repeat(100)}…`,
     });
   });
 
@@ -143,7 +149,7 @@ async function runReport(responses: Responses, root = pluginsDir()) {
 }
 
 describe("answering a report issue", () => {
-  test("comments the counted report and closes the issue as completed", async () => {
+  test("comments the taken report and closes the issue as completed", async () => {
     const { result, sent } = await runReport(issueResponses(rendered(valid), ["report", "works"]));
     expect(result).toMatchObject({ status: 0, errors: [] });
     expect(sent.map(({ method, url }) => `${method} ${url}`)).toEqual([`POST ${COMMENTS}`, `PATCH ${ISSUE}`]);
@@ -152,7 +158,7 @@ describe("answering a report issue", () => {
     expect(comment).toContain(code("1.2.0"));
     expect(comment).toContain(code("7"));
     expect(comment).toContain("works");
-    expect(comment).toContain("only while the index reads that plugin version");
+    expect(comment).toContain("only while it reads that plugin version");
     expect(sent[1].body).toEqual({ state: "closed", state_reason: "completed" });
   });
 
