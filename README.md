@@ -52,8 +52,9 @@ user reports and links to the repository and its releases. The interface
 languages come from the `languages` list that "Using the data" describes. If
 a `languages` override applies to the plugin version that the index read,
 the override replaces that list. If no language is left, the page shows
-"None declared". A closed "Details" section follows. It holds the plugin id, facts about the
-repository and its releases, and the overrides of the index for the plugin.
+"None declared". A closed "Details" section follows. It holds the plugin id,
+facts about the repository and its releases, and the overrides of the index
+for the plugin.
 If the last build failed to read a plugin, its page shows the failure in place
 of the pills. That page has no interface languages line.
 

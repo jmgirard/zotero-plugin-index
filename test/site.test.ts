@@ -368,7 +368,7 @@ describe("the home page", () => {
   // The row holds no other <li>, so it ends at the first </li> after it starts.
   function row(id: string): string {
     const html = home();
-    const start = html.indexOf(`<li class="plugin" data-plugin="${id}" `);
+    const start = html.indexOf(` data-plugin="${escaped(id)}"`);
     expect(start, id).toBeGreaterThan(-1);
     return html.slice(start, html.indexOf("</li>", start));
   }
@@ -396,7 +396,10 @@ describe("the home page", () => {
   });
 
   test("gives each row the language subtags it applies", () => {
-    const rows = [...home().matchAll(/<li class="plugin" data-plugin="([^"]*)" data-languages="([^"]*)">/g)].map(([, id, languages]) => [id, languages]);
+    const rows = [...home().matchAll(/<li class="plugin"[^>]*>/g)].map(([tag]) => [
+      /\sdata-plugin="([^"]*)"/.exec(tag)?.[1],
+      /\sdata-languages="([^"]*)"/.exec(tag)?.[1],
+    ]);
     expect(rows).toEqual([
       ["broken-plugin@example.org", ""],
       ["first-plugin@example.org", "en zh"],

@@ -176,10 +176,11 @@
   apply it. The schema stays at version 1. The schema rejects fields that
   it does not define, so fetch any saved copy of it again. The page of each
   plugin that the index read shows the languages by name in an "Interface
-  languages" line. That line uses a `languages` override that applies to
-  the version the index read. If the plugin has no languages, the line says
-  "None declared". The home page has an "Interface language" menu that
-  shows only the plugins with the language you pick. It counts `zh-CN` and `zh-TW`
+  languages" line. If a `languages` override applies to the version the
+  index read, the line shows the override's languages in place of the list.
+  If no language is left, the line says "None declared". The home page has
+  an "Interface language" menu that shows only the plugins with the
+  language you pick. It counts `zh-CN` and `zh-TW`
   under one entry, Chinese. The page keeps the choice in the `language`
   query parameter, such as `?language=zh`. A script runs the menu, so
   without JavaScript the home page shows no menu and lists every plugin.

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { rowShows } from "../src/site/language-filter.ts";
+import { filterHref, menuValue, rowShows } from "../src/site/language-filter.ts";
 import { appliedLanguages, languageName, languageOptions, rowLanguages, type LanguageRecord } from "../src/site/languages.ts";
 
 const OPTIONS = ["", "de", "en", "zh"];
@@ -14,6 +14,28 @@ describe("rowShows", () => {
     ["a value that no option has", "en", "xx", true],
   ])("%s", (_, row, value, shows) => {
     expect(rowShows(row, value, OPTIONS)).toBe(shows);
+  });
+});
+
+describe("menuValue", () => {
+  test.each([
+    ["an option's value", "zh", "zh"],
+    ["a value that no option has", "xx", ""],
+    ["no parameter", null, ""],
+  ])("selects %s", (_, asked, value) => {
+    expect(menuValue(asked, OPTIONS)).toBe(value);
+  });
+});
+
+describe("filterHref", () => {
+  const PAGE = "http://localhost:4321/zotero-plugin-index/";
+
+  test("sets the language parameter and keeps the path and the other parameters", () => {
+    expect(filterHref(`${PAGE}?a=1&language=en`, "zh")).toBe(`${PAGE}?a=1&language=zh`);
+  });
+
+  test("removes the language parameter for All languages", () => {
+    expect(filterHref(`${PAGE}?language=zh`, "")).toBe(PAGE);
   });
 });
 
@@ -54,10 +76,6 @@ describe("languageName", () => {
 describe("rowLanguages", () => {
   test("is each language subtag once, in code-unit order", () => {
     expect(rowLanguages(record(["zh-TW", "en-US", "zh-CN"]))).toBe("en zh");
-  });
-
-  test("is empty for a record with no applied languages", () => {
-    expect(rowLanguages({ overrides: [] })).toBe("");
   });
 });
 

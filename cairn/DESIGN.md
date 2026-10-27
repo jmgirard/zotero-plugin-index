@@ -31,7 +31,8 @@ declared range of Zotero versions, source availability, whether GitHub marks
 the repository archived (when GitHub's response says), repository age, the
 release the index read and whether it is a prerelease (corrected M014),
 release count, open issues, the host of the `update.json` file, the
-counted user reports on the release the index read (M021).
+counted user reports on the release the index read (M021), and the
+interface languages (M024).
 The data also carries the interface languages that the read XPI's locale
 folders name (M023). They say which languages a plugin ships interface text
 for, not whether a translation is complete. A `languages` override records
@@ -40,9 +41,10 @@ them by name, outside the Details section, and the home page's language
 menu filters the list by language subtag, run by the site's one script
 (D-014, M024).
 The page shows the name, the description, the version pills, the declared
-range, the user reports on the release the index read with a "Works" and a
-"Broken" link (M021), and the repository and releases links first. The other facts sit in a
-closed "Details" section (M015). The home list marks an
+range, the interface languages (M024), the user reports on the release the
+index read with a "Works" and a "Broken" link (M021), and the repository
+and releases links first. The other facts sit in a closed "Details"
+section (M015). The home list marks an
 archived plugin with "(archived)" after its name, and the data carries the
 same `archived` fact (M013).
 The Details section also shows each override beside the upstream value it

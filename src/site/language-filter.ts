@@ -7,3 +7,18 @@ export function rowShows(rowLanguages: string, value: string, options: readonly 
   if (value === "" || !options.includes(value)) return true;
   return rowLanguages.split(" ").includes(value);
 }
+
+// The menu value for the page's language parameter: the parameter when an option has it,
+// else "" (All languages).
+export function menuValue(asked: string | null, options: readonly string[]): string {
+  return asked !== null && options.includes(asked) ? asked : "";
+}
+
+// The page's address with its language parameter set to value, or with the parameter
+// removed when value is "". The path and the other parameters stay.
+export function filterHref(href: string, value: string): string {
+  const url = new URL(href);
+  if (value) url.searchParams.set("language", value);
+  else url.searchParams.delete("language");
+  return url.href;
+}
