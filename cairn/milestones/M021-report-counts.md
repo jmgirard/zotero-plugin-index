@@ -41,7 +41,7 @@ throwaway accounts.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: `countReports` in `src/reports/` takes the report issues and the
+- [x] AC1: `countReports` in `src/reports/` takes the report issues and the
       build's records and returns, for each record, the works and broken
       counts on each Zotero major. It first drops pull requests, issues not
       closed as completed, issues whose `closed_by` is null or absent or has
@@ -57,7 +57,7 @@ throwaway accounts.
       and major both count, the newest report decides when an older one has
       the other verdict, and an account whose newest report is dropped keeps
       its older remaining report.
-- [ ] AC2: `pnpm build` reads the report issues before any plugin read. It
+- [x] AC2: `pnpm build` reads the report issues before any plugin read. It
       reads every page of the issue list with `labels=report` and
       `state=closed`, from the repo that `GITHUB_REPOSITORY` names, or from
       `jmgirard/zotero-plugin-index` when that variable is unset. It writes
@@ -72,15 +72,15 @@ throwaway accounts.
       the first request is the issue list, that the list requests carry
       `labels=report` and `state=closed`, the written `reports`, and that the
       output passes the schema.
-- [ ] AC3: If the build's read of the report issues fails, `pnpm build`
+- [x] AC3: If the build's read of the report issues fails, `pnpm build`
       prints a line that names the failure, writes no `v1/plugins.json`, and
       exits 1. Tests in `test/build.test.ts` show this for an HTTP 503
       answer, a rejected fetch, a second page that fails after the first
       succeeds, and an answer whose body is not a list.
-- [ ] AC4: The build job of `.github/workflows/build.yml` holds
+- [x] AC4: The build job of `.github/workflows/build.yml` holds
       `issues: read` beside `contents: read`, and a test in
       `test/workflows.test.ts` checks it.
-- [ ] AC5: The page of a record that has `upstream` shows, under the version
+- [x] AC5: The page of a record that has `upstream` shows, under the version
       pills, the version the index read and either the works and broken
       counts of each item in `reports` or a line saying that version has no
       reports yet. It also shows a "Works" link and a "Broken" link. Each
@@ -93,7 +93,7 @@ throwaway accounts.
       `test/site.test.ts` shows each case with fixture records: one with
       reports, one with an empty `reports`, one with no `reports` field, one
       whose id and version need URL encoding, and one with `failure`.
-- [ ] AC6: README's "Using the data" section defines `reports` with the rule
+- [x] AC6: README's "Using the data" section defines `reports` with the rule
       of AC1, and says the count follows each issue's current text. README's
       "The site" section names the counts and the links. The CHANGELOG entry
       that M020 added also covers the counts, the links, and the new optional
@@ -106,7 +106,7 @@ throwaway accounts.
       read. Its Known issues section gains an entry: throwaway accounts can
       inflate the counts, and the maintainer removes abuse one issue at a
       time with the label `not-counted`.
-- [ ] AC7: `pnpm test` (type check, then Vitest) and `pnpm check` pass.
+- [x] AC7: `pnpm test` (type check, then Vitest) and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate -->
@@ -169,3 +169,15 @@ throwaway accounts.
 
 ## Review
 <!-- owner: review · exclusive -->
+
+Pass 2, at bfe95d3 (main 83abe0a unmoved). Pass 1 returned AC6 (review return 1).
+
+- AC1: `pnpm exec vitest run --reporter=verbose`: 27 `countReports` tests pass in `test/report.test.ts`: the control that counts, each drop (pull request, not planned, no reason, a person's login, `github-actions` without `[bot]`, null `closed_by`, absent `closed_by`, `not-counted`, a `parseReport` refusal, another version), the dropped-newest case for each drop, two majors, two plugins, two accounts, newest-decides in both list orders, the tie by issue number, and one `user.id` under two logins. Pass 1 planted defects (no `closed_by` check, no tie rule) turned 3 of them red.
+- AC2: `test/build.test.ts` "reads every page of the closed report issues first and writes the counted reports" passes: the fixture's two pages are linked by `rel="next"`; the first two requests are page 1 and page 2 of the issue list, both lists carry `labels=report` and `state=closed`; Better Notes gets `[{7,1,0},{8,1,0}]`, second-plugin `[{7,0,1}]`, the forked record no `reports`; the output passes the schema. "writes an empty reports list…" and "reads the report issues of the repo that GITHUB_REPOSITORY names" pass, and the spawn strips `GITHUB_REPOSITORY` otherwise, so the default repo is the one read. The schema's `reportCount` (read in `schemas/plugins.v1.schema.json`) requires `zoteroMajor` (integer, minimum 7), `works` and `broken` (integers, minimum 0), with `additionalProperties: false`; 7 `checkOutput` tests pass on it.
+- AC3: the four "names the failure, writes no data file, and exits 1" tests pass: an HTTP 503 answer, a rejected fetch, a page-2 HTTP 502 after page 1 succeeds, and a body that is not a list. Each asserts exit 1, stderr `cannot read the report issues: <failure name>: <message>`, no `v1/plugins.json`, and only issue-list requests. Pass 1's planted defect (the build goes on with no issues) turned all four red.
+- AC4: Ruby's YAML reads the build job's permissions as `{"contents"=>"read", "issues"=>"read"}`. `test/workflows.test.ts` "gives the build job contents read and issues read, and no other permission" passes; with `issues: read` removed in pass 1 it failed.
+- AC5: `test/site.test.ts` passes 10 "the report block" tests and 6 "shows the parts of … in order" tests over fixture records: first-plugin with reports (Zotero 7: 3 works, 1 broken; Zotero 8: 0 works, 2 broken), old-plugin with an empty `reports`, the GUID record with no `reports` field (both show "No reports on this version yet."), every read record's two links to `https://github.com/jmgirard/zotero-plugin-index/issues/new` with `template`, `plugin`, and `version`, the GUID record's exact query `template=works.yml&plugin=%7B…%7D&version=3.0.0%2Br1`, and broken-plugin (failure) with no block or links. The order test puts the block after the pills and declared range. Pass 1 viewed the built pages through a local server; unencoded versions turned 2 tests red.
+- AC6: joined-text searches (each count 1, none 0). README "Using the data": `reports`, each drop (pull request, not closed as completed, `github-actions[bot]`, `not-counted`, the bot's checks, `upstream.version`), "only the newest counts", "user id", "higher issue number", "current text". README "The site": the "works"/"broken" counts and the "Works"/"Broken" links. CHANGELOG Unreleased (M020's entry): "optional `reports` field", "Works" link, "fetch it again". DESIGN: item 4 ("Two issue forms take", the bot closes, "The daily build reads the closed report issues"); Contract boundary names `reports` and "its read of the index repo['s closed report issues]" (fixed by T6); Function Families' data build names the issue read and `reports`; the `src/build/` paragraph names both; Known issues has the throwaway-accounts entry with `not-counted`.
+- AC7: at bfe95d3, `pnpm test` ran the type check and Vitest: 15 files, 589 tests passed. `pnpm check`: "checked 20 entries in plugins, 0 problems".
+- Consistency gate: `cairn_validate.py` exit 0, all checks pass; profile `generic` names no toolchain checks; no DESIGN principle changed, so no `cairn_impact` run.
+- spawned: diff-bug, blame-history, prior-review, ripple
