@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-27 (M024 done and archived; 2 rows added, 1 extende
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M025 | Drop locale folders naming no language | review | — | low | milestones/M025-named-languages.md |
+| M025 | Drop locale folders naming no language | in-progress | — | low | milestones/M025-named-languages.md |
 | M024 | Filter the home list by interface language | done | M023 | normal | milestones/archive/M024-language-filter.md |
 | M023 | Record each plugin's interface languages | done | — | normal | milestones/archive/M023-record-languages.md |
 | M022 | Fix two gaps of the issue bot | done | — | normal | milestones/archive/M022-issue-bot-fixes.md |

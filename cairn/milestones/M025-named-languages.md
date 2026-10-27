@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M025: Drop locale folders naming no language
 
-- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** low   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -39,12 +39,12 @@ pattern `LANGUAGE_TAG` does not change.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: For an XPI whose locale folders are `locale/en-US/`,
+- [x] AC1: For an XPI whose locale folders are `locale/en-US/`,
       `locale/img/`, `locale/js/`, `locale/qaa/`, `chrome/locale/IMG/`,
       `locale/js_US/`, and `locale/fil/`, each holding a file,
       `readUpstream` gives `languages` as `["en-US", "fil"]`. A case in the
       languages table of `test/upstream.test.ts` asserts this list.
-- [ ] AC2: For an XPI whose only locale folders are `chrome/locale/en_XX/`
+- [x] AC2: For an XPI whose only locale folders are `chrome/locale/en_XX/`
       and `chrome/locale/en_Qaaa/`, each holding a file, `readUpstream`
       gives `languages` as `["en-Qaaa", "en-XX"]`. A case in that table
       asserts this list.
@@ -58,7 +58,7 @@ pattern `LANGUAGE_TAG` does not change.
       README.md also states that this rule does not apply to `languages`
       override values. README.md, with each line break replaced by a space,
       does not contain "does not check that a tag names".
-- [ ] AC4: `pnpm test` and `pnpm check` pass.
+- [x] AC4: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate -->
@@ -112,9 +112,18 @@ pattern `LANGUAGE_TAG` does not change.
 - 2026-10-27: claim audit: 14 claims read, 0 corrected — README.md, CHANGELOG.md, schemas/plugins.v1.schema.json, src/upstream/reader.ts, test/upstream.test.ts, cairn/DESIGN.md. Its optional note taken: schema "Empty when the XPI has none" now reads "no such folder".
 - 2026-10-27: T4 done: `pnpm test` 681 passed, `pnpm check` 0 problems on Node 26.12.1; the Node 24 check of AC1 and AC2 is the PR's CI run at review.
 - 2026-10-27: status review; handed to /milestone-review.
+- 2026-10-27: review return 1: AC3 fails as written; the comment on `languages` in `src/upstream/reader.ts` (near line 31) does not name the build's Node.js `Intl` data.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
 
 ## Review
 <!-- owner: review · exclusive. -->
+
+Pass 1 (2026-10-27, branch at 2e1c9a4, main not moved):
+
+- AC1: `vitest run test/upstream.test.ts --reporter=verbose` passes "lists only tags whose language has an English name as the languages" (expects `["en-US", "fil"]` from the seven folders as written).
+- AC2: the same run passes "lists tags whose region or script has no name as the languages" (expects `["en-Qaaa", "en-XX"]`).
+- AC3: FAIL. README, CHANGELOG, schema, DESIGN (both sites), and the `localeLanguages` comment name the Node.js `Intl` data; README states overrides are not checked; the joined README holds 0 matches of "does not check that a tag names". The comment on `languages` in `src/upstream/reader.ts` (near line 31) says only "has an English name (see localeLanguages)" and does not name the Node.js `Intl` data. Returned to implement.
+- AC4: `pnpm test` 17 files, 681 tests passed; `pnpm check` 20 entries, 0 problems.
+- Gate: `cairn_validate` all checks passed; no principle changed (cairn_impact skipped); generic profile names no toolchain checks.
