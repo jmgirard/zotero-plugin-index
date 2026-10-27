@@ -37,7 +37,7 @@ override values and the schema's tag pattern do not change.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: `localeLanguages` keeps a tag that the rules before this
+- [x] AC1: `localeLanguages` keeps a tag that the rules before this
       milestone keep if and only if a file holds a message among the files
       under the folders whose names canonicalize to that tag
       (`locale/<name>/` or `chrome/locale/<name>/`, at any depth). After a
@@ -69,7 +69,7 @@ override values and the schema's tag pattern do not change.
       - `locale/zh_CN/` with comments only beside `chrome/locale/zh-CN/`
         with a message giving `zh-CN`, and both with comments only giving
         no tag.
-- [ ] AC2: The languages step counts a locale file as holding a message,
+- [x] AC2: The languages step counts a locale file as holding a message,
       without inflating it, when its declared unzipped or compressed size
       passes `UNZIPPED_MAX_BYTES`, when its compression method is neither
       stored nor deflate, or when its declared unzipped size would take the
@@ -84,7 +84,7 @@ override values and the schema's tag pattern do not change.
       XPI within `XPI_MAX_BYTES` whose comment-only locale files pass 8 MiB
       in total, and the folders after the total keep their tags. Another
       holds two locale entries with the same name.
-- [ ] AC3: While the index reads Zoplicate 5.1.1, a run of the Build data
+- [x] AC3: While the index reads Zoplicate 5.1.1, a run of the Build data
       workflow on the milestone branch lists its `languages` as
       `["en-US", "zh-CN"]`. For each other record with an `upstream` block
       in both that run's data artifact and the published
@@ -92,7 +92,7 @@ override values and the schema's tag pattern do not change.
       the same `upstream.version`, the branch list equals the published
       list, or equals it less tags whose folders' files hold no message by
       AC1's rule.
-- [ ] AC4: These passages state AC1's rule, that a folder counts only when
+- [x] AC4: These passages state AC1's rule, that a folder counts only when
       one of its files holds a message, judged by file type: the
       `languages` paragraph of README.md's "Using the data"; the languages
       entry under "Unreleased" in CHANGELOG.md; the `languages` description
@@ -102,7 +102,7 @@ override values and the schema's tag pattern do not change.
       `readRelease`, and `localeLanguages` in `src/upstream/reader.ts`.
       DESIGN's reader paragraph and the `localeLanguages` comment also state
       that the step inflates locale files within AC2's limits in one walk.
-- [ ] AC5: `pnpm test` and `pnpm check` pass.
+- [x] AC5: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate -->
@@ -168,3 +168,13 @@ override values and the schema's tag pattern do not change.
 
 ## Review
 <!-- owner: review · exclusive -->
+
+Pass 1, 2026-10-27, branch head f22232c; main at 2068a97, not moved since the cut.
+
+- AC1: `vitest run test/upstream.test.ts --reporter=verbose` passes all 21 "as the languages" cases: per type, a comment-only folder left out beside a kept message folder (`.ftl`; `.properties` with `#`, `!`, indented, and space/tab/form-feed lines; `.dtd` with a commented entity and an unclosed comment); a terms-only `.ftl` kept; a BOM `.ftl` message kept; a BOM comment-only `.properties` left out; `icon.png` and `LICENSE` folders kept; upper-case `.FTL` by content; `chrome/locale/` and nested `sub/` folders by content; a mixed folder kept; `locale/zh_CN/` beside `chrome/locale/zh-CN/` giving `zh-CN` with one message and no tag with none. The 9 cases kept from M023 and M025 still pass with message files.
+- AC2: the same run passes the 6 limit cases (a comment-only control left out; declared size over 1 MiB, compressed size over 1 MiB, compression 12, a broken deflate stream, and output past a declared 3 bytes each keep `de` with the read `ok`), the 8 MiB case (ten 1,000,000-byte comment files, `["fr", "he"]` kept), and both duplicate-name cases (`ok`, `["de"]` and `[]`). Code read of `localeLanguages`: one `for…of centralEntries(zip)` loop, each file read through `entryAt(zip, header, zip64)` with no inner walk; every per-file step sits in a `try` that keeps the tag; `centralEntries` throws outside that `try`, and `readManifest` still maps it to `xpi-unreadable`. Implement's plants (work log) showed the cap, catch, and budget tests failing without their guard.
+- AC3: Build data run 40516293620 at 82f544b (Node 24); `git diff 82f544b HEAD -- src` changes only comment lines. Its artifact lists Zoplicate 5.1.1 as `["en-US", "zh-CN"]`; the published data fetched again at review still lists it with 48 tags; 27 other records share a version in both files, and all 27 lists are equal.
+- AC4: read at f22232c: README "Using the data" (folder needs a file that holds a message, rule per type), CHANGELOG Unreleased languages entry (same, per type), schema `languages` description (same, per type), DESIGN languages paragraph, data sources item 2, and reader paragraph (rule by type, one walk from each header, the 1 MiB and 8 MiB limits, still up to three walks), and the comments on `UpstreamFacts.languages`, `readRelease`, and `localeLanguages` (rule, one walk, limits). Each states the message rule.
+- AC5: `pnpm test`: 17 files, 706 tests passed. `pnpm check`: 28 entries, 0 problems.
+- Gate: `cairn_validate.py` all checks passed; no DESIGN principle changed, so `cairn_impact` skipped; the generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
