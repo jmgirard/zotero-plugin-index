@@ -207,3 +207,14 @@
   hosts that did not answer took the build past the 30-minute limit of the
   daily build job, GitHub stopped the job. The job then kept no data and
   deployed nothing.
+- `pnpm discover` stops each repository read after 3 minutes and refuses
+  the repository with `request-failed`, which the state file does not
+  record. It starts no repository read after 18 minutes. The `unread` field
+  of its report counts the repositories that it did not reach, and the
+  report gets a warning that names the time limit. The command still writes
+  its state file and handoff. The git check of a branch name stops after 30
+  seconds. `pnpm propose` stops each other git process after 2 minutes and
+  each `pnpm check` after 5 minutes, and fails only that entry. Before, a run
+  that the 30-minute limit of the `Discover plugins` job stopped wrote no
+  new state and no handoff. The next run then read the same repositories
+  first.

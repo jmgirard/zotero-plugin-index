@@ -166,7 +166,13 @@ exception is a report that is abuse.
   with a build-level failure, or throws, gets a comment and leaves the issue
   open (M019), as do an error from the check of the drafted entry (M022)
   and an entry that `writeEntry` cannot write to the output directory, with
-  `entry-exists` or `write-failed` (M028).
+  `entry-exists` or `write-failed` (M028). Each repo read stops at 3
+  minutes as a build-level `request-failed`, not recorded, and `pnpm
+  discover` starts no read after 18 minutes from the command's start,
+  counting the rest in `unread` with a warning. The `git check-ref-format`
+  check stops at 30 seconds and throws; in `pnpm propose` each other git
+  process stops at 2 minutes and `pnpm check` at 5 minutes, failing only
+  its entry (M030).
   `pnpm close-issue` reads the pull request that `PR_NUMBER` names. When it
   is a bot pull request closed without a merge, the command comments on the
   open "Add a plugin" issue that its `Closes #<n>` line names and closes it
