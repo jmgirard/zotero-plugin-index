@@ -41,7 +41,7 @@
 - [x] T2: In `src/build/build.ts`, give `readRecord` (line 160) an `AbortSignal.timeout` of 3 minutes, with an abort reason that names the limit. Let `buildData` take the two limits as options, so tests can set them short. Add the stalled-plugin case to `test/build.test.ts`.
 - [x] T3: In the `buildData` read loop, check the time since the command started before each read. Past 18 minutes, give each entry left a `not-read` record with a message that names the limit, and add its id to `buildLevel`. Add the cut case to `test/build.test.ts`.
 - [x] T4: Update README "Building the data", the schema's failure `name` description, DESIGN.md's "Data build" line, and CHANGELOG Unreleased. Append a DECISIONS entry that records both cuts as build-level, annotating D-011. Search a joined copy of README for each phrase (LESSONS M018).
-- [ ] T5: Run `pnpm test` and `pnpm check` (LESSONS M001). Dispatch `build.yml` on the branch and read the build job's result and time. The deploy job fails off `main` (LESSONS M006).
+- [x] T5: Run `pnpm test` and `pnpm check` (LESSONS M001). Dispatch `build.yml` on the branch and read the build job's result and time. The deploy job fails off `main` (LESSONS M006).
 
 ## Work log
 
@@ -60,6 +60,7 @@
 - 2026-10-27: T1 done. `readUpstream` wraps fetch (`AbortSignal.any`) and the lookup (a race with the signal) when given a signal; the lookup wrap sits in the reader, not in `host-guard.ts`'s `withTimeout`, so host-guard is unchanged. `fixtureFetch` gained a `stall` option. A 7-case table covers the lookup and the headers and body of the API answer, the XPI, and the update.json; with the signal ignored (planted), all 7 went red. `pnpm test` 718 passed, `pnpm check` clean.
 - 2026-10-27: T2 and T3 done in one commit, since both change the `buildData` read loop. `buildData` takes a fifth argument `{ readMs, buildMs, startedAt }`; `startedAt` is a `performance.now()` time whose default 0 is the process start, so the 18 minutes count from the start of the command. `READ_LIMIT_MS` and `BUILD_LIMIT_MS` are exported constants. Two `test/build.test.ts` cases over a three-plugin tree with a stalled XPI; with no signal passed (planted) both went red, and with the read-phase check removed (planted) the not-read case went red. `pnpm test` 720 passed, `pnpm check` clean.
 - 2026-10-27: T4 done. README "Building the data" gained a limits paragraph and two build-level list changes, the schema's failure `name` description names `not-read`, DESIGN's "Data build" line states the limits, CHANGELOG Unreleased gained one entry, and DECISIONS gained D-015 (annotating D-011). Each README phrase found once in a joined copy. `pnpm test` 720 passed, `pnpm check` clean.
+- 2026-10-27: T5 done. Branch pushed; `build.yml` dispatched on it (run 40529804385): build job success in 89 s, "build-level failures: 0 of 28 records", 28 records with 0 failed reads; the deploy job failed as off-`main` runs do (LESSONS M006).
 
 ## Decisions
 
