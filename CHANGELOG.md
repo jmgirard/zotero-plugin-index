@@ -214,7 +214,8 @@
   report gets a warning that names the time limit. The command still writes
   its state file and handoff. The git check of a branch name stops after 30
   seconds. `pnpm propose` stops each other git process after 2 minutes and
-  each `pnpm check` after 5 minutes, and fails only that entry. Before, a run
+  each `pnpm check` after 5 minutes, and fails only that entry. A fetch of
+  the default branch past its limit fails every entry. Before, a run
   that the 30-minute limit of the `Discover plugins` job stopped wrote no
   new state and no handoff. The next run then read the same repositories
   first.

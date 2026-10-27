@@ -352,8 +352,8 @@ If the push or the pull request fails for one entry, the command goes on to
 the next entry. At the end, it names each failed entry with its error and
 exits with status 1.
 
-`pnpm propose` stops each git process after 2 minutes and each `pnpm check`
-process after 5 minutes. If a process for one entry takes longer, that entry
+`pnpm propose` stops each git process that fetches, builds, or pushes a
+commit after 2 minutes, and each `pnpm check` process after 5 minutes. If a process for one entry takes longer, that entry
 fails, and the command opens no pull request for it. If the fetch of the
 default branch takes longer, every entry fails, as when the fetch fails. The
 command also checks each branch name in the handoff with git again, with the
@@ -404,13 +404,15 @@ already be in the output directory (`entry-exists`), or the write can fail
 error, `unexpected-error`. Examples are a git that cannot start and a
 branch-name check stopped at 30 seconds. "Finding new plugins" gives both
 time limits. The bot can fail to read `plugins/`, its own pull requests, or
-the default branch, or the push or the pull request can fail. The time
-limits of "Pull requests from the bot" also apply. The first job can also fail and leave no handoff.
+the default branch, or the push or the pull request can fail. The git and
+`pnpm check` limits of "Pull requests from the bot" also apply. The first
+job can also fail and leave no handoff.
 Then the bot comments the error and leaves the issue open, and the workflow
 run fails. If the read of the repository, the write of the entry, or the
 check of the entry failed, the comment also gives the failure name.
 If `pnpm propose` refuses the handoff, the bot does not answer the issue,
-and the workflow run fails.
+and the workflow run fails. A check of the branch name by the command
+itself that passes its 30-second limit has the same result.
 
 A maintainer can close a bot pull request without a merge. Then the
 `Close the issue of a closed bot pull request` workflow runs

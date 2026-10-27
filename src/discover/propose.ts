@@ -25,7 +25,8 @@ export type Written = Extract<ReadItem, { outcome: "written" }>;
 // Runs `pnpm check` on a directory and returns its exit status and output.
 export type CheckRunner = (dir: string) => Promise<{ status: number; output: string }>;
 
-// The longest one `git` process of the write step, and one `pnpm check` process, may take.
+// The longest one `git` process that `propose` runs, and one `pnpm check` process, may take.
+// The branch-name check of a handoff has its own limit, REF_CHECK_LIMIT_MS.
 export const GIT_LIMIT_MS = 2 * 60 * 1000;
 export const CHECK_LIMIT_MS = 5 * 60 * 1000;
 

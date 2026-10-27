@@ -1,6 +1,6 @@
 # M030: Bound the discover run's time
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** M029
 - **Driving RR:** —
@@ -58,6 +58,9 @@ A discover run stops new repo reads at a time limit and still saves its state an
 - 2026-10-27: T3 tests: branch-name case in `test/discover.test.ts` (git shim, 300 ms), and "the write step's process time limits" in `test/propose.test.ts` (git shim on `hash-object` of one entry, 2000 ms; pnpm shim whose child sleeps, 1000 ms). Plants on copies: no git timeout, no ref-check timeout, and a plain `child.kill()` each failed their case; restored. `pnpm test` 729 passed, `pnpm check` 0 problems.
 - 2026-10-27: T4: README "Finding new plugins" (new paragraph: 3-minute read, 30-second branch check, 18-minute cut, `unread`, warning), "Pull requests from the bot" (2- and 5-minute limits, fetch case, propose's own branch check), "Proposing a plugin with an issue" (examples and pointers to both sections); DESIGN.md Discovery line; CHANGELOG Unreleased entry. Each README phrase found in a joined copy. Ran `pnpm propose` on a handoff with a hanging `check-ref-format` shim: exit 1 after 30.3 s from `readHandoff`, before any request. Added a test pinning the 30 s, 2 min, and 5 min defaults. The simple-english hook still flags README lines 94 and 413 and CHANGELOG line 170, all older text outside this change. `pnpm test` 730 passed, `pnpm check` 0 problems.
 - 2026-10-27: T5: `pnpm test` 730 passed and `pnpm check` 0 problems at d056f34. Claim audit reader (Opus, fresh context) started; result pending.
+- 2026-10-27: claim audit: 54 claims read, 4 corrected — CHANGELOG.md, README.md, src/discover/propose.ts. Fixed: the CHANGELOG's "fails only that entry" (a fetch fails every entry), README's and `GIT_LIMIT_MS`'s "each git process" (the branch-name recheck has its own 30 s limit), and README's issue-run text (a recheck past 30 s in `pnpm propose` exits before `issueAnswer`, so the bot posts no comment). The reader reread all four as true. `pnpm test` 730 passed, `pnpm check` 0 problems.
+- 2026-10-27: open concern for review: in an issue run, a branch-name recheck in `pnpm propose` that throws (time limit, or a git that cannot start, which predates this branch) leaves the issue with no comment; README now states this. Catching the throw in `propose-cli.ts` is a possible follow-up.
+- 2026-10-27: all tasks done; status review.
 
 ## Decisions
 
