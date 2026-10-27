@@ -1,16 +1,15 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-27 (M027 done and archived; 3 rows added at plan and review, M024 row pruned; 7 lessons marked used, 2 captured, 2 evicted by rank)_
+_Last hygiene check: 2026-10-27 (M028 done and archived; its row graduated, M025 row pruned; 4 lessons marked used, none captured)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M028 | Keep issues open on entry write errors | review | — | normal | milestones/M028-entry-write-errors.md |
+| M028 | Keep issues open on entry write errors | done | — | normal | milestones/archive/M028-entry-write-errors.md |
 | M027 | Skip locale folders that hold no messages | done | — | normal | milestones/archive/M027-message-languages.md |
 | M026 | Retry repos refused by a download error | done | — | normal | milestones/archive/M026-retry-download-errors.md |
-| M025 | Drop locale folders naming no language | done | — | low | milestones/archive/M025-named-languages.md |
 <!-- rows grouped by status, not sorted by ID; keep only the 3 most recent
      terminal (done or dropped) rows — older ones live in milestones/archive/ + git -->
 
@@ -24,7 +23,6 @@ _Last hygiene check: 2026-10-27 (M027 done and archived; 3 rows added at plan an
 - Let old v1 schemas accept new fields: the v1 `upstream` block keeps `additionalProperties: false`, so a saved copy of the schema rejects each optional field that D-006 lets v1 gain; allowing unknown fields would let old copies accept later additions, but it changes what the schema checks; see "Keep the v1 data when v2 ships" (M013 review) — added 2026-10-26 — M013, D-007
 - Count more GitHub answers as build-level: a GitHub API answer of HTTP 200 with an HTML body and a 403 from GitHub's release-asset host are not build-level, so an outage or regression that fails most records this way, but not all, still deploys (M017 review); narrowed and retitled 2026-10-26 by M018, which withholds a deploy when every record fails (D-012) (M018 review) — added 2026-10-26 — M006, M017, M018, D-011, D-012
 - Answer report issues left open: a report run that fails (the issue read, the `plugins/` read, the comment, the close, or its 10-minute timeout), a `report` label added after the issue opens, or a rerun, which comments twice, leaves a report issue open or answered twice, and nothing retries; the "Add a plugin" bot comments "could not finish" on its own failures; see "Answer issues whose run was canceled" (M020 review) — added 2026-10-27 — M020
-- Keep issues open on entry write errors: an issue run closes the issue as not planned when `writeEntry` fails with `write-failed` or finds an output directory left behind (`entry-exists`), though both are the bot's fault (M022 plan audit) — added 2026-10-27 — M019, M022 — started M028
 - Fail builds when closed_by goes missing: `countReports` drops a report issue whose `closed_by` is absent, so if GitHub's issue list answer stops carrying the field, every count reads zero and the build still deploys, against D-013's rule that counts that cannot be read withhold the deploy; fail the issue read when an item has no `closed_by` key (M021 AC1 re-audit); a renamed or deleted `report` label gives the same result, since GitHub answers an empty list (M021 review) — added 2026-10-27 — M021, D-013
 - Bound the build's report issue read: `pnpm build` lists every closed report issue on each run with no page cap, so a flood of report issues lengthens each build toward the job's 30-minute limit; see "Limit floods of report issues" (M021 review) — added 2026-10-27 — M021
 - Test plugins load in headless Zotero: a CI job installs each listed plugin into a headless Zotero and records whether it loads, shown as its own source beside declared ranges and reports; promote when the data pipeline and user reports ship (both shipped, M021) — added 2026-10-24 — cairn/DESIGN.md Data sources
