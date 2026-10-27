@@ -187,14 +187,14 @@ Pass 1, 2026-10-27, branch head f22232c; main at 2068a97, not moved since the cu
 - AC5: `pnpm test`: 17 files, 706 tests passed. `pnpm check`: 28 entries, 0 problems.
 - Gate: `cairn_validate.py` all checks passed; no DESIGN principle changed, so `cairn_impact` skipped; the generic profile's consistency-gate slot names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
-- diff-bug #1: a 49 KB XPI of 512 headers sharing one deflate bomb declared 1 byte each takes 16.5 s (main 18 ms) and lists 494 false tags, since the budget charges declared sizes and `Inflate.push` decodes a whole 16 KiB input chunk before the overflow check — fix now, review return 1 (load-bearing: the Scope's "a crafted XPI cannot hold the reader").
-- diff-bug #2: a deflate entry with compressed size 0 and declared size 10 inflates to nothing without an error, so its folder is dropped though AC2 counts a failed inflate as a message — fix now, review return 1.
-- diff-bug #3: a stored entry whose data runs past the zip's end is read truncated and its folder dropped — fix now, review return 1 (same check as #2: output length differing from the declared size keeps the tag).
+- diff-bug #1: a 49 KB XPI of 512 headers sharing one deflate bomb declared 1 byte each takes 16.5 s (main 18 ms) and lists 494 false tags, since the budget charges declared sizes and `Inflate.push` decodes a whole 16 KiB input chunk before the overflow check — fix now, review return 1, fixed 448f337 (load-bearing: the Scope's "a crafted XPI cannot hold the reader").
+- diff-bug #2: a deflate entry with compressed size 0 and declared size 10 inflates to nothing without an error, so its folder is dropped though AC2 counts a failed inflate as a message — fix now, review return 1, fixed 448f337.
+- diff-bug #3: a stored entry whose data runs past the zip's end is read truncated and its folder dropped — fix now, review return 1, fixed 448f337 (same check as #2: output length differing from the declared size keeps the tag).
 - diff-bug #4: 800,000 empty locale entries in a 48.8 MB XPI take 3.0 s stored and 5.4 s deflated, against 2.6 s on main — reject, edge: a crafted XPI near the 50 MiB cap, outside documented and common use; the effect is slow running, bounded by M005's entry-count check.
 - diff-bug #5: `holdsMessage` decodes as UTF-8, so a UTF-16 `.ftl` or `.dtd` with messages is dropped; none of the 457 locale files in the 24 saved XPIs is UTF-16 — follow-up, new row "Read UTF-16 locale files as text".
 - diff-bug #6: the compression precheck duplicates `inflateEntry`'s throw, and its test passes without it — reject, planned change: AC2 names the compression case as "without inflating", and the precheck keeps such a file off the budget.
-- diff-bug #7: no test pins the overflow stop for locale files — fix now, review return 1: the bomb test for #1 pins the real-output budget, which bounds the same work.
-- diff-bug #8: the control case, the second duplicate-name case, and the `icon.png`/`LICENSE` pair repeat code paths — the second duplicate-name case dropped, fix now, review return 1; the control is rejected, false (check discrimination asks for a case that stays silent); the pair is rejected, planned change (AC1 names both).
+- diff-bug #7: no test pins the overflow stop for locale files — fix now, review return 1, fixed 448f337: the bomb test for #1 pins the real-output budget, which bounds the same work.
+- diff-bug #8: the control case, the second duplicate-name case, and the `icon.png`/`LICENSE` pair repeat code paths — the second duplicate-name case dropped, fix now, review return 1, fixed 448f337; the control is rejected, false (check discrimination asks for a case that stays silent); the pair is rejected, planned change (AC1 names both).
 - diff-bug #9: AC2 says the budget counts declared unzipped size, the code counts the larger of declared and compressed — reject, false: the larger size is at least the declared size, so every AC2 case holds; comments and DESIGN state the code.
 - blame-history #1: locale-file errors no longer map to `xpi-unreadable`, reversing M023's outcome with no D-entry — reject, planned change: AC2 and the plan gate's work-log line chose it; M023's rule was milestone-local, not a D-entry.
 - blame-history #2: the 8 MiB budget fails open, so later comment-only folders count — reject, planned change (AC2, plan gate line).
@@ -202,12 +202,12 @@ Pass 1, 2026-10-27, branch head f22232c; main at 2068a97, not moved since the cu
 - blame-history #4: a lone-CR `.ftl` is misjudged since `m` breaks only on `\n` — reject, false: node shows `/^…=/m` matching after a lone `\r`.
 - blame-history #5: the 562,599-byte comment drifts — reject, false: it is a dated observation, as the derived-figures rule asks.
 - prior-review #1: the M023 error contract reversed — reject, planned change (as blame-history #1).
-- prior-review #2: no bomb timing test for locale files — fix now, review return 1 (with diff-bug #1).
-- ripple #1: reader.ts `UNZIPPED_MAX_BYTES` comment names only manifest.json and messages.json — fix now, review return 1.
-- ripple #2: DESIGN's caps sentence says each unzipped file is capped at 1 MiB with no word on locale files — fix now, review return 1.
-- ripple #3: DESIGN's inflate paragraph reads as failing every file past its declared size — fix now, review return 1 (name manifest.json and messages.json).
-- ripple #4: README's reader limits list has no locale entry — fix now, review return 1.
-- ripple #5: CHANGELOG's reader limits entry has no locale sentence — fix now, review return 1.
+- prior-review #2: no bomb timing test for locale files — fix now, review return 1, fixed 448f337 (with diff-bug #1).
+- ripple #1: reader.ts `UNZIPPED_MAX_BYTES` comment names only manifest.json and messages.json — fix now, review return 1, fixed 448f337.
+- ripple #2: DESIGN's caps sentence says each unzipped file is capped at 1 MiB with no word on locale files — fix now, review return 1, fixed 448f337.
+- ripple #3: DESIGN's inflate paragraph reads as failing every file past its declared size — fix now, review return 1, fixed 448f337 (name manifest.json and messages.json).
+- ripple #4: README's reader limits list has no locale entry — fix now, review return 1, fixed 448f337.
+- ripple #5: CHANGELOG's reader limits entry has no locale sentence — fix now, review return 1, fixed 448f337.
 - ripple #6: the "Drop zxx and mul from the languages" row says `localeLanguages` keeps those folders — reject, false: it still keeps one that holds a message.
 - Return floor: diff-bug #1 is a load-bearing defect, and #2 and #3 show AC2's failed-inflate case failing; status back to in-progress.
 
@@ -228,12 +228,12 @@ Pass 2, 2026-10-27, branch head 3280947 after review return 1; main at 2068a97, 
 - diff-bug #6: one push can decode more than 1 KiB of pending stored-block input — noted: stored output equals its input, so the about 1 MiB overshoot holds (the T7 claim audit measured 1,103,987 bytes at most).
 - blame-history #1: per-file `Inflate` work is not charged to the budget, about 2 s for half a million entries — follow-up, row "Bound per-entry work in the locale walk".
 - blame-history #2: `Intl` calls run for every locale entry before the kept-tag skip, 2.8 s per million entries, from M023 and M025 — follow-up, same row.
-- blame-history #3: broken CHANGELOG reflow ("fails" alone) and ragged README and DESIGN lines — fix now.
-- prior-review #1: DESIGN never says the budget charges compressed size, though pass-1 diff-bug #9's reject says comments and DESIGN state the code — fix now (DESIGN names the three charges).
-- prior-review #2: added DESIGN lines over 80 columns and the lone "fails" CHANGELOG line, against the M018 wrap lesson — fix now (DESIGN lines 40 and 257 rewrapped).
-- ripple #1: DESIGN's inflate sentence gives 16 KiB for every file — fix now (it now names `manifest.json` and `messages.json`).
+- blame-history #3: broken CHANGELOG reflow ("fails" alone) and ragged README and DESIGN lines — fix now, fixed c18aacd.
+- prior-review #1: DESIGN never says the budget charges compressed size, though pass-1 diff-bug #9's reject says comments and DESIGN state the code — fix now, fixed c18aacd (DESIGN names the three charges).
+- prior-review #2: added DESIGN lines over 80 columns and the lone "fails" CHANGELOG line, against the M018 wrap lesson — fix now, fixed c18aacd (DESIGN lines 40 and 257 rewrapped).
+- ripple #1: DESIGN's inflate sentence gives 16 KiB for every file — fix now, fixed c18aacd (it now names `manifest.json` and `messages.json`).
 - ripple #2: DESIGN's "each unzipped file at 1 MiB" reads as a failure rule for locale files — reject, false: the next sentence says a locale file over 1 MiB is not unzipped and counts.
-- ripple #3: README's "inflates it 1 KiB at a time to find a message" implies an early stop inside a file — fix now ("inflates the whole file, 1 KiB of input at a time, and then looks for a message").
+- ripple #3: README's "inflates it 1 KiB at a time to find a message" implies an early stop inside a file — fix now, fixed c18aacd ("inflates the whole file, 1 KiB of input at a time, and then looks for a message").
 - ripple #4: README's "a plugin that writes its text straight into its code ... its list is empty" is now one cause of two — reject, false: the sentence stays true, and the paragraph names comment-only folders above it.
 - ripple #5: the schema's "Empty when the XPI has no such folder" — reject, false: "such folder" is a folder with a named language and a file that holds a message, so it covers both causes.
 - Return floor: no finding shows a criterion failing or a load-bearing defect; no return.
