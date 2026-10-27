@@ -52,7 +52,6 @@ function writeFixture(recorded: Responses): string {
 
 // pnpm sets npm_execpath to its own binary when it runs `pnpm test`. The preload makes
 // the command answer its requests and host lookups from `fixture` instead of the network.
-// GITHUB_REPOSITORY is left out unless `extra` sets it.
 function pnpmBuild(args: string[], fixture?: string, extra: Record<string, string> = {}) {
   const pnpmPath = process.env.npm_execpath;
   if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");
@@ -177,7 +176,7 @@ function treeOf(...ids: string[]): string {
 }
 
 const SECOND_UPDATE = "https://raw.githubusercontent.com/example/second-plugin/main/update.json";
-const ISSUES = `https://api.github.com/repos/${INDEX_REPO}/issues?labels=report&state=closed&per_page=100`;
+const ISSUES = `https://api.github.com/repos/${INDEX_REPO}/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100`;
 const ISSUES_PAGE_2 = `${ISSUES}&page=2`;
 
 // Runs pnpm build over TREE against `recorded` and returns the result, the out directory,
@@ -199,12 +198,7 @@ describe("pnpm build and the report issues", () => {
     const { result, out, urls } = loggedBuild(responses());
     expect(result.status).toBe(0);
     expect(urls.slice(0, 2)).toEqual([ISSUES, ISSUES_PAGE_2]);
-    const lists = urls.filter((url) => url.includes("/issues?"));
-    expect(lists).toHaveLength(2);
-    for (const url of lists) {
-      const params = new URL(url).searchParams;
-      expect([params.get("labels"), params.get("state")]).toEqual(["report", "closed"]);
-    }
+    expect(urls.filter((url) => url.includes("/issues?"))).toHaveLength(2);
     const output = readOutput(out);
     const validate = new Ajv({ allErrors: true }).compile(pluginsSchema);
     expect(validate(output), JSON.stringify(validate.errors)).toBe(true);
@@ -227,11 +221,26 @@ describe("pnpm build and the report issues", () => {
 
   test("reads the report issues of the repo that GITHUB_REPOSITORY names", () => {
     const recorded = responses();
-    recorded["https://api.github.com/repos/example/fork/issues?labels=report&state=closed&per_page=100"] = { json: [] };
+    recorded["https://api.github.com/repos/example/fork/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100"] = { json: [] };
     const { result, urls } = loggedBuild(recorded, { GITHUB_REPOSITORY: "example/fork" });
     expect(result.status).toBe(0);
-    expect(urls[0]).toBe("https://api.github.com/repos/example/fork/issues?labels=report&state=closed&per_page=100");
+    expect(urls[0]).toBe("https://api.github.com/repos/example/fork/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100");
     expect(urls.some((url) => url.startsWith(`https://api.github.com/repos/${INDEX_REPO}/`))).toBe(false);
+  });
+
+  test("reads the default repo's report issues when GITHUB_REPOSITORY is empty", () => {
+    const { result, urls } = loggedBuild(responses(), { GITHUB_REPOSITORY: "" });
+    expect(result.status).toBe(0);
+    expect(urls[0]).toBe(ISSUES);
+  });
+
+  test("prints the failure on one line, so the answer cannot start a workflow command", () => {
+    const recorded = responses();
+    recorded[ISSUES] = { text: "[\n::warning::planted" };
+    const { result } = loggedBuild(recorded);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(`cannot read the report issues: request-failed: GET ${ISSUES} returned a body that is not JSON`);
+    expect(result.stderr.split("\n").filter((line) => line.startsWith("::"))).toEqual([]);
   });
 
   test.each([

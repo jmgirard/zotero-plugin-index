@@ -69,7 +69,10 @@ export async function buildData(root: string, fetch: Fetch, now = new Date(), in
 
   let issues: unknown[];
   try {
-    issues = await githubClient(fetch).pages(`https://api.github.com/repos/${indexRepo}/issues?labels=report&state=closed&per_page=100`);
+    // Oldest first, so a report closed during the read joins the last page rather than
+    // moving each later report up one place, past a page boundary.
+    const list = `https://api.github.com/repos/${indexRepo}/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100`;
+    issues = await githubClient(fetch).pages(list);
   } catch (error) {
     const name = error instanceof ReadFailure ? `${error.failure}: ` : "";
     return { ok: false, problems: [`cannot read the report issues: ${name}${(error as Error).message}`] };

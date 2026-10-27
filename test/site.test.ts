@@ -199,7 +199,8 @@ describe("the report block", () => {
     expect(html).not.toMatch(/\sdata-report-major="/);
   });
 
-  test.each(records.filter((record) => record.upstream).map((record) => record.id))(
+  // A record with reports and one with no reports field.
+  test.each(["first-plugin@example.org", "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}"])(
     "links %s to both report forms with its id and version filled in",
     (id) => {
       const record = records.find((r) => r.id === id)!;

@@ -181,3 +181,26 @@ Pass 2, at bfe95d3 (main 83abe0a unmoved). Pass 1 returned AC6 (review return 1)
 - AC7: at bfe95d3, `pnpm test` ran the type check and Vitest: 15 files, 589 tests passed. `pnpm check`: "checked 20 entries in plugins, 0 problems".
 - Consistency gate: `cairn_validate.py` exit 0, all checks pass; profile `generic` names no toolchain checks; no DESIGN principle changed, so no `cairn_impact` run.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the paged issue read follows newest-first pages, so a report that leaves the list mid-read moves the next report past a page boundary and it goes unread — fix now: the read asks `sort=created&direction=asc`, so new closes join the last page; a removal mid-read can still skip one report until the next build.
+- diff-bug #2: no test covers dropping an item without a numeric `user.id`, a parseable `created_at`, or a numeric `number` — fix now: three DROPS rows.
+- diff-bug #3: a renamed or deleted `report` label gives an empty list, so every count reads zero and the site deploys — follow-up: row "Fail builds when closed_by goes missing" extended.
+- diff-bug #4: an empty `GITHUB_REPOSITORY` requests `repos//issues` and exits 1, against README's "not set" — fix now: an empty value reads as unset, with a regression test.
+- diff-bug #5: the schema does not enforce one item per major in order, or `reports` only beside `upstream` — reject (planned change): AC2 fixes the schema's item constraints, and the build tests pin the order.
+- diff-bug #6: the report-version line has no full stop, and "Works"/"Broken" are capitalized mid-sentence — reject (style): AC5 names the link text "Works" and "Broken".
+- diff-bug #7: the label/state loop repeats what the exact URL comparison already checks — fix now: loop removed.
+- diff-bug #8: DROPS rows for a null `state_reason`, the near-miss login, and an absent `closed_by` run the same branches as other rows — reject (planned change): AC1 names "absent", and the AC1 re-audit asked for the near-miss probes.
+- diff-bug #9: the dropped-newest test runs over every drop, one code path — reject (planned change): the AC1 re-audit asked for that case for each drop.
+- diff-bug #10: the link test runs over every read record through one `reportHref` path — fix now: two records, one with reports and one with no `reports` field.
+- diff-bug #11: the `GITHUB_TOKEN` assertion sits in a test whose name does not cover it — fix now: its own test.
+- diff-bug #12: two test comments restate the code — fix now: deleted.
+- blame-history #1: the build falls back to `jmgirard/zotero-plugin-index` where the other commands refuse to run without `GITHUB_REPOSITORY`, and a fork counts its own issues — reject (planned change): AC2 states that rule and the default.
+- blame-history #2: the mixed-failures golden file gained `"reports": []` by hand — reject (false): T2 regenerated it by running `buildData` on the new code, and its diff is that one line.
+- blame-history #3: the GUID fixture version moved from 3.0.0 to 3.0.0+r1 — reject (planned change): AC5 needs a record whose id and version both need encoding.
+- blame-history #4: a failed issue read prints its message raw, and a JSON parse message quotes the body with its newlines, so an answer could start a workflow command line — fix now: each problem line goes through `oneLine`, with a regression test.
+- blame-history #5: a switch of the report bot to an app token would zero every count silently — reject (false): "runs pnpm report-issue with the built-in GITHUB_TOKEN" fails on that switch.
+- blame-history #6: the build lists every closed report issue with no page cap, bounded only by the 30-minute job limit — follow-up: new row "Bound the build's report issue read".
+- blame-history #7: the link prefills a version that `parseReport` refuses — reject (edge): only a manifest version with whitespace or over 100 characters reaches it, outside common plugin versions, and the bot then answers with a refusal comment.
+- prior-review: no regression of a past review point; its open point on floods is blame-history #6.
+- ripple #1: DESIGN's Contract boundary list of page facts leaves out the user reports — fix now: added.
+- ripple #2: the CLI comment on exit-1 cases leaves out the failed issue read — fix now: a comment on the no-file branch names it.
+- Return floor: no finding shows a criterion failing or a load-bearing defect; no return.

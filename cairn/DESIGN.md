@@ -30,7 +30,8 @@ Each plugin page shows facts that a reader can check. These facts are the
 declared range of Zotero versions, source availability, whether GitHub marks
 the repository archived (when GitHub's response says), repository age, the
 release the index read and whether it is a prerelease (corrected M014),
-release count, open issues, and the host of the `update.json` file.
+release count, open issues, the host of the `update.json` file, and the
+counted user reports on the release the index read (M021).
 The page shows the name, the description, the version pills, the declared
 range, the user reports on the release the index read with a "Works" and a
 "Broken" link (M021), and the repository and releases links first. The other facts sit in a

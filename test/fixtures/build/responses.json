@@ -2,9 +2,9 @@
   "source": "Written by hand for the build tests: example/second-plugin passes the inclusion bar, is archived, and has only a prerelease, and example/forked-plugin is a fork. Two pages of report issues hold three counted reports and one closed as not planned. The build tests add the responses of test/fixtures/upstream/better-notes.json.",
   "repoUrl": "https://github.com/example/second-plugin",
   "responses": {
-    "https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&per_page=100": {
+    "https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100": {
       "headers": {
-        "link": "<https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&per_page=100&page=2>; rel=\"next\", <https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&per_page=100&page=2>; rel=\"last\""
+        "link": "<https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100&page=2>; rel=\"next\", <https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100&page=2>; rel=\"last\""
       },
       "json": [
         {
@@ -27,9 +27,9 @@
         }
       ]
     },
-    "https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&per_page=100&page=2": {
+    "https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100&page=2": {
       "headers": {
-        "link": "<https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&per_page=100&page=1>; rel=\"prev\", <https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&per_page=100&page=1>; rel=\"first\""
+        "link": "<https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100&page=1>; rel=\"prev\", <https://api.github.com/repos/jmgirard/zotero-plugin-index/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100&page=1>; rel=\"first\""
       },
       "json": [
         {

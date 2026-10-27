@@ -129,7 +129,6 @@ describe("parseReport", () => {
 });
 
 describe("countReports", () => {
-  // Records of the build: alpha and beta read version 1.2.0, and gamma failed.
   const records = [
     { id: "alpha@example.org", repoUrl: "", upstream: { version: "1.2.0" }, overrides: [] },
     { id: "beta@example.org", repoUrl: "", upstream: { version: "1.2.0" }, overrides: [] },
@@ -171,6 +170,9 @@ describe("countReports", () => {
     ["an issue with the label not-counted", { labels: [{ name: "report" }, { name: "works" }, { name: "not-counted" }] }, {}],
     ["a report parseReport refuses", { labels: [{ name: "report" }] }, {}],
     ["a report on another plugin version", {}, { version: "1.1.0" }],
+    ["an item with no user", { user: null }, {}],
+    ["an item whose created_at is not a time", { created_at: "x" }, {}],
+    ["an item whose number is not a number", { number: "5" }, {}],
   ];
 
   test.each(DROPS)("drops %s", (_, fields, report) => {
