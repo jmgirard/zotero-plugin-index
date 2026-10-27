@@ -458,3 +458,8 @@ reused._
   issues that `github-actions[bot]` closed. GitHub shows every deleted
   account as one "ghost" account, so their reports count once for each
   plugin and major. Recorded at M021, 2026-10-27.
+- The `languages` list leaves out a real language that the Node.js `Intl`
+  data has no English name for, such as `cdo` (Min Dong Chinese) or `mnw`
+  (Mon) on Node 26, and a Node upgrade can change which rare codes count.
+  A `languages` override records such a language. Accepted at the M025
+  plan, 2026-10-27.
