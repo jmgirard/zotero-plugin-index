@@ -99,12 +99,18 @@ export function buildLevelStatus(status: number, from: "github-api" | "download"
 // Reads one GitHub repo. It never throws for a problem with the plugin: each one
 // comes back as a named failure, so a caller that reads many plugins can go on
 // past a bad one. `lookup` resolves the hosts of the XPI and update.json URLs for
-// the host check.
+// the host check. When `signal` aborts, the request or lookup that the read waits on
+// fails with request-failed, marked build-level, and its message holds the abort
+// reason. Each request and lookup keeps its own 60 s limit as well.
 export async function readUpstream(
   repoUrl: string,
   fetch: Fetch,
-  { lookup = systemLookup }: { lookup?: Lookup } = {},
+  { lookup = systemLookup, signal }: { lookup?: Lookup; signal?: AbortSignal } = {},
 ): Promise<UpstreamResult> {
+  if (signal) {
+    fetch = boundFetch(fetch, signal);
+    lookup = boundLookup(lookup, signal);
+  }
   try {
     return { ok: true, facts: await read(repoUrl, fetch, downloader(fetch, lookup)) };
   } catch (error) {
@@ -113,6 +119,26 @@ export async function readUpstream(
     }
     throw error;
   }
+}
+
+// Each request also aborts when `signal` does. fetch then rejects with the signal's
+// reason, and a body being read errors with it.
+function boundFetch(fetch: Fetch, signal: AbortSignal): Fetch {
+  return (url, init = {}) => fetch(url, { ...init, signal: init.signal ? AbortSignal.any([init.signal, signal]) : signal });
+}
+
+// The lookup rejects with the signal's reason when the signal aborts. dns.lookup cannot
+// be canceled, so only the wait for it ends.
+function boundLookup(lookup: Lookup, signal: AbortSignal): Lookup {
+  return (host) => {
+    if (signal.aborted) return Promise.reject(signal.reason);
+    let onAbort!: () => void;
+    const aborted = new Promise<never>((_, reject) => {
+      onAbort = () => reject(signal.reason);
+      signal.addEventListener("abort", onAbort, { once: true });
+    });
+    return Promise.race([lookup(host), aborted]).finally(() => signal.removeEventListener("abort", onAbort));
+  };
 }
 
 async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<UpstreamFacts> {

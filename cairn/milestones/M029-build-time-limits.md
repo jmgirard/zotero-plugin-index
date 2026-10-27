@@ -1,13 +1,13 @@
 # M029: Bound the build's read time
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes which records the published data carries and when the daily build deploys
-- **Branch/PR:** —
+- **Branch/PR:** m029-build-time-limits
 
 ## Goal
 
@@ -37,7 +37,7 @@
 
 ## Tasks
 
-- [ ] T1: Add `signal` to the options of `readUpstream` (`src/upstream/reader.ts:103`). Wrap the fetch so that each request's signal is `AbortSignal.any` of the 60-second timeout and the outer signal. In `src/upstream/host-guard.ts`, let `withTimeout` also reject when the outer signal aborts. The `dns.lookup` behind it cannot be canceled, so only the wait ends. Put the abort reason in the failure message. Add the stall cases to `test/upstream.test.ts` as one table, with a fetch that rejects on its init signal and a `lookup` stub (LESSONS M004, M003).
+- [x] T1: Add `signal` to the options of `readUpstream` (`src/upstream/reader.ts:103`). Wrap the fetch so that each request's signal is `AbortSignal.any` of the 60-second timeout and the outer signal. In `src/upstream/host-guard.ts`, let `withTimeout` also reject when the outer signal aborts. The `dns.lookup` behind it cannot be canceled, so only the wait ends. Put the abort reason in the failure message. Add the stall cases to `test/upstream.test.ts` as one table, with a fetch that rejects on its init signal and a `lookup` stub (LESSONS M004, M003).
 - [ ] T2: In `src/build/build.ts`, give `readRecord` (line 160) an `AbortSignal.timeout` of 3 minutes, with an abort reason that names the limit. Let `buildData` take the two limits as options, so tests can set them short. Add the stalled-plugin case to `test/build.test.ts`.
 - [ ] T3: In the `buildData` read loop, check the time since the command started before each read. Past 18 minutes, give each entry left a `not-read` record with a message that names the limit, and add its id to `buildLevel`. Add the cut case to `test/build.test.ts`.
 - [ ] T4: Update README "Building the data", the schema's failure `name` description, DESIGN.md's "Data build" line, and CHANGELOG Unreleased. Append a DECISIONS entry that records both cuts as build-level, annotating D-011. Search a joined copy of README for each phrase (LESSONS M018).
@@ -56,6 +56,8 @@
 - 2026-10-27: criteria audit (full), M029 part: took the abort-reason message (AC1), header and body stalls (AC1), the cut narrowed to AC1's waits (AC2), the README line on unread plugins (AC4), and the clock at the start of the command with 18 minutes in place of 20 (AC3). The decision entry stays a task (T4), since it is a recording act. AC5 had no finding.
 - 2026-10-27: plan gate chose a per-read limit plus a read-phase limit over reading several plugins at a time, because concurrency changes the GitHub API request pattern and is not needed at 28 plugins; falsified by a build step past 10 minutes with no hung host.
 - 2026-10-27: plan gate chose `request-failed` for a read cut by its limit over a new failure name, because README already lists a timeout as a request with no whole response; falsified by a data user who needs to tell limit cuts from network timeouts.
+- 2026-10-27: branch m029-build-time-limits cut from main at 37e40f0; status in-progress.
+- 2026-10-27: T1 done. `readUpstream` wraps fetch (`AbortSignal.any`) and the lookup (a race with the signal) when given a signal; the lookup wrap sits in the reader, not in `host-guard.ts`'s `withTimeout`, so host-guard is unchanged. `fixtureFetch` gained a `stall` option. A 7-case table covers the lookup and the headers and body of the API answer, the XPI, and the update.json; with the signal ignored (planted), all 7 went red. `pnpm test` 718 passed, `pnpm check` clean.
 
 ## Decisions
 
