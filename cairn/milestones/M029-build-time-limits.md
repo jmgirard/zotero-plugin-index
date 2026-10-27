@@ -66,6 +66,8 @@
 - 2026-10-27: all tasks done; status review.
 - 2026-10-27: review return 1: AC4 fails as written — README says "Such a plugin shows no facts until a later build reads it" right after the `not-read` sentence, so it covers only unread entries, not a read cut by the 3-minute limit; AC4 asks it for both.
 - 2026-10-27: T6 added (minor amendment, AC4 → T4, T6) and done: README now reads "A plugin with either failure shows no facts until a later build reads it", found once in a joined copy. `pnpm test` 721 passed, `pnpm check` clean. Status review.
+- 2026-10-27: review paused at the user's request with the four reviewers stopped; resumed with a fresh spawn.
+- 2026-10-27: step-7 approval: m029-build-time-limits approved for merge
 
 ## Decisions
 
