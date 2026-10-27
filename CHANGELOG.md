@@ -228,3 +228,11 @@
   `unique-ignoring-case` refuses two directory names that differ only in
   case. `pnpm add-plugin` and `pnpm discover` refuse the same ids with
   `unsafe-id` and `entry-exists`.
+- `pnpm check` refuses more override problems. `reason-not-blank` refuses a
+  reason that holds only whitespace and Unicode format characters, such as
+  U+200B. Before, it refused only a reason of whitespace. The new rule
+  `unique-override` refuses two overrides with the same `field` and
+  `version`. Before, the command passed them, and the site applied only the
+  first. A file can start with a UTF-8 byte-order mark. For such a
+  `meta.json` or `index.json`, the line now names the mark, in place of "is
+  not valid JSON".
