@@ -132,12 +132,14 @@ function boundFetch(fetch: Fetch, signal: AbortSignal): Fetch {
 function boundLookup(lookup: Lookup, signal: AbortSignal): Lookup {
   return (host) => {
     if (signal.aborted) return Promise.reject(signal.reason);
+    // Started before the listener, so a lookup that throws leaves no listener behind.
+    const answer = Promise.resolve().then(() => lookup(host));
     let onAbort!: () => void;
     const aborted = new Promise<never>((_, reject) => {
       onAbort = () => reject(signal.reason);
       signal.addEventListener("abort", onAbort, { once: true });
     });
-    return Promise.race([lookup(host), aborted]).finally(() => signal.removeEventListener("abort", onAbort));
+    return Promise.race([answer, aborted]).finally(() => signal.removeEventListener("abort", onAbort));
   };
 }
 

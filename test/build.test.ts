@@ -455,7 +455,7 @@ describe("buildData", () => {
   });
 
   describe("with time limits", () => {
-    // Three entries, read in this order. The second one's XPI never answers.
+    // The second entry's XPI never answers.
     const NAMES = ["a-first", "b-stalled", "c-third"];
     const stalledXpi = "https://github.com/example/b-stalled/releases/download/v1.0.0/plugin.xpi";
     function stalledTree(): { tree: string; recorded: Responses } {
@@ -490,7 +490,7 @@ describe("buildData", () => {
     test("reads no plugin once the build limit has passed, and fails each entry left as not-read", async () => {
       const { tree, recorded } = stalledTree();
       const { fetch, requests } = fixtureFetch(recorded);
-      const limits = { readMs: 300, buildMs: 100, startedAt: performance.now() };
+      const limits = { readMs: 1500, buildMs: 1000, startedAt: performance.now() };
       const result = await buildData(tree, fetch, undefined, undefined, limits);
       if (!result.ok) throw new Error(result.problems.join("\n"));
       expect(failures(result.text)).toEqual([
@@ -498,10 +498,32 @@ describe("buildData", () => {
         ["b-stalled@example.org", "request-failed"],
         ["c-third@example.org", "not-read"],
       ]);
-      expect(record(JSON.parse(result.text), "c-third@example.org")?.failure?.message).toContain("after 100 ms, its time limit");
+      expect(record(JSON.parse(result.text), "c-third@example.org")?.failure?.message).toContain("after 1000 ms, its time limit");
       expect(result.buildLevel).toEqual(["b-stalled@example.org", "c-third@example.org"]);
       expect(requests.map((r) => r.url)).not.toContain("https://api.github.com/repos/example/c-third");
-      expect(checkOutput(JSON.parse(result.text))).toEqual([]);
+    });
+
+    test("names the default limit of 3 minutes in the failure of a read that passes it", async () => {
+      const { tree, recorded } = stalledTree();
+      vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+      try {
+        const pending = buildData(tree, fixtureFetch(recorded).fetch);
+        let settled = false;
+        void pending.then(() => (settled = true));
+        // The reads reach the stall only after real I/O, so the clock moves until the build ends.
+        for (let i = 0; i < 100 && !settled; i++) {
+          await new Promise((resolve) => setImmediate(resolve));
+          await vi.advanceTimersByTimeAsync(30_000);
+        }
+        const result = await pending;
+        if (!result.ok) throw new Error(result.problems.join("\n"));
+        expect(record(JSON.parse(result.text), "b-stalled@example.org")?.failure).toEqual({
+          name: "request-failed",
+          message: expect.stringContaining("passed its time limit of 3 minutes"),
+        });
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 

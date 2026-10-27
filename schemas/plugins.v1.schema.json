@@ -49,7 +49,7 @@
           "items": { "$ref": "#/definitions/reportCount" }
         },
         "failure": {
-          "description": "Why the upstream read failed. Present when the read fails, in place of upstream.",
+          "description": "Why the upstream read failed, or why the build did not read the plugin. Present when the read fails or does not run, in place of upstream.",
           "type": "object",
           "additionalProperties": false,
           "required": ["name", "message"],

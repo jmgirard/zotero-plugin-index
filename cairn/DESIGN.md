@@ -142,9 +142,10 @@ exception is a report that is abuse.
   directory under `plugins/`, or under `dir`, and prints one line for each
   problem. Added M001.
 - Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch, {
-  lookup })` returns the facts of one GitHub repo, or one named
+  lookup, signal })` returns the facts of one GitHub repo, or one named
   inclusion-bar failure. The optional `lookup` resolves download hosts for
-  the host check (M004). Added M002. `githubClient(fetch)` makes its GitHub
+  the host check (M004). When the optional `signal` aborts, the read fails
+  as a build-level `request-failed` (M029). Added M002. `githubClient(fetch)` makes its GitHub
   API requests and refuses a URL on another host, so the token goes to the
   API only (exported M008).
 - Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out

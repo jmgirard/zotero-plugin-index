@@ -500,9 +500,10 @@ failure name is `facts-invalid`. The command still writes the file.
 The command gives each plugin read 3 minutes. If a read takes longer, the
 command stops it, and the record fails with `request-failed`. The command
 starts no plugin read after 18 minutes from its start. Each entry that it
-did not read gets a record that fails with `not-read`. A plugin with either
-failure shows no facts until a later build reads it. These limits leave time for the
-other steps of the daily build, whose job GitHub stops at 30 minutes.
+did not read gets a record that fails with `not-read`. A plugin with
+either failure shows no facts until a later build reads it. These limits
+leave time for the other steps of the daily build, whose job GitHub stops
+at 30 minutes.
 
 A build-level failure usually comes from the build, not from the plugin.
 A plugin's own download host that is down also gives one. These failures
@@ -510,7 +511,7 @@ are build-level:
 
 - an `unexpected-error`,
 - a request that gets no whole response, such as a failed host lookup, a
-  network error, or a timeout, a read stopped at 3 minutes included,
+  network error, or a timeout, such as a read stopped at 3 minutes,
 - a `not-read` entry,
 - an HTTP 401 or 403 answer from the GitHub API,
 - an HTTP 429 or 5xx answer from any host.
@@ -573,7 +574,8 @@ The `Build data` workflow runs `pnpm check`, `pnpm build`, and then
 a workflow artifact named `plugins-data`. If all three commands succeed, the
 workflow deploys `dist/` to GitHub Pages. If `pnpm build` or `pnpm site` exits
 with status 1, the workflow deploys nothing, and the site and data from the
-last good build stay published. The repository's
+last good build stay published. GitHub stops the build job at 30 minutes,
+and then the workflow also deploys nothing. The repository's
 `github-pages` environment, set in its GitHub settings, lets only runs on the
 `main` branch deploy.
 

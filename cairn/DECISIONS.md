@@ -187,3 +187,13 @@ carry a build-level failure, these included, the build deploys nothing, and
 the last good data stays.
 The cost is that an unread plugin shows no facts on that day's site, since
 the build restores no earlier data (D-010).
+
+### D-016: The M029 time limits bound the plugin reads only, narrowing D-015
+
+2026-10-27, M029 review. D-015 says that hosts that do not answer cannot
+take the build job past its 30-minute limit. That holds for the plugin
+reads alone. The read of the report issues before them has no total limit,
+only 60 seconds for each page. A host lookup whose wait the limit ended can
+also keep the process open after the build writes its file. Candidate row
+"Bound the build's report issue read" holds both gaps. The rest of D-015
+stands.
