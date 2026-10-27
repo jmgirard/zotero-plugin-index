@@ -334,9 +334,12 @@ A maintainer can close a bot pull request without a merge. Then the
 `pnpm close-issue` with the pull request number in `PR_NUMBER`. The bot
 comments on the issue that the `Closes #<issue>` line of the pull request
 names, and closes that issue as not planned. The command acts only on a pull
-request from a `discover/` branch of the index repository. The issue must be
+request from a `discover/` branch of the index repository whose body has
+exactly one `Closes #<issue>` line outside code blocks. The issue must be
 open, have the label `add-plugin`, and have a bot comment with the link to
-the pull request. The workflow runs on `pull_request_target`, so it runs its
+the pull request. If the bot already commented that the pull request was
+closed without a merge, the command does nothing. One run at a time handles
+each pull request. The workflow runs on `pull_request_target`, so it runs its
 file from the default branch and runs no code from the pull request. A pull
 request that the bot's own token closes starts no workflow run, so its issue
 stays open.

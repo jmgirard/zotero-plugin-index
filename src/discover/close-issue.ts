@@ -71,11 +71,10 @@ export async function closeIssue(options: CloseIssueOptions): Promise<CloseIssue
   const named = new RegExp(`${url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\d)`);
   const bot = comments.flatMap((comment) => (comment?.user?.login === BOT_LOGIN && typeof comment.body === "string" && named.test(comment.body) ? [comment.body] : []));
   if (bot.length === 0) return skip(`no bot comment on issue ${closes[0]} holds ${url}`);
-  if (bot.some((text) => text.includes("closed without a merge"))) {
-    return skip(`a bot comment on issue ${closes[0]} already says ${url} was closed without a merge`);
-  }
-
   const comment = `${url} was closed without a merge, so the bot closes this issue as not planned.`;
+  // Only the run's own comment counts, since the issue run's comment also speaks of a
+  // close without a merge.
+  if (bot.includes(comment)) return skip(`a bot comment on issue ${closes[0]} already says ${url} was closed without a merge`);
   try {
     await github.post(`${issueUrl}/comments`, { body: comment });
     await github.patch(issueUrl, { state: "closed", state_reason: "not_planned" });

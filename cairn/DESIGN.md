@@ -335,8 +335,8 @@ reused._
   M011). `.github/workflows/close-add-plugin-issue.yml` runs
   `pnpm close-issue` (`src/discover/close-issue.ts`) on
   `pull_request_target: closed` for a `discover/` branch of the index repo
-  closed without a merge, with only the pull request number passed through
-  `env:`. Its one job holds `contents: read`, `issues: write`, and
+  closed without a merge, in a concurrency group for each pull request, with
+  only the pull request number passed through `env:`. Its one job holds `contents: read`, `issues: write`, and
   `pull-requests: read`, sets `cache-mode: none`, and checks out the default
   branch, so it runs no code from the pull request. `test/workflows.test.ts`
   checks these facts (M022).

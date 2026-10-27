@@ -162,11 +162,16 @@ describe("close-add-plugin-issue.yml", () => {
     expect(close.split("\n").filter((line) => !line.trimStart().startsWith("#") && /\bref\s*:/.test(line))).toEqual([]);
   });
 
+  test("runs one job at a time for each pull request", () => {
+    expect(close).toMatch(/^concurrency:\n {2}group: close-add-plugin-issue-\$\{\{ github\.event\.pull_request\.number \}\}\n {2}cancel-in-progress: false\n/m);
+  });
+
   test("passes the token and the pull request number to pnpm close-issue only through env", () => {
     expect(job).toMatch(
       /^ {6}- run: pnpm close-issue\n {8}env:\n {10}GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}\n {10}PR_NUMBER: \$\{\{ github\.event\.pull_request\.number \}\}\n?$/m,
     );
     expect([...close.matchAll(/^.*\$\{\{.*$/gm)].map(([line]) => line.trim())).toEqual([
+      "group: close-add-plugin-issue-${{ github.event.pull_request.number }}",
       "GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}",
       "PR_NUMBER: ${{ github.event.pull_request.number }}",
     ]);

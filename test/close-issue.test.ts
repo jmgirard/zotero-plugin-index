@@ -38,7 +38,11 @@ const pull = {
   body: issueBody,
 };
 const issue = { number: 7, state: "open", labels: [{ name: "add-plugin" }] };
-const opened = { user: BOT, body: `The bot opened ${PULL_URL}. This issue closes when that pull request merges.` };
+// The comment issueAnswer posts when it opens pull request 9.
+const opened = {
+  user: BOT,
+  body: `The bot opened ${PULL_URL}. This issue closes when that pull request merges. If that pull request is closed without a merge, the bot closes this issue as not planned.`,
+};
 
 // A bot pull request 9 that was closed without a merge, and its open "Add a plugin"
 // issue 7 with the bot's comment, with answers to the comment and close requests.
@@ -120,7 +124,7 @@ describe("closing the issue of a bot pull request closed without a merge", () =>
 });
 
 // As in the report tests, the preload answers the command's requests from `responses`.
-function pnpmClose(responses: Responses, env: Record<string, string> = { GITHUB_REPOSITORY: "example/index", PR_NUMBER: "9" }) {
+function pnpmClose(responses: Responses, env: Record<string, string> = { GITHUB_REPOSITORY: "example/index", PR_NUMBER: "9" }, args: string[] = []) {
   const pnpmPath = process.env.npm_execpath;
   if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");
   const dir = mkdtempSync(join(tmpdir(), "zpi-close-"));
@@ -131,7 +135,7 @@ function pnpmClose(responses: Responses, env: Record<string, string> = { GITHUB_
   writeFileSync(log, "");
   const { INIT_CWD: _outer, GITHUB_TOKEN: _token, GITHUB_REPOSITORY: _repo, PR_NUMBER: _pull, ...outer } = process.env;
   Object.assign(outer, { ZPI_FIXTURE: fixture, ZPI_REQUESTS: log, NODE_OPTIONS: `--import=${PRELOAD}`, ...env });
-  const result = spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "close-issue"], { cwd: dir, encoding: "utf8", env: outer, timeout: 50_000 });
+  const result = spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "close-issue", ...args], { cwd: dir, encoding: "utf8", env: outer, timeout: 50_000 });
   const sent = readFileSync(log, "utf8")
     .split("\n")
     .filter(Boolean)
@@ -162,6 +166,13 @@ describe("pnpm close-issue", () => {
     const { result, sent } = pnpmClose(acting, env);
     expect(result.status).toBe(1);
     expect(result.stderr).toContain(message);
+    expect(sent).toEqual([]);
+  });
+
+  test("prints the usage and exits 1 when given an argument", () => {
+    const { result, sent } = pnpmClose(acting, undefined, ["9"]);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toBe("usage: pnpm close-issue, with GITHUB_REPOSITORY and PR_NUMBER set\n");
     expect(sent).toEqual([]);
   });
 });

@@ -10,6 +10,12 @@ on:
 # The job sets its own permissions.
 permissions: {}
 
+# One run at a time for each pull request, so a close, a reopen, and a second close
+# cannot both pass the check for an earlier closing comment and comment twice.
+concurrency:
+  group: close-add-plugin-issue-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 jobs:
   close:
     # Only a bot pull request closed without a merge: a discover/ branch in this repo.

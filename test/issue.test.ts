@@ -136,7 +136,9 @@ describe("an issue run", () => {
     expect(sent.map(({ method, url }) => `${method} ${url}`)).toEqual([`POST ${PULLS}`, `POST ${COMMENTS}`]);
     expect(sent[0]).toMatchObject({ head: "discover/example/alpha", base: "main" });
     expect(sent[0].body).toContain("Closes #7");
-    expect(sent[1].body).toContain("https://github.com/example/index/pull/9");
+    expect(sent[1].body).toBe(
+      "The bot opened https://github.com/example/index/pull/9. This issue closes when that pull request merges. If that pull request is closed without a merge, the bot closes this issue as not planned.",
+    );
   });
 
   test.each([
@@ -289,7 +291,7 @@ describe("an issue run's read failures that point at the bot", () => {
     expect(outcome).toMatchObject({ outcome: "failed", failure: "unexpected-error", message: expect.stringMatching(/^checking the entry of .* threw: .*ENOENT/) });
     expect(result.status).toBe(1);
     expect(sent).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(/^The bot could not finish/) }]);
-    expect(sent[0].body).toMatch(/`unexpected-error`: ` ?checking the entry of [^`]*ENOENT[^`]*`/);
+    expect(sent[0].body).toMatch(/`unexpected-error`: ` checking the entry of [^`]*ENOENT[^`]* `/);
   });
 
   test.each([
@@ -334,7 +336,7 @@ describe("an issue run's answers", () => {
       [`POST ${PULLS}`]: { status: 201, json: {} },
     });
     expect(result.status).toBe(0);
-    expect(sent.at(-1)!.body).toContain("a pull request from the branch `discover/example/alpha`");
+    expect(sent.at(-1)!.body).toBe("The bot opened a pull request from the branch `discover/example/alpha`. This issue closes when that pull request merges.");
   });
 
   test("cuts a long message short, so the comment stays under GitHub's limit", async () => {
