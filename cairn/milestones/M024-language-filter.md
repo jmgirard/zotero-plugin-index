@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M024: Filter the home list by interface language
 
-- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** M023   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -178,6 +178,7 @@ once, in list order. A record with no `upstream` has an empty applied list. M023
 - 2026-10-27: amendment return: AC1 — "Each tag of the list is then written in the form `Intl.getCanonicalLocales` returns, once, in list order." The sentence is added to the Scope paragraph that defines the applied list; no acceptance-criterion wording changed, so no criterion re-audit ran; the deliverable is unchanged, since the code already did this per the M023 review note; `test/language.test.ts` "writes each override tag in canonical form, once" pins it.
 - 2026-10-27: claim audit: 64 claims read, 0 corrected — README.md, CHANGELOG.md, src/site/languages.ts, src/site/language-filter.ts, site/src/data.ts, site/src/pages/index.astro, test names; a second pass after the review's fixes added prose. The reader's own `test/site.test.ts` run failed at its `pnpm site` step in its sandbox; here `pnpm test` (676) and `pnpm check` pass.
 - 2026-10-27: amendment done; status set to review.
+- 2026-10-27: review return 1: the consistency gate's `weight caps` check fails — 150 plan-owned lines against a cap below 150, after the Scope amendment added a line; status set to in-progress.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
@@ -223,3 +224,5 @@ once, in list order. A record with no `upstream` has an empty applied list. M023
 - ripple #3: DESIGN's list of the facts a reader can check leaves out the interface languages — fix now, fixed 0e60805: added (M024).
 - ripple #4: README line 10 says the home page lists every plugin — reject (false): it does with the default "All languages", and the menu paragraph follows.
 - ripple #5: the test title "… with the minor facts in a closed Details section" — reject (false): the minor facts are still in Details, and the test body places the languages fact outside it.
+- Pass 2 evidence (2026-10-27, head dc75fd6, after the Scope amendment): `origin/main` still 2b317fb. `vitest run test/language.test.ts test/site.test.ts` passes 75 of 75 (AC1, AC2, AC4 tests as in pass 1; AC3's six `rowShows` cases plus the new `menuValue` and `filterHref` tests). Browser check on a fresh fixture build in the pane: (1) the menu shows, "All languages", 7 rows; (2) Chinese leaves `first-plugin@example.org` and `min-only-plugin@example.org`, URL `…/zotero-plugin-index/?language=zh`; (3) "All languages" shows 7 rows, URL `…/zotero-plugin-index/`; (4) `?language=xx` selects "All languages", 7 rows, and the address becomes `…/zotero-plugin-index/`. Back check: after a hand-set `#x`, picking Chinese (`?language=zh#x`), then Back, the address is `…/zotero-plugin-index/`, the menu "", 7 rows. `pnpm test` 676 of 676; `pnpm check` 0 problems.
+- Pass 2 gate: `cairn_validate.py` FAILs `weight caps` — this file has 150 plan-owned lines (cap below 150) after the Scope amendment's added line; heaviest: Acceptance criteria 68, Tasks 28, Scope 21. Returned to implement.
