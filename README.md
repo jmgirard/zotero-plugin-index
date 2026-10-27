@@ -353,9 +353,10 @@ the next entry. At the end, it names each failed entry with its error and
 exits with status 1.
 
 `pnpm propose` stops each git process that fetches, builds, or pushes a
-commit after 2 minutes, and each `pnpm check` process after 5 minutes. If a process for one entry takes longer, that entry
-fails, and the command opens no pull request for it. If the fetch of the
-default branch takes longer, every entry fails, as when the fetch fails. The
+commit after 2 minutes, and each `pnpm check` process after 5 minutes. If a
+process for one entry takes longer, that entry fails, and the command opens
+no pull request for it. If the fetch of the default branch takes longer,
+every entry fails, as when the fetch fails. The
 command also checks each branch name in the handoff with git again, with the
 30-second limit of "Finding new plugins". If that check takes longer, the
 command stops with an error before it pushes anything.
