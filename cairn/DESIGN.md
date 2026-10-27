@@ -31,16 +31,20 @@ declared range of Zotero versions, source availability, whether GitHub marks
 the repository archived (when GitHub's response says), repository age, the
 release the index read and whether it is a prerelease (corrected M014),
 release count, open issues, the host of the `update.json` file, the
-counted user reports on the release the index read (M021).
+counted user reports on the release the index read (M021), and the
+interface languages (M024).
 The data also carries the interface languages that the read XPI's locale
 folders name (M023). They say which languages a plugin ships interface text
 for, not whether a translation is complete. A `languages` override records
-them for a plugin whose list is wrong or empty. The plugin page and the
-home list do not show them yet.
+them for a plugin whose list is wrong or empty. Each plugin page shows
+them by name, outside the Details section, and the home page's language
+menu filters the list by language subtag, run by the site's one script
+(D-014, M024).
 The page shows the name, the description, the version pills, the declared
-range, the user reports on the release the index read with a "Works" and a
-"Broken" link (M021), and the repository and releases links first. The other facts sit in a
-closed "Details" section (M015). The home list marks an
+range, the interface languages (M024), the user reports on the release the
+index read with a "Works" and a "Broken" link (M021), and the repository
+and releases links first. The other facts sit in a closed "Details"
+section (M015). The home list marks an
 archived plugin with "(archived)" after its name, and the data carries the
 same `archived` fact (M013).
 The Details section also shows each override beside the upstream value it
@@ -178,8 +182,11 @@ exception is a report that is abuse.
   home page and one page per record into `dist/`, or `<dir>`, from the data
   file there. `src/site/version.ts` holds the version and range functions
   that the templates use, `majorSupport` and `ZOTERO_MAJORS` among them, and
-  `src/site/description.ts` holds `shownDescription`. Added M007; pills and
-  descriptions M015.
+  `src/site/description.ts` holds `shownDescription`.
+  `src/site/languages.ts` holds the applied languages, their names, and the
+  menu options. `src/site/language-filter.ts` holds `rowShows`, `menuValue`,
+  and `filterHref`, which the home page's script imports. Added M007; pills
+  and descriptions M015; languages M024.
 - Reports (`src/reports/`): `parseReport(body, labels, ids)` reads a report
   issue's plugin id, plugin version, Zotero major, and verdict, or names the
   first problem. `pnpm report-issue` reads the issue that `ISSUE_NUMBER`
@@ -404,7 +411,9 @@ reused._
   declared range with overrides applied, and, in `majorSupport`, how much of
   one Zotero major that range covers. The tests and the templates (through
   `site/src/data.ts` and `site/src/components/Support.astro`) import it. The
-  pages carry no script (M015). The templates take the Pages path
+  pages carried no script from M015. Since M024 the home page carries one,
+  the language menu, which Astro inlines as a `type="module"` script; the
+  other pages carry none (D-014). The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
   Astro's `import.meta.env.BASE_URL`. `build.yml` runs `pnpm site` after the
   build, so a failed site build also deploys nothing. `tsconfig.json` includes

@@ -244,14 +244,14 @@ describe("the plugin page", () => {
       ...(description ? [`<p class="description" data-description>${escaped(description)}</p>`] : []),
       support,
       ...(hasBound(record) ? ['data-fact="declared-range"'] : []),
-      ...(record.upstream ? ["<section class=\"reports\" data-reports>"] : []),
+      ...(record.upstream ? ['data-fact="languages"', "<section class=\"reports\" data-reports>"] : []),
       'data-fact="repository"',
       ...(record.upstream ? ['data-fact="releases"'] : []),
       "<details>",
     ]);
     if (!description) expect(html).not.toContain("data-description");
     if (!hasBound(record)) expect(html).not.toContain('data-fact="declared-range"');
-    if (!record.upstream) expect(html).not.toContain('data-fact="releases"');
+    if (!record.upstream) expect(html).not.toMatch(/data-fact="(?:releases|languages)"/);
     if (!record.failure && hasBound(record)) expectPills(html, record);
     else expect(pills(html)).toEqual([]);
 
@@ -297,6 +297,31 @@ describe("the plugin page", () => {
       ["strict_max_version", "7.*", "8.*", "every version", "yes", "The author confirmed that the plugin works on Zotero 8."],
       ["strict_min_version", "7.0", "8.5", "0.9.0", "no", "Version 0.9.0 needs an API that Zotero 8.5 added."],
     ]);
+  });
+
+  test.each([
+    ["two upstream tags", "first-plugin@example.org", "English (United States), Chinese (China)"],
+    ["an empty upstream list", "old-plugin@example.org", "None declared"],
+    ["no languages field", "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "None declared"],
+    ["an override for every version, in its own order", "no-range-plugin@example.org", "French, German"],
+    ["an override for another version only", "min-only-plugin@example.org", "Chinese (China), Chinese (Taiwan)"],
+    ["an override for the version read beside one for every version", "locale-plugin@example.org", "Portuguese (Brazil), Spanish (Latin America)"],
+  ])("shows the interface languages for %s", (_, id, text) => {
+    expect(fact(page(id), "languages")).toBe(text);
+  });
+
+  test("labels the interface languages fact", () => {
+    expect(page("first-plugin@example.org")).toContain(`<p class="languages">Interface languages: <span data-fact="languages">`);
+  });
+
+  test.each([
+    ["a non-empty", "no-range-plugin@example.org", [["en", "fr, de"]]],
+    ["an empty", "locale-plugin@example.org", [["none", "es"], ["none", "pt-BR, es-419"]]],
+  ])("shows %s upstream list beside a languages override", (_, id, cells) => {
+    const rows = [...page(id).matchAll(/<tr data-override="languages">(.*?)<\/tr>/g)].map((row) =>
+      [...row[1]!.matchAll(/<td>(.*?)<\/td>/g)].slice(1, 3).map((cell) => cell[1]),
+    );
+    expect(rows).toEqual(cells);
   });
 
   test("shows the failure and no declared range for a record that was not read", () => {
@@ -346,7 +371,7 @@ describe("the home page", () => {
   // The row holds no other <li>, so it ends at the first </li> after it starts.
   function row(id: string): string {
     const html = home();
-    const start = html.indexOf(`<li class="plugin" data-plugin="${id}">`);
+    const start = [...html.matchAll(/<li class="plugin"[^>]*>/g)].find(([tag]) => tag.includes(` data-plugin="${escaped(id)}"`))?.index ?? -1;
     expect(start, id).toBeGreaterThan(-1);
     return html.slice(start, html.indexOf("</li>", start));
   }
@@ -372,9 +397,46 @@ describe("the home page", () => {
   test("marks only the archived plugin", () => {
     expect(home().match(/\sdata-archived/g)).toHaveLength(1);
   });
+
+  test("gives each row the language subtags it applies", () => {
+    const rows = [...home().matchAll(/<li class="plugin"[^>]*>/g)].map(([tag]) => [
+      /\sdata-plugin="([^"]*)"/.exec(tag)?.[1],
+      /\sdata-languages="([^"]*)"/.exec(tag)?.[1],
+    ]);
+    expect(rows).toEqual([
+      ["broken-plugin@example.org", ""],
+      ["first-plugin@example.org", "en zh"],
+      ["old-plugin@example.org", ""],
+      ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", ""],
+      ["no-range-plugin@example.org", "de fr"],
+      ["min-only-plugin@example.org", "zh"],
+      ["locale-plugin@example.org", "es pt"],
+    ]);
+  });
+
+  test("holds a hidden language menu with one option for each subtag", () => {
+    const menu = /<p class="language-filter" hidden><label for="language">Interface language<\/label> <select id="language" data-language-filter autocomplete="off">(.*?)<\/select><\/p>/.exec(home());
+    expect(menu).not.toBeNull();
+    const options = [...menu![1]!.matchAll(/<option value="([^"]*)">([^<]*)<\/option>/g)].map(([, value, text]) => [value, text]);
+    expect(options).toEqual([
+      ["", "All languages"],
+      ["zh", "Chinese (2)"],
+      ["en", "English (1)"],
+      ["fr", "French (1)"],
+      ["de", "German (1)"],
+      ["pt", "Portuguese (1)"],
+      ["es", "Spanish (1)"],
+    ]);
+  });
 });
 
 describe("the built site", () => {
+  test("has a script on the home page only", () => {
+    const files = htmlFiles(out);
+    expect(files).toContain("index.html");
+    for (const file of files) expect(readFileSync(join(out, file), "utf8").includes("<script"), file).toBe(file === "index.html");
+  });
+
   test("has no trace of the Zotero version field", () => {
     const files = (readdirSync(out, { recursive: true }) as string[]).filter((path) => statSync(join(out, path)).isFile());
     expect(files.length).toBeGreaterThan(ids.length);
