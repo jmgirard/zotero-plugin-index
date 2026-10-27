@@ -180,9 +180,12 @@ exception is a report that is abuse.
   names and a `::warning::` line for build-level failures. Before any plugin
   read it reads the closed report issues of `GITHUB_REPOSITORY`, or of
   `INDEX_REPO`, and writes `reports` on each record that has `upstream`; a
-  failed issue read writes no file and exits 1 (D-013). Added M003;
+  failed issue read writes no file and exits 1 (D-013). A plugin read stops
+  at 3 minutes and fails as `request-failed`. After 18 minutes from the
+  command's start, the build reads no more plugins, and each entry left
+  fails as `not-read`. Both are build-level (D-015). Added M003;
   schemas and exit rule M006; build-level rule and summary M017; every-record
-  rule M018; reports M021.
+  rule M018; reports M021; time limits M029.
 - Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
   home page and one page per record into `dist/`, or `<dir>`, from the data
   file there. `src/site/version.ts` holds the version and range functions

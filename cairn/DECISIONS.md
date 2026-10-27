@@ -172,3 +172,18 @@ the URL. The menu is hidden in the HTML, so without JavaScript the home page
 shows the full list and no menu, and each page still reads without
 JavaScript, as D-004 says. The other pages carry no script. The menu's
 options and counts are written at build, so the script reads no data file.
+
+### D-015: A read cut by a time limit is build-level, annotating D-011
+
+2026-10-27, M029. `pnpm build` stops a plugin read after 3 minutes and
+starts no plugin read after 18 minutes from its start. Thus hosts that do
+not answer cannot take the build job past its 30-minute limit, where GitHub
+stops the job and nothing is kept or deployed. A read cut by the first limit
+fails as `request-failed`, the name that README already gives a request
+with no whole response. An entry that the second limit leaves unread fails
+as `not-read`. Both count as build-level under D-011, because they point at
+the build or a host, not at the plugin. So when more than half of the records
+carry a build-level failure, these included, the build deploys nothing, and
+the last good data stays.
+The cost is that an unread plugin shows no facts on that day's site, since
+the build restores no earlier data (D-010).

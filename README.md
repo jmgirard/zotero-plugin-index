@@ -497,13 +497,21 @@ read stops with an error that the reader does not name, the failure name is
 `unexpected-error`. If the read gives facts that the schema rejects, the
 failure name is `facts-invalid`. The command still writes the file.
 
+The command gives each plugin read 3 minutes. If a read takes longer, the
+command stops it, and the record fails with `request-failed`. The command
+starts no plugin read after 18 minutes from its start. Each entry that it
+did not read gets a record that fails with `not-read`. Such a plugin shows
+no facts until a later build reads it. These limits leave time for the
+other steps of the daily build, whose job GitHub stops at 30 minutes.
+
 A build-level failure usually comes from the build, not from the plugin.
 A plugin's own download host that is down also gives one. These failures
 are build-level:
 
 - an `unexpected-error`,
 - a request that gets no whole response, such as a failed host lookup, a
-  network error, or a timeout,
+  network error, or a timeout, a read stopped at 3 minutes included,
+- a `not-read` entry,
 - an HTTP 401 or 403 answer from the GitHub API,
 - an HTTP 429 or 5xx answer from any host.
 
