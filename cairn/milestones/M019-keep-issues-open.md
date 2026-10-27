@@ -124,6 +124,7 @@ planned. README, CHANGELOG, DESIGN, and the code comments follow.
 - 2026-10-26: claim audit: 22 claims read, 3 corrected — src/discover/discover.ts, src/discover/handoff.ts, README.md (re-read once: all true; README sentence moved to the paragraph on issues that close).
 - 2026-10-26: review return 1: AC4 fails as written — the `issueRead` comment in `src/discover/issue.ts` (lines 46-52) says a build-level or thrown read gives the `failed` outcome but does not say that this leaves the issue open and fails the run.
 - 2026-10-26: T5 added for review return 1 (minor amendment; Coverage AC4 → T3, T5). The `issueRead` comment now says the write step leaves the issue open and the run fails, which restates the `issueAnswer` claim the claim audit read as true. `pnpm test` 496 passed, `pnpm check` 0 problems.
+- 2026-10-27: step-7 approval: m019-keep-issues-open approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->
