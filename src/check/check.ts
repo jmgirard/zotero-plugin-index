@@ -82,7 +82,7 @@ export function caseClashes(names: string[]): string[][] {
     .sort((a, b) => (a[0] < b[0] ? -1 : 1));
 }
 
-// The names under root that are not directories. `listEntries` skips them, so the build and
+// The names under root, other than those that start with ".", that are not directories. `listEntries` skips them, so the build and
 // discover never read them. A name that stat cannot read is left to `listEntries`.
 async function strayFiles(root: string): Promise<Finding[]> {
   let names: string[];

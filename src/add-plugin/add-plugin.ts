@@ -31,7 +31,13 @@ export async function writeEntry(outDir: string, facts: UpstreamFacts): Promise<
   }
   // A case-sensitive file system would let both directories exist, and Windows and macOS
   // checkouts would then hold one of them.
-  const same = (await namesIn(outDir)).find((name) => name !== facts.id && name.toLowerCase() === facts.id.toLowerCase());
+  let names: string[];
+  try {
+    names = await namesIn(outDir);
+  } catch (error) {
+    return { ok: false, failure: "write-failed", message: `cannot read ${outDir}: ${(error as Error).message}` };
+  }
+  const same = names.find((name) => name !== facts.id && name.toLowerCase() === facts.id.toLowerCase());
   if (same !== undefined) {
     return { ok: false, failure: "entry-exists", message: `${join(outDir, same)} already exists, equal to the id ${facts.id} ignoring case` };
   }
@@ -57,11 +63,14 @@ export async function writeEntry(outDir: string, facts: UpstreamFacts): Promise<
   return { ok: true, dir };
 }
 
-// The names in dir. A missing dir has none; another read error is left for mkdir to report.
+// The names in dir. A dir that is missing, or under a file, has none, and mkdir then reports
+// it. Another read error throws.
 async function namesIn(dir: string): Promise<string[]> {
   try {
     return await readdir(dir);
-  } catch {
-    return [];
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "ENOENT" || code === "ENOTDIR") return [];
+    throw error;
   }
 }

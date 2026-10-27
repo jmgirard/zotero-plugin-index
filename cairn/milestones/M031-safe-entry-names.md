@@ -1,6 +1,6 @@
 # M031: Refuse unsafe entry names
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -73,6 +73,8 @@
 - 2026-10-28: T7: a site build of the fixture with its last id set to `a%b@example.org` logged "Invalid URL encoding" and exited 0, and one with `a b@example.org` exited 0; both wrote every page, so the M007-review NoMatchingStaticPathFound failure does not reproduce on Astro 7.4.2. The CHANGELOG clause saying such ids made `pnpm site` fail is removed.
 - 2026-10-28: T7: planted from copies, each restored: no Windows names (69 red), no trailing dot, no `entry-name` push, no stray files, sets of 3 only, no `writeEntry` case match, and `writeEntry` skipping Windows names each turned their tests red. On a case-sensitive APFS disk image as TMPDIR, the CLI case-clash test ran and passed, and turned red with the clash loop removed.
 - 2026-10-28: T7 done: `pnpm test` 825 passed, 1 skipped (the case-sensitive CLI test on this volume); `pnpm check` 33 entries, 0 problems; `cairn_validate` passes with the known 8-criteria warning.
+- 2026-10-28: claim audit: 31 claims read, 4 corrected — CHANGELOG.md, README.md, src/check/check.ts, src/add-plugin/add-plugin.ts. `pnpm check` skips names that start with ".", so the docs now say only "ends with"; `namesIn` now throws on a read error other than ENOENT or ENOTDIR, which `writeEntry` returns as `write-failed`, with a new test. The re-read found all four hold. The reader's note that an `--out` that is a file reports `entry-exists` (as on main) became candidate row "Name the failure when --out is a file".
+- 2026-10-28: implement done: `pnpm test` 826 passed, 1 skipped; `pnpm check` 33 entries, 0 problems. Status set to review.
 
 ## Decisions
 

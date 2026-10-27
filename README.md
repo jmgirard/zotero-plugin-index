@@ -497,8 +497,8 @@ rules check the names in the directory:
 
 - `entry-is-directory`: each other name must be a directory.
 - `entry-name`: a directory name holds only the letters A to Z and a to z,
-  the digits, and `_ @ { } + . -`, at most 200 characters. It must not start
-  or end with `.`. The part before its first `.` must not be one of the
+  the digits, and `_ @ { } + . -`, at most 200 characters. It must not end
+  with `.`. The part before its first `.` must not be one of the
   names that Windows reserves, in any case: CON, PRN, AUX, NUL, COM1 to
   COM9, and LPT1 to LPT9. For example, `nul.tar.gz` is refused.
 - `unique-ignoring-case`: two directory names must not differ only in case,

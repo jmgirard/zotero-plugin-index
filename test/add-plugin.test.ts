@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
@@ -157,5 +157,17 @@ describe("writeEntry", () => {
     const result = await writeEntry(out, { ...facts, id: "foo@example.org" });
     expect(result).toEqual({ ok: false, failure: "entry-exists", message: expect.stringContaining("Foo@example.org") });
     expect(readdirSync(out)).toEqual(["Foo@example.org"]);
+  });
+
+  test("returns write-failed when the output directory cannot be read", async () => {
+    const out = tempDir();
+    chmodSync(out, 0o300);
+    try {
+      const result = await writeEntry(out, facts);
+      expect(result).toEqual({ ok: false, failure: "write-failed", message: expect.stringContaining("cannot read") });
+    } finally {
+      chmodSync(out, 0o700);
+    }
+    expect(readdirSync(out)).toEqual([]);
   });
 });
