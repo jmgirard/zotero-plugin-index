@@ -500,8 +500,8 @@ failure name is `facts-invalid`. The command still writes the file.
 The command gives each plugin read 3 minutes. If a read takes longer, the
 command stops it, and the record fails with `request-failed`. The command
 starts no plugin read after 18 minutes from its start. Each entry that it
-did not read gets a record that fails with `not-read`. Such a plugin shows
-no facts until a later build reads it. These limits leave time for the
+did not read gets a record that fails with `not-read`. A plugin with either
+failure shows no facts until a later build reads it. These limits leave time for the
 other steps of the daily build, whose job GitHub stops at 30 minutes.
 
 A build-level failure usually comes from the build, not from the plugin.

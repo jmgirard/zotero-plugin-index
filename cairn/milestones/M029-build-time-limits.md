@@ -1,6 +1,6 @@
 # M029: Bound the build's read time
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -32,7 +32,7 @@
 - AC1 → T1
 - AC2 → T2
 - AC3 → T3
-- AC4 → T4
+- AC4 → T4, T6
 - AC5 → T5
 
 ## Tasks
@@ -42,6 +42,7 @@
 - [x] T3: In the `buildData` read loop, check the time since the command started before each read. Past 18 minutes, give each entry left a `not-read` record with a message that names the limit, and add its id to `buildLevel`. Add the cut case to `test/build.test.ts`.
 - [x] T4: Update README "Building the data", the schema's failure `name` description, DESIGN.md's "Data build" line, and CHANGELOG Unreleased. Append a DECISIONS entry that records both cuts as build-level, annotating D-011. Search a joined copy of README for each phrase (LESSONS M018).
 - [x] T5: Run `pnpm test` and `pnpm check` (LESSONS M001). Dispatch `build.yml` on the branch and read the build job's result and time. The deploy job fails off `main` (LESSONS M006).
+- [x] T6: Review return 1: make README's "shows no facts" sentence cover a read cut by the 3-minute limit as well as an unread entry.
 
 ## Work log
 
@@ -64,6 +65,7 @@
 - 2026-10-27: claim audit: 33 claims read, 2 corrected — CHANGELOG.md (the old bound also had the lookup's 60 s limit), src/upstream/reader.ts (an abort hidden by a redirect body's cancel now fails the download as a build-level cut with the reason; `downloader` takes the signal; new test, red with the check planted out). `pnpm test` 721 passed, `pnpm check` clean.
 - 2026-10-27: all tasks done; status review.
 - 2026-10-27: review return 1: AC4 fails as written — README says "Such a plugin shows no facts until a later build reads it" right after the `not-read` sentence, so it covers only unread entries, not a read cut by the 3-minute limit; AC4 asks it for both.
+- 2026-10-27: T6 added (minor amendment, AC4 → T4, T6) and done: README now reads "A plugin with either failure shows no facts until a later build reads it", found once in a joined copy. `pnpm test` 721 passed, `pnpm check` clean. Status review.
 
 ## Decisions
 
