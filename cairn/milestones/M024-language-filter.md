@@ -35,8 +35,9 @@ list and no menu. README, CHANGELOG, and DESIGN follow, under D-014.
 The applied list of a record comes from the `languages` override that
 applies to the version the index read, as `usedOverride` in
 `src/site/version.ts` picks it. The list is that override's `value`, split
-on `, `. With no such override, the list is `upstream.languages`. A record
-with no `upstream` has an empty applied list. M023 keeps
+on `, `. With no such override, the list is `upstream.languages`. Each tag
+of the list is then written in the form `Intl.getCanonicalLocales` returns,
+once, in list order. A record with no `upstream` has an empty applied list. M023 keeps
 `upstream.languages` optional, so a record may lack it.
 
 ## Acceptance criteria
@@ -174,6 +175,7 @@ with no `upstream` has an empty applied list. M023 keeps
 - 2026-10-27: claim audit: 38 claims read, 3 corrected — CHANGELOG.md (the languages line shows only on pages of plugins the index read), README.md (a failed plugin's page has no languages line), src/site/languages.ts (the `appliedLanguages` comment now names the override case); the same Opus reader re-read the three and found each true. `pnpm test` (672) and `pnpm check` pass.
 - 2026-10-27: implement done; status set to review.
 - 2026-10-27: amendment routed: AC1 — Scope defines the applied list that AC1's fact names as the `languages` override's value split on `, `, but `appliedLanguages` also writes each tag in `Intl.getCanonicalLocales` form once, as the M023 review note in this log asked, so an override `zh-CN, zh-CN` shows "Chinese (China)" once where the Scope text says twice (diff-bug #5); the fix-now findings landed in 0e60805; status set to in-progress for the Scope amendment alone.
+- 2026-10-27: amendment return: AC1 — "Each tag of the list is then written in the form `Intl.getCanonicalLocales` returns, once, in list order." The sentence is added to the Scope paragraph that defines the applied list; no acceptance-criterion wording changed, so no criterion re-audit ran; the deliverable is unchanged, since the code already did this per the M023 review note; `test/language.test.ts` "writes each override tag in canonical form, once" pins it.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
