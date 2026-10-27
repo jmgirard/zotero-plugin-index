@@ -44,13 +44,15 @@ throwaway accounts.
 - [ ] AC1: `countReports` in `src/reports/` takes the report issues and the
       build's records and returns, for each record, the works and broken
       counts on each Zotero major. It first drops pull requests, issues not
-      closed as completed, issues with the label `not-counted`, issues that
-      `parseReport` refuses, and reports whose plugin version differs from
-      the record's `upstream.version`. Then, of one account's remaining
-      reports on one plugin and Zotero major, with the account known by
-      `user.id`, the newest by `created_at` counts, and the higher issue
-      number wins a tie. Tests in `test/report.test.ts` show each drop and
-      these cases: one account's reports on two majors both count, one
+      closed as completed, issues whose `closed_by` is null or absent or has
+      a login other than `github-actions[bot]`, issues with the label
+      `not-counted`, issues that `parseReport` refuses, and reports whose
+      plugin version differs from the record's `upstream.version`. Then, of
+      one account's remaining reports on one plugin and Zotero major, with
+      the account known by `user.id`, the newest by `created_at` counts, and
+      the higher issue number wins a tie. Tests in `test/report.test.ts` show
+      each drop, the `closed_by` drop for a person's login and for a null
+      `closed_by`, and these cases: one account's reports on two majors both count, one
       account's reports on two plugins both count, two accounts on one plugin
       and major both count, the newest report decides when an older one has
       the other verdict, and an account whose newest report is dropped keeps
@@ -120,7 +122,7 @@ throwaway accounts.
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
 
-- [ ] T1: Write the tests of `countReports`, then the function, reusing
+- [x] T1: Write the tests of `countReports`, then the function, reusing
       `parseReport` from M020.
 - [ ] T2: Read the report issues in `buildData` before the plugin reads,
       add `reports` to the records and the schema, and add the CLI's failure
@@ -146,6 +148,11 @@ throwaway accounts.
 - 2026-10-27: note from M020's claim audit: the report forms' markdown, the bot comment in `src/reports/issue.ts`, and README "Reporting whether a plugin works" say the index "will count" reports; when counting ships here, T5 puts them in the present tense.
 - 2026-10-27: note from M020's review: the candidate "Count only reports the bot closed" shows that AC1's "closed as completed" also takes issues their authors closed; implement weighs it as an amendment before T1.
 - 2026-10-27: lessons used: 2026-10-25 (M002) recorded responses, 2026-10-25 (M004) DNS stubs in build tests, 2026-10-25 (M007) attribute matching, 2026-10-26 (M015) local preview of the site, 2026-10-25 (M006) Pages deploys only from main, 2026-10-26 (M018) search joined text.
+- 2026-10-27: status in-progress; branch m021-report-counts cut from main at 83abe0a.
+- 2026-10-27: substantive amendment: AC1 also drops issues whose `closed_by` is null or absent or names a login other than `github-actions[bot]`, and names the probes of that drop. D-013 already says the build counts "the ones the bot closed as completed", so the amendment brings AC1 to the user's decision and takes no stop. GitHub's issue list answer carries `closed_by` (observed 2026-10-27 on this repo), so the check costs no request. It absorbs the candidate "Count only reports the bot closed".
+- 2026-10-27: re-audit: AC1 (full) — null `closed_by` unnamed (named); a gloss saying which workflow closes reports, unchecked (cut); one probe per drop family (the `closed_by` probes named, the other families tested); a report that a person reopens and closes again stops counting (T5 adds it to the DESIGN Known issues entry); DESIGN item 4 should say the bot closed the issues (T5).
+- 2026-10-27: re-audit: AC1 (full) — the record a report goes to and "each Zotero major" (answered: AC2 states the output, no change); an absent `closed_by` drops every report if GitHub stops sending it (new candidate row); probes for one `user.id` under two logins, the dropped-newest case for each drop, and the near-miss login `github-actions` (tests added); the tie probe exists; AC2's fixture needs counted reports (T2). No wording change.
+- 2026-10-27: T1 done: `countReports` in `src/reports/count.ts`; an item without a numeric `user.id`, a parseable `created_at`, or a numeric `number` does not count. Planted defects (no `closed_by` check, no tie rule) turned 3 tests red.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

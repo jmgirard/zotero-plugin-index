@@ -3,7 +3,9 @@ import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSyn
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
+import type { PluginRecord } from "../src/build/build.ts";
 import { code } from "../src/discover/propose.ts";
+import { countReports } from "../src/reports/count.ts";
 import { answerReport } from "../src/reports/issue.ts";
 import { parseReport, REPORT_LABELS } from "../src/reports/report.ts";
 import { fixtureFetch, type Responses } from "./support/fixture-fetch.ts";
@@ -123,6 +125,103 @@ describe("parseReport", () => {
     ["neither verdict label", ["report"]],
   ])("names a label set with %s", (_, labels) => {
     expect(parseReport(rendered(valid), labels, IDS)).toMatchObject({ ok: false, problem: "bad-verdict" });
+  });
+});
+
+describe("countReports", () => {
+  // Records of the build: alpha and beta read version 1.2.0, and gamma failed.
+  const records = [
+    { id: "alpha@example.org", repoUrl: "", upstream: { version: "1.2.0" }, overrides: [] },
+    { id: "beta@example.org", repoUrl: "", upstream: { version: "1.2.0" }, overrides: [] },
+    { id: "gamma@example.org", repoUrl: "", failure: { name: "fork", message: "" }, overrides: [] },
+  ] as unknown as PluginRecord[];
+
+  let next = 100;
+  // An item of GitHub's issue list for a report that counts, with `fields` replaced.
+  function item(fields: Record<string, unknown> = {}, report: { plugin?: string; version?: string; zotero?: string; verdict?: string } = {}) {
+    const { verdict = "works", ...values } = report;
+    return {
+      number: next++,
+      user: { id: 1, login: "reporter" },
+      created_at: "2026-10-27T10:00:00Z",
+      state_reason: "completed",
+      closed_by: { login: "github-actions[bot]", id: 41898282, type: "Bot" },
+      labels: [{ name: "report" }, { name: verdict }],
+      body: rendered({ ...valid, ...values }),
+      ...fields,
+    };
+  }
+
+  test("counts a report on the version the record read, and gives each read record a list", () => {
+    const counts = countReports([item()], records);
+    expect([...counts.entries()]).toEqual([
+      ["alpha@example.org", [{ zoteroMajor: 7, works: 1, broken: 0 }]],
+      ["beta@example.org", []],
+    ]);
+  });
+
+  const DROPS: [string, Record<string, unknown>, { version?: string }][] = [
+    ["a pull request", { pull_request: { url: "https://api.github.com/repos/example/index/pulls/1" } }, {}],
+    ["an issue closed as not planned", { state_reason: "not_planned" }, {}],
+    ["an issue closed with no reason", { state_reason: null }, {}],
+    ["an issue a person closed", { closed_by: { login: "reporter", id: 1, type: "User" } }, {}],
+    ["an issue closed by a login without [bot]", { closed_by: { login: "github-actions", id: 2, type: "User" } }, {}],
+    ["an issue with a null closed_by", { closed_by: null }, {}],
+    ["an issue with no closed_by", { closed_by: undefined }, {}],
+    ["an issue with the label not-counted", { labels: [{ name: "report" }, { name: "works" }, { name: "not-counted" }] }, {}],
+    ["a report parseReport refuses", { labels: [{ name: "report" }] }, {}],
+    ["a report on another plugin version", {}, { version: "1.1.0" }],
+  ];
+
+  test.each(DROPS)("drops %s", (_, fields, report) => {
+    expect(countReports([item(fields, report)], records).get("alpha@example.org")).toEqual([]);
+  });
+
+  test.each(DROPS)("keeps an account's older report when its newest report is %s", (_, fields, report) => {
+    const older = item({ created_at: "2026-10-01T00:00:00Z" }, { verdict: "works" });
+    const dropped = item({ created_at: "2026-10-20T00:00:00Z", ...fields }, { verdict: "broken", ...report });
+    expect(countReports([older, dropped], records).get("alpha@example.org")).toEqual([{ zoteroMajor: 7, works: 1, broken: 0 }]);
+  });
+
+  test("knows an account by its id, not its login", () => {
+    const older = item({ created_at: "2026-10-01T00:00:00Z" }, { verdict: "works" });
+    const renamed = item({ created_at: "2026-10-20T00:00:00Z", user: { id: 1, login: "renamed" } }, { verdict: "broken" });
+    expect(countReports([older, renamed], records).get("alpha@example.org")).toEqual([{ zoteroMajor: 7, works: 0, broken: 1 }]);
+  });
+
+  test("counts one account's reports on two majors, ordered by major", () => {
+    const counts = countReports([item({}, { zotero: "8.0" }), item({}, { zotero: "7.0" })], records);
+    expect(counts.get("alpha@example.org")).toEqual([
+      { zoteroMajor: 7, works: 1, broken: 0 },
+      { zoteroMajor: 8, works: 1, broken: 0 },
+    ]);
+  });
+
+  test("counts one account's reports on two plugins", () => {
+    const counts = countReports([item(), item({}, { plugin: "beta@example.org", verdict: "broken" })], records);
+    expect(counts.get("alpha@example.org")).toEqual([{ zoteroMajor: 7, works: 1, broken: 0 }]);
+    expect(counts.get("beta@example.org")).toEqual([{ zoteroMajor: 7, works: 0, broken: 1 }]);
+  });
+
+  test("counts two accounts on one plugin and major", () => {
+    const counts = countReports([item(), item({ user: { id: 2, login: "other" } }, { verdict: "broken" })], records);
+    expect(counts.get("alpha@example.org")).toEqual([{ zoteroMajor: 7, works: 1, broken: 1 }]);
+  });
+
+  test("counts only the newest of one account's reports, whatever the list order", () => {
+    const older = item({ created_at: "2026-10-01T00:00:00Z" }, { verdict: "works" });
+    const newer = item({ created_at: "2026-10-20T00:00:00Z" }, { verdict: "broken" });
+    for (const list of [[older, newer], [newer, older]]) {
+      expect(countReports(list, records).get("alpha@example.org")).toEqual([{ zoteroMajor: 7, works: 0, broken: 1 }]);
+    }
+  });
+
+  test("counts the higher issue number when one account's reports have the same created_at", () => {
+    const lower = item({ number: 5 }, { verdict: "broken" });
+    const higher = item({ number: 6 }, { verdict: "works" });
+    for (const list of [[lower, higher], [higher, lower]]) {
+      expect(countReports(list, records).get("alpha@example.org")).toEqual([{ zoteroMajor: 7, works: 1, broken: 0 }]);
+    }
   });
 });
 
