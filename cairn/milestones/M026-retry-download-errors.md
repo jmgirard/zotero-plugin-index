@@ -108,6 +108,8 @@ describe the state file, so it does not change.
 - 2026-10-27: T4 done: `pnpm test` 17 files, 685 passed; `pnpm check` 23 entries, 0 problems.
 - 2026-10-27: claim audit: 6 claims read, 2 corrected — src/discover/discover.ts (the `NOT_RECORDED` comment now says `draftEntry` applies the build-level rule), README.md (a 429 or 5xx after redirects can come from another host, so "answer to the download of"). A third note, that the read budget can delay the next read, predates this branch; not taken.
 - 2026-10-27: implement done; status review.
+- 2026-10-27: review: merged origin/main at 5fb6ccf (three new plugin entries) before gathering evidence.
+- 2026-10-27: step-7 approval: m026-retry-download-errors approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
