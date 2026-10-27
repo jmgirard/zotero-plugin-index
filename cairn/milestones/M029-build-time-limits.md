@@ -79,3 +79,35 @@ Pass 2 (after review return 1), head f69a600, main level with origin.
 - AC4: a joined copy of README finds once each "The command gives each plugin read 3 minutes", "the record fails with `request-failed`", "starts no plugin read after 18 minutes from its start", "gets a record that fails with `not-read`", "A plugin with either failure shows no facts until a later build reads it", and the build-level list with "a read stopped at 3 minutes included" and "a `not-read` entry". The schema's failure `name` description names not-read. CHANGELOG Unreleased holds one `not-read` entry.
 - AC5: at f69a600, `pnpm test`: 17 files, 721 tests passed; `pnpm check`: 28 entries, 0 problems. Branch dispatch of `build.yml` (run 40529804385, before T6's README-only change): build job success.
 - Gate: `cairn_validate.py` all checks passed (exit 0); generic profile names no toolchain checks; no DESIGN principle changed, so no `cairn_impact` run.
+- spawned: diff-bug, blame-history, prior-review, ripple (a first spawn was stopped at the user's pause and reported nothing).
+- diff-bug #1: the not-read test's 100 ms build limit can cut a-first on a slow runner — fix now (limits 1500/1000 ms), fixed db4cf63.
+- diff-bug #2: `boundLookup` adds its listener before calling the lookup, so a lookup that throws at once leaves a listener whose later abort is unhandled — fix now (lookup started first), fixed db4cf63.
+- diff-bug #3: an abandoned `dns.lookup` holds a thread and can keep the process open after the build ends — follow-up, absorbed into "Bound the build's report issue read" at hygiene.
+- diff-bug #4: the redirect test aborts before the response returns, not during `cancel()` — reject, false: the test drives the added check, and with the check planted out it went red.
+- diff-bug #5: README's list item "a timeout, a read stopped at 3 minutes included" reads badly — fix now ("such as a read stopped at 3 minutes"), fixed db4cf63.
+- diff-bug #6: README and CHANGELOG added lines run 84 and 92 columns — fix now (rewrapped), fixed db4cf63.
+- diff-bug #7: no automated test covers the "3 minutes" wording — fix now (fake-timer test with default limits; red with a 4-minute default planted), fixed db4cf63.
+- diff-bug #8: the stall table's header cases share `request()`'s catch, and the body cases share `readCapped` — reject, planned change: AC1 names each stall.
+- diff-bug #9: the not-read test repeats b-stalled's checks from the first test — reject, style: they are part of the record list it asserts.
+- diff-bug #10: `checkOutput(...)` toEqual `[]` cannot fail after `result.ok` — fix now (removed), fixed db4cf63.
+- diff-bug #11: the test comment "read in this order" restates `NAMES` — fix now (trimmed), fixed db4cf63.
+- blame-history #1: the report-issue read has no total limit, so D-015's "cannot take the build job past its 30-minute limit" overclaims — fix now (D-016 narrows D-015), fixed db4cf63; the gap is absorbed into "Bound the build's report issue read" at hygiene.
+- blame-history #2: entries are read in sorted order, so a cut build skips the same last plugins every day — follow-up, new row "Rotate which plugins a cut build skips" at hygiene.
+- blame-history #3: a slow but live host's 3-minute cuts count as build-level and can withhold deploys — reject, planned change: D-015 names this cost.
+- blame-history #4: the default `startedAt` of 0 ties the clock to process uptime — reject, planned change: AC3 counts from the command's start, and `cli.ts` is the one caller.
+- blame-history #5: CPU-bound unzip runs past the limit — reject, planned change: the plan audit scoped AC2 to the waits, and the 50 MiB cap bounds it.
+- blame-history #6: a lookup whose wait ended keeps running — follow-up, same row as diff-bug #3.
+- prior-review #1: the README and CHANGELOG lines over the wrap width — fix now, same fix as diff-bug #6, fixed db4cf63.
+- prior-review #2: the not-read test's timing margin — fix now, same fix as diff-bug #1, fixed db4cf63.
+- prior-review #3: no passing control beside the stall table — reject, false: "returns the facts of a plugin that meets the bar" reads the same fixture with no stall.
+- ripple #1: DESIGN's `readUpstream(repoUrl, fetch, { lookup })` omits `signal` — fix now, fixed db4cf63.
+- ripple #2: ROADMAP row "Warn when the daily build degrades" still says each request stops only at 60 s — reject, planned change: hygiene graduates the row.
+- ripple #3: README "The daily build" omits that the 30-minute job stop deploys nothing — fix now, fixed db4cf63.
+- ripple #4: the reader's `Failure` type and README's note on it do not list `not-read` — reject, false: build-side names such as `facts-invalid` sit outside that type too.
+- ripple #5: the schema's `failure` description says "Why the upstream read failed" only — fix now (adds "or why the build did not read the plugin"), fixed db4cf63.
+- ripple #6: `build.yml`'s 30-minute limit has no comment tying it to the build's limits — fix now, fixed db4cf63.
+- ripple #7: CHANGELOG's older build-level examples do not name the cuts — reject, false: they are examples and stay true.
+- ripple #8: the plugin page prints "Not read: not-read" and "Not read: request-failed" for cut reads — follow-up, new row "Label cut reads on plugin pages" at hygiene.
+- ripple #9: README says the build reads each plugin "in the same way as `pnpm add-plugin`" — reject, false: the read is the same; the limits sit around it.
+- Follow-up rows land in the hygiene commit, since ROADMAP is at 59 of its under-60 lines until hygiene graduates a row and prunes a terminal one.
+- Fixes verified at db4cf63: `pnpm test` 17 files, 722 passed; `pnpm check` 28 entries, 0 problems; `build.yml` parses with `timeout-minutes` 30. Snapshot files changed: none.
