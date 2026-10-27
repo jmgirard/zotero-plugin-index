@@ -1,0 +1,8 @@
+{
+  "id": "zotero@equalang.com",
+  "name": "Equalang",
+  "description": "Equalang translation for Zotero: selections, titles and abstracts, and whole PDFs with their layout kept.",
+  "homepage": "https://equalang.com",
+  "repoUrl": "https://github.com/equalang/equalang-zotero-plugin",
+  "updateUrl": "https://equalang.com/downloads/zotero/update.json"
+}
