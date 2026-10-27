@@ -134,3 +134,17 @@ Pass 1, 2026-10-27, at 45e7efa. Sync: main at a26f530, not moved; no PR; Copilot
 - AC5: at 45e7efa, `npx -y pnpm@12.15.0 test` exit 0, 17 files, 711 passed; `npx -y pnpm@12.15.0 check` exit 0, 28 entries, 0 problems.
 - AC6: the AC6 search (join, split at `. `, `grep -n` the ten terms over README, CHANGELOG, DESIGN, `src/discover/*.ts`) at 45e7efa returns 58 sentences. Each on how the issue run answers or what `buildLevel` marks agrees with AC1 to AC3: README's id refusals and not-build-level reads close; the bot-failure paragraph names `entry-exists` and `write-failed` and leaves the issue open; CHANGELOG's entry gains the write failure; DESIGN "as do … (M028)"; the `Drafted`, `draftEntry`, `readOutcome`, `issueRead`, `issueAnswer`, and handoff comments name `entry-exists` in outDir and `write-failed`. The rest are about the data build, reports, close-issue, or the add-plugin CLI.
 - Gate: `cairn_validate.py` exit 0, all checks passed; no DESIGN principle changed, so `cairn_impact` skipped; generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the AC3 index-id case passes on main through a path the change cannot reach — reject (planned change: AC3 names it, and it shares the name `entry-exists` with the changed path)
+- diff-bug #2: the `entry-exists` and `write-failed` cases run one changed line — reject (planned change: AC1 and AC2 each name a test, and the cases reach different `writeEntry` branches)
+- diff-bug #3: the newly open-issue comments quote the runner's output path — reject (false: main already quoted the same messages in the refusal comment, so nothing new is shown)
+- diff-bug #4: the `issueAnswer` comment's long sentence is hard to read — reject (style; the structure predates the branch)
+- blame-history #1: `buildLevel` now covers outDir write failures, which D-011's build-level list excludes — reject (planned change: the plan gate chose the mark and logged its falsifier; README never calls write failures build-level, and `Drafted`'s comment defines the field)
+- blame-history #2: DESIGN's discover sentence on unrecorded refusals reads as if the reader marks write refusals — reject (false: "which the reader marks build-level" binds the 429/5xx refusal, and the recording rule it states is unchanged)
+- blame-history #3: the change reverses M019's "output-directory refusals are unchanged" — noted (recorded deferral, absorbed through the candidate row)
+- prior-review #1: CHANGELOG entry left a 44-character line — fix now
+- prior-review #2: README paragraph ends with a short "the workflow run fails." line; "gives." at 375 predates the branch — fix now for the edited lines; the untouched "gives." line left
+- ripple #1: ROADMAP row "Keep issues open on entry write errors" describes the old behavior — reject (planned change: step 9 hygiene graduates the row)
+- ripple #2: README's build-level list omits the write failures that `buildLevel` now covers — reject (false: README calls only read failures build-level, and the field is internal)
+- ripple #3: the issue form does not mention write failures — reject (false: no sentence in it became wrong; it never listed bot failures)
+- ripple #4: discover.ts recording comment no longer names every unrecorded case — fix now
