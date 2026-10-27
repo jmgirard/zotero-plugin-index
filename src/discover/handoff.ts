@@ -34,7 +34,9 @@ export type IssueOutcome =
   | { outcome: "entry"; entry: PlannedEntry }
   | { outcome: "known"; repo: string }
   | { outcome: "refused"; failure: string; message: string }
-  | { outcome: "failed"; message: string };
+  // `failure` names the failure when the read of the repo stopped with a build-level
+  // failure or threw.
+  | { outcome: "failed"; failure?: string; message: string };
 
 export type Plan = { kind: "discover"; entries: PlannedEntry[] } | ({ kind: "issue" } & IssueOutcome);
 
@@ -57,12 +59,14 @@ const entrySchema = {
     strictMaxVersion: text(500),
   },
 };
-const issue = (outcome: string, properties: Record<string, unknown>) => ({
+const issue = (outcome: string, properties: Record<string, unknown>, optional: Record<string, unknown> = {}) => ({
   type: "object",
   additionalProperties: false,
   required: ["kind", "outcome", ...Object.keys(properties)],
-  properties: { kind: { const: "issue" }, outcome: { const: outcome }, ...properties },
+  properties: { kind: { const: "issue" }, outcome: { const: outcome }, ...properties, ...optional },
 });
+// The failure name goes into a code span as it is, so it has no backtick or space.
+const failureName = { type: "string", pattern: "^[a-z0-9][a-z0-9-]{0,59}$" };
 const validatePlan = new Ajv({ allErrors: true }).compile({
   oneOf: [
     {
@@ -73,9 +77,8 @@ const validatePlan = new Ajv({ allErrors: true }).compile({
     },
     issue("entry", { entry: entrySchema }),
     issue("known", { repo: text(200) }),
-    // The failure name goes into a code span as it is, so it has no backtick or space.
-    issue("refused", { failure: { type: "string", pattern: "^[a-z0-9][a-z0-9-]{0,59}$" }, message: text(MESSAGE_MAX + 1) }),
-    issue("failed", { message: text(MESSAGE_MAX + 1) }),
+    issue("refused", { failure: failureName, message: text(MESSAGE_MAX + 1) }),
+    issue("failed", { message: text(MESSAGE_MAX + 1) }, { failure: failureName }),
   ],
 });
 const validateEntry = new Ajv({ allErrors: true }).compile(entrySchema);

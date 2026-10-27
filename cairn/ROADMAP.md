@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-26 (M018 done and archived; 1 row narrowed and reti
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M019 | Keep issues open on a bot read failure | planned | — | normal | milestones/M019-keep-issues-open.md |
+| M019 | Keep issues open on a bot read failure | review | — | normal | milestones/M019-keep-issues-open.md |
 | M018 | Withhold deploys when every record fails | done | — | normal | milestones/archive/M018-every-record-fails.md |
 | M017 | Stop deploys only for build failures | done | — | normal | milestones/archive/M017-build-health.md |
 | M016 | Restore no cache in the deploy build | done | — | normal | milestones/archive/M016-no-build-cache.md |
@@ -26,6 +26,7 @@ _Last hygiene check: 2026-10-26 (M018 done and archived; 1 row narrowed and reti
 - Check the index at the push base: `pnpm propose` checks the index in its checkout, the commit the read job saw, but builds each commit on the newest default branch, so an entry merged during the run can be proposed again; read `plugins/` at the fetched base commit (M011 review) — added 2026-10-26 — M011
 - Let old v1 schemas accept new fields: the v1 `upstream` block keeps `additionalProperties: false`, so a saved copy of the schema rejects each optional field that D-006 lets v1 gain; allowing unknown fields would let old copies accept later additions, but it changes what the schema checks; see "Keep the v1 data when v2 ships" (M013 review) — added 2026-10-26 — M013, D-007
 - Count more GitHub answers as build-level: a GitHub API answer of HTTP 200 with an HTML body and a 403 from GitHub's release-asset host are not build-level, so an outage or regression that fails most records this way, but not all, still deploys (M017 review); narrowed and retitled 2026-10-26 by M018, which withholds a deploy when every record fails (D-012) (M018 review) — added 2026-10-26 — M006, M017, M018, D-011, D-012
+- Keep issues open on entry-check errors: an "Add a plugin" issue run still closes the issue as not planned when `plannedProblem` throws in `draftEntry` (`unexpected-error`, such as git failing to start), though that is the bot's failure and D-011 counts `unexpected-error` as build-level; M019 left it out of scope (M019 review) — added 2026-10-26 — M019, D-011
 - [low] Check the restored discovery state: the discover read job restores `discovery-state-` by prefix from the default branch's cache in the same job that reads repos anyone can tag, so a job that a crafted repo took over could save a state entry that hides repos from later runs for up to 30 days; check the restored state's shape or keep the state outside the cache (M016 review) — added 2026-10-26 — M009, M016
 - [low] Close the issue when its pull request closes: an issue whose bot pull request is closed without a merge stays open, though the bot's comment said it closes when that pull request merges (M010 review) — added 2026-10-26 — M010
 - [low] Block more IPv6 ranges in the host check: the M004 host check lets through ::ffff:0:0:0/96 (SIIT), 64:ff9b:1::/48 (local NAT64), 100::/64, 2001::/23 (Teredo included), fec0::/10, 3fff::/20, 5f00::/16, and 192.88.99.0/24; the translated ones reach a private address only on a NAT64 or SIIT network (M004 review) — added 2026-10-25 — M004

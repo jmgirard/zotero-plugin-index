@@ -89,6 +89,7 @@ describe("pnpm propose refuses a handoff it cannot trust, with no request and no
     ["a plan that is a JSON string", () => handoff("{", []), {}, /does not match the handoff schema/],
     ["a plan that names an issue number", () => issueEntry({ issue: 3 }), issue, /does not match the handoff schema/],
     ["a failure name with a backtick", () => handoff({ kind: "issue", outcome: "refused", failure: "x`@someone", message: "m" }, []), issue, /does not match the handoff schema/],
+    ["a failed outcome's failure name with a backtick", () => handoff({ kind: "issue", outcome: "failed", failure: "x`@someone", message: "m" }, []), issue, /does not match the handoff schema/],
     ["an id that is not a Mozilla add-on id", () => discover([entry("example/alpha", "alpha")]), {}, /is not a Mozilla add-on id/],
     ["an id with a slash", () => discover([entry("example/alpha", "a/b@example.org")], []), {}, /is not a Mozilla add-on id/],
     ["the id ..", () => discover([entry("example/alpha", "..")], []), {}, /is not a Mozilla add-on id/],

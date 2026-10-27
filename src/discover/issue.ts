@@ -45,9 +45,12 @@ export interface IssueReadOptions {
 
 // The read step of an issue run, which makes no GitHub write. If the body names a repo
 // that the index or a bot pull request already has, it reads nothing. If the parser or
-// draftEntry refuses, the outcome names the failure; that includes a GitHub request
-// error while the reader reads the repo. If the bot cannot read the index, its pull
-// requests, or the default branch, the outcome is `failed`.
+// draftEntry refuses, the outcome names the failure; that includes a GitHub HTTP 404
+// for a repo that does not exist. If the read of the repo stops with a failure that the
+// reader marks build-level, such as a rate limit, or throws, the outcome is `failed`
+// with the failure name, so the write step leaves the issue open and the run fails. If
+// the bot cannot read the index, its pull requests, or the default branch, the outcome
+// is `failed` too.
 // A message is cut to what a comment quotes, so a long one cannot make the handoff too
 // large for the write step.
 export async function issueRead(options: IssueReadOptions): Promise<IssueOutcome> {
@@ -84,7 +87,11 @@ async function readOutcome(options: IssueReadOptions): Promise<IssueOutcome> {
   if (known(given)) return { outcome: "known", repo: given! };
 
   const drafted = await draftEntry(parsed.url, { ...options, ids: index.ids, pendingIds: pulls.ids });
-  if (!drafted.ok) return { outcome: "refused", failure: drafted.failure, message: drafted.message };
+  if (!drafted.ok) {
+    const { failure, message } = drafted;
+    // A rate limit or an outage says nothing about the plugin, so the issue stays open.
+    return drafted.buildLevel ? { outcome: "failed", failure, message } : { outcome: "refused", failure, message };
+  }
   // A renamed repo answers for its old name, and GitHub gives its new one. The reader
   // read the given URL, so it is a GitHub repo URL.
   const repo = repoName(drafted.repoUrl) ?? given!;
@@ -124,9 +131,10 @@ export interface IssueRunResult {
 // plugin id, since they can change while the read step runs, and the index in its
 // checkout, which is the commit the read step saw. Then it opens a pull request that
 // closes the issue when it merges, or closes the issue. Each answer is a comment on the
-// issue. If the read step failed, or the bot cannot read the index, its
-// pull requests, or the default branch, or the push or the pull request fails, the
-// comment says so and the issue stays open.
+// issue. If the read step failed, a build-level or thrown read of the repo included, or
+// the bot cannot read the index, its pull requests, or the default branch, or the push
+// or the pull request fails, the comment says so and the issue stays open, and the
+// status is 1.
 export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRunResult> {
   const { root, fetch, indexRepo, issue, read } = options;
   const github = githubClient(fetch);
@@ -146,14 +154,15 @@ export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRun
   const quoted = (message: string) => code(message.length > MESSAGE_MAX ? `${message.slice(0, MESSAGE_MAX)}…` : message);
   const refuse = (name: string, message: string) =>
     answer(`The bot opened no pull request for this issue.\n\n\`${name}\`: ${quoted(message)}`, "not_planned");
-  const failed = (message: string) => {
+  const failed = (message: string, failure?: string) => {
     errors.push(message);
-    return answer(`The bot could not finish, so this issue stays open for a maintainer.\n\n${quoted(message)}`);
+    const named = failure ? `\`${failure}\`: ${quoted(message)}` : quoted(message);
+    return answer(`The bot could not finish, so this issue stays open for a maintainer.\n\n${named}`);
   };
 
   if (!read) return failed("the read step left no handoff");
   const { outcome } = read;
-  if (outcome.outcome === "failed") return failed(outcome.message);
+  if (outcome.outcome === "failed") return failed(outcome.message, outcome.failure);
   if (outcome.outcome === "refused") return refuse(outcome.failure, outcome.message);
   let index: Awaited<ReturnType<typeof indexed>>;
   try {

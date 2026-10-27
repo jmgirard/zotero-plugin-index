@@ -69,7 +69,10 @@
   opens a pull request and comments its link on the issue. The issue closes
   when that pull request merges. If the plugin does not pass, the bot comments
   the reason and closes the issue. It does the same for a repository that the
-  index or a bot pull request already has.
+  index or a bot pull request already has. The bot's read of the repository
+  can stop with a build-level failure, such as a GitHub rate limit or outage.
+  It can also stop with an error that the reader does not name. Then the bot
+  comments the failure and leaves the issue open, and the workflow run fails.
 - The bot reads the repositories that anyone can name in a job that cannot
   write to the index repository. The `Discover plugins` and `Add a plugin
   from an issue` workflows each run a read job with read-only permissions and

@@ -149,8 +149,10 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
 
 export type Drafted =
   | { ok: true; id: string; dir: string; repoUrl: string; version: string; strictMinVersion?: string; strictMaxVersion?: string }
-  // `recorded` is false for a refusal that says nothing about the repo.
-  | { ok: false; failure: DiscoveryFailure; message: string; recorded: boolean };
+  // `recorded` is false for a refusal that says nothing about the repo. `buildLevel` marks a
+  // refusal that usually points at the bot rather than at the repo: a reader failure that
+  // the reader marks build-level, or a read that threw.
+  | { ok: false; failure: DiscoveryFailure; message: string; recorded: boolean; buildLevel?: true };
 
 export interface DraftOptions {
   fetch: Fetch;
@@ -167,20 +169,21 @@ export interface DraftOptions {
 // for the repo.
 export async function draftEntry(repoUrl: string, options: DraftOptions): Promise<Drafted> {
   const { fetch, lookup, outDir, ids, pendingIds } = options;
-  const refuse = (failure: DiscoveryFailure, message: string, recorded = !NOT_RECORDED.has(failure)): Drafted => ({
+  const refuse = (failure: DiscoveryFailure, message: string, recorded = !NOT_RECORDED.has(failure), buildLevel = false): Drafted => ({
     ok: false,
     failure,
     message,
     recorded,
+    ...(buildLevel && { buildLevel: true }),
   });
   let read: Awaited<ReturnType<typeof readUpstream>>;
   try {
     read = await readUpstream(repoUrl, fetch, { lookup });
   } catch (error) {
     // A bug in the reader, not a fact about the repo.
-    return refuse("unexpected-error", `reading ${repoUrl} threw: ${(error as Error).message}`);
+    return refuse("unexpected-error", `reading ${repoUrl} threw: ${(error as Error).message}`, false, true);
   }
-  if (!read.ok) return refuse(read.failure, read.message);
+  if (!read.ok) return refuse(read.failure, read.message, undefined, read.buildLevel);
   const { id, version, strictMinVersion, strictMaxVersion } = read.facts;
   // Entry directories may be in another place than outDir, so writeEntry cannot see them.
   if (ids.has(id.toLowerCase())) return refuse("entry-exists", `the index already has an entry for the id ${id}`);
