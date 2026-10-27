@@ -127,39 +127,143 @@ describe("readUpstream", () => {
     expect(result.ok && result.facts.name).toBeUndefined();
   });
 
+  // A file of each type that holds one message.
+  const FTL = "hello = Hallo\n";
+  const DTD = '<!ENTITY hello "Hallo">\n';
+
   test.each<[string, Record<string, string>, string[]]>([
-    ["two folders under locale/, in code-unit order", { "locale/zh-CN/a.ftl": "", "locale/en-US/a.ftl": "" }, ["en-US", "zh-CN"]],
-    ["a nested file under chrome/locale/ only", { "chrome/locale/fr-FR/addon/x.dtd": "" }, ["fr-FR"]],
-    ["one tag under both paths once", { "locale/de/a.ftl": "", "chrome/locale/de/b.dtd": "" }, ["de"]],
+    ["two folders under locale/, in code-unit order", { "locale/zh-CN/a.ftl": FTL, "locale/en-US/a.ftl": FTL }, ["en-US", "zh-CN"]],
+    ["a nested file under chrome/locale/ only", { "chrome/locale/fr-FR/addon/x.dtd": DTD }, ["fr-FR"]],
+    ["one tag under both paths once", { "locale/de/a.ftl": FTL, "chrome/locale/de/b.dtd": DTD }, ["de"]],
     [
       "tags with _ or other letter case in canonical form",
-      { "locale/zh_CN/a.ftl": "", "locale/zh-CN/b.ftl": "", "locale/EN-us/a.ftl": "" },
+      { "locale/zh_CN/a.ftl": FTL, "locale/zh-CN/b.ftl": FTL, "locale/EN-us/a.ftl": FTL },
       ["en-US", "zh-CN"],
     ],
-    ["an alias in canonical form", { "locale/iw/a.ftl": "" }, ["he"]],
-    ["no folder whose name is not a kept tag", { "locale/en-x-pirate/a.ftl": "", "locale/default/a.ftl": "", "locale/und/a.ftl": "" }, []],
+    ["an alias in canonical form", { "locale/iw/a.ftl": FTL }, ["he"]],
+    ["no folder whose name is not a kept tag", { "locale/en-x-pirate/a.ftl": FTL, "locale/default/a.ftl": FTL, "locale/und/a.ftl": FTL }, []],
     [
       "only tags whose language has an English name",
       {
-        "locale/en-US/a.ftl": "",
+        "locale/en-US/a.ftl": FTL,
         "locale/img/a.png": "",
         "locale/js/a.js": "",
-        "locale/qaa/a.ftl": "",
+        "locale/qaa/a.ftl": FTL,
         "chrome/locale/IMG/a.png": "",
-        "locale/js_US/a.ftl": "",
-        "locale/fil/a.ftl": "",
+        "locale/js_US/a.ftl": FTL,
+        "locale/fil/a.ftl": FTL,
       },
       ["en-US", "fil"],
     ],
-    ["tags whose region or script has no name", { "chrome/locale/en_XX/a.dtd": "", "chrome/locale/en_Qaaa/a.dtd": "" }, ["en-Qaaa", "en-XX"]],
+    ["tags whose region or script has no name", { "chrome/locale/en_XX/a.dtd": DTD, "chrome/locale/en_Qaaa/a.dtd": DTD }, ["en-Qaaa", "en-XX"]],
     [
       "no tag from other paths or a directory entry",
-      { "_locales/de/messages.json": "{}", "content/locale/fr/x.ftl": "", "locale/en-US.ftl": "", "locale/it/": "", "locale/it/sub/": "" },
+      { "_locales/de/messages.json": "{}", "content/locale/fr/x.ftl": FTL, "locale/en-US.ftl": FTL, "locale/it/": "", "locale/it/sub/": "" },
       [],
     ],
+    ["only the .ftl folder with a message", { "locale/de/a.ftl": "# Comment\n\n## Group\n### Resource\n", "locale/fr/a.ftl": FTL }, ["fr"]],
+    [
+      "only the .properties folder with a message",
+      { "locale/de/a.properties": "# Comment\n! Comment\n\t# Comment\n \t\f\n", "locale/fr/a.properties": "  hello=Hallo\n" },
+      ["fr"],
+    ],
+    [
+      "only the .dtd folder with an entity outside comments",
+      { "locale/de/a.dtd": `<!-- ${DTD} -->\n`, "locale/it/a.dtd": `<!-- open\n${DTD}`, "locale/fr/a.dtd": `<!-- c -->\n${DTD}` },
+      ["fr"],
+    ],
+    ["a folder whose .ftl file holds only a term", { "locale/de/a.ftl": "# Brand\n-brand-name = Zoplicate\n" }, ["de"]],
+    ["a folder whose .ftl message follows a byte-order mark", { "locale/de/a.ftl": `﻿${FTL}` }, ["de"]],
+    ["no folder whose .properties file holds a byte-order mark and comments", { "locale/de/a.properties": "﻿# Comment\n" }, []],
+    ["folders whose file has another extension or none", { "locale/de/icon.png": "", "locale/fr/LICENSE": "" }, ["de", "fr"]],
+    ["only the folder with a message, whatever the extension's letter case", { "locale/de/A.FTL": "# Comment\n", "locale/fr/A.FTL": FTL }, ["fr"]],
+    [
+      "only the folders with a message under chrome/locale/ and in nested folders",
+      {
+        "chrome/locale/de/a.ftl": "# Comment\n",
+        "chrome/locale/fr/a.ftl": FTL,
+        "locale/it/sub/x.ftl": "# Comment\n",
+        "locale/es/sub/x.ftl": FTL,
+      },
+      ["es", "fr"],
+    ],
+    ["a folder with a comment-only file and a file with a message", { "locale/de/a.ftl": "# Comment\n", "locale/de/b.ftl": FTL }, ["de"]],
+    ["one tag when either of its folders holds a message", { "locale/zh_CN/a.ftl": "# Comment\n", "chrome/locale/zh-CN/b.ftl": FTL }, ["zh-CN"]],
+    ["no tag when none of its folders holds a message", { "locale/zh_CN/a.ftl": "# Comment\n", "chrome/locale/zh-CN/b.ftl": "# Comment\n" }, []],
   ])("lists %s as the languages", async (_name, files, languages) => {
     const { result } = await read((r) => Object.assign(r[XPI].xpi!, files));
     expect(result.ok && result.facts.languages).toEqual(languages);
+  });
+
+  // Calls `edit` with the central-directory header of the entry `name` in a zipSync zip.
+  function editHeader(zip: Uint8Array, name: string, edit: (view: DataView, header: number) => void): Uint8Array {
+    const view = new DataView(zip.buffer, zip.byteOffset);
+    const nameLength = (at: number) => view.getUint16(at + 28, true);
+    let header = view.getUint32(zip.length - 22 + 16, true);
+    while (strFromU8(zip.subarray(header + 46, header + 46 + nameLength(header))) !== name) {
+      header += 46 + nameLength(header) + view.getUint16(header + 30, true) + view.getUint16(header + 32, true);
+    }
+    edit(view, header);
+    return zip;
+  }
+
+  const COMMENT = strToU8("# Comment\n");
+  const DEFLATED_COMMENT = new Uint8Array(deflateRawSync(COMMENT));
+  // The same data with its first block type set to 3, which no deflate stream may use.
+  const BROKEN_COMMENT = DEFLATED_COMMENT.map((byte, i) => (i === 0 ? byte | 0b110 : byte));
+
+  test.each<[string, Uint8Array, { compression?: number; size?: number; originalSize?: number }, string[]]>([
+    ["holds deflated comments, as a control", DEFLATED_COMMENT, { compression: 8, originalSize: COMMENT.length }, []],
+    ["declares an unzipped size over 1 MiB", DEFLATED_COMMENT, { compression: 8, originalSize: 1_048_577 }, ["de"]],
+    ["declares a compressed size over 1 MiB", COMMENT, { size: 1_048_577 }, ["de"]],
+    ["uses a compression other than stored or deflate", COMMENT, { compression: 12 }, ["de"]],
+    ["holds deflate data that fails to inflate", BROKEN_COMMENT, { compression: 8, originalSize: COMMENT.length }, ["de"]],
+    ["inflates past its declared size", DEFLATED_COMMENT, { compression: 8, originalSize: 3 }, ["de"]],
+    ["holds no deflate data for its declared size", new Uint8Array(0), { compression: 8, originalSize: COMMENT.length }, ["de"]],
+    ["declares stored data that runs past the zip's end", COMMENT, { size: 1000, originalSize: 1000 }, ["de"]],
+  ])("reads an XPI whose comment-only locale file %s", async (_name, data, fields, languages) => {
+    const { result } = await readXpi((json) =>
+      editHeader(zipSync({ "manifest.json": json, "locale/de/a.ftl": [data, { level: 0 }] }), "locale/de/a.ftl", (view, header) => {
+        if (fields.compression !== undefined) view.setUint16(header + 10, fields.compression, true);
+        if (fields.size !== undefined) view.setUint32(header + 20, fields.size, true);
+        if (fields.originalSize !== undefined) view.setUint32(header + 24, fields.originalSize, true);
+      }),
+    );
+    expect(result.ok && result.facts.languages).toEqual(languages);
+  });
+
+  test("keeps the folders whose files would take the inflated total past 8 MiB", async () => {
+    const comments = "# Comment\n".repeat(100_000);
+    const tags = ["ar", "bg", "cs", "da", "de", "el", "es", "fi", "fr", "he"];
+    const { result } = await read((r) => Object.assign(r[XPI].xpi!, Object.fromEntries(tags.map((tag) => [`locale/${tag}/a.ftl`, comments]))));
+    expect(result.ok && result.facts.languages).toEqual(["fr", "he"]);
+  });
+
+  test("reads two locale entries with the same name", async () => {
+    const { result } = await readXpi((json) => {
+      const zip = zipSync({ "manifest.json": json, "locale/de/a.ftl": COMMENT, "locale/de/b.ftl": strToU8(FTL) });
+      return editHeader(zip, "locale/de/b.ftl", (_view, header) => zip.set(strToU8("locale/de/a.ftl"), header + 46));
+    });
+    expect(result.ok && result.facts.languages).toEqual(["de"]);
+  });
+
+  test("reads within 1 s an XPI of 512 locale files that each declare 1 byte and inflate to 16 MiB", async () => {
+    const bomb = new Uint8Array(deflateRawSync(Buffer.alloc(16 * 1024 * 1024)));
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const tags = Array.from({ length: 512 }, (_, i) => `en-${letters[Math.floor(i / 26)]}${letters[i % 26]}`);
+    const json = strToU8(JSON.stringify(manifest(loadFixture(FIXTURE).responses)));
+    const zip = zipSync({ "manifest.json": json, ...Object.fromEntries(tags.map((tag) => [`locale/${tag}/a.ftl`, [bomb, { level: 0 }]])) });
+    for (const tag of tags) {
+      editHeader(zip, `locale/${tag}/a.ftl`, (view, header) => {
+        view.setUint16(header + 10, 8, true);
+        view.setUint32(header + 24, 1, true);
+      });
+    }
+    const started = performance.now();
+    const { result } = await readXpi(() => zip);
+    expect(performance.now() - started).toBeLessThan(1000);
+    // Some regions, such as AN, are retired, so their tags read in another canonical form.
+    expect(result.ok && result.facts.languages).toEqual([...new Set(Intl.getCanonicalLocales(tags))].sort());
   });
 
   test("shares its language tag pattern with both schemas", () => {

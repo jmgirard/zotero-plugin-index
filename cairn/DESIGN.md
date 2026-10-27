@@ -34,12 +34,13 @@ release count, open issues, the host of the `update.json` file, the
 counted user reports on the release the index read (M021), and the
 interface languages (M024).
 The data also carries the interface languages that the read XPI's locale
-folders name (M023). They say which languages a plugin ships interface text
-for, not whether a translation is complete. A `languages` override records
-them for a plugin whose list is wrong or empty. Each plugin page shows
-them by name, outside the Details section, and the home page's language
-menu filters the list by language subtag, run by the site's one script
-(D-014, M024).
+folders name (M023), counting a folder only when one of its files holds a
+message, judged by file type (M027). They say which languages a plugin
+ships interface text for, not whether a translation is complete. A
+`languages` override records them for a plugin whose list is wrong or
+empty. Each plugin page shows them by name, outside the Details section,
+and the home page's language menu filters the list by language subtag,
+run by the site's one script (D-014, M024).
 The page shows the name, the description, the version pills, the declared
 range, the interface languages (M024), the user reports on the release the
 index read with a "Works" and a "Broken" link (M021), and the repository
@@ -98,7 +99,8 @@ shows each one separately.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
    `manifest.json` in the newest stable release that has an `.xpi` file,
    the names of that XPI's locale folders whose language has an English
-   name in the build's Node.js `Intl` data (M023, M025), and the `update.json`
+   name in the build's Node.js `Intl` data and where a file, judged by its
+   type, holds a message (M023, M025, M027), and the `update.json`
    that the manifest names (corrected M002, M014). A
    stable release is one that GitHub does not mark as a prerelease. If no
    stable release has an `.xpi` file, the bot reads the newest release that
@@ -250,9 +252,12 @@ reused._
   The reader copies the repo response's `archived` value into its facts only
   when it is a boolean (M013).
   The reader caps the XPI at 50 MiB, each unzipped file at 1 MiB, and the
-  `update.json` at 1 MiB. `src/upstream/host-guard.ts` refuses a download
-  host in a loopback, private, or reserved range, by its literal address or
-  by each address that DNS returns. The reader follows download redirects
+  `update.json` at 1 MiB. A locale file whose declared or compressed size is
+  over 1 MiB is not unzipped, and one that inflates past its declared size
+  stops within one 1 KiB push; both count as holding a message (M027).
+  `src/upstream/host-guard.ts` refuses a download host in a loopback,
+  private, or reserved range, by its literal address or by each address
+  that DNS returns. The reader follows download redirects
   itself, at most 5, and checks each one (M004). If an XPI's zip claims
   more entries than its length can hold, at 46 bytes for each entry, the
   read fails with `xpi-unreadable`. If the zip has more than one entry named
@@ -262,16 +267,31 @@ reused._
   so without these checks either zip held the build's CPU (M005, corrected
   M012).
   The reader finds each file from the central directory, read as `unzipSync`
-  reads it, and loops over the claimed count. It inflates a deflated file
-  with fflate's streaming `Inflate`, 16 KiB of input at a time. It fails with
+  reads it, and loops over the claimed count. It inflates a deflated
+  `manifest.json` or default locale's `messages.json` with fflate's
+  streaming `Inflate`, 16 KiB of input at a time, and fails with
   `xpi-unreadable` once the output passes the unzipped size that the zip
   declares, because `unzipSync` decodes the whole stream however far it runs
   past that size (M012).
   The reader walks the same central directory once more, one header at a
-  time, inflates nothing more, and records as `languages` the tags of the
-  `locale/<tag>/` and `chrome/locale/<tag>/` folders that hold a file. So
-  each XPI takes up to three walks over the claimed count: for
-  `manifest.json`, the default locale's `messages.json`, and the names. A
+  time, and records as `languages` the tags of the `locale/<tag>/` and
+  `chrome/locale/<tag>/` folders where a file holds a message (M027). It
+  inflates each locale file from the header it is on, 1 KiB of input at a
+  time, until one file of the tag holds a message. An `.ftl` file needs a
+  Fluent message or term line, a `.properties` file a line that is not
+  blank and not a comment, and a `.dtd` file an `<!ENTITY` outside
+  comments. A file of any other type counts. A file that the reader does
+  not inflate counts too: one over 1 MiB declared or compressed, one with
+  another compression, and one that would take the XPI's inflated locale
+  total past 8 MiB (`LOCALE_MAX_BYTES`). So does a file that fails to
+  inflate, or whose output length differs from its declared size, so no
+  locale file fails the read. The total charges each file the largest of
+  its declared size, its compressed size, and its output, so the reader
+  inflates at most about
+  1 MiB past 8 MiB of locale files for each XPI, however small the sizes
+  the files declare. So each XPI takes up to three walks over the claimed
+  count: for `manifest.json`, the default locale's `messages.json`, and the
+  locale folders. A
   tag counts when it matches `LANGUAGE_TAG` and its language subtag has an
   English name in the build's Node.js `Intl` data (`Intl.DisplayNames` with
   `fallback: "none"`), so a node upgrade can change which rare codes count.

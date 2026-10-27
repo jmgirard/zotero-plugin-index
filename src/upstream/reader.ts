@@ -29,8 +29,9 @@ export interface UpstreamFacts {
   // GitHub's archived flag, left out when the repo response has no boolean.
   archived?: boolean;
   // The language tags of the locale folders in the XPI whose manifest was read, each with a
-  // language that has an English name in the build's Node.js Intl data (see
-  // localeLanguages). The reader always sets it; records written before it existed have none.
+  // language that has an English name in the build's Node.js Intl data and with a file that
+  // holds a message, judged by file type (see localeLanguages). The reader always sets it;
+  // records written before it existed have none.
   languages?: string[];
 }
 
@@ -69,7 +70,8 @@ const FETCH_TIMEOUT_MS = 60_000;
 // The largest XPI among the listed plugins was 5.5 MB (observed 2026-10-25).
 export const XPI_MAX_BYTES = 50 * 1024 * 1024;
 export const UPDATE_JSON_MAX_BYTES = 1024 * 1024;
-// Each file the reader unzips: manifest.json and the default locale's messages.json.
+// Each file the reader unzips: manifest.json, the default locale's messages.json, and each
+// locale file that localeLanguages reads. A locale file over it counts as holding a message.
 export const UNZIPPED_MAX_BYTES = 1024 * 1024;
 
 export class ReadFailure extends Error {
@@ -180,8 +182,8 @@ type ReleaseFacts = Pick<
   | "languages"
 > & { release: ReleaseJson };
 
-// Reads the manifest and the locale folders of one release's XPI and checks the
-// update.json the manifest names.
+// Reads the manifest and the language tags of the locale folders that hold a message in one
+// release's XPI, and checks the update.json the manifest names.
 async function readRelease(download: Download, release: ReleaseJson, xpi: { browser_download_url: string }): Promise<ReleaseFacts> {
   const { manifest, messages, languages } = await readManifest(download, xpi.browser_download_url, release.tag_name);
   const zotero = manifest.applications?.zotero;
@@ -491,25 +493,94 @@ const WHOLE_TAG = new RegExp(`^${LANGUAGE_TAG}$`, "u");
 const LOCALE_FOLDER = /^(?:chrome\/)?locale\/([^/]+)\/./;
 const LANGUAGE_NAMES = new Intl.DisplayNames(["en"], { type: "language", fallback: "none" });
 
-// The language tag of each locale folder in the zip, the <tag> of an entry name
-// locale/<tag>/<file> or chrome/locale/<tag>/<file>. A "_" in <tag> reads as "-". A <tag>
-// that is not LANGUAGE_TAG is left out, and so is one whose language subtag has no English
-// name in the Node.js Intl data, such as img or js; its script, region, and variant are not
-// checked. Each tag is in the form Intl.getCanonicalLocales returns, once, in code-unit
-// order. It reads the names one header at a time, so it keeps no list of the zip's entries.
+// The locale total past which localeLanguages inflates no further file of one XPI, counted for
+// each file as the largest of its declared size, its compressed size, and its output. One
+// file can take the total about 1 MiB past it.
+// The locale files of the listed plugins took at most 562,599 bytes (observed 2026-10-27).
+export const LOCALE_MAX_BYTES = 8 * 1024 * 1024;
+// localeLanguages inflates 1 KiB of input at a time, so deflate's limit of about 1032 bytes
+// of output for each byte of input keeps one push to about 1 MiB of output.
+const LOCALE_INFLATE_CHUNK_BYTES = 1024;
+
+// The language tag of each locale folder in the zip that holds a message, the <tag> of an
+// entry name locale/<tag>/<file> or chrome/locale/<tag>/<file>. A "_" in <tag> reads as "-".
+// A <tag> that is not LANGUAGE_TAG is left out, and so is one whose language subtag has no
+// English name in the Node.js Intl data, such as img or js; its script, region, and variant
+// are not checked. A tag is kept when one file in its folders holds a message (see
+// holdsMessage); its later files are not read. Each tag is in the form
+// Intl.getCanonicalLocales returns, once, in code-unit order.
+// It reads the zip one header at a time, in one walk, and inflates each file from the header
+// it is on, so it keeps no list of the zip's entries. A file that it does not inflate counts
+// as holding a message: one whose declared or compressed size is over UNZIPPED_MAX_BYTES,
+// whose compression is neither stored nor deflate, or whose larger size would take the
+// total past LOCALE_MAX_BYTES. So does a file whose inflate fails or whose output length
+// differs from its declared size, so no locale file fails the read. A file whose output
+// passes its declared size adds that output to the total, so files that each declare a
+// small size cannot make it inflate more than about 1 MiB past LOCALE_MAX_BYTES.
 function localeLanguages(zip: Uint8Array): string[] {
   const tags = new Set<string>();
-  for (const { fileName: name } of centralEntries(zip)) {
+  let inflated = 0;
+  for (const { fileName: name, header, zip64 } of centralEntries(zip)) {
     const folder = LOCALE_FOLDER.exec(name)?.[1].replaceAll("_", "-");
     if (!folder || name.endsWith("/") || !WHOLE_TAG.test(folder)) continue;
+    let tag: string;
     try {
-      const tag = Intl.getCanonicalLocales(folder)[0];
-      if (LANGUAGE_NAMES.of(new Intl.Locale(tag).language)) tags.add(tag);
+      tag = Intl.getCanonicalLocales(folder)[0];
+      if (!LANGUAGE_NAMES.of(new Intl.Locale(tag).language)) continue;
     } catch {
       // A tag that Intl rejects is left out like any other folder that is not a tag.
+      continue;
+    }
+    if (tags.has(tag)) continue;
+    try {
+      const entry = entryAt(zip, header, zip64);
+      const bytes = Math.max(entry.size, entry.originalSize);
+      if (bytes > UNZIPPED_MAX_BYTES || ![0, 8].includes(entry.compression) || inflated + bytes > LOCALE_MAX_BYTES) {
+        tags.add(tag);
+        continue;
+      }
+      let output = 0;
+      try {
+        const data = inflateEntry(
+          zip,
+          entry,
+          () => {
+            throw new Error("inflates past its declared size");
+          },
+          LOCALE_INFLATE_CHUNK_BYTES,
+          (length) => (output += length),
+        );
+        if (data.length !== entry.originalSize || holdsMessage(name, strFromU8(data))) tags.add(tag);
+      } finally {
+        inflated += Math.max(bytes, output);
+      }
+    } catch {
+      tags.add(tag);
     }
   }
   return [...tags].sort();
+}
+
+const FLUENT_ENTRY = /^-?[A-Za-z][A-Za-z0-9_-]*[ \t]*=/m;
+
+// Whether the text of the locale file `name` holds a message, after a byte-order mark at its
+// start. An .ftl file needs a line that starts with a Fluent identifier, an optional leading
+// -, then spaces or tabs and =, as a message or term line does; a .properties file a line whose
+// first character other than space, tab, or form feed is not # or !, and a .dtd file an
+// <!ENTITY outside comments, where a comment with no --> runs to the end of the file. The
+// extension ignores letter case. A file with any other extension, or none, counts.
+function holdsMessage(name: string, text: string): boolean {
+  const body = text.replace(/^﻿/, "");
+  switch (/\.([^./]*)$/.exec(name)?.[1].toLowerCase()) {
+    case "ftl":
+      return FLUENT_ENTRY.test(body);
+    case "properties":
+      return body.split(/\r\n|\r|\n/).some((line) => !["#", "!", undefined].includes(/[^ \t\f]/.exec(line)?.[0]));
+    case "dtd":
+      return body.replace(/<!--[\s\S]*?(?:-->|$)/g, "").includes("<!ENTITY");
+    default:
+      return true;
+  }
 }
 
 // The smallest central-directory header: its fixed part, with no name, extra field, or comment.
@@ -592,52 +663,72 @@ function* centralEntries(zip: Uint8Array): Generator<{ fileName: string; header:
 function zipEntry(zip: Uint8Array, name: string, tag: string): ZipEntry | undefined {
   let entry: ZipEntry | undefined;
   for (const { fileName, header, zip64 } of centralEntries(zip)) {
-    const [size, originalSize, offset] = zip64Sizes(zip, header, zip64);
+    const found = entryAt(zip, header, zip64);
     if (fileName === name) {
       if (entry) fail("xpi-unreadable", `the XPI of ${tag} holds more than one ${name}`);
-      if (originalSize > UNZIPPED_MAX_BYTES || size > UNZIPPED_MAX_BYTES) {
+      if (found.originalSize > UNZIPPED_MAX_BYTES || found.size > UNZIPPED_MAX_BYTES) {
         fail("manifest-too-large", `${name} in the XPI of ${tag} is larger than ${UNZIPPED_MAX_BYTES} bytes`);
       }
-      const start = offset + 30 + u16(zip, offset + 26) + u16(zip, offset + 28);
-      entry = { compression: u16(zip, header + 10), size, originalSize, start };
+      entry = found;
     }
   }
   return entry;
 }
 
+// The entry whose central-directory header starts at `header`.
+function entryAt(zip: Uint8Array, header: number, zip64: boolean): ZipEntry {
+  const [size, originalSize, offset] = zip64Sizes(zip, header, zip64);
+  const start = offset + 30 + u16(zip, offset + 26) + u16(zip, offset + 28);
+  return { compression: u16(zip, header + 10), size, originalSize, start };
+}
+
 const INFLATE_CHUNK_BYTES = 16 * 1024;
 
-// Unzips the one file `name`, or returns undefined when the zip lacks it. fflate 0.8.3's
-// unzipSync decodes the whole stream of a deflated file, however far its output runs past
-// the size the central directory declares (observed 2026-10-25), so this inflates the file
-// INFLATE_CHUNK_BYTES of input at a time and fails once the output passes that size. It
-// returns a stored file at its compressed size, as unzipSync does.
+// Unzips the one file `name`, or returns undefined when the zip lacks it.
 function unzipOne(zip: Uint8Array, name: string, tag: string): Uint8Array | undefined {
   try {
     const entry = zipEntry(zip, name, tag);
     if (!entry) return undefined;
-    const data = zip.subarray(entry.start, entry.start + entry.size);
-    if (entry.compression === 0) return data.slice();
-    if (entry.compression !== 8) throw new Error(`unknown compression type ${entry.compression}`);
-    const out = new Uint8Array(entry.originalSize);
-    let length = 0;
-    const inflate = new Inflate((chunk) => {
-      if (length + chunk.length > out.length) {
-        fail("xpi-unreadable", `${name} in the XPI of ${tag} inflates past the ${out.length} bytes its zip declares`);
-      }
-      out.set(chunk, length);
-      length += chunk.length;
-    });
-    let at = 0;
-    do {
-      inflate.push(data.subarray(at, at + INFLATE_CHUNK_BYTES), at + INFLATE_CHUNK_BYTES >= data.length);
-      at += INFLATE_CHUNK_BYTES;
-    } while (at < data.length);
-    return out.subarray(0, length);
+    return inflateEntry(zip, entry, (declared) =>
+      fail("xpi-unreadable", `${name} in the XPI of ${tag} inflates past the ${declared} bytes its zip declares`),
+    );
   } catch (error) {
     if (error instanceof ReadFailure) throw error;
     fail("xpi-unreadable", `the XPI of ${tag} is not a readable zip: ${(error as Error).message}`);
   }
+}
+
+// Unzips one entry. fflate 0.8.3's unzipSync decodes the whole stream of a deflated file,
+// however far its output runs past the size the central directory declares (observed
+// 2026-10-25), so this inflates the file `chunkBytes` of input at a time and calls
+// `overflow` with the declared size once the output passes it. It hands `onOutput` the
+// length of each piece of output first, the piece that passes the size included. It returns
+// a stored file at its compressed size, as unzipSync does, and throws on any other
+// compression.
+function inflateEntry(
+  zip: Uint8Array,
+  entry: ZipEntry,
+  overflow: (declared: number) => never,
+  chunkBytes = INFLATE_CHUNK_BYTES,
+  onOutput?: (length: number) => void,
+): Uint8Array {
+  const data = zip.subarray(entry.start, entry.start + entry.size);
+  if (entry.compression === 0) return data.slice();
+  if (entry.compression !== 8) throw new Error(`unknown compression type ${entry.compression}`);
+  const out = new Uint8Array(entry.originalSize);
+  let length = 0;
+  const inflate = new Inflate((chunk) => {
+    onOutput?.(chunk.length);
+    if (length + chunk.length > out.length) overflow(out.length);
+    out.set(chunk, length);
+    length += chunk.length;
+  });
+  let at = 0;
+  do {
+    inflate.push(data.subarray(at, at + chunkBytes), at + chunkBytes >= data.length);
+    at += chunkBytes;
+  } while (at < data.length);
+  return out.subarray(0, length);
 }
 
 async function checkUpdateJson(download: Download, url: string, id: string): Promise<void> {
