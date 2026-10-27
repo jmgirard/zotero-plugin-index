@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M027: Skip locale folders that hold no messages
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -160,6 +160,8 @@ override values and the schema's tag pattern do not change.
 - 2026-10-27: T4: the AC4 passages now state the message rule: README "Using the data", the Unreleased CHANGELOG languages entry (edited, no new entry), the schema `languages` description, DESIGN's languages paragraph, data sources item 2, and reader paragraph (one walk, the limits, still up to three walks per XPI), and the reader comments on `languages`, `readRelease`, and `localeLanguages`. A joined-copy search of README, CHANGELOG, and DESIGN finds none of the old phrases. The simple-english hook flagged older README and CHANGELOG lines outside this change; left as they are.
 - 2026-10-27: T5: `pnpm test` 706 passed, `pnpm check` 0 problems, `cairn_validate` all passed. The only fixture changed is the language case in `test/build.test.ts` (T2); the golden `mixed-failures.plugins.json` is unchanged.
 - 2026-10-27: T6: branch pushed at 82f544b; Build data run 40516293620 on the branch: build job success (Node 24), deploy job did not run (run conclusion failure, deploy left waiting on the environment rule), nothing published. Its `plugins-data` artifact lists Zoplicate 5.1.1 as `["en-US", "zh-CN"]`; 27 other records have an `upstream` block and the same version in both files, and all 27 language lists equal the published ones.
+- 2026-10-27: claim audit: 65 claims read, 7 corrected — CHANGELOG.md, README.md, schemas/plugins.v1.schema.json, src/upstream/reader.ts, test/upstream.test.ts (`.properties` rule now names blank lines in CHANGELOG and schema; the budget counts the larger of declared and compressed size; the `readRelease` comment; the Fluent pattern described as coded, tab before `=` included, which AC1 names; the 8 MiB test name; README and CHANGELOG name files the reader cannot inflate). Code unchanged; `pnpm test` 706 passed, `pnpm check` 0 problems.
+- 2026-10-27: implement done; status review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

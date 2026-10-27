@@ -101,10 +101,11 @@ one whose manifest the index read. A locale folder is `locale/<tag>/` or
 In an `.ftl` file, a message is a Fluent message or term line, such as
 `hello = Hello`. In a `.properties` file, it is a line that is not blank
 and not a `#` or `!` comment. In a `.dtd` file, it is an `<!ENTITY` outside
-`<!-- -->` comments. A file of any other type counts. So a folder whose files hold only comments, as some plugins
-ship for each language that Zotero supports, adds no language. The build
-reads at most 8 MiB of locale files from each XPI, and a file it does not
-read counts as holding a message. The build writes each
+`<!-- -->` comments. A file of any other type counts. So a folder whose
+files hold only comments, as some plugins ship for each language that
+Zotero supports, adds no language. The build reads at most 8 MiB of locale
+files from each XPI. A file that it does not read, or cannot inflate,
+counts as holding a message. The build writes each
 tag in its standard form, so `zh_CN` becomes `zh-CN`, and sorts the list. It
 leaves out a folder whose name does not have the form of a language tag, and
 the tag `und` (undetermined). It also leaves out a tag whose language has no

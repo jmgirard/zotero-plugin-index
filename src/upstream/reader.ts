@@ -181,8 +181,8 @@ type ReleaseFacts = Pick<
   | "languages"
 > & { release: ReleaseJson };
 
-// Reads the manifest and the locale folders whose files hold a message in one release's XPI,
-// and checks the update.json the manifest names.
+// Reads the manifest and the language tags of the locale folders that hold a message in one
+// release's XPI, and checks the update.json the manifest names.
 async function readRelease(download: Download, release: ReleaseJson, xpi: { browser_download_url: string }): Promise<ReleaseFacts> {
   const { manifest, messages, languages } = await readManifest(download, xpi.browser_download_url, release.tag_name);
   const zotero = manifest.applications?.zotero;
@@ -492,7 +492,8 @@ const WHOLE_TAG = new RegExp(`^${LANGUAGE_TAG}$`, "u");
 const LOCALE_FOLDER = /^(?:chrome\/)?locale\/([^/]+)\/./;
 const LANGUAGE_NAMES = new Intl.DisplayNames(["en"], { type: "language", fallback: "none" });
 
-// The most that localeLanguages inflates from the locale files of one XPI, by declared size.
+// The most that localeLanguages inflates from the locale files of one XPI, counted as the
+// larger of each file's declared and compressed size.
 // The locale files of the listed plugins took at most 562,599 bytes (observed 2026-10-27).
 export const LOCALE_MAX_BYTES = 8 * 1024 * 1024;
 
@@ -506,7 +507,7 @@ export const LOCALE_MAX_BYTES = 8 * 1024 * 1024;
 // It reads the zip one header at a time, in one walk, and inflates each file from the header
 // it is on, so it keeps no list of the zip's entries. A file that it does not inflate counts
 // as holding a message: one whose declared or compressed size is over UNZIPPED_MAX_BYTES,
-// whose compression is neither stored nor deflate, or whose declared size would take the
+// whose compression is neither stored nor deflate, or whose larger size would take the
 // total past LOCALE_MAX_BYTES. So does a file whose inflate fails, so no locale file fails
 // the read.
 function localeLanguages(zip: Uint8Array): string[] {
@@ -546,7 +547,8 @@ function localeLanguages(zip: Uint8Array): string[] {
 const FLUENT_ENTRY = /^-?[A-Za-z][A-Za-z0-9_-]*[ \t]*=/m;
 
 // Whether the text of the locale file `name` holds a message, after a byte-order mark at its
-// start. An .ftl file needs a Fluent message or term line, a .properties file a line whose
+// start. An .ftl file needs a line that starts with a Fluent identifier, an optional leading
+// -, then spaces or tabs and =, as a message or term line does; a .properties file a line whose
 // first character other than space, tab, or form feed is not # or !, and a .dtd file an
 // <!ENTITY outside comments, where a comment with no --> runs to the end of the file. The
 // extension ignores letter case. A file with any other extension, or none, counts.

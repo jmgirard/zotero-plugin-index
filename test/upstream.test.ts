@@ -230,7 +230,7 @@ describe("readUpstream", () => {
     expect(result.ok && result.facts.languages).toEqual(languages);
   });
 
-  test("keeps the folders read after the locale files inflate 8 MiB in total", async () => {
+  test("keeps the folders whose files would take the inflated total past 8 MiB", async () => {
     const comments = "# Comment\n".repeat(100_000);
     const tags = ["ar", "bg", "cs", "da", "de", "el", "es", "fi", "fr", "he"];
     const { result } = await read((r) => Object.assign(r[XPI].xpi!, Object.fromEntries(tags.map((tag) => [`locale/${tag}/a.ftl`, comments]))));
