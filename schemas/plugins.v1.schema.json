@@ -107,7 +107,7 @@
           "type": "boolean"
         },
         "languages": {
-          "description": "The language tags of the locale folders (locale/<tag>/ and chrome/locale/<tag>/) in the XPI whose manifest was read, each with a language that has an English name in the build's Node.js Intl data, in canonical form, each once, in code-unit order. Empty when the XPI has no such folder. It does not say whether a translation is complete.",
+          "description": "The language tags of the locale folders (locale/<tag>/ and chrome/locale/<tag>/) in the XPI whose manifest was read, each with a language that has an English name in the build's Node.js Intl data and with a file that holds a message, in canonical form, each once, in code-unit order. An .ftl file holds a message when it has a Fluent message or term line, a .properties file when it has a line that is not a comment, and a .dtd file when it has an <!ENTITY outside comments; a file of any other type, or one that the reader does not inflate, counts. Empty when the XPI has no such folder. It does not say whether a translation is complete.",
           "type": "array",
           "uniqueItems": true,
           "items": {

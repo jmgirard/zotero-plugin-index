@@ -128,10 +128,10 @@ override values and the schema's tag pattern do not change.
 - [x] T3: Add `LOCALE_MAX_BYTES` and the AC2 limits, then the AC2 tests.
       Build the 8 MiB case from small deflated comment files, per the M012
       lesson on deflate fixtures.
-- [ ] T4: Update the AC4 passages. Search joined copies of README.md,
+- [x] T4: Update the AC4 passages. Search joined copies of README.md,
       CHANGELOG.md, and DESIGN.md for the old wording, per the M018 lesson.
       Edit the existing Unreleased languages entry; add no new entry.
-- [ ] T5: Run `pnpm test` and `pnpm check`. Update any build fixture XPI or
+- [x] T5: Run `pnpm test` and `pnpm check`. Update any build fixture XPI or
       golden file whose locale files are empty and whose test expects a tag,
       and name each one in the work log.
 - [ ] T6: Push the branch, dispatch `build.yml` on it, download its data
@@ -157,6 +157,8 @@ override values and the schema's tag pattern do not change.
 - 2026-10-27: T1: 12 AC1 cases added to the languages table, and each existing file whose tag stays now holds a message; on unchanged code the 7 left-out cases failed and the 5 kept cases passed.
 - 2026-10-27: T2: `entryAt` and `inflateEntry` split out of `zipEntry` and `unzipOne`, whose failures and messages are unchanged; `holdsMessage` judges by extension; `localeLanguages` skips a tag already kept, so it reads a tag's files only until one holds a message. The `LOCALE_MAX_BYTES` budget and the per-file limits landed with T2, since the inflate path needs them; their tests are T3. `test/build.test.ts`'s language case gave its two `.ftl` files a message line (T5's fixture update). `pnpm test` 697 passed, `pnpm check` 0 problems.
 - 2026-10-27: T3: AC2 tests added: a comment-only control and five per-file limit cases through a new `editHeader` helper, the 8 MiB case (ten 1,000,000-byte comment files, the last two kept), and two duplicate-name cases. The 8 MiB case builds its files from repeated comment lines, not the M012 deflate stream, since each file must stay under 1 MiB. Plants on a copy of `reader.ts`, restored after: no size cap failed the two size cases, a catch that drops failed the inflate-fails and past-size cases, no budget failed the 8 MiB case; no overflow stop failed nothing, since writing past the buffer then throws a RangeError that the same catch keeps.
+- 2026-10-27: T4: the AC4 passages now state the message rule: README "Using the data", the Unreleased CHANGELOG languages entry (edited, no new entry), the schema `languages` description, DESIGN's languages paragraph, data sources item 2, and reader paragraph (one walk, the limits, still up to three walks per XPI), and the reader comments on `languages`, `readRelease`, and `localeLanguages`. A joined-copy search of README, CHANGELOG, and DESIGN finds none of the old phrases. The simple-english hook flagged older README and CHANGELOG lines outside this change; left as they are.
+- 2026-10-27: T5: `pnpm test` 706 passed, `pnpm check` 0 problems, `cairn_validate` all passed. The only fixture changed is the language case in `test/build.test.ts` (T2); the golden `mixed-failures.plugins.json` is unchanged.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

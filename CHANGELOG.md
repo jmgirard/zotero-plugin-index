@@ -170,7 +170,13 @@
   and `chrome/locale/<tag>/` folders in the XPI that the reader read. If a
   tag's language has no English name in the build's Node.js `Intl` data, the
   list leaves the tag out. So a folder such as `locale/img/` adds no
-  language. If no tag is left, the list is empty. The list does not say
+  language. The list also leaves out a folder where no file holds a message.
+  In an `.ftl` file, a message is a Fluent message or term line. In a
+  `.properties` file, it is a line that is not a comment. In a `.dtd` file,
+  it is an `<!ENTITY` outside comments. A file of any other type counts. So
+  a folder whose files hold only comments adds no language. The reader reads
+  at most 8 MiB of locale files from each XPI, and a file it does not read
+  counts as holding a message. If no tag is left, the list is empty. The list does not say
   whether a translation is complete. An `index.json` override can have the
   field `languages` and a value such as `zh-CN, en-US`. It records the
   languages of a plugin whose list is wrong or empty, in the record's

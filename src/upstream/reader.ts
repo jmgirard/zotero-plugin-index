@@ -29,8 +29,9 @@ export interface UpstreamFacts {
   // GitHub's archived flag, left out when the repo response has no boolean.
   archived?: boolean;
   // The language tags of the locale folders in the XPI whose manifest was read, each with a
-  // language that has an English name in the build's Node.js Intl data (see
-  // localeLanguages). The reader always sets it; records written before it existed have none.
+  // language that has an English name in the build's Node.js Intl data and with a file that
+  // holds a message, judged by file type (see localeLanguages). The reader always sets it;
+  // records written before it existed have none.
   languages?: string[];
 }
 
@@ -180,8 +181,8 @@ type ReleaseFacts = Pick<
   | "languages"
 > & { release: ReleaseJson };
 
-// Reads the manifest and the locale folders of one release's XPI and checks the
-// update.json the manifest names.
+// Reads the manifest and the locale folders whose files hold a message in one release's XPI,
+// and checks the update.json the manifest names.
 async function readRelease(download: Download, release: ReleaseJson, xpi: { browser_download_url: string }): Promise<ReleaseFacts> {
   const { manifest, messages, languages } = await readManifest(download, xpi.browser_download_url, release.tag_name);
   const zotero = manifest.applications?.zotero;

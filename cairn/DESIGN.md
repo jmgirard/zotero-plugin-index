@@ -34,8 +34,9 @@ release count, open issues, the host of the `update.json` file, the
 counted user reports on the release the index read (M021), and the
 interface languages (M024).
 The data also carries the interface languages that the read XPI's locale
-folders name (M023). They say which languages a plugin ships interface text
-for, not whether a translation is complete. A `languages` override records
+folders name (M023), counting a folder only when one of its files holds a
+message, judged by file type (M027). They say which languages a plugin
+ships interface text for, not whether a translation is complete. A `languages` override records
 them for a plugin whose list is wrong or empty. Each plugin page shows
 them by name, outside the Details section, and the home page's language
 menu filters the list by language subtag, run by the site's one script
@@ -98,7 +99,8 @@ shows each one separately.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
    `manifest.json` in the newest stable release that has an `.xpi` file,
    the names of that XPI's locale folders whose language has an English
-   name in the build's Node.js `Intl` data (M023, M025), and the `update.json`
+   name in the build's Node.js `Intl` data and where a file, judged by its
+   type, holds a message (M023, M025, M027), and the `update.json`
    that the manifest names (corrected M002, M014). A
    stable release is one that GitHub does not mark as a prerelease. If no
    stable release has an `.xpi` file, the bot reads the newest release that
@@ -268,10 +270,19 @@ reused._
   declares, because `unzipSync` decodes the whole stream however far it runs
   past that size (M012).
   The reader walks the same central directory once more, one header at a
-  time, inflates nothing more, and records as `languages` the tags of the
-  `locale/<tag>/` and `chrome/locale/<tag>/` folders that hold a file. So
-  each XPI takes up to three walks over the claimed count: for
-  `manifest.json`, the default locale's `messages.json`, and the names. A
+  time, and records as `languages` the tags of the `locale/<tag>/` and
+  `chrome/locale/<tag>/` folders where a file holds a message (M027). It
+  inflates each locale file from the header it is on, the same way, until
+  one file of the tag holds a message. An `.ftl` file needs a Fluent
+  message or term line, a `.properties` file a line that is not a comment,
+  and a `.dtd` file an `<!ENTITY` outside comments. A file of any other
+  type counts. A file that the reader does not inflate counts too: one over
+  1 MiB declared or compressed, one with another compression, and one that
+  would take the XPI's inflated locale total past 8 MiB
+  (`LOCALE_MAX_BYTES`). So does a file that fails to inflate, so no locale
+  file fails the read. So each XPI takes up to three walks over the claimed
+  count: for `manifest.json`, the default locale's `messages.json`, and the
+  locale folders. A
   tag counts when it matches `LANGUAGE_TAG` and its language subtag has an
   English name in the build's Node.js `Intl` data (`Intl.DisplayNames` with
   `fallback: "none"`), so a node upgrade can change which rare codes count.

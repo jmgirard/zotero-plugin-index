@@ -97,7 +97,14 @@ against a saved copy of the schema, fetch it again after such a change.
 Each `upstream` block has a `languages` list, such as `["en-US", "zh-CN"]`.
 It holds the language tags of the locale folders in the plugin's XPI, the
 one whose manifest the index read. A locale folder is `locale/<tag>/` or
-`chrome/locale/<tag>/` with at least one file in it. The build writes each
+`chrome/locale/<tag>/` with at least one file in it that holds a message.
+In an `.ftl` file, a message is a Fluent message or term line, such as
+`hello = Hello`. In a `.properties` file, it is a line that is not blank
+and not a `#` or `!` comment. In a `.dtd` file, it is an `<!ENTITY` outside
+`<!-- -->` comments. A file of any other type counts. So a folder whose files hold only comments, as some plugins
+ship for each language that Zotero supports, adds no language. The build
+reads at most 8 MiB of locale files from each XPI, and a file it does not
+read counts as holding a message. The build writes each
 tag in its standard form, so `zh_CN` becomes `zh-CN`, and sorts the list. It
 leaves out a folder whose name does not have the form of a language tag, and
 the tag `und` (undetermined). It also leaves out a tag whose language has no
