@@ -86,7 +86,7 @@ merge. README, CHANGELOG, and DESIGN follow.
       field other than `number`, `merged`, `head.ref`, and
       `head.repo.full_name`. A test in `test/workflows.test.ts` checks each
       of these facts in the file's text.
-- [ ] AC4: README's "Proposing a plugin with an issue" section says that an
+- [x] AC4: README's "Proposing a plugin with an issue" section says that an
       error in the entry check leaves the issue open, and that when a
       maintainer closes a bot pull request without a merge, the bot comments
       on its issue and closes it as not planned. The README sentence "An
@@ -155,3 +155,6 @@ merge. README, CHANGELOG, and DESIGN follow.
 - AC3: verified 2026-10-27. The six `close-add-plugin-issue.yml` tests in `test/workflows.test.ts` pass; Ruby's YAML reads the trigger, `if:`, permissions, and checkout as written.
 - AC4: FAILED 2026-10-27. README, CHANGELOG, and DESIGN's `add-plugin-issue.yml` paragraph hold the required text, but DESIGN's Function Families names `pnpm close-issue` and not `close-add-plugin-issue.yml`.
 - AC5: verified 2026-10-27. `pnpm test` 16 files, 625 tests pass; `pnpm check` 20 entries, 0 problems.
+- pass 2 (after review return 1), 2026-10-27, at 4724a77: `pnpm test` 16 files, 625 tests pass and `pnpm check` 20 entries, 0 problems, so AC1, AC2, AC3, and AC5 hold as recorded above.
+- AC4: verified 2026-10-27 (pass 2). Joined copies: README's section holds the entry-check error, "leaves the issue open", the closed-without-a-merge paragraph, and "closes that issue as not planned", and the old `unexpected-error` sentence 0 times; the CHANGELOG Unreleased bullet holds both changes; DESIGN's Function Families and its `add-plugin-issue.yml` paragraph each name `pnpm close-issue` and `close-add-plugin-issue.yml` once.
+- gate: `cairn_validate.py` exit 0, all checks passed; generic profile names no toolchain checks; no principle changed, so no `cairn_impact`.
