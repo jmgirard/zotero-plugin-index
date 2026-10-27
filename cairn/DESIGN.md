@@ -154,7 +154,8 @@ exception is a report that is abuse.
   `pnpm close-issue` reads the pull request that `PR_NUMBER` names. When it
   is a bot pull request closed without a merge, the command comments on the
   open "Add a plugin" issue that its `Closes #<n>` line names and closes it
-  as not planned (M022).
+  as not planned. `.github/workflows/close-add-plugin-issue.yml` runs it
+  when a pull request closes (M022).
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.

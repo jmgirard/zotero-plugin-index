@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M022: Fix two gaps of the issue bot
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -103,8 +103,8 @@ merge. README, CHANGELOG, and DESIGN follow.
 - AC1 → T1
 - AC2 → T2
 - AC3 → T3
-- AC4 → T4
-- AC5 → T1, T2, T3, T4
+- AC4 → T4, T5
+- AC5 → T1, T2, T3, T4, T5
 
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
@@ -119,6 +119,8 @@ merge. README, CHANGELOG, and DESIGN follow.
       helpers.
 - [x] T4: Write the README, CHANGELOG, and DESIGN text. Search joined copies
       of the files for the old and new phrases (LESSONS, M018).
+- [x] T5: Name `close-add-plugin-issue.yml` in DESIGN.md's Function
+      Families (review return 1).
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -138,6 +140,9 @@ merge. README, CHANGELOG, and DESIGN follow.
 - 2026-10-27: claim audit: 54 claims read, 2 corrected — test/close-issue.test.ts (the outside-the-fence test now plants a decoy `Closes #7` inside the fence), src/discover/close-issue.ts (skip message "is not an issue"); the reader re-read both and found them true. It could not confirm the existing premise that GitHub enforces `cache-mode: none`, which report-issue.yml and DESIGN already state.
 - 2026-10-27: all tasks done; `pnpm test` (625 tests) and `pnpm check` pass; status review.
 - 2026-10-27: review return 1: AC4 fails as written — DESIGN.md's Function Families does not name `.github/workflows/close-add-plugin-issue.yml`.
+- 2026-10-27: resumed implement for review return 1; added T5 (minor amendment); main has not moved.
+- 2026-10-27: T5 done. DESIGN's Discovery family now names `.github/workflows/close-add-plugin-issue.yml` beside `pnpm close-issue`; a joined-copy search of the Function Families section finds each once.
+- 2026-10-27: all tasks done; `pnpm test` and `pnpm check` pass; status review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
