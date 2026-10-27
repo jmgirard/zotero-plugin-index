@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-27 (M027 done and archived; 3 rows added at plan an
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M028 | Keep issues open on entry write errors | in-progress | — | normal | milestones/M028-entry-write-errors.md |
+| M028 | Keep issues open on entry write errors | review | — | normal | milestones/M028-entry-write-errors.md |
 | M027 | Skip locale folders that hold no messages | done | — | normal | milestones/archive/M027-message-languages.md |
 | M026 | Retry repos refused by a download error | done | — | normal | milestones/archive/M026-retry-download-errors.md |
 | M025 | Drop locale folders naming no language | done | — | low | milestones/archive/M025-named-languages.md |

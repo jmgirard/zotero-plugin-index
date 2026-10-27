@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M028: Keep issues open on entry write errors
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -116,6 +116,8 @@ report issues left open".
 - 2026-10-27: T2 done: `draftEntry` passes `buildLevel` for a `writeEntry` refusal other than `unsafe-id`, `recorded` unchanged; comments on `Drafted`, `issueRead`, `readOutcome`, `issueAnswer`, and the handoff's `failed` outcome updated. `pnpm test` 711 passed, `pnpm check` 28 entries, 0 problems.
 - 2026-10-27: T3 done: README's refusal paragraph names the id refusals in place of "fail to write the entry", and its bot-failure paragraph names `entry-exists` and `write-failed`; the CHANGELOG "Add a plugin" entry and DESIGN's discover text gain the write failure. AC6 search (scratchpad script, 58 sentences): every hit on the issue run agrees with AC1 to AC3. The simple-english hook flags README lines 94 and 389 and CHANGELOG line 170, all older text this change does not touch; left as they are.
 - 2026-10-27: T4 done: `npx -y pnpm@12.15.0 test` 17 files, 711 passed; `npx -y pnpm@12.15.0 check` 28 entries, 0 problems.
+- 2026-10-27: claim audit: 18 claims read, 7 corrected — README.md, cairn/DESIGN.md, src/discover/handoff.ts, src/discover/issue.ts, test/issue.test.ts. Four comments said "cannot be written", which also reads as `unsafe-id`, and now name `entry-exists` and `write-failed`; README names the check among failures whose name the comment gives; DESIGN "as do"; the AC1/AC2 test checks the message in the comment body. The same reader re-read the 7 once and found them true. After the fixes `pnpm test` 711 passed and `pnpm check` 0 problems (commit bbd5707).
+- 2026-10-27: implement complete; status review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
