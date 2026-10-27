@@ -505,16 +505,15 @@ describe("buildData", () => {
 
     test("names the default limit of 3 minutes in the failure of a read that passes it", async () => {
       const { tree, recorded } = stalledTree();
+      let reached!: () => void;
+      const stalled = new Promise<void>((resolve) => (reached = resolve));
+      const { fetch } = fixtureFetch(recorded, (seen) => seen.url === stalledXpi && reached());
       vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
       try {
-        const pending = buildData(tree, fixtureFetch(recorded).fetch);
-        let settled = false;
-        void pending.then(() => (settled = true));
-        // The reads reach the stall only after real I/O, so the clock moves until the build ends.
-        for (let i = 0; i < 100 && !settled; i++) {
-          await new Promise((resolve) => setImmediate(resolve));
-          await vi.advanceTimersByTimeAsync(30_000);
-        }
+        const pending = buildData(tree, fetch);
+        // The clock moves only once the read waits on the stalled XPI.
+        await stalled;
+        await vi.advanceTimersByTimeAsync(3 * 60 * 1000);
         const result = await pending;
         if (!result.ok) throw new Error(result.problems.join("\n"));
         expect(record(JSON.parse(result.text), "b-stalled@example.org")?.failure).toEqual({

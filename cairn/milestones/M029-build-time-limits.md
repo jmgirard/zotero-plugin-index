@@ -68,6 +68,7 @@
 - 2026-10-27: T6 added (minor amendment, AC4 → T4, T6) and done: README now reads "A plugin with either failure shows no facts until a later build reads it", found once in a joined copy. `pnpm test` 721 passed, `pnpm check` clean. Status review.
 - 2026-10-27: review paused at the user's request with the four reviewers stopped; resumed with a fresh spawn.
 - 2026-10-27: step-7 approval: m029-build-time-limits approved for merge
+- 2026-10-27: PR #46 CI red: the 3-minute fake-timer test timed out at 60 s on the runner, since its 100-step clock loop ended before the read reached the stall. The test now advances the clock 3 minutes once the stalled XPI is requested; it passed 3 runs locally and failed with a 4-minute default planted (by timeout, since a 3-minute advance then fires nothing). Test-only change, so approval stands. `pnpm test` 722 passed.
 
 ## Decisions
 
