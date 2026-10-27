@@ -38,30 +38,30 @@ report issues left open".
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: In an issue run where the read step's `writeEntry` finds the
+- [x] AC1: In an issue run where the read step's `writeEntry` finds the
       plugin's entry directory already in the output directory
       (`entry-exists`), the read step's outcome is `failed` with the failure
       `entry-exists`, the bot posts one comment, which starts "The bot could
       not finish" and holds `` `entry-exists` ``, sends no close request, and
       `issueAnswer` returns status 1. A test in `test/issue.test.ts` shows
       each of these.
-- [ ] AC2: AC1 holds with `write-failed` in place of `entry-exists` for an
+- [x] AC2: AC1 holds with `write-failed` in place of `entry-exists` for an
       issue run whose output directory lies under a regular file, so it
       cannot be made (`ENOTDIR`). A test in `test/issue.test.ts` shows it.
-- [ ] AC3: An issue run still comments the failure name and closes the issue
+- [x] AC3: An issue run still comments the failure name and closes the issue
       as not planned, with status 0, for an `entry-exists` refusal from the
       read step because the index already has an entry with the plugin's id,
       and for an `unsafe-id` refusal. A test in `test/issue.test.ts` shows
       each case.
-- [ ] AC4: A discover run still keeps no state record for a repo refused with
+- [x] AC4: A discover run still keeps no state record for a repo refused with
       `entry-exists` because its entry directory is already in the output
       directory, and still keeps one for a repo refused because the index
       already has its plugin id, as the tests "does not record a repo whose
       entry directory already exists in the output directory" and "reports
       each repo it reads as written or with its failure name" in
       `test/discover.test.ts` show.
-- [ ] AC5: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` exit 0.
-- [ ] AC6: Each sentence on how the issue run answers, or on what
+- [x] AC5: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` exit 0.
+- [x] AC6: Each sentence on how the issue run answers, or on what
       `buildLevel` marks, that this search finds agrees with AC1 to AC3. For
       each of `README.md`, `CHANGELOG.md`, `cairn/DESIGN.md`, and
       `src/discover/*.ts`, join the file's lines with spaces, split the text
@@ -124,3 +124,13 @@ report issues left open".
 
 ## Review
 <!-- owner: review · exclusive. -->
+
+Pass 1, 2026-10-27, at 45e7efa. Sync: main at a26f530, not moved; no PR; Copilot round off.
+
+- AC1: `vitest run test/issue.test.ts` "…leaves the issue open, and returns 1 when writeEntry finds the entry directory" passes: outcome `failed` with `entry-exists` and the "already exists" message, one POST whose body starts "The bot could not finish" and holds `` `entry-exists`: ` `` with the message, no PATCH, status 1. Red on main at T1 (outcome `refused`).
+- AC2: the same table's case "…when the output directory cannot be made" (outDir under a regular file) passes: outcome `failed` with `write-failed` and "cannot create … ENOTDIR", one "could not finish" comment with `` `write-failed`: ` `` and ENOTDIR, no PATCH, status 1. Red on main at T1.
+- AC3: "…closes the issue as not planned when an entry has the plugin's id" (`example/clash` with `second-plugin@example.org`, `root: TREE`) and "…when the plugin's id cannot name a directory" (`../unsafe`) pass: outcome `refused` with `entry-exists` / `unsafe-id`, a "no pull request" comment naming the failure, PATCH `not_planned`, status 0. Planted defect (pass `buildLevel` true for `unsafe-id` too, from a copy, restored) turned the `unsafe-id` case red and left the id-clash case green, as its path is untouched.
+- AC4: `test/discover.test.ts` "does not record a repo whose entry directory already exists in the output directory" (state for `example/alpha` undefined) and "reports each repo it reads as written or with its failure name" (state keys `example/clash`, `example/no-release`, `example/unsafe`) pass unchanged.
+- AC5: at 45e7efa, `npx -y pnpm@12.15.0 test` exit 0, 17 files, 711 passed; `npx -y pnpm@12.15.0 check` exit 0, 28 entries, 0 problems.
+- AC6: the AC6 search (join, split at `. `, `grep -n` the ten terms over README, CHANGELOG, DESIGN, `src/discover/*.ts`) at 45e7efa returns 58 sentences. Each on how the issue run answers or what `buildLevel` marks agrees with AC1 to AC3: README's id refusals and not-build-level reads close; the bot-failure paragraph names `entry-exists` and `write-failed` and leaves the issue open; CHANGELOG's entry gains the write failure; DESIGN "as do … (M028)"; the `Drafted`, `draftEntry`, `readOutcome`, `issueRead`, `issueAnswer`, and handoff comments name `entry-exists` in outDir and `write-failed`. The rest are about the data build, reports, close-issue, or the add-plugin CLI.
+- Gate: `cairn_validate.py` exit 0, all checks passed; no DESIGN principle changed, so `cairn_impact` skipped; generic profile names no toolchain checks.
