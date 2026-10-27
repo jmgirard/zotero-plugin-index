@@ -138,7 +138,7 @@ with no `upstream` has an empty applied list. M023 keeps
       AC2's and AC4's tests, matching attributes in their `data-x="` form.
       Update tests that count the built files, if the script becomes an
       `_astro/` file.
-- [ ] T5: Build the site from the fixture. Serve it with a
+- [x] T5: Build the site from the fixture. Serve it with a
       `.claude/launch.json` entry running `python3 -m http.server`, with the
       site at `<dir>/zotero-plugin-index/` and the file kept out of git
       through `.git/info/exclude`. Run AC3's four browser steps in the
@@ -168,6 +168,8 @@ with no `upstream` has an empty applied list. M023 keeps
 - 2026-10-27: T3 done: the plugin page shows `<p class="languages">Interface languages: <span data-fact="languages">…</span></p>` between the declared-range line and the reports section, from `languagesText` in `site/src/data.ts`; `.languages` takes the muted color of `.range`. The page-order test now places the fact; six fact tests and two Overrides-table tests added. `pnpm test` (669) and `pnpm check` pass.
 - 2026-10-27: T4 choices: the menu is `<p class="language-filter" hidden>` holding `<label for="language">Interface language</label>` and `<select id="language" data-language-filter>`; the script updates the URL with `history.replaceState`, so a menu change adds no history entry and Back leaves the page; on load it leaves an unknown `language` value in the URL. Astro writes an attribute whose value is `""` as its bare name, so `rowLanguagesAttribute` in `site/src/data.ts` passes an empty value as a String object, which Astro writes as `data-languages=""` (seen in a fixture build before and after).
 - 2026-10-27: T4 done: Astro inlines the script as `<script type="module">` in `index.html`, so no `_astro/` file exists and no file-count test changed. Tests added for each row's `data-languages`, the menu's options, and a script on the home page only (AC4); the row helper of the home-page tests now matches `data-plugin="<id>" `. `pnpm test` (672) and `pnpm check` pass.
+- 2026-10-27: T5 done: the fixture site was built into the scratchpad at `serve/zotero-plugin-index/` and served by the `site-preview` entry of `.claude/launch.json` (already in `.git/info/exclude`), on port 4321. In the built-in browser pane: (1) loading `/zotero-plugin-index/` showed the menu, with "All languages" selected and all 7 rows visible; (2) picking "Chinese (2)" left visible only `first-plugin@example.org` and `min-only-plugin@example.org`, and the URL became `/zotero-plugin-index/?language=zh`; (3) picking "All languages" showed all 7 rows and the URL lost its query; (4) loading `?language=xx` selected "All languages" with all 7 rows visible. Loading `?language=zh` also selected Chinese and showed the same 2 rows.
+- 2026-10-27: T5 fix: the pane showed the label touching the menu, because Astro drops the line break between `</label>` and `<select>`; a `{" "}` now writes a space, and the menu test matches it. `pnpm test` (672) and `pnpm check` pass.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

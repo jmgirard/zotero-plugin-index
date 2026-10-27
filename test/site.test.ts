@@ -409,7 +409,7 @@ describe("the home page", () => {
   });
 
   test("holds a hidden language menu with one option for each subtag", () => {
-    const menu = /<p class="language-filter" hidden><label for="language">Interface language<\/label><select id="language" data-language-filter>(.*?)<\/select><\/p>/.exec(home());
+    const menu = /<p class="language-filter" hidden><label for="language">Interface language<\/label> <select id="language" data-language-filter>(.*?)<\/select><\/p>/.exec(home());
     expect(menu).not.toBeNull();
     const options = [...menu![1]!.matchAll(/<option value="([^"]*)">([^<]*)<\/option>/g)].map(([, value, text]) => [value, text]);
     expect(options).toEqual([
