@@ -1,7 +1,7 @@
 ---
 import Support from "../components/Support.astro";
 import Base from "../layouts/Base.astro";
-import { displayName, loadData, pluginHref, shownDescription } from "../data.ts";
+import { displayName, languageOptions, loadData, pluginHref, rowLanguagesAttribute, shownDescription } from "../data.ts";
 
 const { plugins } = loadData();
 ---
@@ -12,12 +12,19 @@ const { plugins } = loadData();
     Plugins for Zotero 7 and later. The pills show the Zotero versions that each plugin declares it supports: ✓ all of
     that version, ◐ part of it, – none of it. The index reads these ranges from each plugin and does not test them.
   </p>
+  <p class="language-filter" hidden>
+    <label for="language">Interface language</label>
+    <select id="language" data-language-filter>
+      <option value="">All languages</option>
+      {languageOptions(plugins).map(({ value, text }) => <option value={value}>{text}</option>)}
+    </select>
+  </p>
   <ul class="plugins">
     {
       plugins.map((record) => {
         const description = shownDescription(record);
         return (
-          <li class="plugin" data-plugin={record.id}>
+          <li class="plugin" data-plugin={record.id} data-languages={rowLanguagesAttribute(record)}>
             <p class="plugin-name">
               <a href={pluginHref(record.id)}>{displayName(record)}</a>
               {record.upstream?.archived === true && <span data-archived>(archived)</span>}
@@ -30,3 +37,28 @@ const { plugins } = loadData();
     }
   </ul>
 </Base>
+
+<script>
+  import { rowShows } from "../../../src/site/language-filter.ts";
+
+  // The menu is hidden in the HTML, so a page without JavaScript shows every row and no menu.
+  const select = document.querySelector<HTMLSelectElement>("select[data-language-filter]");
+  if (select) {
+    const options = [...select.options].map((option) => option.value);
+    const rows = [...document.querySelectorAll<HTMLElement>("li[data-languages]")];
+    const show = () => {
+      for (const row of rows) row.hidden = !rowShows(row.dataset.languages ?? "", select.value, options);
+    };
+    const asked = new URL(location.href).searchParams.get("language") ?? "";
+    select.value = options.includes(asked) ? asked : "";
+    show();
+    select.addEventListener("change", () => {
+      show();
+      const url = new URL(location.href);
+      if (select.value) url.searchParams.set("language", select.value);
+      else url.searchParams.delete("language");
+      history.replaceState(null, "", url);
+    });
+    select.closest("[hidden]")?.removeAttribute("hidden");
+  }
+</script>

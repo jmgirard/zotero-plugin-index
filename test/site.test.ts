@@ -368,7 +368,7 @@ describe("the home page", () => {
   // The row holds no other <li>, so it ends at the first </li> after it starts.
   function row(id: string): string {
     const html = home();
-    const start = html.indexOf(`<li class="plugin" data-plugin="${id}">`);
+    const start = html.indexOf(`<li class="plugin" data-plugin="${id}" `);
     expect(start, id).toBeGreaterThan(-1);
     return html.slice(start, html.indexOf("</li>", start));
   }
@@ -394,9 +394,43 @@ describe("the home page", () => {
   test("marks only the archived plugin", () => {
     expect(home().match(/\sdata-archived/g)).toHaveLength(1);
   });
+
+  test("gives each row the language subtags it applies", () => {
+    const rows = [...home().matchAll(/<li class="plugin" data-plugin="([^"]*)" data-languages="([^"]*)">/g)].map(([, id, languages]) => [id, languages]);
+    expect(rows).toEqual([
+      ["broken-plugin@example.org", ""],
+      ["first-plugin@example.org", "en zh"],
+      ["old-plugin@example.org", ""],
+      ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", ""],
+      ["no-range-plugin@example.org", "de fr"],
+      ["min-only-plugin@example.org", "zh"],
+      ["locale-plugin@example.org", "es pt"],
+    ]);
+  });
+
+  test("holds a hidden language menu with one option for each subtag", () => {
+    const menu = /<p class="language-filter" hidden><label for="language">Interface language<\/label><select id="language" data-language-filter>(.*?)<\/select><\/p>/.exec(home());
+    expect(menu).not.toBeNull();
+    const options = [...menu![1]!.matchAll(/<option value="([^"]*)">([^<]*)<\/option>/g)].map(([, value, text]) => [value, text]);
+    expect(options).toEqual([
+      ["", "All languages"],
+      ["zh", "Chinese (2)"],
+      ["en", "English (1)"],
+      ["fr", "French (1)"],
+      ["de", "German (1)"],
+      ["pt", "Portuguese (1)"],
+      ["es", "Spanish (1)"],
+    ]);
+  });
 });
 
 describe("the built site", () => {
+  test("has a script on the home page only", () => {
+    const files = htmlFiles(out);
+    expect(files).toContain("index.html");
+    for (const file of files) expect(readFileSync(join(out, file), "utf8").includes("<script"), file).toBe(file === "index.html");
+  });
+
   test("has no trace of the Zotero version field", () => {
     const files = (readdirSync(out, { recursive: true }) as string[]).filter((path) => statSync(join(out, path)).isFile());
     expect(files.length).toBeGreaterThan(ids.length);

@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
 import type { Override, PluginRecord, PluginsFile } from "../../src/build/build.ts";
 import { shownDescription } from "../../src/site/description.ts";
-import { appliedLanguages, languageName } from "../../src/site/languages.ts";
+import { appliedLanguages, languageName, languageOptions, rowLanguages } from "../../src/site/languages.ts";
 import { appliedValue, declaredRange, usedOverride } from "../../src/site/version.ts";
 import { BASE } from "./base.ts";
 
-export { BASE, declaredRange, shownDescription };
+export { BASE, declaredRange, languageOptions, shownDescription };
 export type { Override, PluginRecord };
 
 let loaded: { path: string; data: PluginsFile } | undefined;
@@ -43,6 +43,14 @@ export function rangeText(record: PluginRecord): string {
 export function languagesText(record: PluginRecord): string {
   const tags = appliedLanguages(record);
   return tags.length > 0 ? tags.map(languageName).join(", ") : "None declared";
+}
+
+// The row's data-languages value (see rowLanguages). Astro writes an attribute whose value
+// is "" as its bare name, and checks for "" with ===, so an empty value goes out as a String
+// object, which Astro writes as data-languages="".
+export function rowLanguagesAttribute(record: PluginRecord): string | String {
+  const value = rowLanguages(record);
+  return value === "" ? new String("") : value;
 }
 
 // The upstream value an override corrects, under the override's field name.

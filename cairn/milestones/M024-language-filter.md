@@ -133,7 +133,7 @@ with no `upstream` has an empty applied list. M023 keeps
 - [x] T3: Add the plugin page fact to `site/src/pages/plugins/[id]/index.astro`
       and a `languages` key to `upstreamValue` in `site/src/data.ts`, with
       AC1's tests. Write `{" "}` at a line end before an element.
-- [ ] T4: Add the menu, the row attributes, and the `<script>` to
+- [x] T4: Add the menu, the row attributes, and the `<script>` to
       `site/src/pages/index.astro`, the script importing T2's function. Add
       AC2's and AC4's tests, matching attributes in their `data-x="` form.
       Update tests that count the built files, if the script becomes an
@@ -166,6 +166,8 @@ with no `upstream` has an empty applied list. M023 keeps
 - 2026-10-27: T2 choice: the filter function `rowShows(rowLanguages, value, options)` sits alone in `src/site/language-filter.ts`, with no imports, so the page's script bundles only it; it takes the menu's values so that a value no option has shows every row, AC3's sixth input. The build helpers (`appliedLanguages`, `languageName`, `rowLanguages`, `languageOptions`) sit in `src/site/languages.ts`; `appliedLanguages` passes the list through `Intl.getCanonicalLocales`, which writes each tag in canonical form once, per the M023 review note.
 - 2026-10-27: T2 done: `test/language.test.ts` was red before the two files existed and passes with 14 tests, AC3's six `rowShows` inputs among them. `pnpm test` (661) and `pnpm check` pass.
 - 2026-10-27: T3 done: the plugin page shows `<p class="languages">Interface languages: <span data-fact="languages">…</span></p>` between the declared-range line and the reports section, from `languagesText` in `site/src/data.ts`; `.languages` takes the muted color of `.range`. The page-order test now places the fact; six fact tests and two Overrides-table tests added. `pnpm test` (669) and `pnpm check` pass.
+- 2026-10-27: T4 choices: the menu is `<p class="language-filter" hidden>` holding `<label for="language">Interface language</label>` and `<select id="language" data-language-filter>`; the script updates the URL with `history.replaceState`, so a menu change adds no history entry and Back leaves the page; on load it leaves an unknown `language` value in the URL. Astro writes an attribute whose value is `""` as its bare name, so `rowLanguagesAttribute` in `site/src/data.ts` passes an empty value as a String object, which Astro writes as `data-languages=""` (seen in a fixture build before and after).
+- 2026-10-27: T4 done: Astro inlines the script as `<script type="module">` in `index.html`, so no `_astro/` file exists and no file-count test changed. Tests added for each row's `data-languages`, the menu's options, and a script on the home page only (AC4); the row helper of the home-page tests now matches `data-plugin="<id>" `. `pnpm test` (672) and `pnpm check` pass.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
