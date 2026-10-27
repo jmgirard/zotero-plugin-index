@@ -45,7 +45,7 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: `.github/ISSUE_TEMPLATE/works.yml` and
+- [x] AC1: `.github/ISSUE_TEMPLATE/works.yml` and
       `.github/ISSUE_TEMPLATE/broken.yml` each have three required inputs
       with the ids `plugin`, `version`, and `zotero`. Each has the label
       `report`, plus `works` in works.yml or `broken` in broken.yml. A test
@@ -53,9 +53,9 @@ CHANGELOG, and DESIGN describe the forms and the bot.
       labels, and that each input's label is the heading that `parseReport`
       reads. GitHub's file view of each form on the milestone branch shows
       the form and no template error.
-- [ ] AC2: `gh label list --repo jmgirard/zotero-plugin-index` lists the
+- [x] AC2: `gh label list --repo jmgirard/zotero-plugin-index` lists the
       labels `report`, `works`, `broken`, and `not-counted`.
-- [ ] AC3: For a valid report from either form, `parseReport(body, labels,
+- [x] AC3: For a valid report from either form, `parseReport(body, labels,
       ids)` in `src/reports/report.ts` returns the plugin id, the plugin
       version, the Zotero major as an integer, and the verdict. For each case
       below, it returns a named problem, and a test in `test/report.test.ts`
@@ -68,7 +68,7 @@ CHANGELOG, and DESIGN describe the forms and the bot.
       - a Zotero version with no number, one whose first number is below 7,
         and one whose first number is above the largest of `ZOTERO_MAJORS`;
       - a label set with both `works` and `broken`, and one with neither.
-- [ ] AC4: `pnpm report-issue` with `ISSUE_NUMBER` set reads that issue from
+- [x] AC4: `pnpm report-issue` with `ISSUE_NUMBER` set reads that issue from
       the GitHub API and the entry ids under `plugins/`. For a valid report,
       it posts one comment that names the plugin, the plugin version, the
       Zotero major, and the verdict. The comment also says that the report
@@ -82,7 +82,7 @@ CHANGELOG, and DESIGN describe the forms and the bot.
       close request fails, it exits 1. Tests with recorded responses show
       each of these paths, and one test uses a plugin version that holds a
       backtick and a Markdown link.
-- [ ] AC5: `.github/workflows/report-issue.yml` runs on `issues: opened`,
+- [x] AC5: `.github/workflows/report-issue.yml` runs on `issues: opened`,
       and its one job runs only for an issue with the label `report`. The
       job's permissions are `contents: read` and `issues: write` and no
       others. The job sets `cache-mode: none`, and no line sets a `cache` key
@@ -91,12 +91,12 @@ CHANGELOG, and DESIGN describe the forms and the bot.
       expression in the file names a `github.event.issue` field other than
       `number` and `labels`. A test in `test/workflows.test.ts` checks each
       of these facts in the file's text.
-- [ ] AC6: README gains a section on reporting whether a plugin works. It
+- [x] AC6: README gains a section on reporting whether a plugin works. It
       states the checks of AC3 and the two answers of AC4. The Unreleased
       section of `CHANGELOG.md` gains one entry for the report forms and the
       bot. DESIGN.md's Function Families and Architecture sections name
       `src/reports/`, `pnpm report-issue`, and `report-issue.yml`.
-- [ ] AC7: `pnpm test` (type check, then Vitest) and `pnpm check` pass.
+- [x] AC7: `pnpm test` (type check, then Vitest) and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate -->
@@ -160,3 +160,14 @@ CHANGELOG, and DESIGN describe the forms and the bot.
 
 ## Review
 <!-- owner: review · exclusive -->
+
+Evidence gathered 2026-10-27 on branch m020-report-forms; main had not moved since the cut.
+
+- AC1: `test/report.test.ts` "the report forms" passes for works.yml and broken.yml (ids `plugin`, `version`, `zotero`, each `required: true`, labels `["report", "works"]` / `["report", "broken"]`, each label the heading `parseReport` reads). GitHub's file view of both forms on the branch at d4a2e5d showed the form preview (name, about, labels `report,works` / `report,broken`, three required inputs) and no template error. `git diff d4a2e5d HEAD -- .github/ISSUE_TEMPLATE` changes only the markdown block's text, no key.
+- AC2: `gh label list --repo jmgirard/zotero-plugin-index` lists `broken`, `not-counted`, `report`, and `works`.
+- AC3: `test/report.test.ts` "parseReport" passes 16 tests: a valid report from each form (verdict `works` and `broken`, major 7 and 10); `missing-heading` and `no-response` for each of `plugin`, `version`, `zotero`; `unknown-plugin`; `bad-plugin-version` for 101 characters and for "1.2 beta" (100 characters taken); `bad-zotero-version` for "latest", "6.0.30", "11.0"; `bad-verdict` for both labels and for neither. Each asserts the problem name.
+- AC4: `test/report.test.ts` "answering a report issue" passes 7 tests and "pnpm report-issue" 2 spawned tests: a valid report gets one comment holding `code()` spans of the id, version, and major, the verdict, and "only while it reads that plugin version", then PATCH `completed`; an unknown plugin gets `` `unknown-plugin` `` and the coded message, then PATCH `not_planned`; a version with a backtick and a Markdown link appears only inside its code span; a 503 issue read and a missing `plugins/` send nothing with status 1; a failed comment sends no PATCH with status 1; a failed close gives status 1 in-process and exit 1 from `pnpm report-issue`, whose valid run exits 0.
+- AC5: `test/workflows.test.ts` "report-issue.yml" passes 8 tests: trigger `issues: types: [opened]` only, one job `answer` with `if: contains(github.event.issue.labels.*.name, 'report')`; top-level `permissions: {}` and job permissions exactly `contents: read`, `issues: write`; `cache-mode: none`, no cache line, no `concurrency` line; `ISSUE_NUMBER` under `env:`; `otherEventUses` finds no other `github.event` use, and finds the body, the title, an index form, and the whole event in planted lines. Implement's plants of `pull-requests: write` and a `concurrency` key each failed their test.
+- AC6: README's new section "Reporting whether a plugin works" lists the five checks of AC3 (fields, entry id, version length and spaces, Zotero major range from `ZOTERO_MAJORS`, one verdict label) and both answers of AC4 (comment and close as completed; problem comment and close as not planned). `CHANGELOG.md` Unreleased gains one bullet, "Two issue forms take reports …". DESIGN.md's Function Families gains "Reports (`src/reports/`)" and its Architecture list a paragraph naming `report-issue.yml` and `pnpm report-issue`.
+- AC7: `pnpm test` passes, type check then Vitest, 15 files and 531 tests; `pnpm check` reports 20 entries, 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed, exit 0. No DESIGN principle changed, so no impact report. The generic profile names no toolchain checks.
