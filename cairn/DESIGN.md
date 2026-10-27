@@ -150,7 +150,11 @@ exception is a report that is abuse.
   `ISSUE_NUMBER` set, answers the issue: a pull request, or a comment with
   the reason and a close (M009, M010, M011). A read of the repo that stops
   with a build-level failure, or throws, gets a comment and leaves the issue
-  open (M019).
+  open (M019), as does an error from the check of the drafted entry (M022).
+  `pnpm close-issue` reads the pull request that `PR_NUMBER` names. When it
+  is a bot pull request closed without a merge, the command comments on the
+  open "Add a plugin" issue that its `Closes #<n>` line names and closes it
+  as not planned (M022).
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
@@ -327,7 +331,14 @@ reused._
   and the bot pull requests by repo name before and after the read.
   `issueAnswer` checks them again by repo and id, and opens the pull request
   through the same propose step, with `Closes #<issue>` in its body (M010,
-  M011).
+  M011). `.github/workflows/close-add-plugin-issue.yml` runs
+  `pnpm close-issue` (`src/discover/close-issue.ts`) on
+  `pull_request_target: closed` for a `discover/` branch of the index repo
+  closed without a merge, with only the pull request number passed through
+  `env:`. Its one job holds `contents: read`, `issues: write`, and
+  `pull-requests: read`, sets `cache-mode: none`, and checks out the default
+  branch, so it runs no code from the pull request. `test/workflows.test.ts`
+  checks these facts (M022).
 - `.github/ISSUE_TEMPLATE/works.yml` and `broken.yml` are report forms with
   the inputs `plugin`, `version`, and `zotero`. Each adds the label `report`
   and its verdict label, `works` or `broken`. `.github/workflows/report-issue.yml`
