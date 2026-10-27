@@ -162,25 +162,26 @@ Pass 1, 2026-10-27, branch `m023-record-languages` at `2724844`, `main` at `6a35
 - AC5 evidence: `pnpm test` exit 0, type check clean, 16 files, 642 tests passed; `pnpm check` exit 0, "checked 20 entries in plugins, 0 problems".
 - Consistency gate: `cairn_validate.py` all checks passed; no principle changed, so `cairn_impact` skipped; the generic profile's consistency-gate slot names no toolchain check.
 - spawned: diff-bug, blame-history, prior-review, ripple
-- diff-bug #1: DESIGN "Contract boundary" says each plugin page shows the languages and an override names them, which holds only after M024 — fix now.
-- diff-bug #2: DESIGN's reader note says both schemas build their pattern from `LANGUAGE_TAG`; they copy it — fix now.
-- diff-bug #3: the Overrides table shows "none" as the upstream value of a `languages` override, since `upstreamValue` in `site/src/data.ts` has no `languages` key — fix now.
-- diff-bug #4: no test fails without the `name.endsWith("/")` check, since `locale/it/` already misses `LOCALE_FOLDER`; `locale/it/sub/` would yield `it` — fix now (fixture case).
-- diff-bug #5: any 2-3 letter folder such as `locale/img/` or `locale/js/` counts as a tag, so README's "not a language tag" overstates the check — fix now (README says "not shaped like a language tag"); dropping folders that name no language goes to new candidate "Drop locale folders that name no language".
+- diff-bug #1: DESIGN "Contract boundary" says each plugin page shows the languages and an override names them, which holds only after M024 — fix now, fixed 81cfc66.
+- diff-bug #2: DESIGN's reader note says both schemas build their pattern from `LANGUAGE_TAG`; they copy it — fix now, fixed 81cfc66.
+- diff-bug #3: the Overrides table shows "none" as the upstream value of a `languages` override, since `upstreamValue` in `site/src/data.ts` has no `languages` key — fix now, fixed 81cfc66.
+- diff-bug #4: no test fails without the `name.endsWith("/")` check, since `locale/it/` already misses `LOCALE_FOLDER`; `locale/it/sub/` would yield `it` — fix now, fixed 81cfc66 (fixture case).
+- diff-bug #5: any 2-3 letter folder such as `locale/img/` or `locale/js/` counts as a tag, so README's "not a language tag" overstates the check — fix now, fixed 81cfc66 (README says "not shaped like a language tag"); dropping folders that name no language goes to new candidate "Drop locale folders that name no language".
 - diff-bug #6: canonical forms come from Node's bundled locale data, so a Node upgrade can change `plugins.json` — reject (planned change: AC1 names `Intl.getCanonicalLocales` form; the reviewer found every kept tag on Node 26.12.1 still matches the pattern).
 - diff-bug #7: the override pattern accepts repeated tags and other letter case, such as `zh-CN, zh-CN` or `ZH-cn` — follow-up: M024's applied list must canonicalize and de-duplicate, written as a line in M024's work log.
 - diff-bug #8: a bad `languages` override prints two `pnpm check` lines, one holding the 420-character pattern — follow-up: new candidate "Shorten the languages override error".
-- diff-bug #9: the language walk runs outside the try that maps zip errors to `xpi-unreadable`, safe only because `zipEntry` walked the same bytes first — fix now (with blame-history #1).
-- diff-bug #10: the central directory is walked three times — fix now (DESIGN note, with blame-history #4).
-- diff-bug #11: no test checks the `if` of the `plugins.v1` override, so a wrong `const` there would pass — fix now (the shared-pattern test also checks both `if` blocks).
+- diff-bug #9: the language walk runs outside the try that maps zip errors to `xpi-unreadable`, safe only because `zipEntry` walked the same bytes first — fix now, fixed 81cfc66 (with blame-history #1).
+- diff-bug #10: the central directory is walked three times — fix now, fixed 81cfc66 (DESIGN note, with blame-history #4).
+- diff-bug #11: no test checks the `if` of the `plugins.v1` override, so a wrong `const` there would pass — fix now, fixed 81cfc66 (the shared-pattern test also checks both `if` blocks).
 - diff-bug (c): the no-locale `[]` is checked by the full-facts reader test and the golden file besides AC2's build test — reject (planned change: both are existing exact-equality checks that gain the field).
-- blame-history #1: `[...centralEntries(zip)]` keeps every header of a zip that can claim about 1.1M entries in memory (about 100 MB in the reviewer's scratch model), undoing the walk's streaming shape — fix now.
-- blame-history #2: the language walk sits outside `unzipOne`'s try — fix now (same fix as diff-bug #9).
+- blame-history #1: `[...centralEntries(zip)]` keeps every header of a zip that can claim about 1.1M entries in memory (about 100 MB in the reviewer's scratch model), undoing the walk's streaming shape — fix now, fixed 81cfc66.
+- blame-history #2: the language walk sits outside `unzipOne`'s try — fix now, fixed 81cfc66 (same fix as diff-bug #9).
 - blame-history #3: the golden test's name "writes the same file as before the build-level rule" no longer holds output from before M017 — reject (planned change: the golden pins the build output's shape, and M021 added `"reports": []` the same way).
-- blame-history #4: DESIGN says the reader loops over the claimed count without naming the third walk — fix now (same as diff-bug #10).
-- prior-review #1: the Overrides table shows "none" for a `languages` override — fix now (same as diff-bug #3).
-- prior-review #2: DESIGN says the override is for "a plugin whose text sits in its code", README and CHANGELOG say "wrong or empty", and DESIGN says "translations" where README says "interface text" — fix now.
-- prior-review #3: a new full pass over the central directory — fix now (same as blame-history #1).
-- ripple #1: the Overrides table and DESIGN's "beside the upstream value it corrects" disagree for `languages` — fix now (same as diff-bug #3).
+- blame-history #4: DESIGN says the reader loops over the claimed count without naming the third walk — fix now, fixed 81cfc66 (same as diff-bug #10).
+- prior-review #1: the Overrides table shows "none" for a `languages` override — fix now, fixed 81cfc66 (same as diff-bug #3).
+- prior-review #2: DESIGN says the override is for "a plugin whose text sits in its code", README and CHANGELOG say "wrong or empty", and DESIGN says "translations" where README says "interface text" — fix now, fixed 81cfc66.
+- prior-review #3: a new full pass over the central directory — fix now, fixed 81cfc66 (same as blame-history #1).
+- ripple #1: the Overrides table and DESIGN's "beside the upstream value it corrects" disagree for `languages` — fix now, fixed 81cfc66 (same as diff-bug #3).
 - ripple #2: README's `pnpm add-plugin` text names only `manifest.json` and `update.json` — reject (false: the command writes no `languages`, so its text stays true).
-- ripple #3: `readRelease`'s comment does not name the languages it now returns — fix now.
+- ripple #3: `readRelease`'s comment does not name the languages it now returns — fix now, fixed 81cfc66.
+- Fix-now re-verify at `81cfc66`: `pnpm test` 645 passed (3 new `upstreamValue` cases in `test/site-data.test.ts`); `pnpm check` 0 problems; `cairn_validate.py` all checks passed. Planted check: without `name.endsWith("/")`, only "lists no tag from other paths or a directory entry as the languages" failed; restored from a copy. AC1-AC5 evidence above still holds: the seventh AC1 case gained `locale/it/sub/` and still gives `[]`.
