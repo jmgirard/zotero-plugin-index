@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ai-sidebar@local",
+  "name": "Zotero AI Sidebar",
+  "description": "AI research sidebar for Zotero with API and local browser-backed web chat modes.",
+  "homepage": "https://github.com/xuhan-rgb/zotero-ai-sidebar#readme",
+  "repoUrl": "https://github.com/xuhan-rgb/zotero-ai-sidebar",
+  "updateUrl": "https://github.com/xuhan-rgb/zotero-ai-sidebar/releases/download/release/update.json"
+}
