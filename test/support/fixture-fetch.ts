@@ -6,8 +6,11 @@ import { strToU8, zipSync } from "fflate";
 // `bodyError` makes reading the body reject, as a connection reset does. `unexpected`
 // answers with an object that throws on any read, which the reader does not expect.
 // `chunks` serves `count` chunks of `size` zero bytes, one for each read of the body.
-// `base64` serves the bytes it encodes.
+// `base64` serves the bytes it encodes. `stall` waits for the request's signal to abort,
+// before the answer (`headers`) or in its body (`body`), then fails with the signal's
+// reason, as fetch does.
 export interface Recorded {
+  stall?: "headers" | "body";
   status?: number;
   headers?: Record<string, string>;
   json?: unknown;
@@ -60,6 +63,12 @@ export function fixtureFetch(responses: Responses, onRequest?: (seen: SeenReques
     const recorded = method === "GET" ? responses[url] : (responses[`${method} ${url} #${nth}`] ?? responses[`${method} ${url}`]);
     if (!recorded) return new Response(`no recorded response for ${url}`, { status: 404 });
     if (recorded.error) throw new TypeError(recorded.error);
+    if (recorded.stall === "headers") await aborted(init?.signal);
+    if (recorded.stall === "body") {
+      const { signal } = init ?? {};
+      const stalled = new ReadableStream({ start: (controller) => aborted(signal).catch((reason) => controller.error(reason)) });
+      return new Response(stalled, { status: recorded.status ?? 200, headers: recorded.headers });
+    }
     const { unexpected } = recorded;
     if (unexpected) {
       // `then` stays undefined, so the promise resolves to the object rather than rejecting.
@@ -73,6 +82,14 @@ export function fixtureFetch(responses: Responses, onRequest?: (seen: SeenReques
     return new Response(body(recorded, seen), { status: recorded.status ?? 200, headers: recorded.headers });
   }
   return { fetch, requests };
+}
+
+// Rejects with the signal's reason once it aborts, and never settles without a signal.
+function aborted(signal: AbortSignal | null | undefined): Promise<never> {
+  return new Promise((_, reject) => {
+    if (signal?.aborted) return reject(signal.reason);
+    signal?.addEventListener("abort", () => reject(signal.reason), { once: true });
+  });
 }
 
 function body(recorded: Recorded, seen: SeenRequest): BodyInit | null {

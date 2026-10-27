@@ -49,13 +49,13 @@
           "items": { "$ref": "#/definitions/reportCount" }
         },
         "failure": {
-          "description": "Why the upstream read failed. Present when the read fails, in place of upstream.",
+          "description": "Why the upstream read failed, or why the build did not read the plugin. Present when the read fails or does not run, in place of upstream.",
           "type": "object",
           "additionalProperties": false,
           "required": ["name", "message"],
           "properties": {
             "name": {
-              "description": "A failure name of the reader, such as fork or no-xpi-release; unexpected-error for an error the reader does not name; or facts-invalid for facts that this schema rejects.",
+              "description": "A failure name of the reader, such as fork or no-xpi-release; unexpected-error for an error the reader does not name; facts-invalid for facts that this schema rejects; or not-read for an entry that the build did not read before its time limit.",
               "type": "string",
               "minLength": 1
             },

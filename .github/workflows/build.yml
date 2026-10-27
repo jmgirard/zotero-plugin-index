@@ -18,6 +18,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # The time limits in src/build/build.ts end the plugin reads at 18 minutes,
+    # which leaves time for the other steps before this limit.
     timeout-minutes: 30
     # `pnpm build` reads the closed report issues to count the reports.
     permissions:

@@ -44,12 +44,32 @@ const validateRecord = ajv.getSchema(`${pluginsSchema.$id}#/definitions/record`)
 // The repo whose report issues the build counts, when GITHUB_REPOSITORY is unset.
 export const INDEX_REPO = "jmgirard/zotero-plugin-index";
 
+// The longest one plugin read may take, and the time after which the build starts no
+// read. The build job stops at 30 minutes, so these leave time for the steps around it.
+export const READ_LIMIT_MS = 3 * 60 * 1000;
+export const BUILD_LIMIT_MS = 18 * 60 * 1000;
+
+// `startedAt` is a performance.now() time. Its default, 0, is when the process started.
+export interface TimeLimits {
+  readMs?: number;
+  buildMs?: number;
+  startedAt?: number;
+}
+
 // Reads every entry under root, then the report issues of indexRepo, then each plugin
 // upstream, one at a time. A failed upstream read goes into that entry's record. An entry
 // that cannot be read, or whose meta.json or index.json is invalid, stops the build before
 // any request. The counts come only from the issues, so a failed issue read also stops
-// it, before any upstream read (D-013).
-export async function buildData(root: string, fetch: Fetch, now = new Date(), indexRepo = INDEX_REPO): Promise<BuildResult> {
+// it, before any upstream read (D-013). A plugin read that passes `readMs` fails as
+// request-failed. Once `buildMs` has passed since `startedAt`, the build reads no more
+// plugins, and each entry left gets the failure not-read. Both count as build-level.
+export async function buildData(
+  root: string,
+  fetch: Fetch,
+  now = new Date(),
+  indexRepo = INDEX_REPO,
+  { readMs = READ_LIMIT_MS, buildMs = BUILD_LIMIT_MS, startedAt = 0 }: TimeLimits = {},
+): Promise<BuildResult> {
   let listed: Awaited<ReturnType<typeof listEntries>>;
   try {
     listed = await listEntries(root);
@@ -81,7 +101,13 @@ export async function buildData(root: string, fetch: Fetch, now = new Date(), in
   const records: PluginRecord[] = [];
   const buildLevel: string[] = [];
   for (const { id, repoUrl, overrides } of entries) {
-    const { buildLevel: counts, ...read } = await readRecord(repoUrl, fetch);
+    if (performance.now() - startedAt >= buildMs) {
+      const message = `the build reads no plugin after ${duration(buildMs)}, its time limit`;
+      records.push({ id, repoUrl, failure: { name: "not-read", message }, overrides });
+      buildLevel.push(id);
+      continue;
+    }
+    const { buildLevel: counts, ...read } = await readRecord(repoUrl, fetch, readMs);
     if (counts) buildLevel.push(id);
     const record: PluginRecord = { id, repoUrl, ...read, overrides };
     // Facts that the schema rejects, such as a repo body with no created_at, become this
@@ -160,9 +186,12 @@ async function readEntry(dir: string): Promise<{ repoUrl: string; overrides: Ove
 async function readRecord(
   repoUrl: string,
   fetch: Fetch,
+  readMs: number,
 ): Promise<Pick<PluginRecord, "upstream" | "failure"> & { buildLevel?: boolean }> {
+  const limit = new AbortController();
+  const timer = setTimeout(() => limit.abort(new Error(`the read passed its time limit of ${duration(readMs)}`)), readMs);
   try {
-    const read = await readUpstream(repoUrl, fetch);
+    const read = await readUpstream(repoUrl, fetch, { signal: limit.signal });
     if (read.ok) return { upstream: read.facts };
     return { failure: { name: read.failure, message: read.message }, buildLevel: read.buildLevel };
   } catch (error) {
@@ -170,7 +199,14 @@ async function readRecord(
     // it stays in this record so the other plugins still build. It counts as build-level.
     const message = error instanceof Error ? error.message : String(error);
     return { failure: { name: "unexpected-error", message }, buildLevel: true };
+  } finally {
+    clearTimeout(timer);
   }
+}
+
+// "3 minutes" for whole minutes, else milliseconds.
+function duration(ms: number): string {
+  return ms % 60_000 === 0 ? `${ms / 60_000} minute${ms === 60_000 ? "" : "s"}` : `${ms} ms`;
 }
 
 async function readJson(path: string): Promise<{ value: unknown } | { problem: string }> {

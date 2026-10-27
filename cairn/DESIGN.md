@@ -142,9 +142,10 @@ exception is a report that is abuse.
   directory under `plugins/`, or under `dir`, and prints one line for each
   problem. Added M001.
 - Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch, {
-  lookup })` returns the facts of one GitHub repo, or one named
+  lookup, signal })` returns the facts of one GitHub repo, or one named
   inclusion-bar failure. The optional `lookup` resolves download hosts for
-  the host check (M004). Added M002. `githubClient(fetch)` makes its GitHub
+  the host check (M004). When the optional `signal` aborts, the read fails
+  as a build-level `request-failed` (M029). Added M002. `githubClient(fetch)` makes its GitHub
   API requests and refuses a URL on another host, so the token goes to the
   API only (exported M008).
 - Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
@@ -180,9 +181,12 @@ exception is a report that is abuse.
   names and a `::warning::` line for build-level failures. Before any plugin
   read it reads the closed report issues of `GITHUB_REPOSITORY`, or of
   `INDEX_REPO`, and writes `reports` on each record that has `upstream`; a
-  failed issue read writes no file and exits 1 (D-013). Added M003;
+  failed issue read writes no file and exits 1 (D-013). A plugin read stops
+  at 3 minutes and fails as `request-failed`. After 18 minutes from the
+  command's start, the build reads no more plugins, and each entry left
+  fails as `not-read`. Both are build-level (D-015). Added M003;
   schemas and exit rule M006; build-level rule and summary M017; every-record
-  rule M018; reports M021.
+  rule M018; reports M021; time limits M029.
 - Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
   home page and one page per record into `dist/`, or `<dir>`, from the data
   file there. `src/site/version.ts` holds the version and range functions

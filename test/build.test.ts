@@ -9,6 +9,7 @@ import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json
 import { buildData, checkOutput, INDEX_REPO, writeData } from "../src/build/build.ts";
 import { fixtureFetch, loadFixture, type Recorded, type Responses } from "./support/fixture-fetch.ts";
 import { DNS_FAIL_HOST, mixedFailures } from "./support/mixed-failures.ts";
+import { pluginRepo } from "./support/plugin-repo.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const TREE = resolve(ROOT, "test/fixtures/build/plugins");
@@ -451,6 +452,78 @@ describe("buildData", () => {
       [],
     ]);
     expect(checkOutput(output)).toEqual([]);
+  });
+
+  describe("with time limits", () => {
+    // The second entry's XPI never answers.
+    const NAMES = ["a-first", "b-stalled", "c-third"];
+    const stalledXpi = "https://github.com/example/b-stalled/releases/download/v1.0.0/plugin.xpi";
+    function stalledTree(): { tree: string; recorded: Responses } {
+      const tree = tempDir();
+      const recorded: Responses = { [ISSUES]: { json: [] } };
+      for (const name of NAMES) {
+        const id = `${name}@example.org`;
+        Object.assign(recorded, pluginRepo(`example/${name}`, id));
+        mkdirSync(join(tree, id));
+        writeFileSync(join(tree, id, "meta.json"), JSON.stringify({ id, name, repoUrl: `https://github.com/example/${name}` }));
+        writeFileSync(join(tree, id, "index.json"), JSON.stringify({ schemaVersion: 1 }));
+      }
+      recorded[stalledXpi].stall = "headers";
+      return { tree, recorded };
+    }
+    const failures = (text: string) =>
+      (JSON.parse(text) as Output).plugins.map(({ id, upstream, failure }) => [id, upstream ? "facts" : failure!.name]);
+
+    test("fails a read that passes its limit as request-failed and reads the next plugin", async () => {
+      const { tree, recorded } = stalledTree();
+      const result = await buildData(tree, fixtureFetch(recorded).fetch, undefined, undefined, { readMs: 200 });
+      if (!result.ok) throw new Error(result.problems.join("\n"));
+      expect(failures(result.text)).toEqual([
+        ["a-first@example.org", "facts"],
+        ["b-stalled@example.org", "request-failed"],
+        ["c-third@example.org", "facts"],
+      ]);
+      expect(record(JSON.parse(result.text), "b-stalled@example.org")?.failure?.message).toContain("passed its time limit of 200 ms");
+      expect(result.buildLevel).toEqual(["b-stalled@example.org"]);
+    });
+
+    test("reads no plugin once the build limit has passed, and fails each entry left as not-read", async () => {
+      const { tree, recorded } = stalledTree();
+      const { fetch, requests } = fixtureFetch(recorded);
+      const limits = { readMs: 1500, buildMs: 1000, startedAt: performance.now() };
+      const result = await buildData(tree, fetch, undefined, undefined, limits);
+      if (!result.ok) throw new Error(result.problems.join("\n"));
+      expect(failures(result.text)).toEqual([
+        ["a-first@example.org", "facts"],
+        ["b-stalled@example.org", "request-failed"],
+        ["c-third@example.org", "not-read"],
+      ]);
+      expect(record(JSON.parse(result.text), "c-third@example.org")?.failure?.message).toContain("after 1000 ms, its time limit");
+      expect(result.buildLevel).toEqual(["b-stalled@example.org", "c-third@example.org"]);
+      expect(requests.map((r) => r.url)).not.toContain("https://api.github.com/repos/example/c-third");
+    });
+
+    test("names the default limit of 3 minutes in the failure of a read that passes it", async () => {
+      const { tree, recorded } = stalledTree();
+      let reached!: () => void;
+      const stalled = new Promise<void>((resolve) => (reached = resolve));
+      const { fetch } = fixtureFetch(recorded, (seen) => seen.url === stalledXpi && reached());
+      vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+      try {
+        const pending = buildData(tree, fetch);
+        // The clock moves only once the read waits on the stalled XPI.
+        await stalled;
+        await vi.advanceTimersByTimeAsync(3 * 60 * 1000);
+        const result = await pending;
+        if (!result.ok) throw new Error(result.problems.join("\n"));
+        expect(record(JSON.parse(result.text), "b-stalled@example.org")?.failure).toEqual({
+          name: "request-failed",
+          message: expect.stringContaining("passed its time limit of 3 minutes"),
+        });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 
   test("records facts that the schema rejects as facts-invalid and goes on", async () => {

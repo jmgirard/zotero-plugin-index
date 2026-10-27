@@ -5,7 +5,7 @@ import type { Lookup } from "../src/upstream/host-guard.ts";
 import indexSchema from "../schemas/index.v1.schema.json" with { type: "json" };
 import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json" };
 import { buildLevelStatus, LANGUAGE_TAG, readUpstream, zipEntryCount } from "../src/upstream/reader.ts";
-import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
+import { fixtureFetch, loadFixture, type Recorded, type Responses } from "./support/fixture-fetch.ts";
 
 const FIXTURE = "test/fixtures/upstream/better-notes.json";
 const REPO_URL = "https://github.com/windingwind/zotero-better-notes";
@@ -926,6 +926,31 @@ describe("readUpstream", () => {
     }
   });
 
+  test.each<[string, string | undefined, Recorded["stall"]]>([
+    ["the headers of a GitHub API answer", REPO, "headers"],
+    ["the body of a GitHub API answer", RELEASES, "body"],
+    ["a host lookup", undefined, undefined],
+    ["the headers of the XPI", XPI, "headers"],
+    ["the body of the XPI", XPI, "body"],
+    ["the headers of the update.json", UPDATE, "headers"],
+    ["the body of the update.json", UPDATE, "body"],
+  ])("fails with request-failed and the abort reason when the signal aborts during %s", async (_name, url, stall) => {
+    const { responses } = loadFixture(FIXTURE);
+    if (url) responses[url].stall = stall;
+    const controller = new AbortController();
+    const abort = () => setImmediate(() => controller.abort(new Error("the read passed its test limit")));
+    const { fetch, requests } = fixtureFetch(responses, (seen) => seen.url === url && abort());
+    const lookup: Lookup = url ? publicLookup : () => (abort(), new Promise(() => {}));
+    const result = await readUpstream(REPO_URL, fetch, { lookup, signal: controller.signal });
+    expect(result).toEqual({
+      ok: false,
+      failure: "request-failed",
+      message: expect.stringContaining("the read passed its test limit"),
+      buildLevel: true,
+    });
+    expect(requests.at(-1)!.url).toBe(url ?? RELEASES_PAGE_2);
+  });
+
   test("checks the XPI host as well", async () => {
     const { result, requests } = await read(undefined, REPO_URL, async () => ["127.0.0.1"]);
     expect(result).toEqual({ ok: false, failure: "host-refused", message: expect.stringContaining(XPI) });
@@ -966,6 +991,22 @@ describe("readUpstream", () => {
     const { result, requests } = await read((r) => redirectChain(r, hops(6)));
     expect(result).toEqual({ ok: false, failure: "request-failed", message: expect.stringContaining("more than 5 redirects") });
     expect(requests.at(-1)!.url).toBe("https://hop.example/5");
+  });
+
+  test("fails as a cut read when the signal aborts at the last redirect", async () => {
+    const { responses } = loadFixture(FIXTURE);
+    redirectChain(responses, hops(6));
+    const controller = new AbortController();
+    const { fetch } = fixtureFetch(responses, (seen) => {
+      if (seen.url === "https://hop.example/5") controller.abort(new Error("the read passed its test limit"));
+    });
+    const result = await readUpstream(REPO_URL, fetch, { lookup: publicLookup, signal: controller.signal });
+    expect(result).toEqual({
+      ok: false,
+      failure: "request-failed",
+      message: "GET https://hop.example/5 failed: the read passed its test limit",
+      buildLevel: true,
+    });
   });
 
   test("follows 5 redirects with relative Locations to the update.json", async () => {
