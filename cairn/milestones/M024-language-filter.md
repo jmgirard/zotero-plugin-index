@@ -143,7 +143,7 @@ with no `upstream` has an empty applied list. M023 keeps
       site at `<dir>/zotero-plugin-index/` and the file kept out of git
       through `.git/info/exclude`. Run AC3's four browser steps in the
       built-in browser pane and record what each step showed.
-- [ ] T6: README "The site", the CHANGELOG entry, and DESIGN ("Contract
+- [x] T6: README "The site", the CHANGELOG entry, and DESIGN ("Contract
       boundary", and the Architecture line that says the pages carry no
       script). Run `pnpm test` and `pnpm check`.
 
@@ -170,6 +170,7 @@ with no `upstream` has an empty applied list. M023 keeps
 - 2026-10-27: T4 done: Astro inlines the script as `<script type="module">` in `index.html`, so no `_astro/` file exists and no file-count test changed. Tests added for each row's `data-languages`, the menu's options, and a script on the home page only (AC4); the row helper of the home-page tests now matches `data-plugin="<id>" `. `pnpm test` (672) and `pnpm check` pass.
 - 2026-10-27: T5 done: the fixture site was built into the scratchpad at `serve/zotero-plugin-index/` and served by the `site-preview` entry of `.claude/launch.json` (already in `.git/info/exclude`), on port 4321. In the built-in browser pane: (1) loading `/zotero-plugin-index/` showed the menu, with "All languages" selected and all 7 rows visible; (2) picking "Chinese (2)" left visible only `first-plugin@example.org` and `min-only-plugin@example.org`, and the URL became `/zotero-plugin-index/?language=zh`; (3) picking "All languages" showed all 7 rows and the URL lost its query; (4) loading `?language=xx` selected "All languages" with all 7 rows visible. Loading `?language=zh` also selected Chinese and showed the same 2 rows.
 - 2026-10-27: T5 fix: the pane showed the label touching the menu, because Astro drops the line break between `</label>` and `<select>`; a `{" "}` now writes a space, and the menu test matches it. `pnpm test` (672) and `pnpm check` pass.
+- 2026-10-27: T6 done: README "The site" gains a paragraph on the menu, the `language` parameter, and the full list without JavaScript, and its plugin-page paragraph names the languages fact; M023's `## Unreleased` CHANGELOG entry gains the page fact and the menu (series rule); DESIGN's Contract boundary, site build line, and Architecture script line now state the fact, the menu, and the one script (D-014). The simple-english lint hook still flags README lines 93, 350, 364 and CHANGELOG lines 74, 165, all in text older than this milestone; left as they are. `pnpm test` (672) and `pnpm check` pass.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
