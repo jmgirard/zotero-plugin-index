@@ -1,0 +1,7 @@
+{
+  "id": "zotero-annotation-markdown@34028312.qq.com",
+  "name": "Zotero Annotation Markdown",
+  "description": "Render Zotero annotation comments with Markdown, LaTeX math, and experimental SVG and Mermaid diagrams, preserving editable source.",
+  "repoUrl": "https://github.com/qrkks/zotero-annotation-markdown",
+  "updateUrl": "https://raw.githubusercontent.com/qrkks/zotero-annotation-markdown/main/updates.json"
+}
