@@ -1,0 +1,8 @@
+{
+  "id": "ai4paper-v2@cpc.dev",
+  "name": "AI4Paper",
+  "description": "全文 1:1 翻译 0 配置 · 综述一键生成 · 浏览器插件知网一键下载 · 内置知识库 · 笔记编辑与强化 · 阅读界面持续优化 · 老带新双方各得 5% 永久 Token ｜ 让天下没有难读的 Paper，让天下没有难做的科研",
+  "homepage": "https://AI4Paper.pro",
+  "repoUrl": "https://github.com/wdcpclover/ai4paper",
+  "updateUrl": "https://ai4paper.pro/api/update/zotero.json"
+}
