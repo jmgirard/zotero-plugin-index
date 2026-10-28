@@ -96,7 +96,7 @@ and `mul`, which name no one interface language.
 - [x] T1: Change the two empty-case rows at `test/site.test.ts:303-304` to
       the new text and see them fail. Change `languagesText` and its
       comment at `site/src/data.ts:42-45`, then see them pass.
-- [ ] T2: Add the AC3 and AC4 cases to `test/upstream.test.ts` and see them
+- [x] T2: Add the AC3 and AC4 cases to `test/upstream.test.ts` and see them
       fail on the current reader. Extend the `und` lookahead in
       `LANGUAGE_TAG` (`src/upstream/reader.ts:520-524`) to `zxx` and `mul`,
       copy the pattern into both schemas, and update the comments on
@@ -130,6 +130,7 @@ and `mul`, which name no one interface language.
 - 2026-10-28: question set: neighbor rows — the user named "Drop zxx and mul from the languages" as the one neighbor; "Label cut reads on plugin pages" stays a candidate row.
 - 2026-10-28: implement started; branch m036-empty-languages-line cut from main at 7025717.
 - 2026-10-28: T1 done: the two empty-case rows failed with "None declared", then passed after `languagesText` changed; pnpm test 855 passed, 1 skipped; pnpm check 0 problems.
+- 2026-10-28: T2 done: on the old reader the AC3 case got [mul, mul-Latn, zxx, zxx-US], so the zxx and mul counts pushed en-US out, and the pattern test failed on zxx; the `und` lookahead now also refuses zxx and mul, copied into both schemas by a string replace (5 sites); pnpm test 858 passed, 1 skipped; pnpm check 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->

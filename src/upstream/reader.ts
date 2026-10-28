@@ -518,11 +518,12 @@ async function readManifest(
   return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {}, languages };
 }
 
-// One language tag: a language of 2 or 3 letters other than "und", then an optional script,
-// region, and variant. Both schemas copy it into their languages patterns, and a test
-// checks that the copies match.
+// One language tag: a language of 2 or 3 letters other than "und" (undetermined), "zxx" (no
+// linguistic content), and "mul" (multiple languages) in any letter case, then an optional
+// script, region, and variant. None of the three names one interface language (D-018). Both
+// schemas copy it into their languages patterns, and a test checks that the copies match.
 export const LANGUAGE_TAG =
-  "(?![Uu][Nn][Dd](?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?";
+  "(?!([Uu][Nn][Dd]|[Zz][Xx][Xx]|[Mm][Uu][Ll])(?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?";
 const WHOLE_TAG = new RegExp(`^${LANGUAGE_TAG}$`, "u");
 const LOCALE_FOLDER = /^(?:chrome\/)?locale\/([^/]+)\/./;
 const LANGUAGE_NAMES = new Intl.DisplayNames(["en"], { type: "language", fallback: "none" });
@@ -538,7 +539,8 @@ const LOCALE_INFLATE_CHUNK_BYTES = 1024;
 
 // The language tags of the locale folders in the zip, the <tag> of an entry name
 // locale/<tag>/<file> or chrome/locale/<tag>/<file>. A "_" in <tag> reads as "-". A <tag>
-// that is not LANGUAGE_TAG is left out, and so is one whose language subtag has no English
+// that is not LANGUAGE_TAG, such as zxx or mul, is left out before any of its files counts,
+// and so is one whose language subtag has no English
 // name in the Node.js Intl data, such as img or js; its script, region, and variant are not
 // checked. A tag's count is the sum of the messages in the files of its folders (see
 // MESSAGE_COUNTERS). A tag is kept when its count is at least 1 and twice its count is at
