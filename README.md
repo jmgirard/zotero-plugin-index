@@ -376,10 +376,12 @@ the token to git only in git's environment, and `pnpm check` gets no token.
 
 The workflow uses the built-in `GITHUB_TOKEN`, and a pull request that this
 token opens starts no CI run. Thus the body of each pull request gives the
-exit status and the output of `pnpm check` on the new entry. The body also
-gives the repository URL, the plugin version, and the declared range of
-Zotero versions. The maintainer reviews each pull request and merges it or
-closes it.
+exit status and the output of `pnpm check` on the new entry. If the output
+is longer than 10,000 characters, the body quotes only its first 10,000
+characters and says that the output is cut. The body also gives the
+repository URL, the plugin version, and the declared range of Zotero
+versions. The maintainer reviews each pull request and merges it or closes
+it.
 
 If you close a bot pull request without a merge, the bot does not propose
 that owner/repo name again. The bot also skips a repository whose bot pull

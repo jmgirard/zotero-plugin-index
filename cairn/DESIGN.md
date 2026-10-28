@@ -412,7 +412,8 @@ reused._
   commit on top of the default branch with a temporary git index file,
   `commit-tree`, and the `github-actions[bot]` identity, force-pushes it to
   the branch, and sends one create-pull-request request whose body carries
-  the check's status and output. The checkout's branch and working tree do
+  the check's status and output, cut to its first 10,000 characters (M039).
+  The checkout's branch and working tree do
   not change. A failure for one entry is reported, and the run goes on and
   exits 1 at the end. Both steps read the files of each open bot pull request
   (`botPulls`): discovery refuses, without recording, a repo whose plugin id

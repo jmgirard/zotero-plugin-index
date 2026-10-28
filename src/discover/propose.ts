@@ -329,12 +329,26 @@ export async function propose(options: ProposeOptions): Promise<{ proposed: Prop
   return { proposed, failed };
 }
 
+// The most characters (code points) of the check output that a pull request body quotes.
+// The entry schema in handoff.ts allows at most 300 characters for the URL and 500 for each
+// version, so with this cut the body stays far below GitHub's limit of 65,536 characters.
+// A test in test/propose.test.ts builds a body near the longest the schema allows and
+// checks its length.
+const CHECK_OUTPUT_MAX = 10_000;
+
 // The pull request body. The manifest's values and the check output are in code spans
 // and a code block, so text in them cannot mention a GitHub user. With `issue`, the body
-// says that issue asked for the entry, and closes it.
+// says that issue asked for the entry, and closes it. A check output longer than
+// CHECK_OUTPUT_MAX is cut, and the body says so.
 export function body(entry: Written, checked: { status: number; output: string }, issue?: number): string {
   const declared = (value: string | undefined) => (value === undefined ? "not declared" : code(value));
-  const fence = "`".repeat(Math.max(3, ...[...checked.output.matchAll(/`+/g)].map(([run]) => run.length + 1)));
+  const trimmed = checked.output.trimEnd();
+  const chars = [...trimmed];
+  const cut = chars.length > CHECK_OUTPUT_MAX;
+  // The cut text is trimmed again, so a cut at a line break leaves no blank line before
+  // the closing fence.
+  const output = cut ? chars.slice(0, CHECK_OUTPUT_MAX).join("").trimEnd() : trimmed;
+  const fence = "`".repeat(Math.max(3, ...[...output.matchAll(/`+/g)].map(([run]) => run.length + 1)));
   const found = issue === undefined ? `found ${entry.repoUrl} by its GitHub topic` : `read ${entry.repoUrl} from issue #${issue}`;
   return [
     `The discovery bot ${found} and drafted this entry from its newest stable release with an \`.xpi\` file, or from its newest prerelease if no stable release has one or that release is not a Zotero 7+ build.`,
@@ -347,8 +361,9 @@ export function body(entry: Written, checked: { status: number; output: string }
     `\`pnpm check\` on a directory with only this entry exited with status ${checked.status}:`,
     "",
     fence,
-    checked.output.trimEnd(),
+    output,
     fence,
+    ...(cut ? ["", `The output above is cut to its first ${CHECK_OUTPUT_MAX.toLocaleString("en-US")} characters.`] : []),
     "",
     "If this pull request is closed without a merge, the bot does not propose this repo again, from its topic or from an issue.",
   ].join("\n");
