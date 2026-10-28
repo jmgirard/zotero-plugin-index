@@ -1,13 +1,13 @@
 # M046: Start one plugin in a headless Zotero
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** internal: a command that only its own `ci.yml` test job runs, and no published page or data file uses until M047
-- **Branch/PR:** —
+- **Branch/PR:** m046-start-one-plugin
 
 ## Goal
 
