@@ -1,13 +1,13 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-28 (M034 done and archived; M031 row pruned, 1 row added and 2 corrected at review; 6 lessons marked used, none captured)_
+_Last hygiene check: 2026-10-28 (M035 done and archived; M032 row pruned at plan; 5 lessons marked used, 1 captured, 1 evicted by rank)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M035 | Sort the language menu by count | review | — | normal | milestones/M035-language-menu-order.md |
+| M035 | Sort the language menu by count | done | — | normal | milestones/archive/M035-language-menu-order.md |
 | M033 | Label the languages as menus and settings | done | — | normal | milestones/archive/M033-menus-and-settings-label.md |
 | M034 | Skip translations under half done | done | — | normal | milestones/archive/M034-half-done-translations.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
