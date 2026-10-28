@@ -13,7 +13,7 @@ const { plugins } = loadData();
     that version, ◐ part of it, – none of it. The index reads these ranges from each plugin and does not test them.
   </p>
   <p class="language-filter" hidden>
-    <label for="language">Interface language</label>{" "}
+    <label for="language">Menus and settings in</label>{" "}
     <select id="language" data-language-filter autocomplete="off">
       <option value="">All languages</option>
       {languageOptions(plugins).map(({ value, text }) => <option value={value}>{text}</option>)}
