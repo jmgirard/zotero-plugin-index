@@ -36,7 +36,7 @@ issues entry records this limit.
 
 ## Acceptance criteria
 
-- [ ] AC1: With `--plan <file>`, `pnpm build` writes a start plan with
+- [x] AC1: With `--plan <file>`, `pnpm build` writes a start plan with
       one item for each record with `upstream`. The item names the entry
       id, the plugin id, and the version. It also names the manifest's
       `strict_min_version` and `strict_max_version`, and the URL and
@@ -44,7 +44,7 @@ issues entry records this limit.
       fixture read. Without `--plan`, the build writes no plan. The
       artifacts of a `build.yml` dispatch on the branch, each listed by
       `gh api` and downloaded, hold no `.xpi` file.
-- [ ] AC2: `pnpm start-tests --plan <file> --zotero <binary> --out <file>`
+- [x] AC2: `pnpm start-tests --plan <file> --zotero <binary> --out <file>`
       runs `pnpm start-test` for each plan entry whose manifest range
       covers the binary's Zotero version, by `compareVersions` in
       `src/site/version.ts`, and for no other entry. It downloads each XPI
@@ -56,7 +56,7 @@ issues entry records this limit.
       it. They cover no `strict_min_version`, no `strict_max_version`, a
       max of `10.*`, and a min equal to 10.0.6. They also cover a hash
       mismatch and a cut by the total limit.
-- [ ] AC3: In `build.yml`, the start-test job sets `permissions: {}`, and
+- [x] AC3: In `build.yml`, the start-test job sets `permissions: {}`, and
       no step of it reads `secrets.`. It runs once for each of Zotero
       7.0.32, 8.0.4, 9.0.6, and 10.0.6 for Linux, each Zotero download
       checked against a SHA-256 in the workflow. The build, start-test,
@@ -69,7 +69,7 @@ issues entry records this limit.
       with the Zotero download check of each start-test job passing,
       before the deploy job, which then fails at the `github-pages`
       environment's rule that takes deploys from `main` only.
-- [ ] AC4: `pnpm add-start-results --data <file> --plan <file> --results
+- [x] AC4: `pnpm add-start-results --data <file> --plan <file> --results
       <dir>` adds a `startTests` item to a record only for a result that
       meets three conditions. Its entry id, plugin id, and version match
       a plan entry. Its Zotero version falls in that entry's range. It
@@ -82,21 +82,21 @@ issues entry records this limit.
       an unknown entry, and a bad result name. They also include a Zotero
       version that differs from the artifact name and one outside the
       range. The last two are a duplicate and a file that is not JSON.
-- [ ] AC5: `add-start-results` writes `startTests` as an array of
+- [x] AC5: `add-start-results` writes `startTests` as an array of
       `{ zotero, result }`, ordered by `compareVersions` of `zotero`, and
       writes no empty array. The schema `plugins.v1.schema.json` defines
       the optional field. A test gives results out of order, asserts the
       output order, and checks the output against the schema. README
       "Using the data" describes the field and tells consumers to fetch
       the schema again, as D-007 asks.
-- [ ] AC6: When a record has `startTests`, its plugin page shows a "Starts
+- [x] AC6: When a record has `startTests`, its plugin page shows a "Starts
       in Zotero" line outside the Details section. The line names each
       tested Zotero version and its result in words. A sentence beside it
       says that a start test does not show that the plugin works. When a
       record has no `startTests`, the page has no such line. A site test
       fixture holds all four results, and the test asserts the words for
       each one and the absent line, on the built HTML.
-- [ ] AC7: CHANGELOG has one entry under `## Unreleased` that tells
+- [x] AC7: CHANGELOG has one entry under `## Unreleased` that tells
       consumers to fetch the schema again. DESIGN's Data sources, Contract
       boundary, and Known issues sections describe the start tests. The
       `verify` slot is clean.
@@ -174,3 +174,14 @@ issues entry records this limit.
 ## Decisions
 
 ## Review
+
+Evidence gathered 2026-10-28 on branch head a81d17f; `git diff 471d7f2..HEAD` outside `cairn/` is empty, so dispatch run 40773444023 (head 471d7f2) ran the reviewed code. `pnpm test` 1014 passed, 6 skipped; `pnpm check` 42 entries, 0 problems.
+
+- AC1: `test/build.test.ts` "plans each record with upstream, naming the manifest range and the URL and SHA-256 of the XPI bytes it read" passes (hashes the bytes the fixture served; the 9.* override stays out of the plan); "writes the start plan to the --plan file, and no plan without it" passes (the no-option run's directory holds only the data and schema files); "prints the usage for --plan with no file" passes. Run 40773444023's artifacts, listed by `gh api .../runs/40773444023/artifacts` (github-pages, plugins-data, start-plan, start-results-7.0.32, -8.0.4, -9.0.6, -10.0.6) and downloaded with `gh run download`: `find -iname '*.xpi'` finds 0, and the github-pages tar lists 0 `.xpi` names.
+- AC2: `test/start-tests.test.ts`, 8 passing tests with a shim whose `app/application.ini` reads 10.0.6: "starts each item whose manifest range covers Zotero 10.0.6, and no other" (below 7.0–9.*, above 10.1–11.*, inside 7.0–10.99.99, no min, no max, max 10.*, min 10.0.6: the 5 in range get results and the shim records 5 starts); "writes no result for an XPI whose SHA-256 differs from the plan" (0 starts for it); "writes no result for a failed download or a host the reader's check refuses" (404, and `host-refused` for 127.0.0.1); "writes no result when pnpm start-test fails, here as reporter-not-started"; "starts no new plugin after the total limit and keeps the results it has" (1 result, 2 not started); and three CLI tests. The range check is `inRange` with `compareVersions` imported from `src/site/version.ts`; the default limit is `START_TESTS_LIMIT_MS = 20 * 60 * 1000`; each start runs `node src/start-test/cli.ts`, the script `pnpm start-test` names in `package.json`, through `downloadXpi` in `src/upstream/reader.ts` first.
+- AC3: Ruby `YAML.load_file` of `build.yml`: jobs build, start-test, site, deploy; start-test `permissions={}`, `needs="build"`, its JSON holds no `secrets`; matrix zotero 7.0.32, 8.0.4, 9.0.6, 10.0.6, each with a 64-hex `sha256` checked by `sha256sum --check` in "Download Zotero"; `cache-mode="none"` on build, start-test, and site; site `if="${{ !cancelled() && needs.build.result == 'success' }}"`, `needs=["build","start-test"]`; deploy `needs="site"`. The `workflows.test.ts` checks of these pass. Run 40773444023: build, the four start-test jobs, and site succeeded, each start-test log prints `<file>: OK` for its Zotero file, and deploy failed with the annotation "Branch "m047-show-start-tests" is not allowed to deploy to github-pages due to environment protection rules."
+- AC4: `test/add-start-results.test.ts` "keeps a matching result and drops each result that fails a check, naming why" passes: 1 kept per record and drops named version-mismatch, id-mismatch, unknown-entry (twice: an entry not in the plan, and the failed record gamma), bad-result, zotero-not-artifact, zotero-out-of-range, duplicate (both of two), and a file that is not JSON in `badFiles`; "drops every result of a directory whose name holds no Zotero version" passes; the CLI test asserts "kept 1 start results; dropped 1 results and 1 files that are not a JSON array". The artifact name comes from `start-results-${{ matrix.zotero }}` in `build.yml`. Run 40773444023's site log: "kept 125 start results; dropped 0 results and 0 files that are not a JSON array".
+- AC5: "orders each record's results by Zotero version, and writes no empty list" passes (input read 10.0.6, 7.0.32, 8.0.5, 9.0.6 in directory-name order; output 7.0.32, 8.0.5, 9.0.6, 10.0.6; the record with none has no `startTests` key; `checkOutput` returns no problem); the schema tests refuse an empty list, an unknown result, and an extra field; `schemas/plugins.v1.schema.json` defines optional `startTests` (`minItems: 1`, items `startTest` of `{ zotero, result }`); the CLI test shows the field written between `reports` and `overrides`. README "Using the data" describes the `startTests` list and says to fetch the schema again.
+- AC6: `test/site.test.ts` on the built HTML: "shows each start-test result in words outside the Details section, with the note that a start is not a working plugin" passes (the fixture's no-range record holds started, start-error, not-installed, timed-out; the line reads "Zotero 7.0.32 started; Zotero 8.0.4 failed at startup; Zotero 9.0.6 did not install; Zotero 10.0.6 gave no answer in time"; the note ends "A start test does not show that the plugin works."; `data-start-tests` comes before `<details>`); "shows no start-test line for …" passes for each of the 8 other records.
+- AC7: CHANGELOG `## Unreleased` holds one entry on the start tests, and "fetch the schema again" occurs once in the file, in that entry. DESIGN: Contract boundary names the start tests and that no artifact holds an XPI; "Data sources and contribution" gains "5. Start tests."; Known issues gains the forged-result entry naming the start-test job. Verify clean as above.
+- Gate: `cairn_validate.py` exit 0, all checks passed; no IP/GP changed, so no `cairn_impact` run; the generic profile's consistency-gate names no toolchain checks.
