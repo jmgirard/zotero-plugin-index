@@ -130,6 +130,7 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
 - 2026-10-28: claim audit: 21 claims read, 2 corrected — .github/workflows/add-plugin-issue.yml (the schedule comment now says the sweep answers an issue whose run GitHub canceled, and the concurrency comment says a later sweep can answer such an issue while it is at most 7 days old; the same reader's re-read found both hold).
 - 2026-10-28: implement done; `pnpm test` 936 passed, 1 skipped; `pnpm check` 0 problems; status set to review.
 - 2026-10-28: review: AC1-AC6 evidence recorded and ticked; `cairn_validate` passed; generic profile adds no toolchain checks; four-lens review spawned, findings pending (checkpoint).
+- 2026-10-28: review: 22 findings settled (10 fix now, 5 follow-up, 7 reject; none shows a criterion failing or a load-bearing defect, so no return); fixes in 083c15d; after them `pnpm test` 936 passed, 1 skipped, `pnpm check` 0 problems, the AC4 grep's queue paragraphs still describe the queue, and added prose lines stay within 80 characters.
 
 ## Decisions
 
@@ -146,21 +147,21 @@ Evidence gathered 2026-10-28 on branch head 3451bee; main at 171917a, unmoved si
 - gate: `cairn_validate` all checks passed; the generic profile's consistency-gate names no toolchain checks; no DESIGN principle changed, so no `cairn_impact` run.
 - spawned: diff-bug, blame-history, prior-review, ripple
 - diff-bug #1: AC3's dispatches show GitHub accepts the files, not that a second run waits instead of canceling — reject (planned change: the plan took the queue behavior from GitHub's docs and AC3 checks acceptance only).
-- diff-bug #2: the label test hardcodes the `contains(...)` text a third time and repeats the exact checks — fix now: take the text from the pick job's `if:` with a regex and assert the group holds its negation.
-- diff-bug #3: the `keys` regex `concurrency\s*:` also matches a step name or script line holding that text — fix now: match only a key line, `^\s*["']?concurrency["']?\s*:`, ignoring case.
-- diff-bug #4: the test comment above the block test restates the test name — fix now: delete it.
-- diff-bug #5: "run in turn" can read as a promise of arrival order, which GitHub's docs say is not guaranteed — fix now: say runs go one at a time and GitHub does not promise their order.
-- diff-bug #6: the `MIN_AGE_MS` comment holds only while the waiting run is among the 100 newest `issues` runs — fix now: say so in the comment.
-- diff-bug #7: the CHANGELOG entry's "a later sweep can answer its issue" overstates, since the sweep's own limits apply — fix now: "as for any unanswered issue".
+- diff-bug #2: the label test hardcodes the `contains(...)` text a third time and repeats the exact checks — fix now, fixed 083c15d: take the text from the pick job's `if:` with a regex and assert the group holds its negation.
+- diff-bug #3: the `keys` regex `concurrency\s*:` also matches a step name or script line holding that text — fix now, fixed 083c15d: match only a key line, `^\s*["']?concurrency["']?\s*:`, ignoring case.
+- diff-bug #4: the test comment above the block test restates the test name — fix now, fixed 083c15d: delete it.
+- diff-bug #5: "run in turn" can read as a promise of arrival order, which GitHub's docs say is not guaranteed — fix now, fixed 083c15d: say runs go one at a time and GitHub does not promise their order.
+- diff-bug #6: the `MIN_AGE_MS` comment holds only while the waiting run is among the 100 newest `issues` runs — fix now, fixed 083c15d: say so in the comment.
+- diff-bug #7: the CHANGELOG entry's "a later sweep can answer its issue" overstates, since the sweep's own limits apply — fix now, fixed 083c15d: "as for any unanswered issue".
 - diff-bug #8: a dispatch from a branch cut before this change joins with the default one-pending setting — follow-up: already in row "Close the gaps in the issue sweeps" (plan).
 - blame-history #1: `discover.yml` dispatches from another ref still enter the `discover` group, now taking a queue place — follow-up: absorbed by row "Close the gaps in the issue sweeps", which names that gap.
 - blame-history #2: the `MIN_AGE_MS` comment does not say that the not-completed check is the real guard — reject (false: the comment's second sentence says a waiting run keeps `unansweredIssues` returning none).
-- blame-history #3: README and DESIGN no longer say that a sweep run waits in the `discover` group — fix now: name the runs that use the group (labeled issue runs, sweeps, default-branch dispatches).
+- blame-history #3: README and DESIGN no longer say that a sweep run waits in the `discover` group — fix now, fixed 083c15d: name the runs that use the group (labeled issue runs, sweeps, default-branch dispatches).
 - blame-history #4: no test or run shows the queue's waiting or its cap of 100 — reject (planned change, as diff-bug #1).
-- prior-review #1: the `keys` match is case-sensitive and misses a quoted key, the form M016's review taught the cache check to catch — fix now (with diff-bug #3).
+- prior-review #1: the `keys` match is case-sensitive and misses a quoted key, the form M016's review taught the cache check to catch — fix now, fixed 083c15d (with diff-bug #3).
 - ripple #1: ROADMAP row "Answer issues whose run was canceled" still states the old cancel as open — follow-up: the row graduates at this milestone's post-merge hygiene.
-- ripple #2: DESIGN.md says add-plugin-issue.yml runs on opened issues "when that label is set" and in the `discover` group with no exception — fix now (with blame-history #3).
-- ripple #3: README says the workflow runs in the `discover` group, true only for labeled issue runs, sweeps, and default-branch dispatches — fix now (with blame-history #3).
+- ripple #2: DESIGN.md says add-plugin-issue.yml runs on opened issues "when that label is set" and in the `discover` group with no exception — fix now, fixed 083c15d (with blame-history #3).
+- ripple #3: README says the workflow runs in the `discover` group, true only for labeled issue runs, sweeps, and default-branch dispatches — fix now, fixed 083c15d (with blame-history #3).
 - ripple #4: row "Close the gaps in the issue sweeps" may need a recheck — reject (false: its M043 note describes old-branch dispatches, which is accurate).
 - ripple #5: row "Answer report issues left open" points at the row that hygiene removes — follow-up: hygiene updates that pointer when it graduates the row.
 - ripple #6: report-issue.yml says a newer sweep cancels a pending one — reject (false: the `report-sweep` group keeps one pending run, Scope Out).
