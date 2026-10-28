@@ -275,8 +275,11 @@ async function overrideFindings(overrides: object[]) {
   return (await checkTree(root, compileValidators({}))).findings;
 }
 
-describe("checkTree overrides", () => {
-  test.each(["\u200B", "\u200D "])("reason-not-blank: reason %j", async (reason) => {
+describe("checkTree", () => {
+  test.each([
+    ["U+200B", "\u200B"],
+    ["U+200D and a space", "\u200D "],
+  ])("reason-not-blank: a reason of %s", async (_name, reason) => {
     expect(await overrideFindings([{ field: "name", value: "First", reason }])).toEqual([
       { entry: ENTRY, rule: "reason-not-blank", message: "overrides[0].reason holds only whitespace or format characters" },
     ]);
@@ -303,16 +306,21 @@ describe("checkTree overrides", () => {
   });
 
   test("unique-override: three name overrides name the first", async () => {
-    const findings = await overrideFindings([override("name"), override("name"), override("name")]);
-    expect(findings.map((finding) => [finding.rule, finding.message])).toEqual([
-      ["unique-override", 'overrides[1] has the same field "name" and no version as overrides[0]'],
-      ["unique-override", 'overrides[2] has the same field "name" and no version as overrides[0]'],
+    expect(await overrideFindings([override("name"), override("name"), override("name")])).toEqual([
+      { entry: ENTRY, rule: "unique-override", message: 'overrides[1] has the same field "name" and no version as overrides[0]' },
+      { entry: ENTRY, rule: "unique-override", message: 'overrides[2] has the same field "name" and no version as overrides[0]' },
     ]);
   });
 
-  test("unique-override: names the version it repeats", async () => {
-    expect(await overrideFindings([override("name", "1.0"), override("name", "1.0")])).toEqual([
-      { entry: ENTRY, rule: "unique-override", message: 'overrides[1] has the same field "name" and version "1.0" as overrides[0]' },
+  test("unique-override: a newline in the field stays on the finding's line", async () => {
+    const field = "name\nok: forged";
+    const findings = await overrideFindings([override(field), override(field)]);
+    expect(findings.filter((finding) => finding.rule === "unique-override")).toEqual([
+      {
+        entry: ENTRY,
+        rule: "unique-override",
+        message: 'overrides[1] has the same field "name\\nok: forged" and no version as overrides[0]',
+      },
     ]);
   });
 

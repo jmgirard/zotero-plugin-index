@@ -173,8 +173,8 @@ only registry fields. Its `id` must equal the directory name.
     region, and variant follow, each after a `-`. Examples are `zh`,
     `zh-TW`, and `sr-Latn-RS`. The tag `und` is not allowed.
   - `reason`: why the upstream value is wrong. The reason must hold a
-    character other than whitespace and Unicode format characters, such as
-    U+200B.
+    character other than whitespace, as JavaScript's `\s` defines it, and
+    Unicode format characters, such as U+200B.
 
 Two overrides must not have the same `field` and `version`.
 
@@ -520,7 +520,8 @@ without the mark. Besides `index-schema`, two rules check the overrides in
   format characters, such as U+200B (zero width space), print nothing.
 - `unique-override`: two overrides must not have the same `field` and
   `version`. An override with no `version` repeats only another override
-  with no `version`. The line names the index of the repeat and the index
+  with no `version`. Versions must match exactly, so `1.0` and `1.0.0` do
+  not repeat each other. The line names the index of the repeat and the index
   of the first override with that field and version. The site never applies
   the repeat.
 

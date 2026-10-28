@@ -231,8 +231,8 @@
   case. `pnpm add-plugin` and `pnpm discover` refuse the same ids with
   `unsafe-id` and `entry-exists`.
 - `pnpm check` refuses more override problems. `reason-not-blank` refuses a
-  reason that holds only whitespace and Unicode format characters, such as
-  U+200B. Before, it refused only a reason of whitespace. The new rule
+  reason that holds only whitespace, as JavaScript's `\s` defines it, and
+  Unicode format characters, such as U+200B. Before, it refused only a reason of whitespace. The new rule
   `unique-override` refuses two overrides with the same `field` and
   `version`. Before, the command passed them, and the site ignored the
   repeat. A file can start with a UTF-8 byte-order mark. For such a
