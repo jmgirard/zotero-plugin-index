@@ -338,3 +338,14 @@
   most reads this way did not stop the deploy. Now they count toward the
   build's more-than-half rule, and an issue run that meets one leaves the
   issue open with its "could not finish" comment.
+- The daily build starts each plugin in Zotero 7.0.32, 8.0.4, 9.0.6, and
+  10.0.6 for Linux, each release that its manifest's range covers. Each
+  start installs the plugin in a new profile and waits 3 seconds. A record
+  can have the new optional field `startTests`, with one result for each
+  tested release: `started`, `start-error`, `not-installed`, or
+  `timed-out`. Each plugin page shows them in a "Starts in Zotero" line. A
+  start does not show that the plugin works. If you validate against a
+  saved copy of `schemas/plugins.v1.schema.json`, fetch the schema again,
+  since it rejects fields that it does not define. The new commands are
+  `pnpm start-test`, `pnpm start-tests`, and `pnpm add-start-results`, and
+  `pnpm build --plan <file>` writes the start plan.

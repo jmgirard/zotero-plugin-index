@@ -31,8 +31,13 @@ declared range of Zotero versions, source availability, whether GitHub marks
 the repository archived (when GitHub's response says), repository age, the
 release the index read and whether it is a prerelease (corrected M014),
 release count, open issues, the host of the `update.json` file, the
-counted user reports on the release the index read (M021), and the
-languages of the plugin's menus and settings (M024).
+counted user reports on the release the index read (M021), the
+languages of the plugin's menus and settings (M024), and whether the
+release the index read starts in each tested Zotero release that its
+manifest's range covers, shown as a start and never as "works" (D-023,
+M047). For the start tests, each CI job downloads the XPI from the URL the
+build read and checks its SHA-256, and no artifact holds an XPI, so the
+index still re-serves no plugin file.
 The data also carries the interface languages that the read XPI's locale
 folders name (M023), keeping a tag only when its files hold at least one
 message, judged by file type (M027), and at least half as many messages as
@@ -102,8 +107,8 @@ user accounts, and a combined compatibility verdict.
 
 ## Data sources and contribution
 
-Four sources feed each plugin entry. The index keeps the sources apart and
-shows each one separately.
+Five sources feed each plugin entry. The index keeps the sources apart and
+shows each one separately. A combined verdict is out of scope.
 
 1. Discovery. A scheduled bot searches GitHub for repositories with the topic
    `zotero-plugin` or `zotero-addon`. In total, 400 and 109 repositories carry
@@ -144,6 +149,13 @@ shows each one separately.
    version. The daily build reads the closed report issues and counts those
    that `github-actions[bot]`, the account the bot runs as, closed as
    completed, by D-013's rule (M021). No file in the repo holds a report.
+5. Start tests. Each day `build.yml` starts the release the build read in
+   each tested Zotero release for Linux that the manifest's
+   `strict_min_version` and `strict_max_version` cover, without overrides,
+   since Zotero installs by the manifest. A maintainer pins the releases and
+   their SHA-256 values in the workflow (D-023). The result is one of
+   `started`, `start-error`, `not-installed`, or `timed-out`, read 3 s after
+   the install, and the data keeps it in `startTests` (M046, M047).
 
 Inclusion bar: a public repository, a Zotero 7+ manifest, and at least one
 release with a readable `update.json`. The bot checks all three, and it
@@ -260,6 +272,22 @@ exception is a report that is abuse.
   `countReports(issues, records)` (`src/reports/count.ts`) counts the closed
   report issues for each record that has `upstream`, by Zotero major
   (M021).
+- Start tests (`src/start-test/`): `pnpm start-test --zotero --xpi --out
+  [--limit]` starts one Zotero binary with one XPI in a new profile, with
+  the reporter plugin of `src/start-test/reporter/`, and writes one of the
+  four results, or exits 1 with a failure name (M046). `pnpm start-tests
+  --plan --zotero --out` starts each item of the plan that `pnpm build
+  --plan` writes and whose manifest range covers the binary's version
+  (`inRange`, by `compareVersions`). It downloads each XPI with the
+  reader's `downloadXpi`, checks the plan's SHA-256, runs `pnpm start-test`
+  in its own process, records no result for a failed download, a hash
+  mismatch, or a failed start, and starts nothing new after 20 minutes.
+  `pnpm add-start-results --data --plan --results` keeps a result only when
+  its entry, plugin id, and version match the plan, its Zotero version
+  equals the one in its artifact's name and falls in the range, and its
+  result is one of the four names; it drops every result of a duplicate
+  pair and each file that is not a JSON array, and writes `startTests`
+  ordered by version (`addResults`, M047).
 
 ## Conventions
 
@@ -510,7 +538,9 @@ reused._
   report. The comment puts each value from the issue in a code span (M020).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request, except those the built-in token makes, such as the
-  discovery bot's (M009).
+  discovery bot's (M009). Its `start-test` job downloads Zotero 10.0.6 for
+  Linux, checks its SHA-256, and runs `test/start-test-zotero.test.ts` under
+  `xvfb-run` with `ZOTERO_BIN` set; the `check` job skips that file (M046).
 - `src/build/` reads the entries, then the `report` label and every page of
   the closed report issues, runs the upstream reader on each plugin in turn,
   writes the `countReports` counts into each read record's `reports`, and checks each record and then the whole output against
@@ -527,10 +557,21 @@ reused._
   for that read, and `test/workflows.test.ts` checks both (M021). The reader
   marks a failure build-level beside its name, and `buildData` returns the
   marked ids outside the data, so the published file keeps its shape
-  (D-011). The workflow then uploads `dist/` as the Pages artifact, and a deploy job that
-  needs the build job publishes it. A failed build deploys nothing, and the
+  (D-011). Since M047 the workflow has four jobs. The build job runs
+  `pnpm build --plan start-plan.json` and uploads `dist/` as `plugins-data`
+  and the plan as `start-plan`. A `start-test` matrix job, one line per
+  tested Zotero release with its file name and SHA-256, runs
+  `pnpm start-tests` and uploads `start-results-<version>`; it holds
+  `permissions: {}`, reads no secret, checks out with
+  `persist-credentials: false`, and sets `cache-mode: none`, since plugin
+  code runs in it (D-023). The site job, whose `if:` is
+  `${{ !cancelled() && needs.build.result == 'success' }}`, runs
+  `pnpm add-start-results` and `pnpm site` and uploads `dist/` as the Pages
+  artifact, so a failed start test still deploys. A deploy job that needs
+  the site job publishes it. A failed build deploys nothing, and the
   `github-pages` environment takes deploys from `main` only (M006).
-  The build job of `build.yml` restores no Actions cache: the job sets
+  The build, start-test, and site jobs of `build.yml` restore no Actions
+  cache (M047). The build job's rule came first: the job sets
   `cache-mode: none`, which GitHub enforces with the job's cache token, and no
   step sets a `cache` input (D-010). Scheduled and dispatched runs of the
   discover read job can save caches in the default branch's scope, while
@@ -604,3 +645,10 @@ reused._
   (Mon) on Node 26, and a Node upgrade can change which rare codes count.
   A `languages` override records such a language. Accepted at the M025
   plan, 2026-10-27.
+- Plugin code that runs in a start-test job can rewrite that job's results,
+  its own included, so the data can show a forged start. The job has no
+  token permission and no secret, and `pnpm add-start-results` keeps only
+  results whose entry, plugin id, version, and range match the plan and
+  whose Zotero version equals the job's artifact name. It cannot tell a
+  forged result from a real one inside those bounds. Accepted with D-023,
+  2026-10-28.

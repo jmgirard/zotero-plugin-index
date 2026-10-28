@@ -123,7 +123,7 @@ issues entry records this limit.
       untrusted, keep only matching results, order them, and write the
       data. Add `startTests` to `schemas/plugins.v1.schema.json`. Test each
       drop case, the order, and the schema check.
-- [ ] T4: Split `build.yml` into four jobs. The build job uploads the data
+- [x] T4: Split `build.yml` into four jobs. The build job uploads the data
       and the plan. A start-test matrix job runs once for each tested
       Zotero release and uploads its results under a name that holds that
       version. A site job adds the results, runs `pnpm site`, and uploads
@@ -135,7 +135,7 @@ issues entry records this limit.
 - [x] T6: Add the "Starts in Zotero" line to the plugin page in
       `site/src/pages/plugins/[id]/index.astro`. Test both cases on the
       built HTML, and check the page in the browser pane.
-- [ ] T7: Write README "Using the data" and "Building the data" text, the
+- [x] T7: Write README "Using the data" and "Building the data" text, the
       CHANGELOG entry, and the DESIGN text.
 - [ ] T8: Run the `verify` slot, and fix what fails.
 
@@ -163,6 +163,8 @@ issues entry records this limit.
 - 2026-10-28: checkpoint: T4 `build.yml` drafted with PENDING hashes for 7.0.32, 8.0.4, 9.0.6 (downloads running); T6 page line and fixture drafted, untested.
 - 2026-10-28: substantive amendment: AC3 names Zotero 8.0.4 for 8.0.5, which has no Linux build; the site `if:` is named with its `${{ }}` wrapper; "each Zotero download"; the dispatch shows each Zotero download check passing. The user chose this text at the stop after the second re-audit.
 - 2026-10-28: T6 done: the plugin page shows "Starts in Zotero:" with `startTestsText` (started, failed at startup, did not install, gave no answer in time) and a note naming the 3 s wait and that a start is not a working plugin, after the languages line and outside Details; the site fixture's no-range record holds all four results. Tests: the words, the note, the place, and no line on the 6 other read records; a planted always-shown line failed 6 tests. Browser pane showed the line in place. Verify clean (1009 passed).
+- 2026-10-28: T4 done: `build.yml` has build, start-test (matrix of 7.0.32 .tar.bz2, 8.0.4, 9.0.6, 10.0.6, each with its SHA-256; the three new hashes read from local downloads whose `app/application.ini` Version lines equal the matrix values), site, and deploy jobs; the site results download has `continue-on-error`, so a run with no results still deploys. Ruby YAML parse shows the job keys, `needs`, the site `if:`, `cache-mode: none` on three jobs, `permissions: {}`, and no `secrets` in start-test. `test/workflows.test.ts` gained 4 checks; the hash check failed while one hash read PENDING. Verify clean (1014 passed).
+- 2026-10-28: T7 done: README "Using the data" (`startTests`, the four results, fetch the schema again), "Building the data" (`--plan`), a new "Starting plugins in Zotero" section for the three commands, the plugin page paragraph, "The daily build" as four jobs, and the `ZOTERO_BIN` note in "Running the tests"; one CHANGELOG entry; DESIGN Contract boundary, a fifth data source, a Start tests function family, the ci.yml and build.yml architecture, and a Known issues entry on forged results. M046 follow-ups (1) to (5) covered.
 
 ## Decisions
 
