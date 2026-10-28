@@ -18,10 +18,10 @@ profile and writes whether the plugin started.
 
 **In:** A new command `pnpm start-test --zotero <binary> --xpi <file>
 --out <file>` under `src/start-test/`. The command makes a new profile
-and data directory in a temp directory. It installs the XPI and a small
-reporter plugin of the index's own into that profile, then starts the
-binary. The reporter plugin waits for Zotero's main window. It then
-reports whether Zotero lists the plugin as active and whether the
+and data directory in a temp directory. It installs a small reporter
+plugin of the index's own into that profile, then starts the binary. The
+reporter plugin waits for Zotero's main window, then installs the XPI from
+its file. It then reports whether Zotero lists the plugin as active and whether the
 plugin's `startup` threw. One time limit covers the whole start. At the
 limit, or after the report, the command ends every process in the run's
 process group. It then removes the temp directory. The scope also
@@ -71,24 +71,24 @@ works is not planned, because a start is the whole claim.
 
 ## Tasks
 
-- [ ] T1: Write the command in `src/start-test/`. It parses the
+- [x] T1: Write the command in `src/start-test/`. It parses the
       arguments and reads the manifest. Reuse the fflate zip read of
       `src/upstream/reader.ts` where it fits. It writes a temp profile with
       the prefs that Zotero needs to load a side-loaded plugin with no
       prompt. It spawns Zotero with `detached: true` and kills the group
       with `process.kill(-pid, "SIGKILL")`. It removes the temp directory
       in `finally`. Add the `start-test` script to `package.json`.
-- [ ] T2: Write the reporter plugin under `src/start-test/reporter/`. It
-      is a bootstrap plugin. It waits for the main window, reads the
-      subject plugin's add-on state, and finds a bootstrap `startup` error
-      for the subject's id. It writes the report to the path the command
-      gives, then quits Zotero. Try each piece on the local macOS Zotero
-      10.0.6 first.
-- [ ] T3: Write the unit tests in `test/start-test.test.ts`. They cover
+- [x] T2: Write the reporter plugin under `src/start-test/reporter/`. It
+      is a bootstrap plugin. It waits for the main window, installs the
+      subject plugin from its XPI, reads its add-on state, and finds a
+      bootstrap `startup` error for the subject's id. It writes the report
+      to the path the command gives, then quits Zotero. Try each piece on
+      the local macOS Zotero 10.0.6 first.
+- [x] T3: Write the unit tests in `test/start-test.test.ts`. They cover
       each named failure of AC1 and the two shim cases of AC3. They also
       cover the report read for each of the four results, from a shim that
       writes a report.
-- [ ] T4: Write four fixture plugins under `test/fixtures/start/`, which
+- [x] T4: Write four fixture plugins under `test/fixtures/start/`, which
       the test zips into XPIs. Write `test/start-test-zotero.test.ts`. If
       `ZOTERO_BIN` is set, it runs the fixtures against that binary.
       Otherwise it skips.
@@ -111,6 +111,10 @@ works is not planned, because a start is the whole claim.
 - 2026-10-28: collision check: absorbs candidate row "Test plugins load in headless Zotero" in full with M047. No D-entry rejects it. D-010 governs the new jobs. Inbox: 0 open issues, and 1 open bot PR (#57) with no overlap.
 - 2026-10-28: criteria audit (reduced mode, fresh Opus reader): 2 findings, both fixed. AC2 now promises that the test file passes in CI, not what the CI log shows. AC3 now has two shim tests, one for each trigger, and Scope narrows to the process group.
 - 2026-10-28: plan gate chose a reporter plugin in the test profile over driving Zotero through its remote debugging protocol, as zotero-plugin-scaffold does, because it needs no protocol client; falsified by Zotero refusing to load a side-loaded plugin from the profile with no prompt.
+- 2026-10-28: implement: branch m046-start-one-plugin cut from main at 9e210b1.
+- 2026-10-28: substantive amendment: Scope now says that the reporter plugin installs the XPI from its file after Zotero's main window is ready, not that the command puts the XPI in the profile. On the local macOS Zotero 10.0.6, a plugin loaded from the profile whose id sorts after the reporter's threw with no console message left by the time the reporter read the console, and a listener added at the reporter's start did not see it either. With install after start, both id orders gave start-error. The criteria are unchanged, and the deliverable the user sees is unchanged.
+- 2026-10-28: T1 decision: the manifest read uses fflate's `unzipSync` with a filter for `manifest.json` of at most 1 MiB, not the reader's private zip helpers, which take a download and a release tag. The Zotero version comes from `app/application.ini` beside the binary (Linux) or `../Resources/app/application.ini` (macOS), since `zotero --version` prints the Firefox version (140.17.0esr). Two named failures beyond AC1's three: `zotero-version-unknown`, `no-manifest`, and `zotero-exited` (Zotero exits with no report). Time limit 90 s, `--limit` in seconds.
+- 2026-10-28: T1–T4 done: `src/start-test/start-test.ts`, `cli.ts`, `reporter/`, four fixtures, `test/start-test.test.ts` (12 tests) and `test/start-test-zotero.test.ts`. Plants: without the group kill both AC3 tests fail on the live pid list; without the temp removal both fail on the profile's directory. Local Zotero 10.0.6 on macOS with `MOZ_HEADLESS=1`: the 4 fixtures got their 4 results.
 
 ## Decisions
 
