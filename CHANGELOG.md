@@ -29,7 +29,7 @@
   1 MiB fails with `manifest-too-large`. A file in a `locale/<tag>/` or
   `chrome/locale/<tag>/` folder fails nothing. The reader inflates at most
   about 9 MiB of such files from each XPI. A file that it does not read, or
-  cannot inflate, counts as holding a message. A download from `localhost`
+  cannot inflate, keeps its language in the list. A download from `localhost`
   fails with `host-refused`. So does a download from a host that is, or resolves
   to, an address in a blocked range, such as a loopback or private range.
   The reader follows at most 5 redirects for the XPI and the `update.json`.
@@ -177,16 +177,20 @@
   and `chrome/locale/<tag>/` folders in the XPI that the reader read. If a
   tag's language has no English name in the build's Node.js `Intl` data, the
   list leaves the tag out. So a folder such as `locale/img/` adds no
-  language. The list also leaves out a folder where no file holds a message.
-  In an `.ftl` file, a message is a Fluent message or term line. In a
-  `.properties` file, it is a line that is not blank and not a `#` or `!`
-  comment. In a `.dtd` file, it is an `<!ENTITY` outside comments. A file of
-  any other type counts. So a folder whose files hold only comments adds no
-  language. The reader inflates at most about 9 MiB of locale files from
-  each XPI. A
-  file that it does not read, or cannot inflate, counts as holding a
-  message. If no tag is left, the list is empty. The list does not say
-  whether a translation is complete. An `index.json` override can have the
+  language. The reader counts the messages in the files of each tag's
+  folders. In an `.ftl` file, each Fluent message or term line is a message.
+  In a `.properties` file, each line that is not blank and not a `#` or `!`
+  comment is a message. In a `.dtd` file, each `<!ENTITY` outside comments
+  is a message. If a tag's count is at least 1 and at least half the largest
+  count among the XPI's tags, the list keeps the tag. So a folder whose files
+  hold only comments adds no language, and neither does a translation with
+  under half the messages of the fullest one. A tag with a file of any other
+  type is kept whatever its count. The reader inflates at most about 9 MiB
+  of locale files from each XPI. A tag with a file that it does not read, or
+  cannot inflate, is kept whatever its count too. Such a file adds no
+  messages to any count. If no tag is left, the list is empty. A listed
+  language can still be incomplete, since a tag with half the fullest tag's
+  messages stays. An `index.json` override can have the
   field `languages` and a value such as `zh-CN, en-US`. It records the
   languages of a plugin whose list is wrong or empty, in the record's
   `overrides` block. As with every override, the `upstream` block does not

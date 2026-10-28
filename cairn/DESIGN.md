@@ -34,10 +34,12 @@ release count, open issues, the host of the `update.json` file, the
 counted user reports on the release the index read (M021), and the
 languages of the plugin's menus and settings (M024).
 The data also carries the interface languages that the read XPI's locale
-folders name (M023), counting a folder only when one of its files holds a
-message, judged by file type (M027). They say which languages a plugin
-ships menu and settings text for, not whether a translation is complete,
-and not the language of the description, which comes from the manifest or
+folders name (M023), keeping a tag only when its files hold at least one
+message, judged by file type (M027), and at least half as many messages as
+the fullest tag (M034). They say which languages a plugin ships menu and
+settings text for. A listed language can still be incomplete, since a tag
+with half the fullest tag's messages stays. They do not say the language
+of the description, which comes from the manifest or
 an override. A `languages` override records them for a plugin whose list
 is wrong or empty. Each plugin page shows them by name in a
 "Menus and settings in" line, outside the Details section, and the home
@@ -101,8 +103,10 @@ shows each one separately.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
    `manifest.json` in the newest stable release that has an `.xpi` file,
    the names of that XPI's locale folders whose language has an English
-   name in the build's Node.js `Intl` data and where a file, judged by its
-   type, holds a message (M023, M025, M027), and the `update.json`
+   name in the build's Node.js `Intl` data and whose files, judged by type,
+   hold at least one message and at least half as many as the fullest
+   tag's (M023, M025, M027, M034), so a listed language can still be
+   incomplete, and the `update.json`
    that the manifest names (corrected M002, M014). A
    stable release is one that GitHub does not mark as a prerelease. If no
    stable release has an `.xpi` file, the bot reads the newest release that
@@ -273,7 +277,8 @@ reused._
   The reader caps the XPI at 50 MiB, each unzipped file at 1 MiB, and the
   `update.json` at 1 MiB. A locale file whose declared or compressed size is
   over 1 MiB is not unzipped, and one that inflates past its declared size
-  stops within one 1 KiB push; both count as holding a message (M027).
+  stops within one 1 KiB push; both keep their tag in `languages` (M027,
+  M034).
   `src/upstream/host-guard.ts` refuses a download host in a loopback,
   private, or reserved range, by its literal address or by each address
   that DNS returns. The reader follows download redirects
@@ -294,17 +299,23 @@ reused._
   past that size (M012).
   The reader walks the same central directory once more, one header at a
   time, and records as `languages` the tags of the `locale/<tag>/` and
-  `chrome/locale/<tag>/` folders where a file holds a message (M027). It
-  inflates each locale file from the header it is on, 1 KiB of input at a
-  time, until one file of the tag holds a message. An `.ftl` file needs a
-  Fluent message or term line, a `.properties` file a line that is not
-  blank and not a comment, and a `.dtd` file an `<!ENTITY` outside
-  comments. A file of any other type counts. A file that the reader does
-  not inflate counts too: one over 1 MiB declared or compressed, one with
-  another compression, and one that would take the XPI's inflated locale
-  total past 8 MiB (`LOCALE_MAX_BYTES`). So does a file that fails to
-  inflate, or whose output length differs from its declared size, so no
-  locale file fails the read. The total charges each file the largest of
+  `chrome/locale/<tag>/` folders whose files hold messages (M027, M034). It
+  inflates each `.ftl`, `.properties`, and `.dtd` file from the header it is
+  on, 1 KiB of input at a time, and adds its messages to its tag's count:
+  each Fluent message or term line of an `.ftl` file, each line of a
+  `.properties` file that is not blank and not a comment, and each
+  `<!ENTITY` outside comments in a `.dtd` file. A tag is kept when its count
+  is at least 1 and twice its count is at least the largest count among the
+  XPI's tags, so a translation with under half the fullest tag's messages
+  is left out and a listed one can still be incomplete (M034). A tag is kept
+  whatever its count when one of its files is of any other type, which the
+  reader does not inflate, or is a file that the reader does not inflate:
+  one over 1 MiB declared or compressed, one with another compression, and
+  one that would take the XPI's inflated locale total past 8 MiB
+  (`LOCALE_MAX_BYTES`). So is a tag with a file that fails to inflate, or
+  whose output length differs from its declared size, so no locale file
+  fails the read. Such a file adds nothing to any count. The total charges
+  each file the largest of
   its declared size, its compressed size, and its output, so the reader
   inflates at most about
   1 MiB past 8 MiB of locale files for each XPI, however small the sizes

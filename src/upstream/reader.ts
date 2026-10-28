@@ -29,8 +29,8 @@ export interface UpstreamFacts {
   // GitHub's archived flag, left out when the repo response has no boolean.
   archived?: boolean;
   // The language tags of the locale folders in the XPI whose manifest was read, each with a
-  // language that has an English name in the build's Node.js Intl data and with a file that
-  // holds a message, judged by file type (see localeLanguages). The reader always sets it;
+  // language that has an English name in the build's Node.js Intl data and with at least
+  // half the messages of the fullest tag (see localeLanguages). The reader always sets it;
   // records written before it existed have none.
   languages?: string[];
 }
@@ -71,7 +71,7 @@ const FETCH_TIMEOUT_MS = 60_000;
 export const XPI_MAX_BYTES = 50 * 1024 * 1024;
 export const UPDATE_JSON_MAX_BYTES = 1024 * 1024;
 // Each file the reader unzips: manifest.json, the default locale's messages.json, and each
-// locale file that localeLanguages reads. A locale file over it counts as holding a message.
+// locale file that localeLanguages reads. A locale file over it keeps its tag.
 export const UNZIPPED_MAX_BYTES = 1024 * 1024;
 
 export class ReadFailure extends Error {
