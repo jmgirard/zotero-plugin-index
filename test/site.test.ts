@@ -299,7 +299,7 @@ describe("the plugin page", () => {
   });
 
   test.each([
-    ["two upstream tags", "first-plugin@example.org", "English (United States), Chinese (China)"],
+    ["three upstream tags", "first-plugin@example.org", "English (United States), Spanish, Chinese (China)"],
     ["an empty upstream list", "old-plugin@example.org", "None declared"],
     ["no languages field", "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "None declared"],
     ["an override for every version, in its own order", "no-range-plugin@example.org", "French, German"],
@@ -410,7 +410,7 @@ describe("the home page", () => {
     ]);
     expect(rows).toEqual([
       ["broken-plugin@example.org", ""],
-      ["first-plugin@example.org", "en zh"],
+      ["first-plugin@example.org", "en es zh"],
       ["old-plugin@example.org", ""],
       ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", ""],
       ["no-range-plugin@example.org", "de fr"],
@@ -427,11 +427,11 @@ describe("the home page", () => {
     expect(options).toEqual([
       ["", "All languages"],
       ["zh", "Chinese (2)"],
+      ["es", "Spanish (2)"],
       ["en", "English (1)"],
       ["fr", "French (1)"],
       ["de", "German (1)"],
       ["pt", "Portuguese (1)"],
-      ["es", "Spanish (1)"],
     ]);
   });
 });

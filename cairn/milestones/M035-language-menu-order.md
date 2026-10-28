@@ -60,7 +60,7 @@ home list before it paints" and "Test the home page script in a browser".
       against the current sort. Then change the sort and its comment
       (`src/site/languages.ts:35-44`). The file spawns no pnpm, so
       `./node_modules/.bin/vitest run test/language.test.ts` runs it fast.
-- [ ] T2: Add languages to the site fixture (`test/fixtures/site/plugins.json`)
+- [x] T2: Add languages to the site fixture (`test/fixtures/site/plugins.json`)
       so that at least two languages have 2 plugins and one of them sorts by
       name after a language with 1 plugin (for example a second `es` and a
       second `fr` or `de`). Update the menu test (`test/site.test.ts:423-436`)
@@ -91,6 +91,7 @@ home list before it paints" and "Test the home page script in a browser".
 - 2026-10-28: question set: user chose this work in place of the offered candidates; the CI dependency question was answered n/a.
 - 2026-10-28: implement started on branch m035-language-menu-order, cut from main at 49783ad.
 - 2026-10-28: T1 done: `languageOptions` sorts by count, then name; the new test failed on the old text sort and on a planted count-only sort, and passes with the change; `pnpm test` 855 passed, 1 skipped; `pnpm check` 37 entries, 0 problems.
+- 2026-10-28: T2 done: the fixture's first-plugin gained `es`, so Chinese and Spanish have 2 plugins and Spanish sorts after English (1); the menu test expects that list and failed only on the old sort; the row and plugin-page tests follow the fixture; `pnpm test` 855 passed, 1 skipped; `pnpm check` 0 problems.
 
 ## Decisions
 

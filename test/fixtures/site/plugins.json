@@ -30,7 +30,7 @@
         "latestReleaseDate": "2026-09-30T18:04:11Z",
         "prerelease": false,
         "archived": false,
-        "languages": ["en-US", "zh-CN"]
+        "languages": ["en-US", "es", "zh-CN"]
       },
       "reports": [
         { "zoteroMajor": 7, "works": 3, "broken": 1 },
