@@ -42,6 +42,7 @@ function responses(): Responses {
   return {
     ...loadFixture(resolve(ROOT, "test/fixtures/build/responses.json")).responses,
     ...loadFixture(resolve(ROOT, "test/fixtures/upstream/better-notes.json")).responses,
+    [LABEL]: { json: { name: "report" } },
   };
 }
 
@@ -179,6 +180,8 @@ function treeOf(...ids: string[]): string {
 const SECOND_UPDATE = "https://raw.githubusercontent.com/example/second-plugin/main/update.json";
 const ISSUES = `https://api.github.com/repos/${INDEX_REPO}/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100`;
 const ISSUES_PAGE_2 = `${ISSUES}&page=2`;
+const LABEL = `https://api.github.com/repos/${INDEX_REPO}/labels/report`;
+const reportRead = (url: string) => url === LABEL || url.includes("/issues?");
 
 // Runs pnpm build over TREE against `recorded` and returns the result, the out directory,
 // and the URL of each request in order.
@@ -195,10 +198,10 @@ function loggedBuild(recorded: Responses, extra: Record<string, string> = {}) {
 }
 
 describe("pnpm build and the report issues", () => {
-  test("reads every page of the closed report issues first and writes the counted reports", () => {
+  test("reads the report label, then every page of the closed report issues, first and writes the counted reports", () => {
     const { result, out, urls } = loggedBuild(responses());
     expect(result.status).toBe(0);
-    expect(urls.slice(0, 2)).toEqual([ISSUES, ISSUES_PAGE_2]);
+    expect(urls.slice(0, 3)).toEqual([LABEL, ISSUES, ISSUES_PAGE_2]);
     expect(urls.filter((url) => url.includes("/issues?"))).toHaveLength(2);
     const output = readOutput(out);
     const validate = new Ajv({ allErrors: true }).compile(pluginsSchema);
@@ -220,19 +223,23 @@ describe("pnpm build and the report issues", () => {
     expect([record(output, BETTER_NOTES)?.reports, record(output, SECOND)?.reports]).toEqual([[], []]);
   });
 
-  test("reads the report issues of the repo that GITHUB_REPOSITORY names", () => {
+  test("reads the report label and issues of the repo that GITHUB_REPOSITORY names", () => {
     const recorded = responses();
+    recorded["https://api.github.com/repos/example/fork/labels/report"] = { json: { name: "report" } };
     recorded["https://api.github.com/repos/example/fork/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100"] = { json: [] };
     const { result, urls } = loggedBuild(recorded, { GITHUB_REPOSITORY: "example/fork" });
     expect(result.status).toBe(0);
-    expect(urls[0]).toBe("https://api.github.com/repos/example/fork/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100");
+    expect(urls.slice(0, 2)).toEqual([
+      "https://api.github.com/repos/example/fork/labels/report",
+      "https://api.github.com/repos/example/fork/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100",
+    ]);
     expect(urls.some((url) => url.startsWith(`https://api.github.com/repos/${INDEX_REPO}/`))).toBe(false);
   });
 
   test("reads the default repo's report issues when GITHUB_REPOSITORY is empty", () => {
     const { result, urls } = loggedBuild(responses(), { GITHUB_REPOSITORY: "" });
     expect(result.status).toBe(0);
-    expect(urls[0]).toBe(ISSUES);
+    expect(urls.slice(0, 2)).toEqual([LABEL, ISSUES]);
   });
 
   test("prints the failure on one line, so the answer cannot start a workflow command", () => {
@@ -256,7 +263,60 @@ describe("pnpm build and the report issues", () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toContain(`cannot read the report issues: ${failure}`);
     expect(existsSync(join(out, "v1", "plugins.json"))).toBe(false);
-    expect(urls.every((u) => u.includes("/issues?"))).toBe(true);
+    expect(urls.every(reportRead)).toBe(true);
+  });
+
+  test.each([
+    ["an HTTP 404 answer, as for a renamed or deleted label", { status: 404, text: '{"message":"Not Found"}' }, `github-http-error: GET ${LABEL} returned HTTP 404`],
+    ["a rejected fetch", { error: "connect ECONNRESET" }, `request-failed: GET ${LABEL} failed: connect ECONNRESET`],
+  ])("stops before the issue list when the label read gets %s", (_, answer, failure) => {
+    const { result, out, urls } = loggedBuild({ ...responses(), [LABEL]: answer as Recorded });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(`cannot read the report issues: ${failure}`);
+    expect(existsSync(join(out, "v1", "plugins.json"))).toBe(false);
+    expect(urls).toEqual([LABEL]);
+  });
+
+  // `recorded` with the issue list at `url` changed by `change`.
+  function changedList(recorded: Responses, url: string, change: (items: Record<string, unknown>[]) => void): Responses {
+    const items = structuredClone((recorded[url] as { json: Record<string, unknown>[] }).json);
+    change(items);
+    return { ...recorded, [url]: { ...recorded[url], json: items } };
+  }
+
+  test.each([
+    ["the first item of the first page", ISSUES, (items: Record<string, unknown>[]) => delete items[0].closed_by, "issue #41"],
+    ["an item of the second page", ISSUES_PAGE_2, (items: Record<string, unknown>[]) => delete items[1].closed_by, "issue #38"],
+    [
+      "an item with no numeric number after a valid item and before another such item",
+      ISSUES,
+      (items: Record<string, unknown>[]) => {
+        delete items[1].closed_by;
+        items[1].number = "40";
+        items.push({ ...items[0], number: 42, closed_by: undefined });
+      },
+      "an issue",
+    ],
+  ])("stops before any plugin read when %s has no closed_by key", (_, url, change, which) => {
+    const { result, out, urls } = loggedBuild(changedList(responses(), url, change));
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(`cannot read the report issues: ${which} in the list has no closed_by field`);
+    expect(existsSync(join(out, "v1", "plugins.json"))).toBe(false);
+    expect(urls.every(reportRead)).toBe(true);
+  });
+
+  test.each([
+    ["an issue whose closed_by is null", (items: Record<string, unknown>[]) => (items[0].closed_by = null)],
+    [
+      "a pull request with no closed_by key",
+      (items: Record<string, unknown>[]) => items.push({ number: 42, pull_request: { url: "https://api.github.com/x" } }),
+    ],
+    ["an item that is not an object", (items: Record<string, unknown>[]) => items.push(null as never, "x" as never, [] as never)],
+  ])("builds when the list holds %s", (_, change) => {
+    const { result, out } = loggedBuild(changedList(responses(), ISSUES, change));
+    expect(result.stderr).not.toContain("cannot read the report issues");
+    expect(result.status).toBe(0);
+    expect(existsSync(join(out, "v1", "plugins.json"))).toBe(true);
   });
 });
 
@@ -417,7 +477,7 @@ describe("buildData", () => {
     let result: Awaited<ReturnType<typeof buildData>>;
     beforeAll(async () => {
       const tree = tempDir();
-      const recorded = { ...mixedFailures(tree), [ISSUES]: { json: [] } };
+      const recorded = { ...mixedFailures(tree), [LABEL]: { json: { name: "report" } }, [ISSUES]: { json: [] } };
       result = await buildData(tree, fixtureFetch(recorded).fetch, new Date("2026-10-26T00:00:00Z"));
     });
 
@@ -460,7 +520,7 @@ describe("buildData", () => {
     const stalledXpi = "https://github.com/example/b-stalled/releases/download/v1.0.0/plugin.xpi";
     function stalledTree(): { tree: string; recorded: Responses } {
       const tree = tempDir();
-      const recorded: Responses = { [ISSUES]: { json: [] } };
+      const recorded: Responses = { [LABEL]: { json: { name: "report" } }, [ISSUES]: { json: [] } };
       for (const name of NAMES) {
         const id = `${name}@example.org`;
         Object.assign(recorded, pluginRepo(`example/${name}`, id));

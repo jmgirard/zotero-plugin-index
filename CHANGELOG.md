@@ -300,3 +300,10 @@
   comments the link of that pull request and leaves the issue open. Before,
   it said that it already proposed the repository and closed the issue as
   not planned.
+- `pnpm build` reads the `report` label before the report issues. If the
+  label read fails, the build writes no data file and exits 1. A renamed or
+  deleted label gives such a failure. If an issue in the list has no
+  `closed_by` field, the build also writes no data file and exits 1. The
+  site then keeps the data of the last good build. Before, a missing label
+  gave report counts of zero, and the counts left out each issue with no
+  `closed_by` field. The build went on in both cases.

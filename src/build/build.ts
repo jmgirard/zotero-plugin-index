@@ -57,11 +57,12 @@ export interface TimeLimits {
   startedAt?: number;
 }
 
-// Reads every entry under root, then the report issues of indexRepo, then each plugin
-// upstream, one at a time. A failed upstream read goes into that entry's record. An entry
-// that cannot be read, or whose meta.json or index.json is invalid, stops the build before
-// any request. The counts come only from the issues, so a failed issue read also stops
-// it, before any upstream read (D-013). A plugin read that passes `readMs` fails as
+// Reads every entry under root, then the report label and the report issues of indexRepo,
+// then each plugin upstream, one at a time. A failed upstream read goes into that entry's
+// record. An entry that cannot be read, or whose meta.json or index.json is invalid, stops
+// the build before any request. The counts come only from the issues, so a failed label or
+// issue read, or a listed issue with no closed_by key, also stops it, before any upstream
+// read (D-013). A plugin read that passes `readMs` fails as
 // request-failed. Once `buildMs` has passed since `startedAt`, the build reads no more
 // plugins, and each entry left gets the failure not-read. Both count as build-level.
 export async function buildData(
@@ -90,13 +91,28 @@ export async function buildData(
 
   let issues: unknown[];
   try {
+    // A renamed or deleted label makes GitHub answer the list with no issues, so the label
+    // must exist first. Any successful answer with a JSON body is enough, and its content
+    // is not checked.
+    const github = githubClient(fetch);
+    await github.json(`https://api.github.com/repos/${indexRepo}/labels/report`);
     // Oldest first, so a report closed during the read joins the last page rather than
     // moving each later report up one place, past a page boundary.
     const list = `https://api.github.com/repos/${indexRepo}/issues?labels=report&state=closed&sort=created&direction=asc&per_page=100`;
-    issues = await githubClient(fetch).pages(list);
+    issues = await github.pages(list);
   } catch (error) {
     const name = error instanceof ReadFailure ? `${error.failure}: ` : "";
     return { ok: false, problems: [`cannot read the report issues: ${name}${(error as Error).message}`] };
+  }
+  // An issue with no closed_by key cannot be counted, so the counts cannot be read. An
+  // item that is not an object, or a pull request, is left for countReports to drop.
+  const unclosed = issues.find(
+    (item) =>
+      typeof item === "object" && item !== null && !Array.isArray(item) && !("pull_request" in item) && !("closed_by" in item),
+  ) as { number?: unknown } | undefined;
+  if (unclosed) {
+    const which = typeof unclosed.number === "number" ? `issue #${unclosed.number}` : "an issue";
+    return { ok: false, problems: [`cannot read the report issues: ${which} in the list has no closed_by field`] };
   }
 
   const records: PluginRecord[] = [];

@@ -91,8 +91,9 @@ schemas are under `https://jmgirard.github.io/zotero-plugin-index/schemas/`,
 each schema's `$id` being its own URL (M006). Each record that has
 `upstream` carries the report counts in the optional `reports` field. The
 daily build counts them from its read of the index repo's closed report
-issues, and a build that cannot read those issues deploys nothing (D-013,
-M021).
+issues, and a build that cannot read those issues or their `report` label,
+or that finds a listed issue with no `closed_by` key, deploys nothing
+(D-013, M021, D-021, M041).
 
 Out of scope: install buttons, mirrors for regions that cannot reach GitHub,
 user accounts, and a combined compatibility verdict.
@@ -222,14 +223,18 @@ exception is a report that is abuse.
   as README "Building the data" defines it, and also when every record carries a
   failure, whatever its name. It prints a summary of failure
   names and a `::warning::` line for build-level failures. Before any plugin
-  read it reads the closed report issues of `GITHUB_REPOSITORY`, or of
-  `INDEX_REPO`, and writes `reports` on each record that has `upstream`; a
-  failed issue read writes no file and exits 1 (D-013). A plugin read stops
+  read it reads the `report` label and the closed report issues of
+  `GITHUB_REPOSITORY`, or of `INDEX_REPO`, and writes `reports` on each
+  record that has `upstream`; a failed label or issue read, or a listed
+  issue with no `closed_by` key, writes no file and exits 1 (D-013). A
+  pull request or an item that is not an object is left for `countReports`
+  to drop. A plugin read stops
   at 3 minutes and fails as `request-failed`. After 18 minutes from the
   command's start, the build reads no more plugins, and each entry left
   fails as `not-read`. Both are build-level (D-015). Added M003;
   schemas and exit rule M006; build-level rule and summary M017; every-record
-  rule M018; reports M021; time limits M029.
+  rule M018; reports M021; time limits M029; label read and `closed_by`
+  check M041.
 - Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
   home page and one page per record into `dist/`, or `<dir>`, from the data
   file there. `src/site/version.ts` holds the version and range functions
@@ -494,9 +499,9 @@ reused._
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request, except those the built-in token makes, such as the
   discovery bot's (M009).
-- `src/build/` reads the entries, then every page of the closed report
-  issues, runs the upstream reader on each plugin in turn, writes the
-  `countReports` counts into each read record's `reports`, and checks each record and then the whole output against
+- `src/build/` reads the entries, then the `report` label and every page of
+  the closed report issues, runs the upstream reader on each plugin in turn,
+  writes the `countReports` counts into each read record's `reports`, and checks each record and then the whole output against
   `schemas/plugins.v1.schema.json` before it writes the file.
   `.github/workflows/build.yml` runs `pnpm check`, then the build, then
   `pnpm site` (M007), daily and on manual dispatch, and keeps `dist/` as a
@@ -504,8 +509,9 @@ reused._
   writes the file when more than half of the records carry a build-level
   failure, as README "Building the data" defines it (M017), or when every
   record carries a failure of any name (M018, D-012). A failed read of the
-  report issues stops the build before any plugin read and writes no file
-  (D-013, M021). The build job holds `contents: read` and `issues: read`
+  `report` label or the report issues, or a listed issue with no
+  `closed_by` key, stops the build before any plugin read and writes no file
+  (D-013, M021, M041). The build job holds `contents: read` and `issues: read`
   for that read, and `test/workflows.test.ts` checks both (M021). The reader
   marks a failure build-level beside its name, and `buildData` returns the
   marked ids outside the data, so the published file keeps its shape
