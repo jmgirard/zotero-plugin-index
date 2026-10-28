@@ -1,0 +1,8 @@
+{
+  "id": "zotero-skimming@00sapo.org",
+  "name": "Zotero Skimming",
+  "description": "Automatic annotations of PDF inside Zotero for skimming academic literature",
+  "homepage": "https://codeberg.org/00sapo/zotero-skimming",
+  "repoUrl": "https://github.com/00sapo/zotero-skimming",
+  "updateUrl": "https://raw.githubusercontent.com/00sapo/zotero-skimming/main/updates.json"
+}
