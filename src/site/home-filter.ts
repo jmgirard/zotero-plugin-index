@@ -27,6 +27,14 @@ export function chosenValue(asked: string | null, options: readonly string[]): s
   return asked !== null && options.includes(asked) ? asked : "";
 }
 
+// The text of the line under the filters: "" when no filter is on, else how many of the
+// list's total rows the filters show, or that none match.
+export function filterStatus(shown: number, total: number, filtering: boolean): string {
+  if (!filtering) return "";
+  if (shown === 0) return "No plugins match these filters.";
+  return `Showing ${shown} of ${total} ${total === 1 ? "plugin" : "plugins"}.`;
+}
+
 // The page's address with parameter name set to value, or with the parameter removed when
 // value is "". An address that already says so comes back unchanged. Otherwise the query is
 // written again, so the other parameters keep their values but not always their spelling,

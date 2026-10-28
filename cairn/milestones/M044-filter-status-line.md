@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M044: Say how many plugins the filters show
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — site visitors see the new line   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m044-filter-status-line   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -81,7 +81,7 @@ plugins" button in the line: not chosen at the plan question set.
 <!-- owner: plan (create) / implement (check-off, minor edits); substantive
      change is amend-via-gate. -->
 
-- [ ] T1: Add `filterStatus` to `src/site/home-filter.ts` with a comment in
+- [x] T1: Add `filterStatus` to `src/site/home-filter.ts` with a comment in
       the file's style. Add its four cases to `test/home-filter.test.ts`, run
       before the function exists, so each fails first.
 - [ ] T2: In `site/src/pages/index.astro`, add the hidden status `<p>`
@@ -120,6 +120,8 @@ plugins" button in the line: not chosen at the plan question set.
 - 2026-10-28: inbox sweep: 0 open issues; 1 open pull request (#57, a discovery bot pull request), no overlap.
 - 2026-10-28: criteria audit (full mode, fresh Opus reader): 11 findings and 1 pass. Fixed 8 on these criteria: four inputs named and no removal clause (AC1), exactly one element (AC2), the script unhides the line, a Back case dropped since the script only replaces history entries, the no-JavaScript case read from the built HTML through AC2, M defined with a fixture fallback, and the recording moved to T4 (AC3), the doc texts and the DESIGN site named (AC4). 3 findings on the paint criterion lapsed when the question set parked it.
 - 2026-10-28: lessons used: 2026-10-25 (M001), 2026-10-25 (M007), 2026-10-26 (M015), 2026-10-26 (M018), 2026-10-27 (M021), 2026-10-27 (M024), 2026-10-28 (M035), 2026-10-28 (M036), 2026-10-28 (M037).
+- 2026-10-28: started /milestone-implement on branch m044-filter-status-line, cut from main at 0a947f0.
+- 2026-10-28: T1 done: `filterStatus` in `src/site/home-filter.ts`; its four `test/home-filter.test.ts` cases failed with "filterStatus is not a function" first, then passed. `pnpm test` 940 passed, 1 skipped; `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
