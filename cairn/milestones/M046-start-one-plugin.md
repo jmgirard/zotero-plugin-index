@@ -1,6 +1,6 @@
 # M046: Start one plugin in a headless Zotero
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
