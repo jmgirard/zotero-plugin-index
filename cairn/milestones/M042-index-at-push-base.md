@@ -36,7 +36,7 @@ workflow stays in row "Bound the whole discover workflow's time".
 
 ## Acceptance criteria
 
-- [ ] AC1: In a discover run, `proposeHandoff` skips as `in-index`, with no
+- [x] AC1: In a discover run, `proposeHandoff` skips as `in-index`, with no
       push and no create request, an entry that the default-branch commit it
       fetched holds under `plugins/` and the working tree of its checkout
       (`gitDir`) does not: by repo, when that commit's
@@ -49,7 +49,7 @@ workflow stays in row "Bound the whole discover workflow's time".
       handoff, `in-bot-pull` ones included. Tests in `test/propose.test.ts`
       show the repo case, the id case with a directory whose letter case
       differs from the entry's id, the non-JSON case, and the parent.
-- [ ] AC2: In an issue run, `issueAnswer` checks the same fetched commit by
+- [x] AC2: In an issue run, `issueAnswer` checks the same fetched commit by
       the rules of AC1: when only that commit holds an entry whose
       `meta.json` names the issue's repo, the bot comments "The index
       already lists this repo in the entry `plugins/<dir>/`." and closes the
@@ -57,14 +57,14 @@ workflow stays in row "Bound the whole discover workflow's time".
       refuses with `entry-exists`. Neither case pushes a branch or opens a
       pull request. Tests in `test/issue.test.ts` show both cases, the id
       case with a directory whose letter case differs from the entry's id.
-- [ ] AC3: When the fetched commit has no `plugins` path, the write step
+- [x] AC3: When the fetched commit has no `plugins` path, the write step
       pushes nothing and opens no pull request: a discover run fails every
       entry of the handoff, `in-bot-pull` ones included, with an error that
       names the missing `plugins/` folder, and an issue run posts its "could
       not finish" comment with that error and no failure name, as for a
       failed push, and leaves the issue open. One test for each run kind
       asserts the error.
-- [ ] AC4: README's write-step paragraph ("Before it pushes, …"), its
+- [x] AC4: README's write-step paragraph ("Before it pushes, …"), its
       paragraph on failed entries ("If the push or the pull request fails
       for one entry, …"), its list of bot failures in "Proposing a plugin
       with an issue", and DESIGN.md's write-step sentence say that the write
@@ -74,7 +74,7 @@ workflow stays in row "Bound the whole discover workflow's time".
       [a-z ]*checkout'` over README.md, cairn/DESIGN.md, and each file in
       `src/discover/` prints nothing. CHANGELOG.md's Unreleased section has
       an entry stating the behavior of AC1 to AC3.
-- [ ] AC5: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` exit 0.
+- [x] AC5: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` exit 0.
 
 ## Coverage
 
@@ -135,3 +135,12 @@ workflow stays in row "Bound the whole discover workflow's time".
 ## Decisions
 
 ## Review
+
+Review pass 1, 2026-10-28, branch head 01a8cb2, main at d51ad72 (not moved). No PR yet; Copilot round off.
+
+- AC1 evidence: `pnpm exec vitest run --reporter=verbose` passes "skips an entry that main gained after the checkout, by repo, by id in another letter case, or by a folder whose meta.json is not JSON" (test/propose.test.ts): alpha (repoUrl `Example/Alpha` under another dir), beta (dir `Beta@Example.org`), gamma (meta.json not JSON) skipped as `in-index`, delta proposed, one POST, `discover/example/delta^` equals remote `main`, and the checkout has no `Beta@Example.org`. The failure rule for in-bot-pull entries: `fetchBase` runs at src/discover/propose.ts:158 before the skip sort at :163, and its catch at :160 fails every handoff entry; the missing-folder test exercises that path with an in-bot-pull entry. The renamed "skips, with no push or request, …" case (checkout holding the fixture plugins) also passes.
+- AC2 evidence: test/issue.test.ts passes "names the entry and closes the issue as completed when only main, after the checkout, holds an entry for the repo" (exact comment "The index already lists this repo in the entry `plugins/other@example.org/`.", PATCH completed, no other write) and "refuses with entry-exists when only main, after the checkout, has the id in another letter case" (dir `Beta@Example.org`, `entry-exists` comment, PATCH not_planned); the sent list in both holds no pull request POST.
+- AC3 evidence: "fails every entry, one an open bot pull request adds included, when main has no plugins folder" (test/propose.test.ts) passes: both entries, `open-pr@example.org` included, fail with "the default branch main at <40-hex> has no plugins/ folder", skipped is empty, no non-GET request, no discover/ branch. "comments that the bot could not finish, with no failure name, and leaves the issue open when main has no plugins folder" (test/issue.test.ts) passes: status 1, one comment matching "The bot could not finish, … ` the default branch main at <sha> has no plugins/ folder `" with no failure name, and no PATCH.
+- AC4 evidence: README.md:373-377 (write step reads the index at the fetched commit), :396-400 (failed fetch or no `plugins/` fails every entry, a bot pull request's entry included), :465-467 (issue-run failure list names the fetch and the missing folder); cairn/DESIGN.md:423-428 (`fetchBase` and the fetched commit) and :439 (`propose` builds on it); CHANGELOG.md:310 Unreleased entry. The AC4 search over README.md, cairn/DESIGN.md, and each `src/discover/*.ts` printed nothing.
+- AC5 evidence: `npx -y pnpm@12.15.0 test` exit 0 (19 files, 934 passed, 1 skipped); `npx -y pnpm@12.15.0 check` exit 0 ("checked 42 entries in plugins, 0 problems").
+- Consistency gate: `cairn_validate.py` all checks passed; no DESIGN principle changed, so `cairn_impact` skipped; the generic profile names no toolchain checks.
