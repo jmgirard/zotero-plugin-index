@@ -46,15 +46,15 @@ and `mul`, which name no one interface language.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: A plugin page whose upstream `languages` list is empty, with no
+- [x] AC1: A plugin page whose upstream `languages` list is empty, with no
       `languages` override that applies, shows
       `Unknown (no translations found)` in its `data-fact="languages"` span.
       `test/site.test.ts` asserts this text for such a record.
-- [ ] AC2: No file that `git ls-files` lists outside `cairn/`, and not
+- [x] AC2: No file that `git ls-files` lists outside `cairn/`, and not
       `cairn/DESIGN.md`, holds `None declared` once its lines are joined.
       The command for each file is
       `tr '\n' ' ' < <file> | sed 's/  */ /g' | grep -c 'None declared'`.
-- [ ] AC3: `localeLanguages` skips a locale folder whose canonical language
+- [x] AC3: `localeLanguages` skips a locale folder whose canonical language
       subtag is `zxx` or `mul` before any of its files adds to a count or
       keeps a tag. So such a folder never sets the largest count. A test in
       `test/upstream.test.ts` reads an XPI with `locale/en-US/a.ftl` and with
@@ -62,16 +62,16 @@ and `mul`, which name no one interface language.
       `locale/Mul_Latn/a.ftl`, `locale/zxx_US/a.ftl`, and `locale/mul/a.json`.
       Each of these `.ftl` and `.properties` files holds more than twice as
       many messages as `locale/en-US/a.ftl`. The test gets `["en-US"]`.
-- [ ] AC4: `LANGUAGE_TAG` matches no whole tag whose language subtag is `zxx`
+- [x] AC4: `LANGUAGE_TAG` matches no whole tag whose language subtag is `zxx`
       or `mul` in any letter case. A test in `test/upstream.test.ts` finds
       that the whole-tag pattern refuses `zxx`, `ZXX`, `mul`, `Mul-Latn`, and
       `zxx-US`, and matches `mus`, `zh`, and `en-US`. The `languages`
       patterns of both schemas equal their copies of the new pattern, as the
       copy test at `test/upstream.test.ts:344` checks.
-- [ ] AC5: `pnpm check` refuses a `languages` override whose value holds a
+- [x] AC5: `pnpm check` refuses a `languages` override whose value holds a
       `zxx` or `mul` tag. `test/check.test.ts` asserts an `index-schema`
       finding at `/overrides/0/value` for the values `zxx` and `en-US, MUL`.
-- [ ] AC6: The README.md paragraph on the tags the list leaves out, the
+- [x] AC6: The README.md paragraph on the tags the list leaves out, the
       cairn/DESIGN.md locale-walk paragraph, and the CHANGELOG.md languages
       entry each say that the list leaves out `zxx` and `mul`. The README.md
       and CHANGELOG.md texts on overrides say that a `languages` override
@@ -144,3 +144,11 @@ and `mul`, which name no one interface language.
 
 ## Review
 <!-- owner: review · exclusive -->
+
+- sync: main moved by 4 bot plugin additions (#63, #64, #65, #67); merged into the branch at a11bf6f; pnpm test 860 passed, 1 skipped; pnpm check 42 entries, 0 problems.
+- AC1 evidence: `shows the interface languages for an empty upstream list` passes for `old-plugin@example.org`, whose fixture record in `test/fixtures/site/plugins.json` has `languages: []` and no overrides; its span text is "Unknown (no translations found)" (test/site.test.ts:303).
+- AC2 evidence: the joined-line sweep over the 179 files (`git ls-files` outside `cairn/`, plus `cairn/DESIGN.md`) at a11bf6f found 0 files holding `None declared`; the same command finds 1 in main's README.md (T4).
+- AC3 evidence: `lists no zxx or mul folder, and none sets the largest count as the languages` passes with the six named files, each .ftl and .properties file holding 5 messages against en-US's 2, and gets ["en-US"]; on the old reader the same case got [mul, mul-Latn, zxx, zxx-US] (T2). The skip is the `WHOLE_TAG` test at src/upstream/reader.ts:567, before `counts.set` and any inflate (claim audit).
+- AC4 evidence: `its language tag pattern refuses ["zxx","ZXX","mul","Mul-Latn","zxx-US"]` and `... matches ["mus","zh","en-US"]` pass; `shares its language tag pattern with both schemas` passes (test/upstream.test.ts:344).
+- AC5 evidence: `index-schema: a languages override with the value "zxx"` and `... "en-US, MUL"` pass; each asserts only the `index-schema` rule fired and `/overrides/0/value` in stdout; both failed with main's index schema copied in (T3).
+- AC6 evidence (joined-line reads at a11bf6f): README.md tags paragraph "It also leaves out the tags `und` (undetermined), `zxx` (no linguistic content), and `mul` (multiple languages), in any letter case."; DESIGN.md locale walk "matches `LANGUAGE_TAG`, which refuses the language subtags `und`, `zxx`, and `mul` in any letter case"; CHANGELOG.md entry "The list also leaves out the tags `und` ..., `zxx` ..., and `mul` ...". Overrides: README.md "The tags `und`, `zxx`, and `mul` are not allowed, in any letter case."; CHANGELOG.md "The value cannot hold the tags `und`, `zxx`, or `mul`." Empty text: README.md "the page shows "Unknown (no translations found)"", DESIGN.md "the line reads "Unknown (no translations found)" (M036)", CHANGELOG.md "the line says "Unknown (no translations found)"".
