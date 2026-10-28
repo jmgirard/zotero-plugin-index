@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-28 (M042 done and archived; 1 row graduated, 1 narr
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M043 | Queue runs in the discover group | planned | — | normal | milestones/M043-queue-discover-runs.md |
+| M043 | Queue runs in the discover group | review | — | normal | milestones/M043-queue-discover-runs.md |
 | M042 | Check the index at the push base | done | — | normal | milestones/archive/M042-index-at-push-base.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 

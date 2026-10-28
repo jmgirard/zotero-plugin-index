@@ -7,6 +7,7 @@ const BUILD = resolve(ROOT, ".github/workflows/build.yml");
 const REPORT = resolve(ROOT, ".github/workflows/report-issue.yml");
 const CLOSE = resolve(ROOT, ".github/workflows/close-add-plugin-issue.yml");
 const ADD = resolve(ROOT, ".github/workflows/add-plugin-issue.yml");
+const DISCOVER = resolve(ROOT, ".github/workflows/discover.yml");
 
 // Each line of a workflow, other than a comment line, that uses an actions/cache action or
 // sets a `cache` key, in block or flow form. An inline comment stays in its line, so a
@@ -93,6 +94,15 @@ function triggers(text: string): string | undefined {
     .trim();
 }
 
+// The top-level `concurrency:` block of a workflow, up to the next line that is not
+// indented, and each line that sets a `concurrency` key at any level, quoted or not.
+function concurrency(text: string): { block: string | undefined; keys: string[] } {
+  return {
+    block: text.match(/^concurrency:\n(?: .*\n)*/m)?.[0],
+    keys: text.split("\n").filter((line) => /^\s*["']?concurrency["']?\s*:/i.test(line)),
+  };
+}
+
 describe("report-issue.yml", () => {
   const report = readFileSync(REPORT, "utf8");
   const ISSUE_USES = ["github.event.issue.number", "github.event.issue.labels", "github.event.repository.default_branch"];
@@ -164,15 +174,26 @@ describe("add-plugin-issue.yml", () => {
   const [pick, read, write] = ["pick", "read", "write"].map((id) => jobText(add, id));
   const LOOP_ENV = / {8}env:\n {10}GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}\n {10}ISSUES: \$\{\{ needs\.pick\.outputs\.issues \}\}\n/;
 
-  test("runs on opened issues, daily, and on dispatch, in the discover group, and its pick job for the label add-plugin or a sweep from the default branch", () => {
+  test("runs on opened issues, daily, and on dispatch, and its pick job for the label add-plugin or a sweep from the default branch", () => {
     expect(triggers(add)).toBe('issues:\n    types: [opened]\n  schedule:\n    - cron: "43 2 * * *"\n  workflow_dispatch:');
-    expect(add).toContain(
-      "\nconcurrency:\n  group: ${{ github.event_name == 'workflow_dispatch' && github.ref != format('refs/heads/{0}', github.event.repository.default_branch) && format('add-plugin-skipped-{0}', github.run_id) || 'discover' }}\n  cancel-in-progress: false\n",
-    );
     expect(add.slice(add.indexOf("\njobs:\n")).match(/^ {2}[\w-]+:$/gm)).toEqual(["  pick:", "  read:", "  write:"]);
     expect(pick.match(/^ {4}if:.*$/gm)).toEqual([
       "    if: (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'add-plugin')) || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch))",
     ]);
+  });
+
+  test("queues the runs whose pick job can run in the discover group, and gives each other run a group of its own", () => {
+    expect(concurrency(add)).toEqual({
+      block:
+        "concurrency:\n  group: ${{ (github.event_name == 'issues' && !contains(github.event.issue.labels.*.name, 'add-plugin') || github.event_name == 'workflow_dispatch' && github.ref != format('refs/heads/{0}', github.event.repository.default_branch)) && format('add-plugin-skipped-{0}', github.run_id) || 'discover' }}\n  cancel-in-progress: false\n  queue: max\n",
+      keys: ["concurrency:"],
+    });
+  });
+
+  test("tests the label in the group with the same text as the pick job", () => {
+    const label = pick.match(/github\.event_name == 'issues' && (contains\([^)]*\))/)?.[1];
+    expect(label).toBeDefined();
+    expect(concurrency(add).block).toContain(`github.event_name == 'issues' && !${label}`);
   });
 
   test("gives each job only the permissions its steps use", () => {
@@ -218,6 +239,17 @@ describe("add-plugin-issue.yml", () => {
       expect([...job.matchAll(/\$\{\{[^}]*\}\}/g)].map(([use]) => use).filter((use) => /issue/i.test(use))).toEqual(["${{ needs.pick.outputs.issues }}"]);
     }
     expect(add).not.toMatch(/ISSUE_BODY|issue\.body/);
+  });
+});
+
+describe("discover.yml", () => {
+  const discover = readFileSync(DISCOVER, "utf8");
+
+  test("queues its runs in the discover group", () => {
+    expect(concurrency(discover)).toEqual({
+      block: "concurrency:\n  group: discover\n  cancel-in-progress: false\n  queue: max\n",
+      keys: ["concurrency:"],
+    });
   });
 });
 

@@ -455,20 +455,24 @@ reused._
   the body carries the check result (M009).
 - `.github/ISSUE_TEMPLATE/add-plugin.yml` is a form with one required input,
   `Repository URL`, that adds the label `add-plugin`.
-  `.github/workflows/add-plugin-issue.yml` runs on `issues: opened` when that
-  label is set, daily at 02:43 UTC, and on dispatch from the default branch,
-  in the `discover` concurrency group (M040). Its `pick` job (`contents`,
-  `issues`, and `actions` read) outputs the event's issue number, or for a
-  sweep the up to 3 numbers that `pnpm unanswered-issues` prints; it reads
-  no plugin repo. The read job (`contents`, `pull-requests`, and `issues`
-  read) and the write job run `pnpm discover-issue` and `pnpm propose` once
-  for each number, with one handoff directory per number in one artifact,
-  each number passed only through `env:` (`ISSUES`, then `ISSUE_NUMBER`),
-  and each fails at the end when one of its runs fails. All three jobs set
-  `cache-mode: none`. A sweep run takes its place in the group even when it
-  picks no issue, so it can cancel a pending discover or issue run, and a
-  newer run can cancel a pending sweep; a later sweep can answer that issue
-  while it is at most 7 days old and among the 3 oldest unanswered issues.
+  `.github/workflows/add-plugin-issue.yml` runs its jobs on `issues: opened`
+  when that label is set, daily at 02:43 UTC, and on dispatch from the
+  default branch, in the `discover` concurrency group (M040). Its `pick`
+  job (`contents`, `issues`, and `actions` read) outputs the event's issue
+  number, or for a sweep the up to 3 numbers that `pnpm unanswered-issues`
+  prints; it reads no plugin repo. The read job (`contents`,
+  `pull-requests`, and `issues` read) and the write job run
+  `pnpm discover-issue` and `pnpm propose` once for each number, with one
+  handoff directory per number in one artifact, each number passed only
+  through `env:` (`ISSUES`, then `ISSUE_NUMBER`), and each fails at the end
+  when one of its runs fails. All three jobs set `cache-mode: none`. Both
+  workflows set `queue: max` on the `discover` group (M043), so up to 100
+  runs wait and run one at a time, in an order GitHub does not promise, and
+  GitHub cancels a run past that; a later sweep can answer a canceled run's
+  issue while it is at most 7 days old and among the 3 oldest unanswered
+  issues. An
+  `issues` run without the `add-plugin` label, like a dispatch from another
+  ref, takes a group of its own (`add-plugin-skipped-<run id>`).
   An issue with any bot comment, such as "The bot could not finish", stays
   for a maintainer. A rerun of the write job answers each issue of its run
   again. Its write job holds `contents`,

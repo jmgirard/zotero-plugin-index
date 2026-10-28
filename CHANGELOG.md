@@ -273,7 +273,7 @@
   still gets no answer on the issue.
 - A daily sweep answers the "Add a plugin" issues and the report issues that
   no run answered. Before, such an issue got no answer. An example is an
-  issue whose run a newer run in the `discover` concurrency group canceled.
+  issue whose run failed before its comment.
   The sweep takes the open issues of the label that are 1 hour to 7 days old
   and have no comment from `github-actions[bot]`. While a run for a new issue
   of the same workflow has not finished, the sweep takes no issue. The
@@ -282,12 +282,8 @@
   most 20 issues in each run. A maintainer can also run either sweep by hand
   from the default branch. `pnpm unanswered-issues` prints the issues that a
   sweep takes, and `pnpm report-issue --sweep` answers the report issues. An
-  issue with any bot comment stays for a maintainer. A sweep run that finds
-  no issue still takes its place in the concurrency group. So it can cancel
-  a pending `Discover plugins` run or a pending issue run, and a newer run
-  can cancel a pending sweep. A later sweep can answer the issue of a
-  canceled run while it is at most 7 days old. Each sweep of "Add a plugin"
-  issues answers at most 3, oldest first. A rerun of the write job of
+  issue with any bot comment stays for a maintainer. Each sweep of "Add a
+  plugin" issues answers at most 3, oldest first. A rerun of the write job of
   `Add a plugin from an issue` answers each issue of its run again.
 - `pnpm discover-issue` reads the issue body from the GitHub API for
   `ISSUE_NUMBER`. It no longer reads the `ISSUE_BODY` environment variable.
@@ -315,3 +311,11 @@
   with `entry-exists`. If the fetched commit has no `plugins/` folder, every
   entry fails. An issue run then leaves the issue open with its "could not
   finish" comment.
+- Runs of `Discover plugins` and `Add a plugin from an issue` wait in turn in
+  their shared concurrency group, up to 100 pending. GitHub does not promise
+  their order. If 100 runs already wait, GitHub cancels a new run, and a
+  later sweep can answer its issue, as for any unanswered issue. Before, a
+  new run in the group canceled the run that waited, for example a waiting
+  `Discover plugins` run that an issue or a sweep met. The run that an issue
+  without the label `add-plugin` starts does nothing, and it now takes a
+  group of its own.

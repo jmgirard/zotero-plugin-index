@@ -4,8 +4,9 @@ on:
   issues:
     types: [opened]
   # A daily sweep answers the "Add a plugin" issues that no run answered, such as one
-  # whose run a newer run in the group canceled. 02:43 UTC is 12 hours from
-  # `Discover plugins`, so a sweep seldom meets a discover run in the group.
+  # whose run failed before its comment, or whose run GitHub canceled because 100 runs
+  # were already waiting in the group. 02:43 UTC is 12 hours from `Discover plugins`,
+  # so a sweep seldom waits for a discover run in the group.
   schedule:
     - cron: "43 2 * * *"
   workflow_dispatch:
@@ -17,13 +18,15 @@ on:
 permissions: {}
 
 # The group that `Discover plugins` uses, so a run here and a discover run never push
-# the same branch at once. A group holds one running and one pending run, so a newer
-# run, a sweep included, cancels a pending one, and that run's issue gets no answer
-# until a later sweep. A dispatch from another branch or a tag runs no job, so it takes
-# a group of its own and cancels nothing.
+# the same branch at once. With `queue: max`, up to 100 runs wait in the group and run
+# one at a time, in an order GitHub does not promise; GitHub cancels runs past that,
+# and a later sweep can answer such a run's issue while it is at most 7 days old.
+# A run whose pick job skips, for an issue without the label `add-plugin` or a dispatch
+# from another branch or a tag, takes a group of its own and waits for no run.
 concurrency:
-  group: ${{ github.event_name == 'workflow_dispatch' && github.ref != format('refs/heads/{0}', github.event.repository.default_branch) && format('add-plugin-skipped-{0}', github.run_id) || 'discover' }}
+  group: ${{ (github.event_name == 'issues' && !contains(github.event.issue.labels.*.name, 'add-plugin') || github.event_name == 'workflow_dispatch' && github.ref != format('refs/heads/{0}', github.event.repository.default_branch)) && format('add-plugin-skipped-{0}', github.run_id) || 'discover' }}
   cancel-in-progress: false
+  queue: max
 
 jobs:
   pick:
