@@ -106,11 +106,11 @@ workflow stays in row "Bound the whole discover workflow's time".
 - [x] T3: `issueAnswer` does the same after `botPulls` and `defaultBranch`,
       before `known`; a failed fetch or read posts the "could not finish"
       comment. Drop its `root` option. Add the AC2 and AC3 issue tests.
-- [ ] T4: Update README (the three passages of AC4), DESIGN.md's write-step
+- [x] T4: Update README (the three passages of AC4), DESIGN.md's write-step
       sentence and its `propose` bullet, the comments at
       `src/discover/propose.ts:141` and `src/discover/issue.ts:143`, and add
       the CHANGELOG entry; run the AC4 search.
-- [ ] T5: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
+- [x] T5: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
 
 ## Work log
 
@@ -128,6 +128,8 @@ workflow stays in row "Bound the whole discover workflow's time".
 - 2026-10-28: T1–T3 done in one checkpoint, since T1 alone leaves the suite red. `fetchBase` (exported from `src/discover/propose.ts`) fetches, takes `FETCH_HEAD^{commit}`, and reads `plugins/` with one `git ls-tree -r -t -z` and one `git cat-file blob` per `meta.json`; `PushBase` carries branch, commit, and index into `propose`, so the pushed parent is the read commit. `proposeHandoff` returns before any fetch when the handoff has no entries, as `propose` did before. Choices: the missing-folder error reads "the default branch <name> at <sha> has no plugins/ folder"; a `cat-file` error is not caught (only a `meta.json` that is not JSON counts by id alone), so a git failure there fails the run rather than dropping a repo; `issueAnswer` keeps its order (pull requests, default branch, then the fetch).
 - 2026-10-28: minor amendment to T2: `twoStep`'s default `gitDir` stays a plain directory, because the test "names every entry as failed when the default branch cannot be fetched" depends on it; every other `twoStep` call already passes a checkout. `checkout()` in `test/support/git-checkout.ts` now commits `plugins/` (a copy of a given folder, or `.gitkeep`), and gains `pushFromClone` and `pushAll`; issue tests that read `TREE` get a checkout holding `TREE`.
 - 2026-10-28: the 5 new tests (3 issue, 2 discover) fail on main's code with `root` set to the checkout's `plugins/`: the discover case proposes alpha, beta, and gamma again, and the issue cases go on to the push instead of answering. Full `pnpm test` 934 passed, 1 skipped; `pnpm check` 42 entries, 0 problems.
+- 2026-10-28: T4 done: README's write-step paragraph, failed-entry paragraph, and issue-run failure list; DESIGN.md's write-step sentence and `propose` bullet; CHANGELOG entry. The two code comments were rewritten in T1–T3. The AC4 search over README.md, cairn/DESIGN.md, and `src/discover/*.ts` prints nothing. The simple-english hook's other README and CHANGELOG hits are in older text and were left alone.
+- 2026-10-28: T5 done: `pnpm test` exit 0 (934 passed, 1 skipped), `pnpm check` exit 0 (42 entries, 0 problems).
 
 ## Decisions
 
