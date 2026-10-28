@@ -105,7 +105,7 @@ and `mul`, which name no one interface language.
 - [x] T3: Add `zxx` and `en-US, MUL` to the refused values at
       `test/check.test.ts:205`. They pass once T2 lands, so first see them
       fail on a copy of the old schema (lesson M010: copy, then restore).
-- [ ] T4: Update README.md, cairn/DESIGN.md (plugin-page paragraph near
+- [x] T4: Update README.md, cairn/DESIGN.md (plugin-page paragraph near
       line 46, locale walk near line 329), and the CHANGELOG.md Unreleased
       languages entry near line 174. Run the AC2 sweep.
 - [ ] T5: Run `pnpm test` and `pnpm check`. Build the site from the
@@ -132,6 +132,8 @@ and `mul`, which name no one interface language.
 - 2026-10-28: T1 done: the two empty-case rows failed with "None declared", then passed after `languagesText` changed; pnpm test 855 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: T2 done: on the old reader the AC3 case got [mul, mul-Latn, zxx, zxx-US], so the zxx and mul counts pushed en-US out, and the pattern test failed on zxx; the `und` lookahead now also refuses zxx and mul, copied into both schemas by a string replace (5 sites); pnpm test 858 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: T3 done: with main's index schema copied in, the `zxx` and `en-US, MUL` cases failed; with the new schema restored from a copy they passed; pnpm test 860 passed, 1 skipped; pnpm check 0 problems.
+- 2026-10-28: T4 done: README.md, CHANGELOG.md, and cairn/DESIGN.md name zxx and mul and the new empty text; README and CHANGELOG also say an override cannot hold und, zxx, or mul; AC2 sweep read 171 files with 0 hits, and finds 1 hit in main's README.md; pnpm test 860 passed, 1 skipped; pnpm check 0 problems.
+- 2026-10-28: left 3 simple-english lint hits in README.md (lines 99, 438) and CHANGELOG.md (line 172) as they are, since this milestone does not touch those lines.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->

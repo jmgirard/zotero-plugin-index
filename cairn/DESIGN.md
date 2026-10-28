@@ -43,7 +43,8 @@ with half the fullest tag's messages stays. They do not say the language
 of the description, which comes from the manifest or
 an override. A `languages` override records them for a plugin whose list
 is wrong or empty. Each plugin page shows them by name in a
-"Menus and settings in" line, outside the Details section, and the home
+"Menus and settings in" line, outside the Details section. When no language
+is left, the line reads "Unknown (no translations found)" (M036). The home
 page's "Menus and settings in" menu filters the list by language subtag,
 run by the site's one script (D-014, M024, M033). The menu lists the
 languages with the most plugins first, and languages with the same number
@@ -326,7 +327,9 @@ reused._
   the files declare. So each XPI takes up to three walks over the claimed
   count: for `manifest.json`, the default locale's `messages.json`, and the
   locale folders. A
-  folder name is a tag when it matches `LANGUAGE_TAG` and its language
+  folder name is a tag when it matches `LANGUAGE_TAG`, which refuses the
+  language subtags `und`, `zxx`, and `mul` in any letter case (D-018,
+  M036), and its language
   subtag has an English name in the build's Node.js `Intl` data
   (`Intl.DisplayNames` with `fallback: "none"`), so a node upgrade can
   change which rare codes are tags.

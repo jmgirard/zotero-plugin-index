@@ -177,7 +177,9 @@
   and `chrome/locale/<tag>/` folders in the XPI that the reader read. If a
   tag's language has no English name in the build's Node.js `Intl` data, the
   list leaves the tag out. So a folder such as `locale/img/` adds no
-  language. The reader counts the messages in the files of each tag's
+  language. The list also leaves out the tags `und` (undetermined), `zxx`
+  (no linguistic content), and `mul` (multiple languages), in any letter
+  case, before their messages count. The reader counts the messages in the files of each tag's
   folders. In an `.ftl` file, each Fluent message or term line is a message.
   In a `.properties` file, each line that is not blank and not a `#` or `!`
   comment is a message. In a `.dtd` file, each `<!ENTITY` outside comments
@@ -193,7 +195,7 @@
   messages stays. An `index.json` override can have the
   field `languages` and a value such as `zh-CN, en-US`. It records the
   languages of a plugin whose list is wrong or empty, in the record's
-  `overrides` block. As with every override, the `upstream` block does not
+  `overrides` block. The value cannot hold the tags `und`, `zxx`, or `mul`. As with every override, the `upstream` block does not
   apply it. The schema stays at version 1. The schema rejects fields that
   it does not define, so fetch any saved copy of it again. The page of each
   plugin that the index read shows the languages by name in a "Menus and
@@ -201,7 +203,8 @@
   from an index override, so it can be in another language. If a
   `languages` override applies to the version the index read, the line
   shows the override's languages in place of the list.
-  If no language is left, the line says "None declared". The home page has
+  If no language is left, the line says "Unknown (no translations found)".
+  The home page has
   a "Menus and settings in" menu that shows only the plugins with the
   language you pick. It counts `zh-CN` and `zh-TW` under one entry,
   Chinese. The menu lists the languages with the most plugins first, and
