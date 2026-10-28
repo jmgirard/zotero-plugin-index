@@ -328,7 +328,9 @@ records each refused repository. A later run reads that repository again
 only after a new push or after 30 days. The file does not record a GitHub API
 error, such as a rate limit, or a failed request. It also does not record an
 HTTP 429 or 5xx answer to the download of the XPI or the `update.json`, after
-any redirects. Such a repository is read again on the next run. To use
+any redirects. Nor does it record a 403 answer to a download that requested
+a GitHub release download URL, as "Building the data" defines it. Such a
+repository is read again on the next run. To use
 another file, add `--state <file>`.
 
 The command gives each repository read 3 minutes, as `pnpm build` does. If a
@@ -678,6 +680,13 @@ are build-level:
   network error, or a timeout, such as a read stopped at 3 minutes,
 - a `not-read` entry,
 - an HTTP 401 or 403 answer from the GitHub API,
+- an answer from the GitHub API that succeeds but whose body is not JSON,
+  such as an HTML error page,
+- an HTTP 403 answer to an XPI or `update.json` download that requested a
+  GitHub release download URL, as its first URL or after a redirect. The
+  rule counts any URL on `github.com` whose path has `releases` as its
+  third part. An example is
+  `https://github.com/<owner>/<repo>/releases/download/<tag>/<file>`,
 - an HTTP 429 or 5xx answer from any host.
 
 Every other failure, a 404 included, belongs to the plugin. First, the

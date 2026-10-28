@@ -238,10 +238,13 @@ describe("the discovery state", () => {
     expect(state).toEqual({});
   });
 
-  // A 429 or 5xx answer from a download host says nothing about the repo, unlike a 404.
+  // A 429 or 5xx answer from a download host, or a 403 from a GitHub release URL, says
+  // nothing about the repo, unlike a 404. The update.json here is not on a release URL.
   test.each([
     ["update.json", 429, "update-json-http-error", false],
     ["XPI", 503, "xpi-unreadable", false],
+    ["XPI", 403, "xpi-unreadable", false],
+    ["update.json", 403, "update-json-http-error", true],
     ["update.json", 404, "update-json-http-error", true],
     ["XPI", 404, "xpi-unreadable", true],
   ])("an HTTP error answer for the %s, status %i, fails with %s, kept in the state: %s", async (file, status, failure, kept) => {

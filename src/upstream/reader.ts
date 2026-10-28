@@ -61,8 +61,9 @@ export type Failure =
   | "host-refused";
 
 // `buildLevel` marks a failure that usually points at the build rather than at the plugin: a
-// request with no whole response, or an answer that buildLevelStatus counts. The build
-// counts such failures to decide whether to deploy. It is not part of the published data.
+// request with no whole response, a GitHub API body that is not JSON, or an answer that
+// buildLevelStatus counts. The build counts such failures to decide whether to deploy. It
+// is not part of the published data.
 export type UpstreamResult =
   | { ok: true; facts: UpstreamFacts }
   | { ok: false; failure: Failure; message: string; buildLevel?: true };
@@ -91,11 +92,19 @@ function fail(failure: Failure, message: string, buildLevel = false): never {
 }
 
 // Whether an HTTP error answer usually points at the build: a rate limit or a server error from
-// any host, or a refused token from the GitHub API. A 404 and the other answers point at
-// the plugin.
-export function buildLevelStatus(status: number, from: "github-api" | "download"): boolean {
+// any host, a refused token from the GitHub API, or a 403 to a download that requested a
+// GitHub release URL (see isReleaseUrl). A 404 and the other answers point at the plugin.
+export function buildLevelStatus(status: number, from: "github-api" | "github-release" | "download"): boolean {
   if (status === 429 || (status >= 500 && status <= 599)) return true;
+  if (from === "github-release") return status === 403;
   return from === "github-api" && (status === 401 || status === 403);
+}
+
+// A URL on github.com whose third path segment is `releases`, such as
+// /<owner>/<repo>/releases/download/<tag>/<file> or /<owner>/<repo>/releases/latest/download/<file>.
+// GitHub answers it, or the release file host that it redirects to, so a 403 there is GitHub's.
+function isReleaseUrl(url: URL): boolean {
+  return url.host === "github.com" && url.pathname.split("/")[3] === "releases";
 }
 
 // Reads one GitHub repo. It never throws for a problem with the plugin: each one
@@ -329,7 +338,9 @@ export function githubClient(fetch: Fetch) {
     try {
       return { body: JSON.parse(text), link: response.headers.get("link") };
     } catch (error) {
-      fail("request-failed", `GET ${url} returned a body that is not JSON: ${(error as Error).message}`);
+      // No plugin shapes an API body, so a body that is not JSON, such as an HTML error
+      // page, comes from GitHub or a host between.
+      fail("request-failed", `GET ${url} returned a body that is not JSON: ${(error as Error).message}`, true);
     }
   }
 
@@ -435,8 +446,10 @@ async function readCapped(response: Response, url: string, max: number, tooLarge
   return bytes;
 }
 
-// Requests a plugin file that is not on the GitHub API: the XPI or the update.json.
-type Download = (url: string) => Promise<Response>;
+// Requests a plugin file that is not on the GitHub API: the XPI or the update.json. `from`
+// is github-release when a URL that the download requested, the first or a redirect, is a
+// GitHub release URL, for buildLevelStatus.
+type Download = (url: string) => Promise<{ response: Response; from: "github-release" | "download" }>;
 
 const REDIRECTS = [301, 302, 303, 307, 308];
 const MAX_REDIRECTS = 5;
@@ -450,11 +463,13 @@ function downloader(fetch: Fetch, lookup: Lookup, signal?: AbortSignal): Downloa
       fail("request-failed", `${url} is not an http or https URL`);
     }
     let current = new URL(url);
+    let release = false;
     for (let redirects = 0; ; redirects++) {
       const refused = await refusal(current, lookup);
       if (refused) fail(refused.failure, refused.message, refused.buildLevel);
+      release ||= isReleaseUrl(current);
       const response = await request(fetch, current.href, { redirect: "manual" });
-      if (!REDIRECTS.includes(response.status)) return response;
+      if (!REDIRECTS.includes(response.status)) return { response, from: release ? "github-release" : "download" };
       await response.body?.cancel().catch(() => {});
       if (signal?.aborted) {
         const reason = signal.reason instanceof Error ? signal.reason.message : String(signal.reason);
@@ -479,9 +494,9 @@ async function readManifest(
   url: string,
   tag: string,
 ): Promise<{ manifest: ManifestJson; messages: Messages; languages: string[] }> {
-  const response = await download(url);
+  const { response, from } = await download(url);
   if (!response.ok) {
-    fail("xpi-unreadable", `the XPI of ${tag} at ${url} returned HTTP ${response.status}`, buildLevelStatus(response.status, "download"));
+    fail("xpi-unreadable", `the XPI of ${tag} at ${url} returned HTTP ${response.status}`, buildLevelStatus(response.status, from));
   }
   const zip = await readCapped(response, url, XPI_MAX_BYTES, () =>
     fail("xpi-too-large", `the XPI of ${tag} at ${url} is larger than ${XPI_MAX_BYTES} bytes`),
@@ -779,9 +794,9 @@ function inflateEntry(
 }
 
 async function checkUpdateJson(download: Download, url: string, id: string): Promise<void> {
-  const response = await download(url);
+  const { response, from } = await download(url);
   if (!response.ok) {
-    const buildLevel = buildLevelStatus(response.status, "download");
+    const buildLevel = buildLevelStatus(response.status, from);
     fail("update-json-http-error", `the update.json at ${url} returned HTTP ${response.status}`, buildLevel);
   }
   const bytes = await readCapped(response, url, UPDATE_JSON_MAX_BYTES, () =>
