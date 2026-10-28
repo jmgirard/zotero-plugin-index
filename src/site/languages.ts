@@ -33,12 +33,13 @@ export function rowLanguages(record: LanguageRecord): string {
 }
 
 // One menu option for each subtag that some row carries. Its text is the subtag's name and
-// the number of rows that carry it, such as "Chinese (2)". The options are in code-unit
-// order of their text.
+// the number of rows that carry it, such as "Chinese (2)". The options are in order of that
+// number, largest first, and options with the same number in code-unit order of their name.
 export function languageOptions(records: LanguageRecord[]): { value: string; text: string }[] {
   const counts = new Map<string, number>();
   for (const record of records) for (const subtag of subtags(record)) counts.set(subtag, (counts.get(subtag) ?? 0) + 1);
   return [...counts]
-    .map(([value, count]) => ({ value, text: `${languageName(value)} (${count})` }))
-    .sort((a, b) => (a.text < b.text ? -1 : a.text > b.text ? 1 : 0));
+    .map(([value, count]) => ({ value, count, name: languageName(value) }))
+    .sort((a, b) => b.count - a.count || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+    .map(({ value, count, name }) => ({ value, text: `${name} (${count})` }));
 }

@@ -1,13 +1,13 @@
 # M035: Sort the language menu by count
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — site visitors see the home page menu's order
-- **Branch/PR:** —
+- **Branch/PR:** m035-language-menu-order
 
 ## Goal
 
@@ -55,7 +55,7 @@ home list before it paints" and "Test the home page script in a browser".
 
 ## Tasks
 
-- [ ] T1: Rewrite the `languageOptions` test (`test/language.test.ts:89-98`,
+- [x] T1: Rewrite the `languageOptions` test (`test/language.test.ts:89-98`,
       renaming "sorts by text") for records that meet AC1, and see it fail
       against the current sort. Then change the sort and its comment
       (`src/site/languages.ts:35-44`). The file spawns no pnpm, so
@@ -89,6 +89,8 @@ home list before it paints" and "Test the home page script in a browser".
 - 2026-10-28: plan gate chose editing M024's Unreleased CHANGELOG entry over a new entry because no release is tagged, so the menu has not shipped in either order; falsified by a tagged release that holds the menu entry.
 - 2026-10-28: criteria audit (full mode, fresh Opus reader): 4 findings. AC1 test could pass for a count-only sort — fixed, the test must also beat that sort. AC2 bound the fixture's shape, an instrument — fixed, the fixture shape moved to T2. Stale comment and test name in AC1's files — fixed, AC1 names the comment and T1 the test name. AC4's `check` can fail offline — answered in T4. No IP or D-entry blocks a criterion.
 - 2026-10-28: question set: user chose this work in place of the offered candidates; the CI dependency question was answered n/a.
+- 2026-10-28: implement started on branch m035-language-menu-order, cut from main at 49783ad.
+- 2026-10-28: T1 done: `languageOptions` sorts by count, then name; the new test failed on the old text sort and on a planted count-only sort, and passes with the change; `pnpm test` 855 passed, 1 skipped; `pnpm check` 37 entries, 0 problems.
 
 ## Decisions
 
