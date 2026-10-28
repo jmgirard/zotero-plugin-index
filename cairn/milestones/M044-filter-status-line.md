@@ -38,7 +38,7 @@ plugins" button in the line: not chosen at the plan question set.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: `filterStatus(shown, total, filtering)` in
+- [x] AC1: `filterStatus(shown, total, filtering)` in
       `src/site/home-filter.ts` returns `""` when `filtering` is false. When
       `filtering` is true and `shown` is 0, it returns
       `No plugins match these filters.` For other values, it returns
@@ -46,13 +46,13 @@ plugins" button in the line: not chosen at the plan question set.
       `plugins` when `total` is 1. A test in `test/home-filter.test.ts`
       asserts the exact text for four inputs: `filtering` false, `shown` 0,
       `total` above 1, and `total` 1.
-- [ ] AC2: The built home page holds exactly one element with
+- [x] AC2: The built home page holds exactly one element with
       `data-filter-status`, written as `<p class="filter-status"
       role="status" data-filter-status hidden></p>`. It sits after the
       closing tag of the `version-filter` div and before
       `<ul class="plugins">`. The page still holds exactly one `<script`
       element. `test/site.test.ts` asserts these facts.
-- [ ] AC3: A hand check in the browser pane, on a site built from the
+- [x] AC3: A hand check in the browser pane, on a site built from the
       deployed `v1/plugins.json`, reads the line after the script runs. The
       line has no `hidden` attribute. With "All languages" and "Any version",
       its text is empty. For one language and for one major, it reads
@@ -61,12 +61,12 @@ plugins" button in the line: not chosen at the plan question set.
       a language and a major that hide every row, it reads
       `No plugins match these filters.` If the deployed data has no such
       pair, the check uses a site built from the test fixture for that case.
-- [ ] AC4: `README.md` and the new `CHANGELOG.md` entry under
+- [x] AC4: `README.md` and the new `CHANGELOG.md` entry under
       `## Unreleased` each hold `No plugins match these filters.` and
       `Showing N of M plugins.` A search of a joined copy of each file finds
       both. The `src/site/home-filter.ts` function list in `cairn/DESIGN.md`
       names `filterStatus`.
-- [ ] AC5: `pnpm test` and `pnpm check` pass.
+- [x] AC5: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate -->
@@ -134,3 +134,11 @@ plugins" button in the line: not chosen at the plan question set.
 
 ## Review
 <!-- owner: review · exclusive. -->
+
+Evidence at 9061f59, branch level with main at 0a947f0, 2026-10-28.
+
+- AC1: `vitest run test/home-filter.test.ts --reporter=verbose`: the four `filterStatus` cases pass ("no filter is on" → "", "a filter hides every row" → `No plugins match these filters.`, "a filter shows some rows" → `Showing 8 of 42 plugins.`, "the list holds one row" → `Showing 1 of 1 plugin.`); 29 of 29 pass. At T1 each failed with "filterStatus is not a function" before the function existed.
+- AC2: `pnpm exec vitest run test/site.test.ts --reporter=verbose`: "holds one hidden status line between the version buttons and the list" passes (one `\sdata-filter-status` match, and the exact `<p class="filter-status" role="status" data-filter-status hidden></p>` between `</div></div>` of the version filter and `<ul class="plugins">`); "has a script on the home page only" passes (one `<script`). 67 of 67 pass. At T2 the status case failed with index.astro stashed.
+- AC3: browser pane, `python3 -m http.server`, sites rebuilt at 9061f59 with `pnpm site --out`. Deployed `v1/plugins.json` (downloaded 2026-10-28, 42 rows): no parameter → line not hidden, text "", 42 of 42 rows shown; `?language=zh` → `Showing 27 of 42 plugins.`, 27 rows without `hidden`, 42 `li.plugin`; `?zotero=8` → `Showing 30 of 42 plugins.`, 30 and 42. The deployed data has no language and major pair that hides every row (all 45 × 4 pairs checked at T4), so the fixture build (9 rows) was used: `?language=es&zotero=10` → `No plugins match these filters.`, 0 shown; `?language=de&zotero=7` → the same, 0 shown. In every case the line had no `hidden` attribute after the script ran.
+- AC4: joined-copy search (`tr '\n' ' ' | sed 's/  */ /g' | grep -oF`): README.md holds `No plugins match these filters.` once and `Showing N of M plugins.` once; CHANGELOG.md holds each once, in the entry the diff adds at lines 322-329 under `## Unreleased` (the file's only `## ` heading). `cairn/DESIGN.md` line 247 names `filterStatus` in the `src/site/home-filter.ts` list.
+- AC5: `npx -y pnpm@12.15.0 test`: type check clean, 19 test files, 941 passed, 1 skipped (the case-sensitive volume case, per the M031 lesson). `npx -y pnpm@12.15.0 check`: 42 entries, 0 problems.
