@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M038: Answer issues when the recheck fails
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -121,6 +121,8 @@ canceled" and "Answer report issues left open".
 - 2026-10-28: T3 done — README "Pull requests from the bot" and "Proposing a plugin with an issue", CHANGELOG Unreleased, and the DESIGN handoff paragraph updated (rewrapped to 80 columns); the exit-2 `readHandoff` test now uses the default limit, since under load its shim passed the 300 ms limit; full runs under a load average near 8 (another session's R tests) failed timing tests in turn (`registry-schema` cached copy, pnpm check limit), which pass alone (30 of 30 in the two files).
 - 2026-10-28: T4 done — pnpm test 883 passed, 1 skipped (load average 7.6); pnpm check 0 problems; claim audit reader running.
 - 2026-10-28: claim audit fixes applied (README failure-name sentence no longer covers `pnpm check`; "exits with a status other than 1" became "ends with any result other than exit status 1" in README, CHANGELOG, DESIGN; rewrapped to 80 columns); re-read by the same reader pending.
+- 2026-10-28: claim audit: 38 claims read, 2 corrected — README.md, CHANGELOG.md, cairn/DESIGN.md; the same reader re-read both corrections and found them true.
+- 2026-10-28: all tasks done; verify slot last green at 0dc55cc (later commits change docs only); status set to review.
 
 ## Decisions
 
