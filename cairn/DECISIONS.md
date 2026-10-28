@@ -279,3 +279,24 @@ plugin. The cost is that a release file that GitHub refuses for good marks
 its record build-level every day: it counts toward the more-than-half bar,
 the discover bot keeps no state for that repo and reads it again, and an
 "Add a plugin" issue for it stays open. The rest of D-011 stands.
+
+### D-023: Start each listed plugin in Zotero in an isolated CI job, as a start fact only
+
+2026-10-28, M046 and M047 plan. At the plan question set the user chose to
+start each listed plugin in a Zotero that GitHub Actions runs, and to show
+the result as a start, not as "works". A plugin starts only in the tested
+releases that its manifest's range covers, because Zotero refuses to
+install it outside that range, so users cannot run it there. The tested
+releases are pinned in the workflow with a SHA-256 for each download, and
+a maintainer edits the list when Zotero ships a release. The start-test
+job holds no token permissions and no secrets, and it restores and saves
+no cache (D-010). No artifact holds an XPI. Each job downloads the XPI
+from the URL that the build read and checks its SHA-256, so the index
+still re-serves no plugin file. The user also allowed CI to download
+Zotero from download.zotero.org and to install Ubuntu packages with apt.
+No npm package changes. The cost is that plugin code in a start-test job
+can rewrite that job's results, its own included, so the data can show a
+forged start. The user rejected starting plugins outside their range with
+Zotero's compatibility check off, and finding the newest Zotero release at
+run time, since Zotero publishes no release list as data and such a
+download has no pinned hash to check.
