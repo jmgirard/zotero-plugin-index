@@ -41,7 +41,7 @@ plugin read and is not changed.
 ## Acceptance criteria
 <!-- owner: plan · create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: In `githubClient`'s `get` in `src/upstream/reader.ts`, an answer
+- [x] AC1: In `githubClient`'s `get` in `src/upstream/reader.ts`, an answer
       with an ok status whose body `JSON.parse` refuses fails as
       `request-failed` marked build-level. In `test/upstream.test.ts`, a
       read whose repo answer is HTTP 200 with the body `<html>`, and a read
@@ -49,7 +49,7 @@ plugin read and is not changed.
       HTTP 200 with that body, each return `ok: false`, the failure
       `request-failed`, a message that holds `not JSON`, and
       `buildLevel: true`.
-- [ ] AC2: An HTTP 403 answer to the XPI download (`xpi-unreadable`) or the
+- [x] AC2: An HTTP 403 answer to the XPI download (`xpi-unreadable`) or the
       `update.json` download (`update-json-http-error`) is marked
       build-level when the download requested, as its first URL or after a
       redirect, a GitHub release URL: a URL whose host is `github.com` and
@@ -65,12 +65,12 @@ plugin read and is not changed.
       reached with no redirect at a `raw.githubusercontent.com` URL, at a
       `release-assets.githubusercontent.com` URL, and at a `github.com` URL
       whose path is `/<owner>/<repo>/raw/main/update.json`.
-- [ ] AC3: The build-level list under "Building the data" in `README.md`
+- [x] AC3: The build-level list under "Building the data" in `README.md`
       gains two items, one holding `body is not JSON` and one holding
       `release download URL`, and keeps its item for a GitHub API 401 or
       403. A new `CHANGELOG.md` entry under `## Unreleased` holds both
       phrases. A search of a joined copy of each file finds each phrase.
-- [ ] AC4: `pnpm test` and `pnpm check` pass.
+- [x] AC4: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan · create/amend-via-gate -->
@@ -141,3 +141,12 @@ plugin read and is not changed.
 
 ## Review
 <!-- owner: review · exclusive. -->
+
+Evidence gathered 2026-10-28 at 7719dc9; main not moved since the cut (ae2d888).
+
+- AC1: `src/upstream/reader.ts:343` calls `fail("request-failed", … is not JSON …, true)` after the `response.ok` check in `get`. `vitest run test/upstream.test.ts --reporter=verbose`: "fails with buildLevel when the repo body is not JSON", "… the first releases page is not JSON", "… the second releases page is not JSON" pass; each asserts `request-failed`, a message holding `not JSON` (repo) or the page URL, and `buildLevel: true`. The two page rows asserted only the URL, so review tightened them to `<page URL> returned a body that is not JSON`; rerun: both pass (upstream file 268 passed).
+- AC2: `--reporter=verbose` lists nine passing rows "sorts a 403 at … by the release URL rule". `buildLevel: true` rows: the XPI's release URL; the asset URL that the XPI's release URL redirects to; the update.json's release URL; the asset URL that it redirects to; a release URL that `hop.example` redirects to; a `releases/latest/download` URL. Rows with no `buildLevel` key (`toEqual` on the whole result): a direct `raw.githubusercontent.com` URL, a direct `release-assets` URL, and `github.com/<owner>/<repo>/raw/main/update.json`. `isReleaseUrl` (`reader.ts:103-106`) checks host `github.com` and path segment 3 `releases`; `downloader` sets the flag before each request (`reader.ts:470`).
+- AC3: README "Building the data" list (lines 676-688) gains item 681 holding `body is not JSON` and item 683-687 holding `release download URL`; item 680, "an HTTP 401 or 403 answer from the GitHub API", stays. `CHANGELOG.md` has one section, `## Unreleased`, and its last entry (lines 330-339) holds both phrases. Joined-copy search (the M018 lesson's command): each phrase found once in each file.
+- AC4: with the tightened test in the tree, `npx -y pnpm@12.15.0 test`: type check clean, 19 files, 957 passed, 1 skipped (the case-only-name case, which skips on a case-insensitive macOS volume); `pnpm check`: 42 entries, 0 problems.
+- Consistency gate: `cairn_validate.py` exit 0, all checks passed. No DESIGN principle changed, so `cairn_impact` is skipped. The generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple

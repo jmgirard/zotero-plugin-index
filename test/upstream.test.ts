@@ -602,8 +602,13 @@ describe("readUpstream", () => {
   test.each<[string, (r: Responses) => void, string, string]>([
     ["the releases request returns 403", (r) => (r[RELEASES].status = 403), "github-http-error", "HTTP 403"],
     ["the repo body is not JSON", (r) => (r[REPO] = { text: "<html>" }), "request-failed", "not JSON"],
-    ["the first releases page is not JSON", (r) => (r[RELEASES] = { text: "<html>" }), "request-failed", RELEASES],
-    ["the second releases page is not JSON", (r) => (r[RELEASES_PAGE_2] = { text: "<html>" }), "request-failed", RELEASES_PAGE_2],
+    ["the first releases page is not JSON", (r) => (r[RELEASES] = { text: "<html>" }), "request-failed", `${RELEASES} returned a body that is not JSON`],
+    [
+      "the second releases page is not JSON",
+      (r) => (r[RELEASES_PAGE_2] = { text: "<html>" }),
+      "request-failed",
+      `${RELEASES_PAGE_2} returned a body that is not JSON`,
+    ],
     ["a GitHub request cannot connect", (r) => (r[RELEASES_PAGE_2] = { error: "fetch failed" }), "request-failed", "fetch failed"],
     ["a body read is cut off", (r) => (r[UPDATE] = { bodyError: "terminated" }), "request-failed", "terminated"],
     ["the XPI body read is cut off", (r) => (r[XPI] = { bodyError: "terminated" }), "request-failed", "terminated"],
