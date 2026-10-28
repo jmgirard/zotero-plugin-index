@@ -1,6 +1,6 @@
 # M033: Label the languages as menus and settings
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -23,7 +23,7 @@ A site visitor reads the languages that a plugin page lists as the languages of 
 
 - [ ] AC1: Each plugin page that shows a languages line labels it `Menus and settings in:` in place of `Interface languages:`. The line keeps the same `<span data-fact="languages">` and the same text in it: the language names, or "None declared". In `test/site.test.ts`, a test asserts the new label on a built page. A test also reads every page under the fixture build's `plugins/` directory and finds `Interface languages:` in none of them.
 - [ ] AC2: The text of the home page menu's `<label for="language">` reads `Menus and settings in` in place of `Interface language`. In `test/site.test.ts`, the built home page's menu test asserts the new label.
-- [ ] AC3: README.md and CHANGELOG.md hold no `Interface language` label. A case-sensitive search of each file, joined into one line with runs of spaces squeezed, finds no match. README's home-menu and plugin-page paragraphs name the label `Menus and settings in`. README's plugin-page paragraph says that the description is the author's own text and can be in another language than the menus.
+- [ ] AC3: README.md and CHANGELOG.md hold no `Interface language` label. A case-sensitive search of each file, joined into one line with runs of spaces squeezed, finds no match. README's home-menu and plugin-page paragraphs name the label `Menus and settings in`. README's plugin-page paragraph says that the description comes from the plugin's manifest or from an index override, so it can be in another language than the languages line names.
 - [ ] AC4: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
@@ -55,6 +55,12 @@ A site visitor reads the languages that a plugin page lists as the languages of 
 - 2026-10-28: T1, T2 done: the label test, a loop over all 8 built plugin pages, and the menu test failed on the old labels, then passed with both templates changed (61 site tests).
 - 2026-10-28: T3 done: README's two paragraphs, the CHANGELOG languages entry, and DESIGN's facts paragraph name "Menus and settings in" and say the description is the author's text; joined search finds 0 "Interface language" in README.md and CHANGELOG.md. The comment in `src/site/languages.ts:1` names the data, not the label, so it stays.
 - 2026-10-28: T4 done: `pnpm test` 839 passed, 1 skipped; `pnpm check` 37 entries, 0 problems. Planting both old labels from copies failed the 3 label tests; restored from the copies. A site built from the published data of 2026-10-28 showed the new line on ZotMoov's page and the new menu label in the browser pane.
+- 2026-10-28: substantive amendment: AC3's last sentence changed from "says that the description is the author's own text and can be in another language than the menus" to "says that the description comes from the plugin's manifest or from an index override, so it can be in another language than the languages line names", because `shownDescription` (`src/site/description.ts`) shows a maintainer's `description` override when one applies. Wording only; what the user sees is the same.
+- 2026-10-28: re-audit: AC3 (full) — satisfiable, no decision blocks it; suggested also binding CHANGELOG's wording in AC3, declined as a wider promise; T3 fixes CHANGELOG and DESIGN instead.
+- 2026-10-28: T3 reopened as a minor amendment: the claim audit's findings rewrite README's menu, filter, line, and description sentences, CHANGELOG's line and description sentences, and DESIGN's description clause. Joined searches find 0 "Interface language" and 0 "author's own text" in README.md, CHANGELOG.md, and DESIGN.md.
+- 2026-10-28: follow-up for review hygiene: an empty list shows "Menus and settings in: None declared", which can read as "no menus" for a plugin whose text is in its code; reword that empty case. Owed as a candidate row; ROADMAP is at its 59-line cap.
+- 2026-10-28: claim audit: 16 claims read, 4 corrected — README.md, CHANGELOG.md (description source, what the line names, what the menu lists, what the filter keeps; the re-read found all four fixed and one long line, rewrapped).
+- 2026-10-28: implement done; status review.
 
 ## Decisions
 

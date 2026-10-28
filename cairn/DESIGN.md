@@ -37,7 +37,8 @@ The data also carries the interface languages that the read XPI's locale
 folders name (M023), counting a folder only when one of its files holds a
 message, judged by file type (M027). They say which languages a plugin
 ships menu and settings text for, not whether a translation is complete,
-and not the language of the description, which is the author's own text. A
+and not the language of the description, which comes from the manifest or
+an override. A
 `languages` override records them for a plugin whose list is wrong or
 empty. Each plugin page shows them by name in a "Menus and settings in"
 line, outside the Details section, and the home page's "Menus and settings

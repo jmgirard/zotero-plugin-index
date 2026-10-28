@@ -193,10 +193,10 @@
   apply it. The schema stays at version 1. The schema rejects fields that
   it does not define, so fetch any saved copy of it again. The page of each
   plugin that the index read shows the languages by name in a "Menus and
-  settings in" line. The line names the languages of the plugin's own menus
-  and settings. The description is the author's own text, so it can be in
-  another language. If a `languages` override applies to the version the
-  index read, the line shows the override's languages in place of the list.
+  settings in" line. The description comes from the plugin's manifest or
+  from an index override, so it can be in another language. If a
+  `languages` override applies to the version the index read, the line
+  shows the override's languages in place of the list.
   If no language is left, the line says "None declared". The home page has
   a "Menus and settings in" menu that shows only the plugins with the
   language you pick. It counts `zh-CN` and `zh-TW`
