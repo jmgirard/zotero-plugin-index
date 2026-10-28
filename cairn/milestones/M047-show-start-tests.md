@@ -1,6 +1,6 @@
 # M047: Show whether plugins start in Zotero
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** M046
 - **Driving RR:** —
@@ -129,7 +129,7 @@ issues entry records this limit.
       version. A site job adds the results, runs `pnpm site`, and uploads
       the Pages artifact. The deploy job needs the site job. Parse the
       file with Ruby's YAML.
-- [ ] T5: Push the branch and dispatch `build.yml` on it, after making
+- [x] T5: Push the branch and dispatch `build.yml` on it, after making
       sure that `gh run list` shows no waiting run. Read each job's
       result, the start results, and each artifact's file list.
 - [x] T6: Add the "Starts in Zotero" line to the plugin page in
@@ -137,7 +137,7 @@ issues entry records this limit.
       built HTML, and check the page in the browser pane.
 - [x] T7: Write README "Using the data" and "Building the data" text, the
       CHANGELOG entry, and the DESIGN text.
-- [ ] T8: Run the `verify` slot, and fix what fails.
+- [x] T8: Run the `verify` slot, and fix what fails.
 
 ## Work log
 
@@ -168,6 +168,8 @@ issues entry records this limit.
 - 2026-10-28: T5 started: branch pushed; `build.yml` dispatched on it as run 40772271599 after `gh run list` showed no waiting run.
 - 2026-10-28: claim audit: 120 claims read, 4 corrected — .github/workflows/build.yml, README.md (the start-test job's time comment, where the plan goes, the `upstream` check in add-start-results, and add-start-results failing the deploy); the one re-read confirmed 3 and refined the time comment, applied.
 - 2026-10-28: T5 run 40772271599: build and site succeeded; each start-test job's Zotero download check passed and its plugins started (37 "started" lines in the 10.0.6 log), then `pnpm start-tests` failed with ENOENT writing `--out` into a missing directory; deploy was skipped, not failed, since a job with a failed earlier job is skipped by default. Fixed: the CLI makes the `--out` parent (the CLI test now names a missing directory; without the fix it failed), and deploy gets `if: ${{ !cancelled() && needs.site.result == 'success' }}`, with a workflows test; README and DESIGN say so. Verify clean (1014 passed).
+- 2026-10-28: T5 done: run 40773444023 on branch head 471d7f2: build, the four start-test jobs, and site succeeded; each `sha256sum --check` printed OK; results 7.0.32 25, 8.0.4 30, 9.0.6 33, 10.0.6 37, all `started`, 0 without a result, the rest outside the manifest range; the site job kept 125 and dropped 0, and 41 of 42 records in the Pages artifact's `v1/plugins.json` have `startTests`; deploy failed with "Branch "m047-show-start-tests" is not allowed to deploy to github-pages due to environment protection rules"; the 7 artifacts (plugins-data, start-plan, four start-results, github-pages, its tar listed too) hold no `.xpi` file; the run took 6 minutes.
+- 2026-10-28: T8 done: verify clean (1014 passed, 6 skipped; 42 entries checked, 0 problems).
 
 ## Decisions
 
