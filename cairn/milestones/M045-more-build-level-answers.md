@@ -91,7 +91,7 @@ plugin read and is not changed.
       them fail. Then pass `true` to `fail` for the body that is not JSON in
       `get` (`src/upstream/reader.ts:332`), and update the comment at line
       63 if it lists the cases.
-- [ ] T2: Write AC2's nine rows first, with redirect responses in the form
+- [x] T2: Write AC2's nine rows first, with redirect responses in the form
       of `redirectChain` (`test/upstream.test.ts:1067`) and `update_url`
       edits for the `update.json` URLs, and run them to see the build-level
       rows fail. Then have `downloader` (`src/upstream/reader.ts:447`) note
@@ -128,6 +128,8 @@ plugin read and is not changed.
 - 2026-10-28: plan gate widened the URL rule from a path starting `/releases/download/` to any `github.com` path whose third segment is `releases`, because `update_url`s often name `/releases/latest/download/`, and a 403 at that hop is GitHub's too; falsified by a `github.com` `/releases/` path whose 403 a plugin causes.
 - 2026-10-28: implement started on branch m045-more-build-level-answers, cut from main at ae2d888.
 - 2026-10-28: T1 done: `get` marks a body that is not JSON build-level; the three rows (repo, first and second releases pages) failed before the fix and pass; `pnpm test` 946 passed, 1 skipped; `pnpm check` 0 problems.
+- 2026-10-28: T2 choice: `Download` returns `{ response, from }`, with `from` "github-release" once any requested URL passes `isReleaseUrl` (host `github.com`, third path segment `releases`), and `buildLevelStatus` gains that case (403, plus the any-host 429 and 5xx).
+- 2026-10-28: T2 done: the nine AC2 rows; the six build-level rows failed before the fix only on the missing mark. Planted defects: a first-URL-only check turned the redirect-from-another-host row red, and the rejected host-name list turned 5 rows red, the direct asset URL row among them; file restored from a copy. `pnpm test` 955 passed, 1 skipped; `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

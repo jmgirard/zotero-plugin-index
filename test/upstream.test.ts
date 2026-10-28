@@ -613,6 +613,54 @@ describe("readUpstream", () => {
     expect(result).toEqual({ ok: false, failure, message: expect.stringContaining(detail), buildLevel: true });
   });
 
+  // A 403 is build-level when the download requested a github.com URL whose third path
+  // segment is `releases`, at any hop, and plugin-level otherwise.
+  const ASSET = "https://release-assets.githubusercontent.com/github-production-release-asset/486255787/asset";
+  const LATEST = "https://github.com/windingwind/zotero-better-notes/releases/latest/download/update.json";
+  const RAW = "https://raw.githubusercontent.com/windingwind/zotero-better-notes/main/update.json";
+  const BLOB_RAW = "https://github.com/windingwind/zotero-better-notes/raw/main/update.json";
+  const redirect = (location: string) => ({ status: 302, headers: { location } });
+  const forbidden = { status: 403 };
+  const updateAt = (r: Responses, url: string) => {
+    manifest(r).applications.zotero.update_url = url;
+    r[url] = forbidden;
+  };
+  test.each<[string, (r: Responses) => void, string, string, boolean]>([
+    ["the XPI's release URL", (r) => (r[XPI] = forbidden), "xpi-unreadable", XPI, true],
+    ["the asset URL that the XPI's release URL redirects to", (r) => ((r[XPI] = redirect(ASSET)), (r[ASSET] = forbidden)), "xpi-unreadable", XPI, true],
+    ["the update.json's release URL", (r) => (r[UPDATE] = forbidden), "update-json-http-error", UPDATE, true],
+    [
+      "the asset URL that the update.json's release URL redirects to",
+      (r) => ((r[UPDATE] = redirect(ASSET)), (r[ASSET] = forbidden)),
+      "update-json-http-error",
+      UPDATE,
+      true,
+    ],
+    [
+      "a release URL that a URL on another host redirects to",
+      (r) => {
+        manifest(r).applications.zotero.update_url = "https://hop.example/0";
+        r["https://hop.example/0"] = redirect(UPDATE);
+        r[UPDATE] = forbidden;
+      },
+      "update-json-http-error",
+      "https://hop.example/0",
+      true,
+    ],
+    ["a releases/latest/download URL", (r) => updateAt(r, LATEST), "update-json-http-error", LATEST, true],
+    ["a raw.githubusercontent.com update.json", (r) => updateAt(r, RAW), "update-json-http-error", RAW, false],
+    ["an asset URL given as the update.json", (r) => updateAt(r, ASSET), "update-json-http-error", ASSET, false],
+    ["a github.com raw update.json", (r) => updateAt(r, BLOB_RAW), "update-json-http-error", BLOB_RAW, false],
+  ])("sorts a 403 at %s by the release URL rule", async (_name, edit, failure, detail, buildLevel) => {
+    const { result } = await read(edit);
+    expect(result).toEqual({
+      ok: false,
+      failure,
+      message: expect.stringContaining(`${detail} returned HTTP 403`),
+      ...(buildLevel && { buildLevel: true }),
+    });
+  });
+
   test("fails with xpi-too-large and stops reading an XPI past 50 MiB", async () => {
     const { result, requests } = await read((r) => (r[XPI] = { chunks: { size: 1_048_576, count: 60 } }));
     expect(result).toEqual({ ok: false, failure: "xpi-too-large", message: expect.stringContaining(XPI) });
@@ -1141,10 +1189,11 @@ describe("readUpstream", () => {
 });
 
 describe("buildLevelStatus", () => {
-  test("counts 401 and 403 from the GitHub API, and 429 and 500 to 599 from any host", () => {
+  test("counts 401 and 403 from the GitHub API, 403 from a GitHub release download, and 429 and 500 to 599 from any host", () => {
     for (let status = 200; status <= 599; status++) {
       const anyHost = status === 429 || status >= 500;
       expect([status, buildLevelStatus(status, "github-api")]).toEqual([status, anyHost || status === 401 || status === 403]);
+      expect([status, buildLevelStatus(status, "github-release")]).toEqual([status, anyHost || status === 403]);
       expect([status, buildLevelStatus(status, "download")]).toEqual([status, anyHost]);
     }
   });
