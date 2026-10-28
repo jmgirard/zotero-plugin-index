@@ -92,7 +92,8 @@ export async function buildData(
   let issues: unknown[];
   try {
     // A renamed or deleted label makes GitHub answer the list with no issues, so the label
-    // must exist first. Any answer GitHub gives as a JSON body is enough.
+    // must exist first. Any successful answer with a JSON body is enough, and its content
+    // is not checked.
     const github = githubClient(fetch);
     await github.json(`https://api.github.com/repos/${indexRepo}/labels/report`);
     // Oldest first, so a report closed during the read joins the last page rather than

@@ -1,6 +1,6 @@
 # M041: Fail the build when report fields go missing
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -58,6 +58,8 @@ The daily build withholds the deploy, instead of publishing report counts of zer
 - 2026-10-28: T2 done: `buildData` reads `labels/report` with `githubClient(fetch).json` inside the issue-read `try`, sharing one client with the list read; the label is recorded in `responses()` rather than in `test/fixtures/build/responses.json`, so each test that records `[ISSUES]` by hand also records `LABEL`; 5 tests failed before the read (3 URL-order tests, the 404 and rejected-fetch tests, which built with exit 0); `pnpm test` 929 passed, 1 skipped; `pnpm check` clean.
 - 2026-10-28: T3 done: README exit-1 list gains the label-read and `closed_by` cases; DESIGN.md's Data build bullet and `build.yml` passage name both; one CHANGELOG `## Unreleased` entry; README's "If the build cannot read the report issues" sentence unchanged. The simple-english lint hook also flags 4 older lines in README.md (115, 472) and CHANGELOG.md (174, 269) that this milestone does not touch; left as they are. `pnpm test` 929 passed, 1 skipped; `pnpm check` clean.
 - 2026-10-28: T4 done: live `pnpm build --out <scratchpad>` with `GITHUB_TOKEN` from `gh auth token` exited 0, wrote 42 records (2 with a failed upstream read, 1 build-level), printed no `cannot read the report issues:` line, and kept the one counted report (better-bibtex, Zotero 10, 1 works).
+- 2026-10-28: claim audit: 28 claims read, 3 corrected — CHANGELOG.md (a missing `closed_by` left that issue out of the counts, not all counts zero), README.md (the issue number is named only when the issue has one), src/build/build.ts (the label read takes a successful JSON answer, not any JSON answer); the reader re-read the 3 and found them true. The reader checked GitHub's 404 for a missing label with a read-only `gh api` call; a rename was not tried, since it needs a write.
+- 2026-10-28: implement done; status review. `pnpm test` 929 passed, 1 skipped; `pnpm check` clean.
 
 ## Decisions
 

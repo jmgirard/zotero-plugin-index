@@ -304,5 +304,6 @@
   label read fails, the build writes no data file and exits 1. A renamed or
   deleted label gives such a failure. If an issue in the list has no
   `closed_by` field, the build also writes no data file and exits 1. The
-  site then keeps the data of the last good build. Before, both cases gave
-  report counts of zero, and the build went on.
+  site then keeps the data of the last good build. Before, a missing label
+  gave report counts of zero, and the counts left out each issue with no
+  `closed_by` field. The build went on in both cases.

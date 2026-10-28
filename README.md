@@ -686,7 +686,8 @@ The command writes no data file and exits with status 1 in these cases:
   error, a network error, or an answer that is not a list. It prints a line
   that names the failure, and it reads no plugin.
 - An issue in the list of report issues has no `closed_by` field. It prints
-  a line that names the field and the issue number, and it reads no plugin.
+  a line that names the field. If the issue has a number, the line also
+  names that number. It reads no plugin.
 - The file it built is not valid against the schema.
 - It cannot write the schema copies or the data file.
 
