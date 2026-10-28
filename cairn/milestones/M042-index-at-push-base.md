@@ -131,6 +131,8 @@ workflow stays in row "Bound the whole discover workflow's time".
 - 2026-10-28: T4 done: README's write-step paragraph, failed-entry paragraph, and issue-run failure list; DESIGN.md's write-step sentence and `propose` bullet; CHANGELOG entry. The two code comments were rewritten in T1–T3. The AC4 search over README.md, cairn/DESIGN.md, and `src/discover/*.ts` prints nothing. The simple-english hook's other README and CHANGELOG hits are in older text and were left alone.
 - 2026-10-28: T5 done: `pnpm test` exit 0 (934 passed, 1 skipped), `pnpm check` exit 0 (42 entries, 0 problems).
 - 2026-10-28: claim audit: 47 claims read, 3 corrected — src/discover/propose.ts (the `fetchBase` comment said an empty index is never read; an empty `plugins/` still reads as empty), README.md (an entry merged during the run counts; only one merged before the one fetch does), test/issue.test.ts (the `answer` comment said the checkout's main gets the change; the remote's does). The reader re-read the three and found them true; README line rewrapped and a lost space in test/propose.test.ts restored. `pnpm test` 934 passed, 1 skipped; `pnpm check` 0 problems.
+- 2026-10-28: review fix-now work in 56aea11 after the four-lens pass (14 fixed, 3 follow-up, 9 rejected; Review section).
+- 2026-10-28: step-7 approval: m042-index-at-push-base approved for merge
 
 ## Decisions
 
