@@ -123,6 +123,7 @@ canceled" and "Answer report issues left open".
 - 2026-10-28: claim audit fixes applied (README failure-name sentence no longer covers `pnpm check`; "exits with a status other than 1" became "ends with any result other than exit status 1" in README, CHANGELOG, DESIGN; rewrapped to 80 columns); re-read by the same reader pending.
 - 2026-10-28: claim audit: 38 claims read, 2 corrected — README.md, CHANGELOG.md, cairn/DESIGN.md; the same reader re-read both corrections and found them true.
 - 2026-10-28: all tasks done; verify slot last green at 0dc55cc (later commits change docs only); status set to review.
+- 2026-10-28: step-7 approval: m038-answer-recheck-failures approved for merge
 
 ## Decisions
 
