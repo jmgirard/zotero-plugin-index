@@ -71,9 +71,10 @@ describe("build.yml", () => {
 
   test("checks each Zotero download against the SHA-256 of its matrix line", () => {
     const job = jobText(build, "start-test");
+    // Quoted, since YAML reads an unquoted hash of digits as a number.
     const hashes = [...job.matchAll(/^ {12}sha256: (\S+)$/gm)].map(([, hash]) => hash);
     expect(hashes).toHaveLength(4);
-    for (const hash of hashes) expect(hash).toMatch(/^[0-9a-f]{64}$/);
+    for (const hash of hashes) expect(hash).toMatch(/^"[0-9a-f]{64}"$/);
     expect(job).toContain('echo "$ZOTERO_SHA256  $RUNNER_TEMP/$ZOTERO_FILE" | sha256sum --check');
   });
 
