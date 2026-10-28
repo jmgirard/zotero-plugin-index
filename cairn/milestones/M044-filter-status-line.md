@@ -151,25 +151,25 @@ spawned: diff-bug, blame-history, prior-review, ripple
 - diff-bug #1: returning to All languages and Any version writes "", so screen readers hear nothing — reject (planned change: the question set chose an empty line with no filter on).
 - diff-bug #2: a change that keeps the same count writes the same text, which some screen readers do not repeat — follow-up, row "Close gaps around the filter line".
 - diff-bug #3: on a load with `?language=` or `?zotero=` the first text is written while the line is still `hidden`, so it is not announced — follow-up, same row.
-- diff-bug #4: the placement regex in `test/site.test.ts` used `.*?` with the `s` flag, so it did not pin the version-filter div — fix now.
-- diff-bug #5: `cairn/DESIGN.md` lines 556-558 named only the menu and the buttons as the script's jobs — fix now.
+- diff-bug #4: the placement regex in `test/site.test.ts` used `.*?` with the `s` flag, so it did not pin the version-filter div — fix now, fixed 8e381e3.
+- diff-bug #5: `cairn/DESIGN.md` lines 556-558 named only the menu and the buttons as the script's jobs — fix now, fixed 8e381e3.
 - diff-bug #6: ROADMAP row "Say when the filters hide every plugin" is still listed — reject (planned change: step 9 hygiene graduates it).
-- diff-bug #7: `filtering` was computed apart from `passes`, so a value that no option has could count as on in a future path — fix now (`filterOn`).
+- diff-bug #7: `filtering` was computed apart from `passes`, so a value that no option has could count as on in a future path — fix now, fixed 8e381e3 (`filterOn`).
 - diff-bug #8: the `:empty` rule works — noted, no finding.
 - diff-bug #9: README line 46 does not say the page removes an unknown `language` parameter — follow-up, same row.
 - diff-bug (tests): no case has `filtering` false with `shown` 0 — reject (false: with no filter on every row shows, and the build refuses an empty index).
 - blame-history #1: the absorbed row is still listed — reject (planned change, as diff-bug #6).
-- blame-history #2: DESIGN lines 556-558 stale — fix now (as diff-bug #5).
+- blame-history #2: DESIGN lines 556-558 stale — fix now, fixed 8e381e3 (as diff-bug #5).
 - blame-history #3: README line 46 — follow-up (as diff-bug #9).
 - blame-history #4: `if (status)` and `status?.` guard an element that is always in the HTML — reject (style: it matches the script's guard on the menu and buttons).
-- blame-history #5: the loose placement regex — fix now (as diff-bug #4).
+- blame-history #5: the loose placement regex — fix now, fixed 8e381e3 (as diff-bug #4).
 - prior-review #1: the status line's DOM code has only a hand check, and row "Test the home page script in a browser" does not name it — follow-up, row "Close gaps around the filter line" (that row holds findings from M024 and M037, so it is not extended).
-- prior-review #2: the on-or-off test for the filters sat in the untested script — fix now (`filterOn`, as diff-bug #7).
+- prior-review #2: the on-or-off test for the filters sat in the untested script — fix now, fixed 8e381e3 (`filterOn`, as diff-bug #7).
 - prior-review #3: on a filtered address the line appears after the first paint and moves the list down by its height and margin — follow-up, row "Close gaps around the filter line" (row "Filter the home list before it paints" holds findings from two milestones, so it is not extended).
 - prior-review #4: README line 46 — follow-up (as diff-bug #9).
 - prior-review #5: the regex test of built HTML does not reopen the `<div>` in `<p>` trap, since T4 ran `DOMParser` — noted, no finding.
 - ripple #1: the absorbed row is still listed — reject (planned change, as diff-bug #6).
 - ripple #2: row "Test the home page script in a browser" omits the status line — follow-up (as prior-review #1).
-- ripple #3: the `src/site/home-filter.ts` header named only the menu and the buttons — fix now.
+- ripple #3: the `src/site/home-filter.ts` header named only the menu and the buttons — fix now, fixed 8e381e3.
 
 Row to add at step 9 (ROADMAP is at 59 lines until hygiene removes the absorbed row): `- [low] Close gaps around the filter line: (1) on a load with `?language=` or `?zotero=` the script writes the line's first text while the line is still hidden, so screen readers do not announce it, and a change that keeps the same count writes the same text, which some screen readers do not repeat; (2) on such a load the line appears after the first paint and moves the list down, as "Filter the home list before it paints" says for the rows; (3) the line's DOM code (the count, the unhide) has only a hand check, as "Test the home page script in a browser" says for the menu and buttons; (4) README line 46 says an unknown `language` parameter shows every plugin, but not that the page removes it, as the `zotero` paragraph says (M044 review) — added 2026-10-28 — M024, M037, M044`
