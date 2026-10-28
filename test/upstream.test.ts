@@ -262,6 +262,40 @@ describe("readUpstream", () => {
     expect(result.ok && result.facts.languages).toEqual(languages);
   });
 
+  const DECLARED_OVER_1_MIB = { compression: 8, originalSize: 1_048_577 };
+  const BROKEN = { compression: 8, originalSize: COMMENT.length };
+
+  test.each<[string, number, string, Uint8Array, { compression?: number; originalSize?: number }]>([
+    ["of another type", 0, "icon.png", COMMENT, {}],
+    ["of another type", 1, "icon.png", COMMENT, {}],
+    ["over 1 MiB", 0, "x.ftl", DEFLATED_COMMENT, DECLARED_OVER_1_MIB],
+    ["over 1 MiB", 1, "x.ftl", DEFLATED_COMMENT, DECLARED_OVER_1_MIB],
+    ["that fails to inflate", 0, "x.ftl", BROKEN_COMMENT, BROKEN],
+    ["that fails to inflate", 1, "x.ftl", BROKEN_COMMENT, BROKEN],
+  ])("keeps a tag with a file %s beside %i counted messages", async (_name, count, file, data, fields) => {
+    const { result } = await readXpi((json) => {
+      const files = { "manifest.json": json, "locale/en-US/a.ftl": strToU8(ftl(10)), "locale/de/a.ftl": strToU8(ftl(count)) };
+      const zip = zipSync({ ...files, [`locale/de/${file}`]: [data, { level: 0 }] });
+      return editHeader(zip, `locale/de/${file}`, (view, header) => {
+        if (fields.compression !== undefined) view.setUint16(header + 10, fields.compression, true);
+        if (fields.originalSize !== undefined) view.setUint32(header + 24, fields.originalSize, true);
+      });
+    });
+    expect(result.ok && result.facts.languages).toEqual(["de", "en-US"]);
+  });
+
+  test("counts no message in a kept tag's file of another type", async () => {
+    const { result } = await read((r) =>
+      Object.assign(r[XPI].xpi!, {
+        "locale/en-US/a.json": lines(100, (i) => `m${i} = Hallo\n`),
+        "locale/en-US/b.ftl": ftl(1),
+        "locale/fr/a.ftl": ftl(4),
+        "locale/de/a.ftl": ftl(1),
+      }),
+    );
+    expect(result.ok && result.facts.languages).toEqual(["en-US", "fr"]);
+  });
+
   test("keeps the folders whose files would take the inflated total past 8 MiB", async () => {
     const comments = "# Comment\n".repeat(100_000);
     const tags = ["ar", "bg", "cs", "da", "de", "el", "es", "fi", "fr", "he"];

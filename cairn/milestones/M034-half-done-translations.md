@@ -39,7 +39,7 @@ The `languages` list leaves out a tag whose locale folders hold fewer than half 
 
 - [x] T1: Add the AC1 cases to the languages table (`test/upstream.test.ts:193`) and see them fail. This file spawns no pnpm, so run it with `./node_modules/.bin/vitest run test/upstream.test.ts` while working (LESSONS M027).
 - [x] T2: In `localeLanguages` (`src/upstream/reader.ts:553`), replace `holdsMessage` with a function that counts messages by the same file-type rules. Read every locale file of a tag, not only up to its first message, inside the same 8 MiB budget and 1 KiB pushes (LESSONS M027). Keep the AC2 tags apart, then apply the half rule. Update the function comments. Where the rule changes an existing case's expected list, update the case and name it in the work log.
-- [ ] T3: Add the AC2 table with `editHeader` (`test/upstream.test.ts:199`) and the `.json` case. See each fail on a planted defect.
+- [x] T3: Add the AC2 table with `editHeader` (`test/upstream.test.ts:199`) and the `.json` case. See each fail on a planted defect.
 - [ ] T4: Update the six AC3 texts. Search joined copies for each phrase (LESSONS M018).
 - [ ] T5: Download ZotMoov's 1.2.34 XPI from its GitHub release into its own empty directory and run the branch's reader on it. Then run `pnpm build` on the branch with a GitHub token (`gh auth token`), compare every record's `languages` with the published data of 2026-10-28, and log each difference in the work log.
 - [ ] T6: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` (LESSONS M001). Plant each counting rule's defect from a copy of the file and restore from the copy (LESSONS M010).
@@ -59,6 +59,7 @@ The `languages` list leaves out a tag whose locale folders hold fewer than half 
 - 2026-10-28: T1: added 7 AC1 cases to the languages table; on main the two drop cases (10 and 4, 9 and 4) failed and the five keep cases passed.
 - 2026-10-28: T2: `holdsMessage` became `MESSAGE_COUNTERS`, a map from extension to a counting function, and `localeLanguages` sums counts per tag and applies the half rule; all 245 reader tests pass, and no existing case's expected list changed.
 - 2026-10-28: T2 choice: a file of another type is no longer inflated, since nothing reads its text, so it charges nothing to the 8 MiB budget; before, it was inflated and charged.
+- 2026-10-28: T3: added the AC2 table (6 cases) and the `.json` case; dropping the keep for another type, for an uninflated file, or for a failed inflate, or adding 100 to the count for another type, each failed its cases; 252 reader tests pass.
 
 ## Decisions
 
