@@ -1,17 +1,16 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-28 (M032 done and archived; row "Catch stray and unportable entry files" graduated, M029 row pruned, 1 row added at review; 4 lessons marked used, 1 captured, 1 evicted)_
+_Last hygiene check: 2026-10-28 (M033 done and archived; M030 row pruned, 1 row added at review; 6 lessons marked used, none captured)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M033 | Label the languages as menus and settings | review | — | normal | milestones/M033-menus-and-settings-label.md |
+| M033 | Label the languages as menus and settings | done | — | normal | milestones/archive/M033-menus-and-settings-label.md |
 | M034 | Skip translations under half done | planned | — | normal | milestones/M034-half-done-translations.md |
 | M032 | Catch blank reasons, repeat overrides, and BOMs | done | — | normal | milestones/archive/M032-override-and-bom-checks.md |
 | M031 | Refuse unsafe entry names | done | — | normal | milestones/archive/M031-safe-entry-names.md |
-| M030 | Bound the discover run's time | done | M029 | normal | milestones/archive/M030-discover-time-limits.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
@@ -28,6 +27,7 @@ _Last hygiene check: 2026-10-28 (M032 done and archived; row "Catch stray and un
 - Close gaps in the build time limits: M029's 3- and 18-minute limits bound the plugin reads only; the report issue read before them has no total limit, only 60 s for each page (see "Bound the build's report issue read"); a host lookup whose wait a limit ended keeps running and can hold the process open after the file is written; and since entries are read in sorted order, a build that the 18-minute limit cuts skips the same last plugins every day (M029 review, D-016) — added 2026-10-27 — M029, D-016
 - Bound the whole discover workflow's time: M030 limits each `git` process of `pnpm propose` to 2 minutes and each `pnpm check` to 5, but not the whole run, so five entries whose check hangs take 25 of the write job's 30 minutes, and one issue entry can pass the 15-minute issue job, which then posts no comment; the search and bot pull request reads before the read loop have only a 60-second limit per request; a host lookup whose wait a limit ended can hold the process open, as "Close gaps in the build time limits" says for the build (M030 review) — added 2026-10-27 — M030
 - Answer issues when the recheck fails: `pnpm propose` checks each branch name again in `readHandoff`, and a check that throws (its 30-second limit, or a git that cannot start) is not caught, so the command exits with a stack trace in place of "refused the handoff", and an issue run posts no comment; DESIGN.md says any failure refuses the whole handoff; catch it in `propose-cli.ts` and answer the issue (M030 review) — added 2026-10-27 — M030
+- Reword the empty languages line: a plugin whose text sits in its code has an empty `languages` list, and its page now reads "Menus and settings in: None declared", which can read as "no menus"; word the empty case so it says no locale folders were found (M033 review) — added 2026-10-28 — M033
 - [low] Limit floods of report issues: anyone can open report issues without limit, each run spends the repo's shared API budget, and a build whose issue read fails withholds the deploy (D-013) (M020 review) — added 2026-10-27 — M020, D-013
 - [low] Fail issue runs with no plugins folder: `indexed` in `src/discover/discover.ts` reads entries through `listEntries`, which returns no entries for a missing `plugins/`, so an "Add a plugin" run treats the index as empty (M020 review) — added 2026-10-27 — M020
 - [low] Check the restored discovery state: the discover read job restores `discovery-state-` by prefix from the default branch's cache in the same job that reads repos anyone can tag, so a job that a crafted repo took over could save a state entry that hides repos from later runs for up to 30 days; check the restored state's shape or keep the state outside the cache (M016 review) — added 2026-10-26 — M009, M016
