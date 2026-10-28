@@ -105,3 +105,16 @@ home list before it paints" and "Test the home page script in a browser".
 - AC2 evidence (2026-10-28): the menu test in `test/site.test.ts:423-436` asserts All languages, Chinese (2), Spanish (2), English (1), French (1), German (1), Portuguese (1) on the home page built from the site fixture, and passes in `pnpm test`; with main's sort planted it fails (1 of 61), the only site test to fail.
 - AC3 evidence (2026-10-28): README.md:39-41 reads "The languages with the most plugins come first, and languages with the same number of plugins come in order of their names." CHANGELOG.md:207-208, in the Unreleased entry that introduces the menu, reads "The menu lists the languages with the most plugins first, and languages with the same number of plugins by name."
 - AC4 evidence (2026-10-28): `npx -y pnpm@12.15.0 test` exit 0, 17 files, 855 passed, 1 skipped; `npx -y pnpm@12.15.0 check` exit 0, 37 entries, 0 problems. (The AC4 box was ticked one edit before this line landed, after a failed edit; this line is the evidence it rests on.)
+- consistency gate (2026-10-28): `cairn_validate.py` exit 0, all checks passed; no principle changed, so no `cairn_impact` run; the generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the name tie-break is code-unit order, so a subtag `Intl.DisplayNames` cannot name sorts as its lowercase tag after capitalized names, and two subtags with one name keep first-appearance order — reject (planned change: the plan chose code-unit order and recorded this as its falsifier; no deployed name hits it)
+- diff-bug #2: README.md:41 and CHANGELOG.md:209 leave short wrapped lines — fix now
+- diff-bug #3: the renamed "three upstream tags" case follows from the fixture change — reject (false: it reports no defect)
+- blame-history #1: the sort replaces M024's text order — reject (planned change)
+- blame-history #2: CHANGELOG.md:209 short line after the edit — fix now (same fix as diff-bug #2)
+- blame-history #3: the fixture's new `es` breaks no other fixture user — reject (false: it reports no defect)
+- blame-history #4: two subtags with one display name keep first-appearance order — reject (planned change, as diff-bug #1)
+- blame-history #5: DESIGN states no old order — reject (false: it reports no defect; prior-review #1 covers the missing new order)
+- prior-review #1: DESIGN's menu paragraph (cairn/DESIGN.md:46-48) does not state the new order, though M033's review had DESIGN state the menu's rules — fix now
+- prior-review #2: README.md:41 and CHANGELOG.md:209 ragged wrap — fix now (same fix as diff-bug #2)
+- ripple: no ripple evidence
