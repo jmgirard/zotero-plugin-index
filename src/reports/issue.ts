@@ -1,5 +1,6 @@
 import { readdir } from "node:fs/promises";
 import { code } from "../discover/propose.ts";
+import { unansweredIssues } from "../issues/unanswered.ts";
 import { type Fetch, githubClient } from "../upstream/reader.ts";
 import { REPORT_BOT } from "./count.ts";
 import { parseReport } from "./report.ts";
@@ -75,6 +76,41 @@ export async function answerReport(options: ReportAnswerOptions): Promise<Report
     return { status: 1, ...(answered ? {} : { comment }), errors: [(error as Error).message] };
   }
   return { status: 0, ...(answered ? {} : { comment }), errors: [] };
+}
+
+// The most report issues one sweep answers.
+export const SWEEP_LIMIT = 20;
+
+export interface ReportSweepOptions {
+  root: string;
+  fetch: Fetch;
+  indexRepo: string;
+  now: number;
+}
+
+export interface ReportSweepResult {
+  // 1 when the list read failed or any answer had status 1.
+  status: 0 | 1;
+  // Each issue the sweep answered, in turn, with its result.
+  answered: { issue: number; result: ReportRunResult }[];
+  errors: string[];
+}
+
+// Answers, in turn, each report issue that no run of `report-issue.yml` answered, as
+// `unansweredIssues` picks them, at most SWEEP_LIMIT. A failed answer does not stop the
+// sweep, so the rest are still answered.
+export async function sweepReports(options: ReportSweepOptions): Promise<ReportSweepResult> {
+  const { root, fetch, indexRepo, now } = options;
+  let issues: number[];
+  try {
+    issues = await unansweredIssues({ fetch, indexRepo, label: "report", workflow: "report-issue.yml", limit: SWEEP_LIMIT, now });
+  } catch (error) {
+    return { status: 1, answered: [], errors: [(error as Error).message] };
+  }
+  const answered: ReportSweepResult["answered"] = [];
+  for (const issue of issues) answered.push({ issue, result: await answerReport({ root, fetch, indexRepo, issue }) });
+  const errors = answered.flatMap(({ issue, result }) => result.errors.map((error) => `issue ${issue}: ${error}`));
+  return { status: answered.some(({ result }) => result.status === 1) ? 1 : 0, answered, errors };
 }
 
 // The names of the entry directories. Unlike `listEntries`, a missing directory fails,

@@ -82,26 +82,45 @@ describe("build.yml", () => {
   });
 });
 
+// The `on:` block of a workflow without its comment lines.
+function triggers(text: string): string | undefined {
+  return text
+    .match(/^on:\n((?: .*\n|\n)*?)(?=^\S)/m)?.[1]
+    .split("\n")
+    .filter((line) => !line.trimStart().startsWith("#"))
+    .join("\n")
+    .trim();
+}
+
 describe("report-issue.yml", () => {
   const report = readFileSync(REPORT, "utf8");
-  const ISSUE_USES = ["github.event.issue.number", "github.event.issue.labels"];
+  const ISSUE_USES = ["github.event.issue.number", "github.event.issue.labels", "github.event.repository.default_branch"];
   const answer = jobText(report, "answer");
 
-  test("runs on opened issues only, and its one job only for the label report", () => {
-    expect(report.match(/^on:\n((?: .*\n|\n)*?)(?=^\S)/m)?.[1].trim()).toBe("issues:\n    types: [opened]");
+  test("runs on opened issues, daily, and on dispatch, and its one job for the label report or a sweep from the default branch", () => {
+    expect(triggers(report)).toBe('issues:\n    types: [opened]\n  schedule:\n    - cron: "13 3 * * *"\n  workflow_dispatch:');
     expect(report.slice(report.indexOf("\njobs:\n")).match(/^ {2}[\w-]+:$/gm)).toEqual(["  answer:"]);
-    expect(answer).toMatch(/^ {4}if: contains\(github\.event\.issue\.labels\.\*\.name, 'report'\)$/m);
+    expect(answer.match(/^ {4}if:.*$/gm)).toEqual([
+      "    if: (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'report')) || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch)",
+    ]);
   });
 
-  test("gives the job contents read and issues write, and no other permission", () => {
+  test("gives the job contents read, issues write, and actions read, and no other permission", () => {
     expect(report).toMatch(/^permissions: \{\}$/m);
-    expect(answer).toMatch(/^ {4}permissions:\n {6}contents: read\n {6}issues: write\n {4}\S/m);
+    expect(answer).toMatch(/^ {4}permissions:\n {6}contents: read\n {6}issues: write\n {6}actions: read\n {4}\S/m);
   });
 
-  test("restores no cache and sets no concurrency group", () => {
+  test("restores no cache", () => {
     expect(answer).toMatch(/^ {4}cache-mode: none$/m);
     expect(cacheLines(report)).toEqual([]);
-    expect(report.split("\n").filter((line) => !line.trimStart().startsWith("#") && /concurrency\s*:/.test(line))).toEqual([]);
+  });
+
+  // A report run's own group shares it with no other run; the sweeps share one group.
+  test("puts each report run in a group of its own and the sweeps in one group", () => {
+    expect(report.split("\n").filter((line) => !line.trimStart().startsWith("#") && /concurrency\s*:/.test(line))).toEqual(["concurrency:"]);
+    expect(report).toMatch(
+      /^concurrency:\n {2}group: \$\{\{ github\.event_name == 'issues' && format\('report-\{0\}', github\.run_id\) \|\| 'report-sweep' \}\}\n {2}cancel-in-progress: false\n/m,
+    );
   });
 
   test("passes the issue number through env, and no other part of the event", () => {
@@ -110,8 +129,11 @@ describe("report-issue.yml", () => {
   });
 
   // The build counts only reports closed by github-actions[bot], the GITHUB_TOKEN's account.
-  test("runs pnpm report-issue with the built-in GITHUB_TOKEN", () => {
-    expect(answer).toMatch(/^ {6}- run: pnpm report-issue\n {8}env:\n {10}GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}$/m);
+  test("runs pnpm report-issue for an opened issue and pnpm report-issue --sweep otherwise, each with the built-in GITHUB_TOKEN", () => {
+    expect(answer).toMatch(
+      /^ {6}- if: github\.event_name == 'issues'\n {8}run: pnpm report-issue\n {8}env:\n {10}GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}\n {10}ISSUE_NUMBER: \$\{\{ github\.event\.issue\.number \}\}\n/m,
+    );
+    expect(answer).toMatch(/^ {6}- if: github\.event_name != 'issues'\n {8}run: pnpm report-issue --sweep\n {8}env:\n {10}GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}\n?$/m);
   });
 
   test.each([

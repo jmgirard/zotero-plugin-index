@@ -6,7 +6,7 @@ import { afterAll, describe, expect, test } from "vitest";
 import type { PluginRecord } from "../src/build/build.ts";
 import { code } from "../src/discover/propose.ts";
 import { countReports } from "../src/reports/count.ts";
-import { answerReport } from "../src/reports/issue.ts";
+import { answerReport, sweepReports } from "../src/reports/issue.ts";
 import { parseReport, REPORT_LABELS } from "../src/reports/report.ts";
 import { fixtureFetch, type Responses } from "./support/fixture-fetch.ts";
 
@@ -333,9 +333,10 @@ describe("answering a report issue", () => {
   });
 });
 
-// Runs `pnpm report-issue` for issue 7 of example/index against `responses`, and returns
-// the result and the requests other than GET that the command sent.
-function pnpmReport(responses: Responses) {
+// Runs `pnpm report-issue` with `args`, for issue 7 of example/index unless `env` says
+// otherwise, against `responses`, and returns the result and the requests other than GET
+// that the command sent.
+function pnpmReport(responses: Responses, args: string[] = [], env: Record<string, string> = { ISSUE_NUMBER: "7" }) {
   const pnpmPath = process.env.npm_execpath;
   if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");
   const dir = mkdtempSync(join(tmpdir(), "zpi-report-cli-"));
@@ -345,8 +346,8 @@ function pnpmReport(responses: Responses) {
   writeFileSync(fixture, JSON.stringify({ source: "report test", repoUrl: "", responses }));
   writeFileSync(log, "");
   const { INIT_CWD: _outer, GITHUB_TOKEN: _token, ...outer } = process.env;
-  Object.assign(outer, { ZPI_FIXTURE: fixture, ZPI_REQUESTS: log, NODE_OPTIONS: `--import=${PRELOAD}`, GITHUB_REPOSITORY: "example/index", ISSUE_NUMBER: "7" });
-  const result = spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "report-issue"], { cwd: dir, encoding: "utf8", env: outer, timeout: 50_000 });
+  Object.assign(outer, { ZPI_FIXTURE: fixture, ZPI_REQUESTS: log, NODE_OPTIONS: `--import=${PRELOAD}`, GITHUB_REPOSITORY: "example/index" }, env);
+  const result = spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "report-issue", ...args], { cwd: dir, encoding: "utf8", env: outer, timeout: 50_000 });
   const sent = readFileSync(log, "utf8")
     .split("\n")
     .filter(Boolean)
@@ -372,5 +373,78 @@ describe("pnpm report-issue", () => {
     const { result } = pnpmReport(responses);
     expect(result.status).toBe(1);
     expect(result.stderr).toContain(`PATCH ${ISSUE} returned HTTP 500`);
+  });
+
+  test("answers an unanswered report issue with --sweep", () => {
+    const { result, sent } = pnpmReport(sweepResponses([7], { ...valid, plugin }, Date.now()), ["--sweep"], {});
+    expect(result.stderr).toBe("");
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("the sweep tried 1 report issues #7");
+    expect(sent.map(({ method, url }) => `${method} ${url}`)).toEqual([`POST ${COMMENTS}`, `PATCH ${ISSUE}`]);
+  });
+
+  test("refuses --sweep with ISSUE_NUMBER set and sends no request", () => {
+    const { result, sent } = pnpmReport({}, ["--sweep"], { ISSUE_NUMBER: "7" });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("ISSUE_NUMBER must be unset");
+    expect(sent).toEqual([]);
+  });
+});
+
+const REPO = "https://api.github.com/repos/example/index";
+const REPORT_RUNS = `${REPO}/actions/workflows/report-issue.yml/runs?event=issues&per_page=100`;
+const REPORT_LIST = `${REPO}/issues?labels=report&state=open&sort=created&direction=asc&per_page=100`;
+
+// The sweep's reads for the report issues `numbers`, each opened 2 hours before `now`
+// with the body of `values` and no bot comment, and issue 9, which the bot answered.
+function sweepResponses(numbers: number[], values: typeof valid, now: number): Responses {
+  const created = new Date(now - 2 * 60 * 60 * 1000).toISOString();
+  const labels = [{ name: "report" }, { name: "works" }];
+  const responses: Responses = {
+    [REPORT_RUNS]: { json: { total_count: 1, workflow_runs: [{ status: "completed" }] } },
+    [REPORT_LIST]: { json: [...numbers, 9].map((number) => ({ number, state: "open", labels, created_at: created })) },
+    [`${REPO}/issues/9/comments?per_page=100`]: { json: [{ user: { login: "github-actions[bot]" } }] },
+  };
+  for (const number of numbers) {
+    const issue = `${REPO}/issues/${number}`;
+    Object.assign(responses, {
+      [issue]: { json: { number, body: rendered(values), labels } },
+      [`${issue}/comments?per_page=100`]: { json: [] },
+      [`POST ${issue}/comments`]: { status: 201, json: { id: 1 } },
+      [`PATCH ${issue}`]: { json: { number, state: "closed" } },
+    });
+  }
+  return responses;
+}
+
+describe("sweeping report issues", () => {
+  const NOW = Date.parse("2026-10-28T12:00:00Z");
+
+  async function sweep(responses: Responses) {
+    const { fetch, requests } = fixtureFetch(responses);
+    const result = await sweepReports({ root: pluginsDir(), fetch, indexRepo: "example/index", now: NOW });
+    return { result, sent: requests.filter(({ method }) => method !== "GET").map(({ method, url }) => `${method} ${url}`) };
+  }
+
+  test("answers each unanswered issue and leaves the answered one alone", async () => {
+    const { result, sent } = await sweep(sweepResponses([7, 8], valid, NOW));
+    expect(result).toMatchObject({ status: 0, errors: [] });
+    expect(result.answered.map(({ issue }) => issue)).toEqual([7, 8]);
+    expect(sent).toEqual([`POST ${REPO}/issues/7/comments`, `PATCH ${REPO}/issues/7`, `POST ${REPO}/issues/8/comments`, `PATCH ${REPO}/issues/8`]);
+  });
+
+  test("answers the rest when one answer fails, and fails", async () => {
+    const responses = { ...sweepResponses([7, 8], valid, NOW), [`POST ${REPO}/issues/7/comments`]: { status: 500, json: { message: "boom" } } };
+    const { result, sent } = await sweep(responses);
+    expect(result.status).toBe(1);
+    expect(result.errors).toEqual([`issue 7: POST ${REPO}/issues/7/comments returned HTTP 500: boom`]);
+    expect(sent).toEqual([`POST ${REPO}/issues/7/comments`, `POST ${REPO}/issues/8/comments`, `PATCH ${REPO}/issues/8`]);
+  });
+
+  test("answers nothing and fails when the list read fails", async () => {
+    const { result, sent } = await sweep({ ...sweepResponses([7], valid, NOW), [REPORT_LIST]: { status: 503 } });
+    expect(result).toMatchObject({ status: 1, answered: [] });
+    expect(result.errors[0]).toContain(`GET ${REPORT_LIST} returned HTTP 503`);
+    expect(sent).toEqual([]);
   });
 });
