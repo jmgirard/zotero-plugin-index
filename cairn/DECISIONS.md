@@ -261,3 +261,21 @@ fork that builds the data with issues on but no `report` label, stops
 every deploy until the label exists. An issue whose `closed_by` is `null`
 still counts as read, so a list that keeps the key and sends `null` on
 every issue still gives counts of zero.
+
+### D-022: A GitHub API body that is not JSON and a 403 on a GitHub release URL are build-level, annotating D-011
+
+2026-10-28, M045 plan. D-011 sorts build-level failures by cause and HTTP
+status. Two answers that it left with the plugin point at GitHub or the
+network instead. A GitHub API answer that succeeds but whose body is not
+JSON, such as an HTML error page, comes from GitHub or a host between, since
+a plugin cannot shape an API body. An HTTP 403 answer to an XPI or
+`update.json` download that requested a GitHub release URL, a `github.com`
+URL whose path's third segment is `releases`, comes from GitHub's release
+file service. At the plan question set the user chose this work from its
+candidate row. The rule looks at the release URL in the redirect chain, not
+at the host that answers, because GitHub moved release files from one host
+name to another, and a later move would put these 403s back with the
+plugin. The cost is that a release file that GitHub refuses for good marks
+its record build-level every day: it counts toward the more-than-half bar,
+the discover bot keeps no state for that repo and reads it again, and an
+"Add a plugin" issue for it stays open. The rest of D-011 stands.

@@ -45,25 +45,31 @@ plugin read and is not changed.
       with an ok status whose body `JSON.parse` refuses fails as
       `request-failed` marked build-level. In `test/upstream.test.ts`, a
       read whose repo answer is HTTP 200 with the body `<html>`, and a read
-      whose releases answer is HTTP 200 with that body, each return
-      `ok: false`, the failure `request-failed`, a message that holds
-      `not JSON`, and `buildLevel: true`.
+      whose first releases page, and a read whose second releases page, is
+      HTTP 200 with that body, each return `ok: false`, the failure
+      `request-failed`, a message that holds `not JSON`, and
+      `buildLevel: true`.
 - [ ] AC2: An HTTP 403 answer to the XPI download (`xpi-unreadable`) or the
       `update.json` download (`update-json-http-error`) is marked
       build-level when the download requested, as its first URL or after a
-      redirect, a URL whose host is `github.com` and whose path starts with
-      `/<owner>/<repo>/releases/download/`. In `test/upstream.test.ts`, rows
-      assert `buildLevel: true` for a 403 at the XPI's `github.com` release
-      URL, for a 403 at a `release-assets.githubusercontent.com` URL that
-      the XPI's release URL redirects to, and for a 403 at such a URL that
-      an `update.json` release URL redirects to. Rows assert no
-      `buildLevel` for a 403 to an `update.json` at a
-      `raw.githubusercontent.com` URL reached with no redirect, and at a
-      `github.com` URL whose path is `/<owner>/<repo>/raw/main/update.json`.
+      redirect, a GitHub release URL: a URL whose host is `github.com` and
+      whose path's third segment is `releases`, for any owner and repo. In
+      `test/upstream.test.ts`, rows assert `buildLevel: true` for a 403 at
+      the XPI's `github.com` release URL; at a
+      `release-assets.githubusercontent.com` URL that the XPI's release URL
+      redirects to; at an `update.json` release URL; at a
+      `release-assets.githubusercontent.com` URL that an `update.json`
+      release URL redirects to; at a release URL that a URL on another host
+      redirects to; and at a `/<owner>/<repo>/releases/latest/download/`
+      URL. Rows assert no `buildLevel` for a 403 to an `update.json`
+      reached with no redirect at a `raw.githubusercontent.com` URL, at a
+      `release-assets.githubusercontent.com` URL, and at a `github.com` URL
+      whose path is `/<owner>/<repo>/raw/main/update.json`.
 - [ ] AC3: The build-level list under "Building the data" in `README.md`
-      and a new `CHANGELOG.md` entry under `## Unreleased` each name both
-      cases. A search of a joined copy of each file finds the phrases
-      `body is not JSON` and `release download URL`.
+      gains two items, one holding `body is not JSON` and one holding
+      `release download URL`, and keeps its item for a GitHub API 401 or
+      403. A new `CHANGELOG.md` entry under `## Unreleased` holds both
+      phrases. A search of a joined copy of each file finds each phrase.
 - [ ] AC4: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
@@ -80,20 +86,24 @@ plugin read and is not changed.
 
 - [ ] T1: In `test/upstream.test.ts`, move the row "the repo body is not
       JSON" (line 517) from the plugin-level table to the build-level table
-      (line 603), and add a row for the releases answer. Run them to see
+      (line 603), and add rows for the first and second releases pages
+      (`RELEASES`, `RELEASES_PAGE_2`). Run them to see
       them fail. Then pass `true` to `fail` for the body that is not JSON in
       `get` (`src/upstream/reader.ts:332`), and update the comment at line
       63 if it lists the cases.
-- [ ] T2: Write AC2's five rows first, with redirect responses in the form
-      of `redirectChain` (`test/upstream.test.ts:1067`), and run them to see
-      the build-level rows fail. Then have `downloader`
-      (`src/upstream/reader.ts:447`) note whether any URL it requested is a
-      `github.com` release download URL, and use that where the XPI read
+- [ ] T2: Write AC2's nine rows first, with redirect responses in the form
+      of `redirectChain` (`test/upstream.test.ts:1067`) and `update_url`
+      edits for the `update.json` URLs, and run them to see the build-level
+      rows fail. Then have `downloader` (`src/upstream/reader.ts:447`) note
+      whether any URL it requested is a GitHub release URL, and use that
+      where the XPI read
       (line 484) and the `update.json` read (line 784) mark a 403. Keep the
       `buildLevelStatus` sweep test (`test/upstream.test.ts:1141`) covering
       every status for each case, and update the comment at line 93.
-- [ ] T3: Add both cases to the README list (`README.md:672-681`) and a
-      `CHANGELOG.md` entry under `## Unreleased`. Keep prose near 76
+- [ ] T3: Add both cases to the README list (`README.md:672-681`) as two
+      items, defining a release download URL as a `github.com` URL whose
+      path's third segment is `releases`, and a `CHANGELOG.md` entry under
+      `## Unreleased`. Keep prose near 76
       columns, list long added lines with
       `git diff -U0 main | grep '^+' | awk 'length > 80'`, and search joined
       copies for AC3's phrases.
@@ -113,6 +123,9 @@ plugin read and is not changed.
 - 2026-10-28: inbox sweep: 0 open issues; 1 open pull request (#57, a discovery bot pull request), no overlap.
 - 2026-10-28: lessons used: 2026-10-25 (M001), 2026-10-26 (M018), 2026-10-27 (M027), 2026-10-28 (M036).
 - 2026-10-28: checkpoint: plan written; the criteria audit (fresh Opus reader) is running, and D-022 lands with its result in the plan commit.
+- 2026-10-28: criteria audit (full mode, fresh Opus reader): 9 findings, AC4 and proportionality pass. Fixed 7: a second releases page row (AC1); "any owner and repo" and the path rule widened to a third segment of `releases`, so a `/releases/latest/download/` hop counts (AC2); rows for a release URL reached after a redirect from another host, a direct `update.json` release URL, and a direct `release-assets` URL that stays plugin-level, which tells the chain rule from the rejected host list (AC2); AC3 binds the phrases to the README list items and the new entry and keeps the API 401/403 item. D-022 is written in the plan commit, as a record, not a criterion. Answered 1: "when, and only when" not adopted, since no named procedure enumerates every 403; the three negative rows are the bounded claim.
+- 2026-10-28: ROADMAP line cap: the M045 row made 60 lines, so the row "Bound the build's report issue read" merged into "Close gaps in the build time limits", which already named it (D-017).
+- 2026-10-28: plan gate widened the URL rule from a path starting `/releases/download/` to any `github.com` path whose third segment is `releases`, because `update_url`s often name `/releases/latest/download/`, and a 403 at that hop is GitHub's too; falsified by a `github.com` `/releases/` path whose 403 a plugin causes.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
