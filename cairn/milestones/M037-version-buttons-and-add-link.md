@@ -125,7 +125,7 @@ counts, see work log). Script on the plugin pages: none (D-014).
       fallback, link), one CHANGELOG Unreleased entry, DESIGN Contract
       boundary and Architecture (the one script now runs both filters).
       Wrap prose near 76 columns and list long added lines (LESSONS M036).
-- [ ] T6: Hand check in the browser pane per AC4: fetch the deployed data
+- [x] T6: Hand check in the browser pane per AC4: fetch the deployed data
       once, `pnpm site --out <dir>`, serve with `python3 -m http.server`
       from a `.claude/launch.json` entry kept out of git (LESSONS M015,
       M035), collect shown ids by script for each case, and compare with
@@ -153,6 +153,7 @@ counts, see work log). Script on the plugin pages: none (D-014).
 - 2026-10-28: T3 done — hidden `div.version-filter` with span label and `role="group"` buttons after the language menu; the one script now reads `language` and `zotero`, sets `aria-pressed`, filters rows with `rowShows`, replaces the address on button press and menu change, re-reads on load and `popstate`, and unhides both filters; pressed and focus styles with light and dark tokens in `Base.astro`; site tests for the markup and one `<script>`. "Any version" has no `value` attribute, so its value is "" without Astro's bare-attribute rule.
 - 2026-10-28: T4 done — `ADD_PLUGIN_HREF` in `site/src/data.ts`; intro sentence "Is a plugin missing? Add a plugin with a GitHub issue form, which needs a GitHub account."; site test for the href and the template file; `pnpm test` 883 passed.
 - 2026-10-28: T5 done — README paragraphs on the buttons (all-or-part rule, no-range and failed rows hidden, both filters together, `?zotero=`, unknown value removed, no-JavaScript fallback) and the intro link; one CHANGELOG Unreleased entry; DESIGN Contract boundary, Function Families (`home-filter.ts`, `rowMajors`), and Architecture (one script, D-019). The simple-english hook flags 3 older README and CHANGELOG lines this branch did not touch; left as they are.
+- 2026-10-28: T6 done — deployed `v1/plugins.json` fetched once (generatedAt 2026-10-28T02:03:27.093Z, sha256 prefix ea94c5b5489d10d1, 42 plugins), site built from it, served on port 4321; expected ids per case from `majorSupport` and `rowLanguages` over that copy. Language `zh` (28 plugins) mixes declaring and not declaring every major. All 10 cases (5 buttons × All languages, zh) matched exactly (counts 42/26/31/34/38 and 28/17/20/23/25), one pressed button each, `zotero` parameter set or absent as AC4 says; language change while 8 pressed kept `zotero=8` and both filters; `?zotero=8` opened with 8 pressed and its 31 rows; `?zotero=6&language=zh` became `?language=zh` with Any version pressed. DOMParser of the served HTML: wrapper hidden, all 5 buttons inside it, no row hidden, 1 script. Screenshots at desktop and 375 px width, dark scheme.
 
 ## Decisions
 
