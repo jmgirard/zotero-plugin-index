@@ -78,3 +78,34 @@ The `languages` list leaves out a tag whose locale folders hold fewer than half 
 - AC4: `readUpstream` at 3dfba8d, served the downloaded `zotmoov-1.2.34-fx.xpi` (SHA-256 3cad68c6…7c7854, equal to the digest GitHub lists for the 1.2.34 asset) for the XPI request, returned version 1.2.34 and `languages` `["en-US", "sr-Latn-RS"]`.
 - AC5: on 3dfba8d, `npx -y pnpm@12.15.0 test`: type check clean, 17 files, 853 passed, 1 skipped (the case-only name case, which skips on a macOS volume, LESSONS M031); `npx -y pnpm@12.15.0 check`: 37 entries, 0 problems.
 - gate: `cairn_validate.py` exit 0, all checks passed; no DESIGN principle changed, so `cairn_impact` was skipped; the generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: a `.properties` value wrapped with a trailing `\` counts once per line, so `en-US` with 10 values over 3 lines each (30) drops a single-line `fr` with 10 — follow-up, row "Tighten the locale message counts" (filed at hygiene, since ROADMAP is at 59 of its 60 lines)
+- diff-bug #2: files of tags already counted now spend the 8 MiB budget, so a tag read after it is spent is kept whatever its count and the half rule depends on zip order (observed maximum 562,599 bytes) — follow-up, row "Bound per-entry work in the locale walk", extended
+- diff-bug #3: the same file under `locale/<tag>/` and `chrome/locale/<tag>/`, or two zip entries of one name, counts twice and can raise the largest count — follow-up, row "Tighten the locale message counts"
+- diff-bug #4: a `.dtd` parameter entity (`<!ENTITY % …>`) counts as a message, and a `<!--` inside an entity value hides the entities after it — follow-up, row "Tighten the locale message counts"
+- diff-bug #5: the `BYTE_ORDER_MARK` replace never runs, since fflate's `strFromU8` decodes with `TextDecoder`, which drops a leading byte-order mark (checked: bytes EF BB BF 23 41 decode to "#A") — fix now, fixed c1e6b18
+- diff-bug #6: the schema `languages` description left out files whose inflate fails or whose output length differs from the declared size — fix now, fixed c1e6b18
+- diff-bug #7: DESIGN's facts paragraph and data-sources item 2 say "only when" the counts hold, but a tag with an uncounted file is kept whatever its count — fix now, fixed c1e6b18
+- diff-bug #8: any file of another type, such as `locale/zh-CN/.DS_Store`, keeps its tag whatever its count, which AC2 asks for and main also did, but which lets a stray file undo the half rule — follow-up, row "Tighten the locale message counts"
+- diff-bug #9: every counted file of a tag is now inflated, so per-entry work grows — reject (planned change): Scope Out sends this to row "Bound per-entry work in the locale walk", whose text ripple #1 corrected
+- diff-bug #10: prototype keys and the `g` flag of `FLUENT_ENTRY` — noted, no finding
+- diff-bug #11: the `.properties` and `.dtd` cases bound the count only from above (fr passes for 3 to 10) — fix now: added two cases beside an `en-US` of 20 that fail on a one-message undercount (planted for each), fixed c1e6b18
+- blame-history #1: the removed M027 skip (`if (tags.has(tag)) continue;`) makes every locale entry inflate, and the row's timing predates it — reject (planned change): T2 asked to read every file of a tag, and the row now says its timing was measured before M034
+- blame-history #2: the budget is spent sooner, so a later tag escapes the half rule — follow-up, row "Bound per-entry work in the locale walk" (same as diff-bug #2)
+- blame-history #3: no D-entry records the half rule — reject (planned change): the plan's collision line found that no D-entry covers the languages rule and planned none; the rule is stated in DESIGN.md
+- blame-history #4: a multi-line `.properties` value counts once per line — follow-up, row "Tighten the locale message counts" (same as diff-bug #1)
+- blame-history #5: a UTF-16 locale file counts 0 messages — follow-up, existing row "Read UTF-16 locale files as text", its text corrected in c1e6b18
+- prior-review #1: per-entry work for every locale entry, the M027 review row — reject (planned change), as diff-bug #9
+- prior-review #2: the budget spent by more files disables the half rule for large XPIs — follow-up, row "Bound per-entry work in the locale walk" (same as diff-bug #2)
+- prior-review #3: DESIGN's facts paragraph and data-sources item 2 omit the kept-whatever-count exception — fix now (same as diff-bug #7), fixed c1e6b18
+- ripple #1: row "Bound per-entry work in the locale walk" still described the removed kept-tag skip — fix now, fixed c1e6b18
+- ripple #2: README's limits list said the command "looks for a message" — fix now ("counts its messages"), fixed c1e6b18
+- ripple #3: the `readRelease` comment said "the locale folders that hold a message" — fix now, fixed c1e6b18
+- ripple #4: row "Read UTF-16 locale files as text" named the removed `holdsMessage` — fix now, fixed c1e6b18
+- ripple #5: row "Drop zxx and mul from the languages" says the reader keeps such folders — reject (false): such a folder is still kept when it meets the rule every tag meets
+- ripple #6: parked row "Drop locale folders that copy another" says a copy folder still counts — reject (false): a copy with at least half the fullest tag's messages is still listed
+- ripple #7: DESIGN's reader paragraph says "a tag counts when it matches `LANGUAGE_TAG`" beside the new message count — fix now ("a folder name is a tag when"), fixed c1e6b18
+- ripple #8: test names say "with a message" and "holds a message" — reject (false): those cases test a count of 0 against a count of at least 1, which the names state
+- ripple #9: the test name "no folder whose name is not a kept tag" shares "kept" with the reader's `kept` set — reject (style)
+- return floor: no finding shows a criterion failing; the follow-up counting findings give wrong lists only for inputs that no listed plugin's XPI has (T5's build changed only ZotMoov), so none is judged a load-bearing defect and status stays `review`.
+- verify after fixes, on c1e6b18: `pnpm test` 855 passed, 1 skipped; `pnpm check` 37 entries, 0 problems; `cairn_validate.py` all checks passed.
