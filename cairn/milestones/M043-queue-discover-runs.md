@@ -40,13 +40,13 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
 
 ## Acceptance criteria
 
-- [ ] AC1: In `.github/workflows/discover.yml` and
+- [x] AC1: In `.github/workflows/discover.yml` and
       `.github/workflows/add-plugin-issue.yml`, the workflow-level
       `concurrency` block holds exactly three keys: `group`,
       `cancel-in-progress: false`, and `queue: max`. `test/workflows.test.ts`
       asserts the text of each file from `concurrency:` to the next
       top-level key.
-- [ ] AC2: In `add-plugin-issue.yml`, the group expression gives
+- [x] AC2: In `add-plugin-issue.yml`, the group expression gives
       `add-plugin-skipped-<run id>` to an `issues` run unless
       `contains(github.event.issue.labels.*.name, 'add-plugin')` holds, the
       same text that the `pick` job's `if:` uses. Every other run takes the
@@ -54,12 +54,12 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
       from a ref other than the default branch, and `discover` otherwise.
       `test/workflows.test.ts` asserts the group expression and the `pick`
       job's `if:`, and checks that both hold that `contains(...)` text.
-- [ ] AC3: GitHub accepts both changed workflow files. A
+- [x] AC3: GitHub accepts both changed workflow files. A
       `workflow_dispatch` of each on the milestone branch, made while no run
       of either workflow is queued, waiting, pending, or in progress,
       concludes `skipped` or `success` with every job skipped, and
       `gh run view` shows no workflow-file error.
-- [ ] AC4: Each paragraph or comment block that holds a hit of
+- [x] AC4: Each paragraph or comment block that holds a hit of
       `grep -n -i -E 'cancel|pending|replace'` in README.md, cairn/DESIGN.md,
       CHANGELOG.md, `src/issues/unanswered.ts`,
       `.github/workflows/discover.yml`, and
@@ -67,12 +67,12 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
       `discover` group as a queue (runs wait in turn, up to 100 pending, and
       GitHub cancels runs past that) or is about something other than the
       `discover` group.
-- [ ] AC5: CHANGELOG.md's Unreleased section says, in the M040 entry or in
+- [x] AC5: CHANGELOG.md's Unreleased section says, in the M040 entry or in
       one new entry, that runs of `Discover plugins` and
       `Add a plugin from an issue` wait in turn in their shared group, up to
       100 pending, and that the run an issue without the `add-plugin` label
       starts takes a group of its own.
-- [ ] AC6: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
+- [x] AC6: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -129,7 +129,17 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
 - 2026-10-28: T4: pushed the branch at 2c994ac; `gh run list` showed no run of either workflow other than `completed`; dispatched both on the branch: add-plugin-issue.yml run 40698348713 and discover.yml run 40698353541 each concluded `skipped`, every job `skipped` (pick, read, write; read, write), and `gh run view` showed no workflow-file error.
 - 2026-10-28: claim audit: 21 claims read, 2 corrected — .github/workflows/add-plugin-issue.yml (the schedule comment now says the sweep answers an issue whose run GitHub canceled, and the concurrency comment says a later sweep can answer such an issue while it is at most 7 days old; the same reader's re-read found both hold).
 - 2026-10-28: implement done; `pnpm test` 936 passed, 1 skipped; `pnpm check` 0 problems; status set to review.
+- 2026-10-28: review: AC1-AC6 evidence recorded and ticked; `cairn_validate` passed; generic profile adds no toolchain checks; four-lens review spawned, findings pending (checkpoint).
 
 ## Decisions
 
 ## Review
+
+Evidence gathered 2026-10-28 on branch head 3451bee; main at 171917a, unmoved since the cut.
+
+- AC1: `awk` over each file prints the top-level block as `group`, `cancel-in-progress: false`, `queue: max` and nothing else (discover.yml group `discover`); Vitest verbose: "queues its runs in the discover group" and "queues the runs whose pick job can run in the discover group…" pass, each asserting the block up to the next unindented line plus a single non-comment `concurrency:` line; T1 recorded both failing on main's files for the missing `queue: max` line.
+- AC2: the committed group is `((issues && !contains(github.event.issue.labels.*.name, 'add-plugin')) || (workflow_dispatch && ref != default)) && format('add-plugin-skipped-{0}', run_id) || 'discover'` (`&&` above `||`). Evaluated: unlabeled issue → skipped group; labeled issue → `discover`; schedule → `discover`; default-branch dispatch → `discover`; other-ref dispatch → skipped group, matching main's result for the last four. Vitest: "tests the label in the group with the same text as the pick job" passes, asserting `github.event_name == 'issues' && !<contains text>` in the block and `github.event_name == 'issues' && <contains text>` in the pick job; the block test asserts the whole expression; the pick `if:` stays asserted exactly by the triggers test. The claim audit's independent evaluation of the five cases agreed.
+- AC3: `gh run view` read 2026-10-28: run 40698348713 (Add a plugin from an issue) and run 40698353541 (Discover plugins), both `workflow_dispatch` on the branch at 2c994ac, conclude `skipped` with every job `skipped` (3 and 2 jobs) and no workflow-file error; T4 logged no non-completed run of either workflow just before. Since 2c994ac, `git diff 2c994ac HEAD -- .github` changes only comment lines in add-plugin-issue.yml, so the dispatched files' keys are the ones that merge.
+- AC4: `grep -n -i -E 'cancel|pending|replace'` over the six files: 27 hit lines in 14 paragraphs or comment blocks. Queue descriptions: README.md:514-520, CHANGELOG.md:314-320 (its "Before" sentence names the old behavior as past), DESIGN.md:468-473, add-plugin-issue.yml:6-9 and 20-25, discover.yml:18-21. Other subjects: the `cancel-in-progress` keys (add-plugin-issue.yml:28, discover.yml:24); README.md:34, 72, 240, 722, CHANGELOG.md:133, DESIGN.md:555 (`replaces` about descriptions, language lists, entries, pages, BASE_URL); README.md:559 (the report group); handoff `replaces` comments and `cancelled()` conditions (add-plugin-issue.yml:116, 119; discover.yml:71, 74, 86). `src/issues/unanswered.ts`: no hits.
+- AC5: CHANGELOG.md Unreleased, new last entry: "Runs of `Discover plugins` and `Add a plugin from an issue` wait in turn in their shared concurrency group, up to 100 pending. … The run that an issue without the label `add-plugin` starts does nothing, and it now takes a group of its own." Backed by the AC1 and AC2 tests.
+- AC6: `pnpm test`: 19 files, 936 passed, 1 skipped (the case-sensitive volume case); `pnpm check`: 42 entries, 0 problems.
