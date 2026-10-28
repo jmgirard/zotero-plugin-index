@@ -72,8 +72,9 @@ jobs:
   start-test:
     needs: build
     runs-on: ubuntu-latest
-    # `pnpm start-tests` starts no new plugin after 20 minutes, and one start takes at most
-    # 90 seconds.
+    # `pnpm start-tests` starts no new plugin 20 minutes after it begins. The last item can
+    # then take up to 3 minutes to download its XPI and 90 seconds to start, or 150 seconds
+    # if its `pnpm start-test` hangs and is killed.
     timeout-minutes: 30
     permissions: {}
     cache-mode: none

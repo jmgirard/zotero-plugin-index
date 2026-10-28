@@ -769,8 +769,9 @@ To also write a start plan, add `--plan <file>`. The plan has one item for
 each record with an `upstream` block. Each item names the entry id, the
 plugin id and version, and the manifest's `strict_min_version` and
 `strict_max_version`. It also names the URL of the XPI that the build read
-and the SHA-256 of the bytes that it got. The plan stays out of `dist/`.
-Without `--plan`, the command writes no plan.
+and the SHA-256 of the bytes that it got. The plan is not part of the data
+file, and the daily build writes it outside `dist/`. Without `--plan`, the
+command writes no plan.
 
 ## Starting plugins in Zotero
 
@@ -827,6 +828,7 @@ version, as the daily build names its artifacts. If a result meets all of
 these conditions, the command keeps it:
 
 - Its entry id, plugin id, and plugin version match an item of the plan.
+- Its entry's record in the data file has an `upstream` block.
 - Its Zotero version is the one in its directory's name.
 - Its Zotero version is in the range of the item's manifest.
 - Its result is one of the four names.
@@ -878,8 +880,9 @@ hand. It has four jobs:
    when the build job succeeded, whatever the start-test jobs' results.
 4. The deploy job deploys `dist/` to GitHub Pages after the site job.
 
-If `pnpm build` or `pnpm site` exits with status 1, the workflow deploys
-nothing, and the site and data from the last good build stay published.
+If `pnpm build`, `pnpm add-start-results`, or `pnpm site` exits with
+status 1, the workflow deploys nothing. The site and data from the last
+good build then stay published.
 GitHub stops the build job at 30 minutes, and then the workflow also
 deploys nothing. The repository's
 `github-pages` environment, set in its GitHub settings, lets only runs on the
