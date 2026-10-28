@@ -1,0 +1,11 @@
+# M037: Filter by Zotero version and link the add form
+
+**Status:** done (2026-10-28, PR #70 https://github.com/jmgirard/zotero-plugin-index/pull/70)
+
+**Goal:** A site visitor can narrow the home list to the plugins that declare a chosen Zotero major version, and can reach the "Add a plugin" form from the home page.
+
+**Outcome:** `rowMajors` in `src/site/version.ts` lists each major of `ZOTERO_MAJORS` whose `majorSupport` is all or some; `rowMajorsAttribute` in `site/src/data.ts` writes it as each home row's `data-zotero` (shares `attributeValue`, the `new String("")` rule, with `rowLanguagesAttribute`). The home page holds a hidden `<div class="version-filter">` with a "Declares Zotero" span and a `role="group"` of `aria-pressed` buttons, "Any version" (no `value`) then 7 to 10. `src/site/language-filter.ts` became `src/site/home-filter.ts`: `passes`, `rowShows` (both filters), `chosenValue` (was `menuValue`), `filterHref(href, name, value)`. The one script (D-019) reads `language` and `zotero`, filters rows, replaces the address on press and menu change, re-reads on `popstate`, drops unknown values, and unhides both controls. Pressed, focus, and forced-colors styles in `Base.astro`. The intro links to `issues/new?template=add-plugin.yml` (`ADD_PLUGIN_HREF`). Fixture gained `zotero6-plugin@example.org` (all pills none). README, CHANGELOG, DESIGN follow.
+
+**Decisions:** D-019 (the home page's one script also runs the version buttons, annotating D-014). Plan choices: all-or-part, one version at a time, intro link, address replaced not pushed, no counts on buttons.
+
+**Review:** Plan audit 9 findings, all fixed. AC2 amended at implement (`<p>` wrapper to `<div>`, since a `<div>` cannot sit in a `<p>`); two re-audits. Claim audit: 31 claims, 1 corrected (a test name). Browser check on the deployed data: 10 of 10 button and language cases matched. Review pass (four lenses): 20 findings; 6 fixed in d684566 (README wrap, DESIGN importers, button border contrast and forced colors, repeated tests); 7 follow-ups (rows "Filter the home list before it paints" and "Test the home page script in a browser" widened; new row "Say when the filters hide every plugin"); 7 rejected. CI green; merged as 943118e. Lessons: 11 marked used M037; 1 captured (`<div>` in `<p>`); 2026-10-27 (M025) on `Intl.DisplayNames` evicted by rank.

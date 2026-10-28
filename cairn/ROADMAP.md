@@ -1,16 +1,15 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-28 (M036 done and archived; 2 rows graduated, 1 corrected; M033 row pruned at plan; 6 lessons marked used, 1 captured, 1 evicted by rank)_
+_Last hygiene check: 2026-10-28 (M037 done and archived; 2 rows widened, 1 added; M034 row pruned; 11 lessons marked used, 1 captured, 1 evicted by rank)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M037 | Filter by Zotero version and link the add form | review | — | normal | milestones/M037-version-buttons-and-add-link.md |
+| M037 | Filter by Zotero version and link the add form | done | — | normal | milestones/archive/M037-version-buttons-and-add-link.md |
 | M036 | Reword the empty languages line | done | — | normal | milestones/archive/M036-empty-languages-line.md |
 | M035 | Sort the language menu by count | done | — | normal | milestones/archive/M035-language-menu-order.md |
-| M034 | Skip translations under half done | done | — | normal | milestones/archive/M034-half-done-translations.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
