@@ -132,7 +132,7 @@ issues entry records this limit.
 - [ ] T5: Push the branch and dispatch `build.yml` on it, after making
       sure that `gh run list` shows no waiting run. Read each job's
       result, the start results, and each artifact's file list.
-- [ ] T6: Add the "Starts in Zotero" line to the plugin page in
+- [x] T6: Add the "Starts in Zotero" line to the plugin page in
       `site/src/pages/plugins/[id]/index.astro`. Test both cases on the
       built HTML, and check the page in the browser pane.
 - [ ] T7: Write README "Using the data" and "Building the data" text, the
@@ -162,6 +162,7 @@ issues entry records this limit.
 - 2026-10-28: re-audit: AC3 (full) — 2 findings on the fixed wording: the `if:` value is `${{ }}`-wrapped, so "is" the bare expression fails a literal check; "each download" also covers XPI and artifact downloads, so it should say "each Zotero download". Second re-audit on AC3, so the next wording goes to the user.
 - 2026-10-28: checkpoint: T4 `build.yml` drafted with PENDING hashes for 7.0.32, 8.0.4, 9.0.6 (downloads running); T6 page line and fixture drafted, untested.
 - 2026-10-28: substantive amendment: AC3 names Zotero 8.0.4 for 8.0.5, which has no Linux build; the site `if:` is named with its `${{ }}` wrapper; "each Zotero download"; the dispatch shows each Zotero download check passing. The user chose this text at the stop after the second re-audit.
+- 2026-10-28: T6 done: the plugin page shows "Starts in Zotero:" with `startTestsText` (started, failed at startup, did not install, gave no answer in time) and a note naming the 3 s wait and that a start is not a working plugin, after the languages line and outside Details; the site fixture's no-range record holds all four results. Tests: the words, the note, the place, and no line on the 6 other read records; a planted always-shown line failed 6 tests. Browser pane showed the line in place. Verify clean (1009 passed).
 
 ## Decisions
 

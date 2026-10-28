@@ -346,6 +346,25 @@ describe("the plugin page", () => {
     expect(fact(page(id), "archived")).toBe(text);
   });
 
+  test("shows each start-test result in words outside the Details section, with the note that a start is not a working plugin", () => {
+    const html = page("no-range-plugin@example.org");
+    expect(fact(html, "start-tests")).toBe(
+      "Zotero 7.0.32 started; Zotero 8.0.4 failed at startup; Zotero 9.0.6 did not install; Zotero 10.0.6 gave no answer in time",
+    );
+    expect(html).toMatch(/<p>\s*Starts in Zotero: <span data-fact="start-tests">/);
+    const note = /data-fact="start-test-note"[^>]*>(.*?)<\/p>/s.exec(html)?.[1].replace(/\s+/g, " ").trim();
+    expect(note).toBe(
+      "The daily build installs version 1.0.0 in a new Zotero profile on Linux and waits 3 seconds. A start test does not show that the plugin works.",
+    );
+    expect(html.indexOf("data-start-tests")).toBeGreaterThan(-1);
+    expect(html.indexOf("data-start-tests")).toBeLessThan(html.indexOf("<details>"));
+  });
+
+  test.each(ids.filter((id) => id !== "no-range-plugin@example.org"))("shows no start-test line for %s, which has no startTests", (id) => {
+    expect(records.find((record) => record.id === id)?.startTests).toBeUndefined();
+    expect(page(id)).not.toMatch(/\sdata-start-tests[\s>]|\sdata-fact="start-test/);
+  });
+
   test("shows no archived fact when the record has no archived value", () => {
     expect(page("{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}")).not.toMatch(/\sdata-fact="archived"/);
   });
