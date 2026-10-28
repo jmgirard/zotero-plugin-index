@@ -250,3 +250,12 @@
   repeat. A file can start with a UTF-8 byte-order mark. For such a
   `meta.json` or `index.json`, the line now names the mark, in place of "is
   not valid JSON".
+- The home page has "Declares Zotero" buttons: "Any version" and one button
+  for each Zotero major from 7 to 10. If you press a major, the list shows
+  only the plugins whose declared range covers all or part of it. These
+  are the plugins with a ✓ or ◐ pill for that major. The buttons work with the
+  "Menus and settings in" menu, and the list shows the plugins that both
+  pass. The page keeps the choice in the `zotero` query parameter, such as
+  `?zotero=8`. The script that runs the menu also runs the buttons, so
+  without JavaScript the home page shows no buttons and lists every plugin.
+  The home page intro also links to the "Add a plugin" issue form.

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import type { Override, PluginRecord, PluginsFile } from "../../src/build/build.ts";
 import { shownDescription } from "../../src/site/description.ts";
 import { appliedLanguages, languageName, languageOptions, rowLanguages } from "../../src/site/languages.ts";
-import { appliedValue, declaredRange, usedOverride } from "../../src/site/version.ts";
+import { appliedValue, declaredRange, rowMajors, usedOverride } from "../../src/site/version.ts";
 import { BASE } from "./base.ts";
 
 export { BASE, declaredRange, languageOptions, shownDescription };
@@ -47,12 +47,20 @@ export function languagesText(record: PluginRecord): string {
   return tags.length > 0 ? tags.map(languageName).join(", ") : "Unknown (no translations found)";
 }
 
-// The row's data-languages value (see rowLanguages). Astro writes an attribute whose value
-// is "" as its bare name, and checks for "" with ===, so an empty value goes out as a String
-// object, which Astro writes as data-languages="".
-export function rowLanguagesAttribute(record: PluginRecord): string | String {
-  const value = rowLanguages(record);
+// Astro writes an attribute whose value is "" as its bare name, and checks for "" with ===,
+// so an empty value goes out as a String object, which Astro writes as name="".
+function attributeValue(value: string): string | String {
   return value === "" ? new String("") : value;
+}
+
+// The row's data-languages value (see rowLanguages).
+export function rowLanguagesAttribute(record: PluginRecord): string | String {
+  return attributeValue(rowLanguages(record));
+}
+
+// The row's data-zotero value (see rowMajors).
+export function rowMajorsAttribute(record: PluginRecord): string | String {
+  return attributeValue(rowMajors(record));
 }
 
 // The upstream value an override corrects, under the override's field name.
@@ -78,6 +86,9 @@ export function overrideUsed(record: PluginRecord, override: Override): boolean 
 
 // The index repo's page for a new issue, where the report forms live.
 const NEW_ISSUE = "https://github.com/jmgirard/zotero-plugin-index/issues/new";
+
+// The new-issue page with the add-plugin.yml form, which proposes a plugin for the index.
+export const ADD_PLUGIN_HREF = `${NEW_ISSUE}?template=add-plugin.yml`;
 
 // The new-issue page with the works.yml or broken.yml form, its plugin and version fields
 // filled in with the record's id and the version the index read.

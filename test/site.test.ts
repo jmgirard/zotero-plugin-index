@@ -417,6 +417,45 @@ describe("the home page", () => {
       ["min-only-plugin@example.org", "zh"],
       ["locale-plugin@example.org", "es pt"],
       ["_x-y+z.w@{v}", ""],
+      ["zotero6-plugin@example.org", ""],
+    ]);
+  });
+
+  test("gives each row the Zotero majors it declares all or part of", () => {
+    const rows = [...home().matchAll(/<li class="plugin"[^>]*>/g)].map(([tag]) => [
+      /\sdata-plugin="([^"]*)"/.exec(tag)?.[1],
+      /\sdata-zotero="([^"]*)"/.exec(tag)?.[1],
+    ]);
+    expect(rows).toEqual([
+      ["broken-plugin@example.org", ""],
+      ["first-plugin@example.org", "7 8"],
+      ["old-plugin@example.org", "7"],
+      ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "9"],
+      ["no-range-plugin@example.org", ""],
+      ["min-only-plugin@example.org", "8 9 10"],
+      ["locale-plugin@example.org", "7 8 9"],
+      ["_x-y+z.w@{v}", ""],
+      ["zotero6-plugin@example.org", ""],
+    ]);
+  });
+
+  test("links the intro to the Add a plugin form", () => {
+    const intro = /<p class="intro">(.*?)<\/p>/s.exec(home())![1]!;
+    const link = /<a href="([^"]*)" data-add-plugin>Add a plugin<\/a>/.exec(intro);
+    expect(link?.[1]).toBe("https://github.com/jmgirard/zotero-plugin-index/issues/new?template=add-plugin.yml");
+    const template = new URL(link![1]!).searchParams.get("template")!;
+    expect(existsSync(join(ROOT, ".github/ISSUE_TEMPLATE", template))).toBe(true);
+  });
+
+  test("holds hidden version buttons, Any version pressed, then one for each major", () => {
+    const group = /<div class="version-filter" hidden><span id="([^"]+)">Declares Zotero<\/span><div role="group" aria-labelledby="([^"]+)" data-version-filter>(.*?)<\/div><\/div>/.exec(home());
+    expect(group).not.toBeNull();
+    expect(group![2]).toBe(group![1]);
+    const buttons = [...group![3]!.matchAll(/<button([^>]*)>([^<]*)<\/button>/g)].map(([, attributes, text]) => [attributes, text]);
+    expect(group![3]!.replace(/<button[^>]*>[^<]*<\/button>/g, "")).toBe("");
+    expect(buttons).toEqual([
+      [' type="button" aria-pressed="true"', "Any version"],
+      ...["7", "8", "9", "10"].map((major) => [` type="button" value="${major}" aria-pressed="false"`, major]),
     ]);
   });
 
@@ -441,6 +480,7 @@ describe("the built site", () => {
     const files = htmlFiles(out);
     expect(files).toContain("index.html");
     for (const file of files) expect(readFileSync(join(out, file), "utf8").includes("<script"), file).toBe(file === "index.html");
+    expect(readFileSync(join(out, "index.html"), "utf8").match(/<script[\s>]/g)).toHaveLength(1);
   });
 
   test("has no trace of the Zotero version field", () => {

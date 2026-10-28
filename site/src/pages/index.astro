@@ -1,7 +1,17 @@
 ---
+import { ZOTERO_MAJORS } from "../../../src/site/version.ts";
 import Support from "../components/Support.astro";
 import Base from "../layouts/Base.astro";
-import { displayName, languageOptions, loadData, pluginHref, rowLanguagesAttribute, shownDescription } from "../data.ts";
+import {
+  ADD_PLUGIN_HREF,
+  displayName,
+  languageOptions,
+  loadData,
+  pluginHref,
+  rowLanguagesAttribute,
+  rowMajorsAttribute,
+  shownDescription,
+} from "../data.ts";
 
 const { plugins } = loadData();
 ---
@@ -11,6 +21,9 @@ const { plugins } = loadData();
   <p class="intro">
     Plugins for Zotero 7 and later. The pills show the Zotero versions that each plugin declares it supports: ✓ all of
     that version, ◐ part of it, – none of it. The index reads these ranges from each plugin and does not test them.
+    Is a plugin missing?{" "}
+    <a href={ADD_PLUGIN_HREF} data-add-plugin>Add a plugin</a>{" "}
+    with a GitHub issue form, which needs a GitHub account.
   </p>
   <p class="language-filter" hidden>
     <label for="language">Menus and settings in</label>{" "}
@@ -19,12 +32,30 @@ const { plugins } = loadData();
       {languageOptions(plugins).map(({ value, text }) => <option value={value}>{text}</option>)}
     </select>
   </p>
+  <div class="version-filter" hidden>
+    <span id="version-filter-label">Declares Zotero</span>
+    <div role="group" aria-labelledby="version-filter-label" data-version-filter>
+      <button type="button" aria-pressed="true">Any version</button>
+      {
+        ZOTERO_MAJORS.map((major) => (
+          <button type="button" value={major} aria-pressed="false">
+            {major}
+          </button>
+        ))
+      }
+    </div>
+  </div>
   <ul class="plugins">
     {
       plugins.map((record) => {
         const description = shownDescription(record);
         return (
-          <li class="plugin" data-plugin={record.id} data-languages={rowLanguagesAttribute(record)}>
+          <li
+            class="plugin"
+            data-plugin={record.id}
+            data-languages={rowLanguagesAttribute(record)}
+            data-zotero={rowMajorsAttribute(record)}
+          >
             <p class="plugin-name">
               <a href={pluginHref(record.id)}>{displayName(record)}</a>
               {record.upstream?.archived === true && <span data-archived>(archived)</span>}
@@ -39,30 +70,51 @@ const { plugins } = loadData();
 </Base>
 
 <script>
-  import { filterHref, menuValue, rowShows } from "../../../src/site/language-filter.ts";
+  import { chosenValue, filterHref, rowShows } from "../../../src/site/home-filter.ts";
 
-  // The menu is hidden in the HTML, so a page without JavaScript shows every row and no menu.
+  // The menu and the buttons are hidden in the HTML, so a page without JavaScript shows every
+  // row and neither filter.
   const select = document.querySelector<HTMLSelectElement>("select[data-language-filter]");
-  if (select) {
-    const options = [...select.options].map((option) => option.value);
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-version-filter] button")];
+  if (select && buttons.length > 0) {
+    const languages = [...select.options].map((option) => option.value);
+    // The "Any version" button has no value attribute, so its value is "".
+    const majors = buttons.map((button) => button.value);
+    let major = "";
     const rows = [...document.querySelectorAll<HTMLElement>("li[data-languages]")];
     const show = () => {
-      for (const row of rows) row.hidden = !rowShows(row.dataset.languages ?? "", select.value, options);
+      for (const button of buttons) button.setAttribute("aria-pressed", String(button.value === major));
+      const language = { value: select.value, options: languages };
+      const zotero = { value: major, options: majors };
+      for (const row of rows) {
+        row.hidden = !rowShows({ languages: row.dataset.languages ?? "", zotero: row.dataset.zotero ?? "" }, language, zotero);
+      }
     };
-    // Reads the parameter into the menu, on load and when Back or Forward changes the address
-    // in the same page. A parameter that names no option leaves the address.
+    const address = () => filterHref(filterHref(location.href, "language", select.value), "zotero", major);
+    // Reads the parameters into the menu and the buttons, on load and when Back or Forward
+    // changes the address in the same page. A parameter that names no option leaves the address.
     const fromAddress = () => {
-      select.value = menuValue(new URL(location.href).searchParams.get("language"), options);
+      const params = new URL(location.href).searchParams;
+      select.value = chosenValue(params.get("language"), languages);
+      major = chosenValue(params.get("zotero"), majors);
       show();
-      const href = filterHref(location.href, select.value);
+      const href = address();
       if (href !== location.href) history.replaceState(null, "", href);
+    };
+    const update = () => {
+      show();
+      history.replaceState(null, "", address());
     };
     fromAddress();
     addEventListener("popstate", fromAddress);
-    select.addEventListener("change", () => {
-      show();
-      history.replaceState(null, "", filterHref(location.href, select.value));
-    });
+    select.addEventListener("change", update);
+    for (const button of buttons) {
+      button.addEventListener("click", () => {
+        major = button.value;
+        update();
+      });
+    }
     select.closest("[hidden]")?.removeAttribute("hidden");
+    buttons[0]!.closest("[hidden]")?.removeAttribute("hidden");
   }
 </script>
