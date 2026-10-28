@@ -152,3 +152,26 @@ and `mul`, which name no one interface language.
 - AC4 evidence: `its language tag pattern refuses ["zxx","ZXX","mul","Mul-Latn","zxx-US"]` and `... matches ["mus","zh","en-US"]` pass; `shares its language tag pattern with both schemas` passes (test/upstream.test.ts:344).
 - AC5 evidence: `index-schema: a languages override with the value "zxx"` and `... "en-US, MUL"` pass; each asserts only the `index-schema` rule fired and `/overrides/0/value` in stdout; both failed with main's index schema copied in (T3).
 - AC6 evidence (joined-line reads at a11bf6f): README.md tags paragraph "It also leaves out the tags `und` (undetermined), `zxx` (no linguistic content), and `mul` (multiple languages), in any letter case."; DESIGN.md locale walk "matches `LANGUAGE_TAG`, which refuses the language subtags `und`, `zxx`, and `mul` in any letter case"; CHANGELOG.md entry "The list also leaves out the tags `und` ..., `zxx` ..., and `mul` ...". Overrides: README.md "The tags `und`, `zxx`, and `mul` are not allowed, in any letter case."; CHANGELOG.md "The value cannot hold the tags `und`, `zxx`, or `mul`." Empty text: README.md "the page shows "Unknown (no translations found)"", DESIGN.md "the line reads "Unknown (no translations found)" (M036)", CHANGELOG.md "the line says "Unknown (no translations found)"".
+- consistency gate: cairn_validate all checks passed; no principle changed (DESIGN.md has no IP or GP yet), so no cairn_impact run; the generic profile's consistency-gate slot names no toolchain check.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: README.md and CHANGELOG.md said "the tags `und`, `zxx`, and `mul`", but the rule refuses any tag with those language subtags, such as `zxx-US` — fix now, fixed 2df3797.
+- diff-bug #2: the DESIGN.md public-API paragraph names D-006 and D-007 for v1 changes but not D-018's narrower pattern — fix now, fixed 2df3797.
+- diff-bug #3: the "matches" probes `zh` and `en-US` test behavior the change does not alter — reject (planned change): AC4 names them, as the cases the narrower pattern must leave alone.
+- diff-bug #4: the "refuses" probes `Mul-Latn` and `zxx-US` repeat the path the AC3 walk test covers — reject (planned change): AC4 names them, and they test the pattern string that the schemas copy, not the walk.
+- diff-bug #5: added prose lines run past the files' usual wrap width (README.md 60, 121, 122; CHANGELOG.md 182, 198) — fix now, fixed 2df3797.
+- diff-bug #6: the reviewer's shell had no pnpm, so it could not rerun the check and site tests — noted: `npx -y pnpm@12.15.0 test` ran them in this session, 860 passed, 1 skipped.
+- ripple #1: schemas/plugins.v1.schema.json `languages` description named only the English-name rule — fix now, fixed 2df3797.
+- ripple #2: cairn/DESIGN.md upstream-facts item 2 named only the English-name rule — fix now, fixed 2df3797.
+- ripple #3: src/upstream/reader.ts comment on the `languages` field named only the English-name rule — fix now, fixed 2df3797.
+- ripple #4: the test title "only tags whose language has an English name" omits zxx and mul — reject (false): that case's fixture tests only the English-name rule, so its title is accurate.
+- ripple #5: README.md "A `languages` override value is not checked this way" can read as no check at all — fix now ("is not checked for an English name"), fixed 2df3797.
+- ripple #6: candidate row "Shorten the languages override error" cites a "420-character pattern", which matches neither main (261) nor the branch (317) — follow-up: hygiene corrects the figure in that row in place.
+- prior-review #1: wrap drift in README.md, CHANGELOG.md, and the reader comment, a fix earlier reviews made (M027, M031, M034, M035) — fix now, fixed 2df3797.
+- prior-review #2: the M033 archive says "None declared" is unchanged — reject (false): archives are history and never edited; M036's archive records the change.
+- blame-history #1: the M025 archive says override values are not filtered, which D-018 reverses — reject (false): archives are history; D-018 records the reversal.
+- blame-history #2: D-018 does not mention that zxx and mul folders no longer set the largest count — reject (planned change): AC3 states it, and the README, CHANGELOG, and reader comment say it.
+- blame-history #3: the visible wording change — reject (planned change).
+- blame-history #4: the narrower override pattern would fail an existing zxx, mul, or und override — reject (planned change): D-018 records it, and no entry under plugins/ has any override.
+- blame-history #5: overlong CHANGELOG.md and README.md lines — fix now (same as diff-bug #5), fixed 2df3797.
+- after fixes at 2df3797: pnpm test 860 passed, 1 skipped; pnpm check 42 entries, 0 problems; AC2 sweep 179 files, 0 hits; AC6 sentences reread: README.md "It also leaves out a tag whose language is `und` ..., `zxx` ..., or `mul` ..." and "A tag whose language is `und`, `zxx`, or `mul`, in any letter case, is not allowed."; CHANGELOG.md "The list also leaves out a tag whose language is `und` ..., `zxx` ..., or `mul` ..." and "The value cannot hold a tag whose language is `und`, `zxx`, or `mul`."; the empty-text sentences are unchanged in meaning.
+- snapshot files: none in `git diff --name-only main...HEAD`.
