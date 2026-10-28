@@ -1,0 +1,11 @@
+# M038: Answer issues when the recheck fails
+
+**Status:** done (2026-10-28, PR #71 https://github.com/jmgirard/zotero-plugin-index/pull/71)
+
+**Goal:** When the branch-name check of `pnpm propose` cannot run, an issue run answers the issue and a discover run ends with a plain error, in place of a stack trace.
+
+**Outcome:** `readHandoff` (`src/discover/handoff.ts`) takes `refCheckMs` and catches a throw from `entryProblem`'s `git check-ref-format` (time limit, exit other than 1, spawn error, signal). It returns `{ ok: false, refusal: "check-failed" }` with "checking the branch name of <repo> threw: <message>", but only after every other check passes, so a refused handoff stays refused with no request. `propose-cli.ts` maps it: an issue run calls `issueAnswer` with a `failed` outcome, `unexpected-error`, which comments "The bot could not finish" and leaves the issue open; a discover run prints "could not check the handoff: …" and "sent no request and pushed nothing" and exits 1. Tests: 3 in-process `readHandoff` cases in `test/propose.test.ts` (`withShim` moved to file scope), 3 CLI cases and 1 issue-run refusal case (`example/.alpha`) in `test/handoff.test.ts`. README ("Pull requests from the bot", "Proposing a plugin with an issue"), CHANGELOG, and DESIGN follow.
+
+**Decisions:** D-020 (a branch-name check that cannot run answers the issue, narrowing M011's no-request rule). Plan choices: comment and keep open over refusing quietly; refused handoffs stay silent.
+
+**Review:** Plan audit 9 findings, all taken. Claim audit: 38 claims, 2 corrected (a failure-name sentence that covered `pnpm check`; "exits with a status other than 1" missed a signal kill). Four-lens pass, 23 findings: 10 fixed in 2540724 (refusals now win over a check that cannot run, doc comments, a trailer assertion, D-020, DESIGN wording); 2 to row "Answer issues when a handoff read throws"; 11 rejected. Timing tests that fail under load went to row "Steady the time-limit tests under load". CI green; merged as 218cd91. Hygiene: row "Answer issues when the recheck fails" graduated; M035 row pruned; 7 lessons marked used M038; 1 captured (timing tests under load); 2026-10-25 (M002) on the fixture preload evicted by rank.
