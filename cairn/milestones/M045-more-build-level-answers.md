@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M045: Count more GitHub answers as build-level
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — it changes when the public site deploys and how an "Add a plugin" issue is answered   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m045-more-build-level-answers   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -84,7 +84,7 @@ plugin read and is not changed.
 <!-- owner: plan (create) / implement (check-off, minor edits); substantive
      change is amend-via-gate. -->
 
-- [ ] T1: In `test/upstream.test.ts`, move the row "the repo body is not
+- [x] T1: In `test/upstream.test.ts`, move the row "the repo body is not
       JSON" (line 517) from the plugin-level table to the build-level table
       (line 603), and add rows for the first and second releases pages
       (`RELEASES`, `RELEASES_PAGE_2`). Run them to see
@@ -126,6 +126,8 @@ plugin read and is not changed.
 - 2026-10-28: criteria audit (full mode, fresh Opus reader): 9 findings, AC4 and proportionality pass. Fixed 7: a second releases page row (AC1); "any owner and repo" and the path rule widened to a third segment of `releases`, so a `/releases/latest/download/` hop counts (AC2); rows for a release URL reached after a redirect from another host, a direct `update.json` release URL, and a direct `release-assets` URL that stays plugin-level, which tells the chain rule from the rejected host list (AC2); AC3 binds the phrases to the README list items and the new entry and keeps the API 401/403 item. D-022 is written in the plan commit, as a record, not a criterion. Answered 1: "when, and only when" not adopted, since no named procedure enumerates every 403; the three negative rows are the bounded claim.
 - 2026-10-28: ROADMAP line cap: the M045 row made 60 lines, so the row "Bound the build's report issue read" merged into "Close gaps in the build time limits", which already named it (D-017).
 - 2026-10-28: plan gate widened the URL rule from a path starting `/releases/download/` to any `github.com` path whose third segment is `releases`, because `update_url`s often name `/releases/latest/download/`, and a 403 at that hop is GitHub's too; falsified by a `github.com` `/releases/` path whose 403 a plugin causes.
+- 2026-10-28: implement started on branch m045-more-build-level-answers, cut from main at ae2d888.
+- 2026-10-28: T1 done: `get` marks a body that is not JSON build-level; the three rows (repo, first and second releases pages) failed before the fix and pass; `pnpm test` 946 passed, 1 skipped; `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

@@ -61,8 +61,9 @@ export type Failure =
   | "host-refused";
 
 // `buildLevel` marks a failure that usually points at the build rather than at the plugin: a
-// request with no whole response, or an answer that buildLevelStatus counts. The build
-// counts such failures to decide whether to deploy. It is not part of the published data.
+// request with no whole response, a GitHub API body that is not JSON, or an answer that
+// buildLevelStatus counts. The build counts such failures to decide whether to deploy. It
+// is not part of the published data.
 export type UpstreamResult =
   | { ok: true; facts: UpstreamFacts }
   | { ok: false; failure: Failure; message: string; buildLevel?: true };
@@ -329,7 +330,9 @@ export function githubClient(fetch: Fetch) {
     try {
       return { body: JSON.parse(text), link: response.headers.get("link") };
     } catch (error) {
-      fail("request-failed", `GET ${url} returned a body that is not JSON: ${(error as Error).message}`);
+      // No plugin shapes an API body, so a body that is not JSON, such as an HTML error
+      // page, comes from GitHub or a host between.
+      fail("request-failed", `GET ${url} returned a body that is not JSON: ${(error as Error).message}`, true);
     }
   }
 

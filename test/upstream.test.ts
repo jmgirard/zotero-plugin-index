@@ -514,7 +514,6 @@ describe("readUpstream", () => {
   // must hold, which shows the read reached the changed response.
   test.each<[string, (r: Responses) => void, string, string]>([
     ["the repo request returns 404", (r) => (r[REPO].status = 404), "github-http-error", "HTTP 404"],
-    ["the repo body is not JSON", (r) => (r[REPO] = { text: "<html>" }), "request-failed", "not JSON"],
     ["the repo body is not an object", (r) => (r[REPO] = { json: null }), "request-failed", "not an object"],
     ["the releases body is not a list", (r) => (r[RELEASES] = { json: {} }), "request-failed", "not a list"],
     [
@@ -602,6 +601,9 @@ describe("readUpstream", () => {
   // As above, for failures that point at the build, so the result carries buildLevel.
   test.each<[string, (r: Responses) => void, string, string]>([
     ["the releases request returns 403", (r) => (r[RELEASES].status = 403), "github-http-error", "HTTP 403"],
+    ["the repo body is not JSON", (r) => (r[REPO] = { text: "<html>" }), "request-failed", "not JSON"],
+    ["the first releases page is not JSON", (r) => (r[RELEASES] = { text: "<html>" }), "request-failed", RELEASES],
+    ["the second releases page is not JSON", (r) => (r[RELEASES_PAGE_2] = { text: "<html>" }), "request-failed", RELEASES_PAGE_2],
     ["a GitHub request cannot connect", (r) => (r[RELEASES_PAGE_2] = { error: "fetch failed" }), "request-failed", "fetch failed"],
     ["a body read is cut off", (r) => (r[UPDATE] = { bodyError: "terminated" }), "request-failed", "terminated"],
     ["the XPI body read is cut off", (r) => (r[XPI] = { bodyError: "terminated" }), "request-failed", "terminated"],
