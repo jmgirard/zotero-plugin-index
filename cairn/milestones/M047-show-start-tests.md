@@ -192,34 +192,43 @@ Evidence gathered 2026-10-28 on branch head a81d17f; `git diff 471d7f2..HEAD` ou
 - AC7: CHANGELOG `## Unreleased` holds one entry on the start tests, and "fetch the schema again" occurs once in the file, in that entry. DESIGN: Contract boundary names the start tests and that no artifact holds an XPI; "Data sources and contribution" gains "5. Start tests."; Known issues gains the forged-result entry naming the start-test job. Verify clean as above.
 - Gate: `cairn_validate.py` exit 0, all checks passed; no IP/GP changed, so no `cairn_impact` run; the generic profile's consistency-gate names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
-- diff-bug #1: a results artifact that holds a directory (or an unreadable file) makes `readResultsDir`'s `readFile` throw, `add-start-results` exits 1, and the site job deploys nothing, so a plugin process that outlives its start can stop every deploy — fix now, floor return (load-bearing: breaks "a failed start test does not stop the deploy")
-- diff-bug #2: any `start-results-*` artifact name is accepted, so a leftover plugin process that uploads `start-results-99` (or a name that duplicates other plugins' pairs) forges a version outside the matrix or erases real results — fix now, floor return (load-bearing: a wrong result on the pages with no error; past the Known issues bound)
+- diff-bug #1: a results artifact that holds a directory (or an unreadable file) makes `readResultsDir`'s `readFile` throw, `add-start-results` exits 1, and the site job deploys nothing, so a plugin process that outlives its start can stop every deploy — fix now, floor return (load-bearing: breaks "a failed start test does not stop the deploy"), fixed 498b5cf
+- diff-bug #2: any `start-results-*` artifact name is accepted, so a leftover plugin process that uploads `start-results-99` (or a name that duplicates other plugins' pairs) forges a version outside the matrix or erases real results — fix now, floor return (load-bearing: a wrong result on the pages with no error; past the Known issues bound), fixed 498b5cf
 - diff-bug #3: on an `execFile` timeout only `cli.ts` is killed, leaving Zotero's detached group — reject, edge: reached only when `pnpm start-test` hangs 60 s past its own 90 s limit, which its own group kill and bounded `rm` retries prevent; the effect is a leftover process
-- diff-bug #4: `start-tests` can take 25.5 min, leaving little room under the job's 30 min, and a job timeout loses that release's results — fix now: `timeout-minutes: 40`, with the setup steps counted in the comment
-- diff-bug #5: the fixed deploy `if:` path (start test failed, deploy still runs) was not seen live — fix now: a dispatch with one planted bad hash in the return
-- diff-bug #6: the add-start-results CLI comment and README omit the exit 1 from an unreadable results directory — fix now, with #1
-- diff-bug #7: the schema lets a `failure` record carry `startTests`, and `zotero` has no pattern — fix now: `dependencies` ties `startTests` to `upstream`, and `zotero` gets a version pattern
-- diff-bug #8a: the `read` (record has `upstream`) check in `addResults` is never reached by a test — fix now
-- diff-bug #8b: a hex-pattern check on each sha256 follows the exact `toEqual` that pins them — fix now: removed
-- diff-bug #8c: the absent-line `test.each` repeats one code path over 8 records — fix now: one read record and the failure record
-- diff-bug #8d: untested error branches: `parsePlan` bad bound, `plan-unreadable`, Zotero version unknown, `start-failed` for an unreadable or wrong-shape result, `writePlan` failure, no results directory, no plugins list — fix now
+- diff-bug #4: `start-tests` can take 25.5 min, leaving little room under the job's 30 min, and a job timeout loses that release's results — fix now: `timeout-minutes: 40`, with the setup steps counted in the comment, fixed 498b5cf
+- diff-bug #5: the fixed deploy `if:` path (start test failed, deploy still runs) was not seen live — fix now: a dispatch with one planted bad hash in the return, fixed 498b5cf (run 40776543409 showed it; its plant also found the unquoted-hash fault, fixed c927f6e)
+- diff-bug #6: the add-start-results CLI comment and README omit the exit 1 from an unreadable results directory — fix now, with #1, fixed 498b5cf
+- diff-bug #7: the schema lets a `failure` record carry `startTests`, and `zotero` has no pattern — fix now: `dependencies` ties `startTests` to `upstream`, and `zotero` gets a version pattern, fixed 498b5cf
+- diff-bug #8a: the `read` (record has `upstream`) check in `addResults` is never reached by a test — fix now, fixed 498b5cf
+- diff-bug #8b: a hex-pattern check on each sha256 follows the exact `toEqual` that pins them — fix now: removed, fixed 498b5cf
+- diff-bug #8c: the absent-line `test.each` repeats one code path over 8 records — fix now: one read record and the failure record, fixed 498b5cf
+- diff-bug #8d: untested error branches: `parsePlan` bad bound, `plan-unreadable`, Zotero version unknown, `start-failed` for an unreadable or wrong-shape result, `writePlan` failure, no results directory, no plugins list — fix now, fixed 498b5cf
 - diff-bug #8e: the schema `test.each` mostly tests Ajv — reject, planned change: it pins the field's contract (`minItems`, `enum`, no extra fields) that this milestone adds
 - diff-bug #9: no in-process race; two cross-process windows let a leftover process swap a later plugin's XPI or result — reject, false for in-process state; the cross-process case is the accepted Known issues limit
-- diff-bug #10: the time comment omits the setup steps — fix now, with #4
-- blame-history #1: a failing `add-start-results` is a third deploy-withholding cause that no D-entry records beside D-011 — fix now: D-024
-- blame-history #2: D-010 says the build job writes the site, which the site job now does — fix now: D-024 annotates D-010
-- blame-history #3: `pnpm build --out a --out b` now takes the last value where it was a usage error — fix now: a repeated option prints the usage
+- diff-bug #10: the time comment omits the setup steps — fix now, with #4, fixed 498b5cf
+- blame-history #1: a failing `add-start-results` is a third deploy-withholding cause that no D-entry records beside D-011 — fix now: D-024, fixed 498b5cf
+- blame-history #2: D-010 says the build job writes the site, which the site job now does — fix now: D-024 annotates D-010, fixed 498b5cf
+- blame-history #3: `pnpm build --out a --out b` now takes the last value where it was a usage error — fix now: a repeated option prints the usage, fixed 498b5cf
 - blame-history #4: `plugins-data` no longer holds the site pages — reject, planned change: the site job builds and uploads them
-- prior-review #1: README line 125 is 111 characters — fix now: rewrapped
+- prior-review #1: README line 125 is 111 characters — fix now: rewrapped, fixed 498b5cf
 - prior-review #2: `execFile`'s 1 MiB output cap has no `ERR_CHILD_PROCESS_STDIO_MAXBUFFER` check — reject, edge: `cli.ts` prints one line and Zotero's output is ignored, so only a CLI printing over 1 MiB reaches it, and the effect is `start-failed` with no result
-- ripple #1: DESIGN's `build.yml` sentence says the build job runs `pnpm site` and keeps `dist/` — fix now
-- ripple #2: DESIGN's `pnpm build` usage lacks `[--plan <file>]` — fix now
-- ripple #3: DESIGN says `readUpstream` returns the facts, not the `xpi` read — fix now
-- ripple #4: DESIGN says `build.yml` runs `pnpm site` after the build — fix now
-- ripple #5: README's and `build.yml`'s exit-1 lists omit a failed `--plan` write, which exits 1 after the data file is written — fix now
-- ripple #6: DESIGN's plugin page list omits the "Starts in Zotero" line — fix now
-- ripple #7: README "The site does not test plugins." — fix now
-- ripple #8: the home page intro "does not test them" — fix now
-- ripple #9: README "Building the site" omits `pnpm add-start-results` — fix now
-- ripple #10: README "Building the data" names the `reports` list and not `startTests` — fix now
-- ripple #11: DESIGN's cache-mode test sentence names the build job only — fix now
+- ripple #1: DESIGN's `build.yml` sentence says the build job runs `pnpm site` and keeps `dist/` — fix now, fixed 498b5cf
+- ripple #2: DESIGN's `pnpm build` usage lacks `[--plan <file>]` — fix now, fixed 498b5cf
+- ripple #3: DESIGN says `readUpstream` returns the facts, not the `xpi` read — fix now, fixed 498b5cf
+- ripple #4: DESIGN says `build.yml` runs `pnpm site` after the build — fix now, fixed 498b5cf
+- ripple #5: README's and `build.yml`'s exit-1 lists omit a failed `--plan` write, which exits 1 after the data file is written — fix now, fixed 498b5cf (README) and a86f5a9 (`build.yml`)
+- ripple #6: DESIGN's plugin page list omits the "Starts in Zotero" line — fix now, fixed 498b5cf
+- ripple #7: README "The site does not test plugins." — fix now, fixed 498b5cf
+- ripple #8: the home page intro "does not test them" — fix now, fixed 498b5cf
+- ripple #9: README "Building the site" omits `pnpm add-start-results` — fix now, fixed 498b5cf
+- ripple #10: README "Building the data" names the `reports` list and not `startTests` — fix now, fixed 498b5cf
+- ripple #11: DESIGN's cache-mode test sentence names the build job only — fix now, fixed 498b5cf
+- Pass 2, evidence on head a86f5a9; `git diff c927f6e..a86f5a9` outside `cairn/` changes only a `build.yml` comment, so dispatch run 40777702698 (head c927f6e) ran the reviewed code. `pnpm test` 1023 passed, 6 skipped; `pnpm check` 42 entries, 0 problems.
+- AC1 (pass 2): the three `test/build.test.ts` plan tests pass; run 40777702698's 7 artifacts (github-pages, plugins-data, start-plan, start-results-7.0.32, -8.0.4, -9.0.6, -10.0.6), listed by `gh api` and downloaded: 0 `.xpi` files, 0 `.xpi` names in the github-pages tar.
+- AC2 (pass 2): `test/start-tests.test.ts` 14 tests pass, the 7 ranges, hash mismatch, failed download, refused host, and total-limit cut among them, plus no result file, a wrong-shape result, and the CLI's plan and Zotero-version errors.
+- AC3 (pass 2): Ruby parse: jobs build, start-test (`permissions={}`, no `secrets`, `cache-mode="none"`), site (`if="${{ !cancelled() && needs.build.result == 'success' }}"`, `cache-mode="none"`), deploy (`needs="site"`, `if="${{ !cancelled() && needs.site.result == 'success' }}"`); build `cache-mode="none"`; matrix 7.0.32, 8.0.4, 9.0.6, 10.0.6, each `sha256` a 64-character String. Run 40777702698: build, four start-test jobs (each log `<file>: OK`), and site succeeded; deploy failed with "Branch "m047-show-start-tests" is not allowed to deploy to github-pages due to environment protection rules." Run 40776543409 (one planted bad hash) showed the deploy running after a failed start-test job.
+- AC4 (pass 2): `test/add-start-results.test.ts` 14 tests pass, each drop case of AC4 among them; run 40777702698's site log: "kept 125 start results; dropped 0 results and 0 files that are not a readable JSON array".
+- AC5 (pass 2): the order test and the five schema tests pass; README "Using the data" still says to fetch the schema again.
+- AC6 (pass 2): the start-test line test and the absent-line tests for a read record and a failed record pass.
+- AC7 (pass 2): the CHANGELOG entry and the DESIGN Data sources, Contract boundary, and Known issues text stand; verify clean.
+
