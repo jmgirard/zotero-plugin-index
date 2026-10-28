@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M042: Check the index at the push base
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -130,6 +130,7 @@ workflow stays in row "Bound the whole discover workflow's time".
 - 2026-10-28: the 5 new tests (3 issue, 2 discover) fail on main's code with `root` set to the checkout's `plugins/`: the discover case proposes alpha, beta, and gamma again, and the issue cases go on to the push instead of answering. Full `pnpm test` 934 passed, 1 skipped; `pnpm check` 42 entries, 0 problems.
 - 2026-10-28: T4 done: README's write-step paragraph, failed-entry paragraph, and issue-run failure list; DESIGN.md's write-step sentence and `propose` bullet; CHANGELOG entry. The two code comments were rewritten in T1–T3. The AC4 search over README.md, cairn/DESIGN.md, and `src/discover/*.ts` prints nothing. The simple-english hook's other README and CHANGELOG hits are in older text and were left alone.
 - 2026-10-28: T5 done: `pnpm test` exit 0 (934 passed, 1 skipped), `pnpm check` exit 0 (42 entries, 0 problems).
+- 2026-10-28: claim audit: 47 claims read, 3 corrected — src/discover/propose.ts (the `fetchBase` comment said an empty index is never read; an empty `plugins/` still reads as empty), README.md (an entry merged during the run counts; only one merged before the one fetch does), test/issue.test.ts (the `answer` comment said the checkout's main gets the change; the remote's does). The reader re-read the three and found them true; README line rewrapped and a lost space in test/propose.test.ts restored. `pnpm test` 934 passed, 1 skipped; `pnpm check` 0 problems.
 
 ## Decisions
 

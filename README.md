@@ -372,9 +372,10 @@ no request, in cases such as these:
 
 Before it pushes, the command reads the bot pull requests again. It also
 fetches the default branch and reads the index at the fetched commit. Each
-pull request builds on that commit, so an entry merged during the run
-counts. It skips an entry that the pull requests or that index has. It gives
-the token to git only in git's environment, and `pnpm check` gets no token.
+pull request builds on that commit, so an entry merged before the fetch
+counts, also one merged while the read job ran. It skips an entry that the
+pull requests or that index has. It gives the token to git only in git's
+environment, and `pnpm check` gets no token.
 
 The workflow uses the built-in `GITHUB_TOKEN`, and a pull request that this
 token opens starts no CI run. Thus the body of each pull request gives the

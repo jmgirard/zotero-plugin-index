@@ -95,7 +95,7 @@ async function twoStep(responses: Responses, gitDir = tempDir(), check?: CheckRu
     fetch,
     indexRepo: "example/index",
     gitDir,
-    check: check ??(async () => ({ status: 0, output: "checked 1 entries in x, 0 problems\n" })),
+    check: check ?? (async () => ({ status: 0, output: "checked 1 entries in x, 0 problems\n" })),
     gitMs,
     entries,
   });

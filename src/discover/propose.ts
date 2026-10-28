@@ -297,7 +297,8 @@ export interface PushBase {
 }
 
 // Fetches the default branch `base` from `remote` and reads the index at the fetched
-// commit. A commit with no plugins/ folder fails, so an empty index is never read.
+// commit. A commit with no plugins/ folder fails, so a missing folder is never read as an
+// empty index.
 export async function fetchBase(options: { gitDir: string; remote?: string; base: string; gitMs?: number }): Promise<PushBase> {
   const { gitDir, remote = "origin", base, gitMs = GIT_LIMIT_MS } = options;
   const git = gitRunner(gitDir, gitMs);

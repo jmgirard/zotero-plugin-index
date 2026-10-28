@@ -513,7 +513,8 @@ describe("pnpm discover-issue --handoff then pnpm propose", () => {
 
 describe("the write step of an issue run", () => {
   // Runs only the write step for issue 7 on an outcome, as if a read step had left it.
-  // The checkout's main holds a copy of `plugins`, and then the `change` pushed to it.
+  // The remote's main holds a copy of `plugins`, and then the `change`, pushed from
+  // another clone, so the checkout keeps only the copy.
   async function answer(
     read: Parameters<typeof issueAnswer>[0]["read"],
     responses: Responses,
