@@ -58,14 +58,17 @@ issues entry records this limit.
       mismatch and a cut by the total limit.
 - [ ] AC3: In `build.yml`, the start-test job sets `permissions: {}`, and
       no step of it reads `secrets.`. It runs once for each of Zotero
-      7.0.32, 8.0.5, 9.0.6, and 10.0.6 for Linux, each download checked
-      against a SHA-256 in the workflow. The build, start-test, and site
-      jobs set `cache-mode: none`. If the build job succeeded, the site
-      job's `if:` runs it, whatever the start-test jobs' results. If the
-      build job failed, the site job does not run. The deploy job needs the site job. A Ruby
-      YAML parse of the file shows these keys and expressions. A dispatch
-      on the branch runs each job before the deploy, which then fails, as
-      the `github-pages` environment takes deploys from `main` only.
+      7.0.32, 8.0.4, 9.0.6, and 10.0.6 for Linux, each Zotero download
+      checked against a SHA-256 in the workflow. The build, start-test,
+      and site jobs set `cache-mode: none`. The site job's `if:` is
+      `${{ !cancelled() && needs.build.result == 'success' }}`, so after a
+      build job that succeeded it runs whatever the start-test jobs'
+      results, and after a build job that failed it does not run. The
+      deploy job needs the site job. A Ruby YAML parse of the file shows
+      these keys and expressions. A dispatch on the branch runs each job,
+      with the Zotero download check of each start-test job passing,
+      before the deploy job, which then fails at the `github-pages`
+      environment's rule that takes deploys from `main` only.
 - [ ] AC4: `pnpm add-start-results --data <file> --plan <file> --results
       <dir>` adds a `startTests` item to a record only for a result that
       meets three conditions. Its entry id, plugin id, and version match
@@ -158,6 +161,7 @@ issues entry records this limit.
 - 2026-10-28: re-audit: AC3 (full) — 5 findings on the 8.0.4 wording: the site `if:` misses a cancelled run (fixed: the criterion names the expression); no `cache` input (answered: the workflows test refuses any `cache` key in the file); other token spellings (answered: `permissions: {}` and `persist-credentials: false`); the dispatch must show each download check passing (fixed); the deploy failure rests on the environment rule (fixed).
 - 2026-10-28: re-audit: AC3 (full) — 2 findings on the fixed wording: the `if:` value is `${{ }}`-wrapped, so "is" the bare expression fails a literal check; "each download" also covers XPI and artifact downloads, so it should say "each Zotero download". Second re-audit on AC3, so the next wording goes to the user.
 - 2026-10-28: checkpoint: T4 `build.yml` drafted with PENDING hashes for 7.0.32, 8.0.4, 9.0.6 (downloads running); T6 page line and fixture drafted, untested.
+- 2026-10-28: substantive amendment: AC3 names Zotero 8.0.4 for 8.0.5, which has no Linux build; the site `if:` is named with its `${{ }}` wrapper; "each Zotero download"; the dispatch shows each Zotero download check passing. The user chose this text at the stop after the second re-audit.
 
 ## Decisions
 
