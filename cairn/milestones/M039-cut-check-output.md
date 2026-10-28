@@ -21,11 +21,11 @@ A bot pull request body stays under GitHub's 65,536-character limit, because `bo
 
 ## Acceptance criteria
 
-- [ ] AC1: When the `pnpm check` output, with trailing whitespace removed, is longer than 10,000 characters (Unicode code points), `body()` in `src/discover/propose.ts` quotes only its first 10,000 characters and adds a line after the code block saying that the output was cut to its first 10,000 characters. Tests in `test/propose.test.ts` assert the quoted text and the line for an output of 100,000 ASCII characters and for an output of 10,001 emoji, whose quoted text holds the first 10,000 emoji whole.
-- [ ] AC2: When that output is at most 10,000 characters, `body()` quotes it as it does on main and adds no cut line. A test asserts this for an output of 10,000 characters followed by a newline.
-- [ ] AC3: `body()` returns at most 65,536 UTF-16 code units for an entry whose `repoUrl` holds 300 characters and whose `version`, `strictMinVersion`, and `strictMaxVersion` each hold 500 backticks, with an issue number and a check output of 100,000 backticks. A test asserts it.
-- [ ] AC4: The `CHANGELOG.md` entry on the bot's pull requests and the `README.md` passage on the pull request body each say that a `pnpm check` output over 10,000 characters is cut and that the body says so.
-- [ ] AC5: `pnpm test` and `pnpm check` pass.
+- [x] AC1: When the `pnpm check` output, with trailing whitespace removed, is longer than 10,000 characters (Unicode code points), `body()` in `src/discover/propose.ts` quotes only its first 10,000 characters and adds a line after the code block saying that the output was cut to its first 10,000 characters. Tests in `test/propose.test.ts` assert the quoted text and the line for an output of 100,000 ASCII characters and for an output of 10,001 emoji, whose quoted text holds the first 10,000 emoji whole.
+- [x] AC2: When that output is at most 10,000 characters, `body()` quotes it as it does on main and adds no cut line. A test asserts this for an output of 10,000 characters followed by a newline.
+- [x] AC3: `body()` returns at most 65,536 UTF-16 code units for an entry whose `repoUrl` holds 300 characters and whose `version`, `strictMinVersion`, and `strictMaxVersion` each hold 500 backticks, with an issue number and a check output of 100,000 backticks. A test asserts it.
+- [x] AC4: The `CHANGELOG.md` entry on the bot's pull requests and the `README.md` passage on the pull request body each say that a `pnpm check` output over 10,000 characters is cut and that the body says so.
+- [x] AC5: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -62,3 +62,10 @@ A bot pull request body stays under GitHub's 65,536-character limit, because `bo
 ## Decisions
 
 ## Review
+
+- 2026-10-28 AC1: `pnpm exec vitest run test/propose.test.ts --reporter=verbose` on 68649bc: "the body quotes the first 10,000 characters of a longer check output and says so" (100,000 ASCII characters) and "the body cuts a check output by code points, so no surrogate pair is split" (10,001 U+1F600) pass; each asserts the quoted text and the cut line. Both failed on main at T1 on the missing cut text.
+- 2026-10-28 AC2: same run: "the body quotes a check output of 10,000 characters and a newline whole, with no cut line" passes; it asserts the fenced output as on main and no "is cut to" text. It also passed on main at T1, which is the unchanged behavior it pins.
+- 2026-10-28 AC3: same run: "the body stays within GitHub's 65,536 characters for long handoff values and check output" passes with the inputs AC3 names (300-character URL, three 500-backtick versions, issue 7, 100,000 backticks); measured length 35,683 units (T2 work-log line); 305,626 on main at T1.
+- 2026-10-28 AC4: joined-copy grep (LESSONS M018 recipe) finds 1 match each: CHANGELOG.md "If the output of `pnpm check` is longer than 10,000 characters, the body quotes only its first 10,000 characters and says that the output is cut." in the Unreleased bot entry, and README.md "If the output is longer than 10,000 characters, the body quotes only its first 10,000 characters and says that the output is cut." in the pull request body passage.
+- 2026-10-28 AC5: `pnpm test` on 68649bc: 18 files, 888 passed, 1 skipped (the case-sensitive volume case); `pnpm check`: 42 entries, 0 problems. main had not moved since the branch was cut.
+- 2026-10-28 gate: `cairn_validate.py` all checks passed; no principle changed, so no `cairn_impact`; the generic profile's consistency-gate names no toolchain checks.
