@@ -90,7 +90,7 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
       Anchor it from `concurrency:` to the next top-level key, add a
       discover.yml describe that does the same, and add the `contains(...)`
       check of AC2. Run them and see each new assertion fail on main's files.
-- [ ] T2: Edit both workflows' `concurrency` blocks and the comments above
+- [x] T2: Edit both workflows' `concurrency` blocks and the comments above
       them (`add-plugin-issue.yml` lines 19-23, `discover.yml` lines 18-19).
       Run `pnpm test` and `pnpm check`.
 - [ ] T3: Update README.md (the add-plugin paragraphs near lines 498-519),
@@ -122,6 +122,7 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
 - 2026-10-28: implement started on branch m043-queue-discover-runs, cut from main at 171917a.
 - 2026-10-28: T1: `test/workflows.test.ts` gains a `concurrency` helper (the top-level block up to the next unindented line, and each non-comment line setting a `concurrency` key), an anchored block test for each workflow, and the shared `contains(...)` label check; the 3 new tests fail on main's files because the block lacks `queue: max` and the label clause; 38 others pass.
 - 2026-10-28: T1 choice: one group expression that wraps the issue clause and the dispatch clause in parentheses before `&& format(...)`, since GitHub's `&&` binds tighter than `||`.
+- 2026-10-28: T2: both `concurrency` blocks gain `queue: max`, the add-plugin-issue.yml group gains the unlabeled-issue clause, and both comments describe the queue; Ruby's YAML parser reads the three keys in each; `pnpm test` 936 passed, 1 skipped (the case-sensitive volume case); `pnpm check` 42 entries, 0 problems.
 
 ## Decisions
 

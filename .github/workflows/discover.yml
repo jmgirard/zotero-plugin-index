@@ -17,10 +17,12 @@ on:
 permissions: {}
 
 # One run at a time, so two runs cannot propose the same plugin. `Add a plugin from
-# an issue` also pushes discover/ branches and runs in this group.
+# an issue` also pushes discover/ branches and runs in this group. With `queue: max`,
+# up to 100 runs wait in the group and run in turn; GitHub cancels runs past that.
 concurrency:
   group: discover
   cancel-in-progress: false
+  queue: max
 
 jobs:
   read:
