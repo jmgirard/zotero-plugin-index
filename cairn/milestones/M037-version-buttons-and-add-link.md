@@ -173,19 +173,19 @@ Evidence at 153c2c1, 2026-10-28; `pnpm test` 883 passed, 1 skipped; `pnpm check`
 - Consistency gate: `cairn_validate.py` all checks passed (exit 0); no principle changed, so no `cairn_impact`; the generic profile names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
 - diff-bug #1: no automated test of the CHANGELOG's button claims; the script wiring is covered by the hand check only — follow-up, absorbed into "Test the home page script in a browser"
-- diff-bug #2: README paragraph ragged ("show. The" line, a 118-column line) — fix now
-- diff-bug #3: DESIGN Architecture says templates import `version.ts` through `data.ts` and `Support.astro`, but `index.astro` imports `ZOTERO_MAJORS` directly — fix now
+- diff-bug #2: README paragraph ragged ("show. The" line, a 118-column line) — fix now, fixed d684566
+- diff-bug #3: DESIGN Architecture says templates import `version.ts` through `data.ts` and `Support.astro`, but `index.astro` imports `ZOTERO_MAJORS` directly — fix now, fixed d684566
 - diff-bug #4: `aria-pressed` gives toggle semantics to a one-of-N choice; pressing a pressed major does not clear it — reject, planned change: AC2 names `aria-pressed` buttons, and "Any version" is the clear action
 - diff-bug #5: no message or count when the filters hide every row — follow-up, new row "Say when the filters hide every plugin"
-- diff-bug #6: unpressed button border (`--line`) about 1.15:1 light and 1.5:1 dark; in forced-colors mode only bold marks the pressed button — fix now (border `--muted`; forced-colors 3px `ButtonText` border on the pressed button)
+- diff-bug #6: unpressed button border (`--line`) about 1.15:1 light and 1.5:1 dark; in forced-colors mode only bold marks the pressed button — fix now (border `--muted`; forced-colors 3px `ButtonText` border on the pressed button), fixed d684566
 - diff-bug #7: the buttons run only when the language menu exists (`if (select && buttons.length > 0)`) — reject, false: both always render in the same template, and no page state reaches a missing menu
 - diff-bug #8: README and CHANGELOG say "from 7 to 10" while the buttons come from `ZOTERO_MAJORS` — reject, false: true at this head, and README's pill paragraph states the same range and changes with it
-- diff-bug #9: tests the doctrine excludes: repeated paths in `passes`, `rowShows`, `chosenValue`, `filterHref`; the `ZOTERO_MAJORS` constant check; attribute-order regexes; no direct `rowMajors` test — fix now for the repeats (removed "Any version on a row with no majors", "neither passes", "both are at their all value", the language `chosenValue` pairs, the second `zotero` set expect, "the zotero parameter already set", the `ZOTERO_MAJORS` expect; AC3-named cases kept); reject the regex order as style (same pattern as the language-menu test) and the `rowMajors` item as false (an internal helper, tested through every fixture row)
+- diff-bug #9: tests the doctrine excludes: repeated paths in `passes`, `rowShows`, `chosenValue`, `filterHref`; the `ZOTERO_MAJORS` constant check; attribute-order regexes; no direct `rowMajors` test — fix now for the repeats (removed "Any version on a row with no majors", "neither passes", "both are at their all value", the language `chosenValue` pairs, the second `zotero` set expect, "the zotero parameter already set", the `ZOTERO_MAJORS` expect; AC3-named cases kept), fixed d684566; reject the regex order as style (same pattern as the language-menu test) and the `rowMajors` item as false (an internal helper, tested through every fixture row)
 - blame-history #1: `?zotero=` has the same before-paint gap as `?language=` — follow-up, absorbed into "Filter the home list before it paints"
 - blame-history #2: the untested script block grew — follow-up, absorbed into "Test the home page script in a browser"
-- blame-history #3: README ragged wrap; DESIGN "carried no script from M015" reads awkwardly — README fix now (same as diff-bug #2); DESIGN sentence reject, style (pre-existing wording, still true)
+- blame-history #3: README ragged wrap; DESIGN "carried no script from M015" reads awkwardly — README fix now (same as diff-bug #2), fixed d684566; DESIGN sentence reject, style (pre-existing wording, still true)
 - blame-history #4: `data.ts` comment dropped the concrete `data-languages` example — reject, style
-- prior-review #1: ragged README rewrap repeats M026, M028, M033, M035 findings — fix now (same as diff-bug #2)
+- prior-review #1: ragged README rewrap repeats M026, M028, M033, M035 findings — fix now (same as diff-bug #2), fixed d684566
 - prior-review #2: `?zotero=` before-paint gap — follow-up, absorbed into "Filter the home list before it paints"
 - prior-review #3: new site tests pin attribute strings and order, the brittleness M024 fixed — reject, style: AC2 names the attributes, and the language-menu test uses the same form
 - ripple #1: README "A script runs the menu. Without JavaScript, the home page shows no menu" is now incomplete — reject, false: still true, and the next paragraph states the button fallback
