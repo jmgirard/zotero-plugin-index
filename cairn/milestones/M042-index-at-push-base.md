@@ -144,3 +144,32 @@ Review pass 1, 2026-10-28, branch head 01a8cb2, main at d51ad72 (not moved). No 
 - AC4 evidence: README.md:373-377 (write step reads the index at the fetched commit), :396-400 (failed fetch or no `plugins/` fails every entry, a bot pull request's entry included), :465-467 (issue-run failure list names the fetch and the missing folder); cairn/DESIGN.md:423-428 (`fetchBase` and the fetched commit) and :439 (`propose` builds on it); CHANGELOG.md:310 Unreleased entry. The AC4 search over README.md, cairn/DESIGN.md, and each `src/discover/*.ts` printed nothing.
 - AC5 evidence: `npx -y pnpm@12.15.0 test` exit 0 (19 files, 934 passed, 1 skipped); `npx -y pnpm@12.15.0 check` exit 0 ("checked 42 entries in plugins, 0 problems").
 - Consistency gate: `cairn_validate.py` all checks passed; no DESIGN principle changed, so `cairn_impact` skipped; the generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: `indexAt` ran one `git cat-file blob` per `meta.json`, so the add-plugin-issue.yml budget comment ("10 git processes") was stale and the worst case grew with the index — fix now: one `git cat-file --batch`, workflow comment now 12 processes and about 30 minutes per issue (3 × 29.5 = 88.5 of 90), fixed 56aea11
+- diff-bug #2: no test asserts the fetch gets the token — fix now: "the token" test asserts the `fetch --quiet origin main` extraheader line, seen red with the token dropped from the fetch, fixed 56aea11
+- diff-bug #3: `.trim()` stripped a BOM, so a BOM `meta.json` parsed where `indexed` would not — fix now: the batch read parses the raw bytes, so a BOM file counts by id only, fixed 56aea11
+- diff-bug #4: a symlinked `meta.json` reads as its link text and counts by id only, where `indexed` follows the link — follow-up: new row "Count linked folders at the push base", written at hygiene with the row graduation (ROADMAP is at its 60-line cap until then)
+- diff-bug #5: a symlinked or submodule entry folder is an id under `indexed` and not under `indexAt` — follow-up: same row as #4
+- diff-bug #6: `ls-tree <commit> -- plugins` resolves against the current folder — fix now: one `ls-tree -r -t -z --full-tree`, fixed 56aea11
+- diff-bug #7: a `known` issue now needs a fetch, so a failed fetch turns "already lists" into "could not finish" — reject, planned change: AC3 asks for the "could not finish" answer when the fetched commit cannot be read, and the issue stays open for a rerun
+- diff-bug #8: `IssueAnswerOptions` has no `gitMs` — fix now: added and passed through to `fetchBase` and `propose`, fixed 56aea11
+- diff-bug #9: execFile's 1 MiB `maxBuffer` overflow reads as a time limit — fix now: `maxBuffer` 64 MiB and its own message, fixed 56aea11
+- diff-bug #10: two folders naming one repo can name a different folder than `indexed` — reject, false: either folder is an entry that lists the repo, so the comment stays true
+- diff-bug #11: the `ids.has` check in the meta loop is redundant — fix now: the meta pattern excludes dot names, fixed 56aea11
+- diff-bug #12: the older "answers as today … at the fetched commit names the repo" issue test runs the same path as the new one — fix now: dropped, fixed 56aea11
+- diff-bug #13: two new helper comments restate the code — reject, style: they match the files' helper comments such as `passing()`
+- diff-bug #14: `pushAll` is exported but used only in its file — fix now: unexported, fixed 56aea11
+- diff-bug #15: README line left short by the rewrap — fix now: rewrapped, fixed 56aea11
+- diff-bug (a): `FETCH_HEAD` could move between `fetch` and `rev-parse` — reject, false: `gitDir` is the job's own checkout, and no other git process runs there during `pnpm propose`
+- blame-history #1: a failed fetch now reports `in-index` and `in-bot-pull` entries as failed — reject, planned change: AC1 states it
+- blame-history #2: a failed fetch loses the issue run's "already lists" or "already proposed" answer — reject, planned change: AC3 (as diff-bug #7)
+- blame-history #3: a checkout entry that main dropped during the run makes a `known` issue fail with "the write step does not" — reject, edge: only an entry deleted from main while a run goes reaches it, and its effect is the "could not finish" comment with the issue left open
+- blame-history #4: per-`meta.json` processes and the 1 MiB output cap — fix now: as diff-bug #1 and #9, fixed 56aea11
+- prior-review: no prior-review evidence; the probe found no PR review comments
+- ripple #1: add-plugin-issue.yml budget comment stale — fix now: as diff-bug #1, fixed 56aea11
+- ripple #2: DESIGN.md said `propose` gives `git fetch` the token — fix now: "`fetchBase` and `propose` give", fixed 56aea11
+- ripple #3: ROADMAP row "Check the index at the push base" states the old behavior — reject, planned change: post-merge hygiene graduates it
+- ripple #4: ROADMAP row "Fail issue runs with no plugins folder" is now true only of the read step — follow-up: narrowed at hygiene to the read step
+- ripple #5: README's issue-run failure list "fail to read `plugins/`" was ambiguous — fix now: "in its checkout", fixed 56aea11
+- ripple #6: `twoStep`'s `root` parameter is unused — reject, false: it goes to `discoverRead` at test/propose.test.ts:78
+- After the fixes: `pnpm test` exit 0 (933 passed, 1 skipped; one duplicate test dropped), `pnpm check` exit 0 (42 entries, 0 problems). AC1 to AC5 tests still pass.
