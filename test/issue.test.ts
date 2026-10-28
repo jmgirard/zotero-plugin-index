@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
@@ -46,15 +46,16 @@ const indexRepo: Responses = {
 const opened: Responses = { [`POST ${PULLS}`]: { status: 201, json: { html_url: "https://github.com/example/index/pull/9" } } };
 
 // Runs the read step and then the write step for issue 7 in-process against `responses`,
-// through a handoff written to disk, with a check that always passes, and returns the
-// write step's result, the requests the two sent other than GET, and the URLs they
-// fetched. `outDir` replaces the read step's output directory.
+// which answer the issue's read with `body` unless they hold their own, through a
+// handoff written to disk, with a check that always passes, and returns the write step's
+// result, the requests the two sent other than GET, and the URLs they fetched. `outDir`
+// replaces the read step's output directory.
 async function runIssue(
   body: string,
   responses: Responses,
   options: { root?: string; outDir?: string; gitDir?: string; lookup?: () => Promise<string[]> } = {},
 ) {
-  const { fetch, requests } = fixtureFetch(responses);
+  const { fetch, requests } = fixtureFetch({ [ISSUE]: { json: { number: 7, body } }, ...responses });
   const root = options.root ?? tempDir();
   const handoff = tempDir();
   const outcome = await issueRead({
@@ -63,7 +64,7 @@ async function runIssue(
     fetch,
     lookup: options.lookup ?? publicLookup,
     indexRepo: "example/index",
-    body,
+    issue: 7,
   });
   await writePlan(handoff, { kind: "issue", ...outcome });
   const checked = await readHandoff(handoff, "issue", 1);
@@ -454,11 +455,16 @@ describe("pnpm discover-issue --handoff then pnpm propose", () => {
     writeFileSync(hook, '#!/bin/sh\necho "refused by the test hook" >&2\nexit 1\n');
     chmodSync(hook, 0o755);
     const requestLog = join(tempDir(), "requests.jsonl");
-    const responses = { ...indexRepo, ...pluginRepo("example/alpha", "alpha@example.org"), ...opened };
+    const responses = {
+      ...indexRepo,
+      ...pluginRepo("example/alpha", "alpha@example.org"),
+      ...opened,
+      [ISSUE]: { json: { number: 7, body: rendered("https://github.com/example/alpha") } },
+    };
     const handoff = join(tempDir(), "handoff");
     const read = pnpm("discover-issue", ["--handoff", handoff], responses, tempDir(), {
       GITHUB_REPOSITORY: "example/index",
-      ISSUE_BODY: rendered("https://github.com/example/alpha"),
+      ISSUE_NUMBER: "7",
       ZPI_REQUESTS: requestLog,
     });
     expect(read.stderr).toBe("");
@@ -491,10 +497,18 @@ describe("pnpm discover-issue --handoff then pnpm propose", () => {
   });
 
   test("prints the usage when GITHUB_REPOSITORY does not name a repo", () => {
-    const result = pnpm("discover-issue", ["--handoff", tempDir()], {}, tempDir(), { GITHUB_REPOSITORY: "example", ISSUE_BODY: "" });
+    const result = pnpm("discover-issue", ["--handoff", tempDir()], {}, tempDir(), { GITHUB_REPOSITORY: "example", ISSUE_NUMBER: "7" });
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("GITHUB_REPOSITORY must name the index repo");
     expect(result.stdout).toBe("");
+  });
+
+  test("prints the usage when ISSUE_NUMBER is not set for pnpm discover-issue", () => {
+    const handoff = join(tempDir(), "handoff");
+    const result = pnpm("discover-issue", ["--handoff", handoff], {}, tempDir(), { GITHUB_REPOSITORY: "example/index" });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("ISSUE_NUMBER must be the number of an issue");
+    expect(existsSync(handoff)).toBe(false);
   });
 });
 
@@ -539,5 +553,50 @@ describe("the write step of an issue run", () => {
     const comment: string = sent[0].body;
     expect(comment).toContain("` see @someone @other `");
     expect(comment.replace(/`[^`]*`/g, "")).not.toContain("@");
+  });
+
+  // The index's one bot pull request, open for example/alpha, with `body`.
+  const openPull = (body: string): Responses => ({
+    [`${PULLS}?state=all&per_page=100`]: {
+      json: [{ number: 9, state: "open", merged_at: null, html_url: PULL_URL, body, head: { ref: "discover/example/alpha", repo: { full_name: "example/index" } } }],
+    },
+    [`${PULLS}/9/files?per_page=100`]: { json: [{ filename: "plugins/alpha@example.org/meta.json" }] },
+  });
+  const PULL_URL = "https://github.com/example/index/pull/9";
+  const knownAlpha = { outcome: { outcome: "known" as const, repo: "example/alpha" } };
+
+  test("gives the new pull request answer and leaves the issue open when the open bot pull request closes this issue", async () => {
+    const { result, sent } = await answer(knownAlpha, { ...indexRepo, ...openPull("Adds alpha.\n\nCloses #7\n") });
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(new RegExp(`^The bot opened ${PULL_URL}\\. This issue closes when that pull request merges\\.`)) }]);
+  });
+
+  test.each([
+    ["names another issue", "Closes #8"],
+    ["holds the line only in a fenced block", "```\nCloses #7\n```"],
+    ["has two such lines", "Closes #7\n\nCloses #8"],
+  ])("gives the already-proposed answer when the open bot pull request %s", async (_name, body) => {
+    const { result, sent } = await answer(knownAlpha, { ...indexRepo, ...openPull(body) });
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([
+      { method: "POST", url: COMMENTS, body: `The bot already proposed this repo in ${PULL_URL}.` },
+      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "not_planned" },
+    ]);
+  });
+});
+
+describe("the issue read of an issue run", () => {
+  test("reads the body from the API for the issue number", async () => {
+    const { outcome, gets } = await runIssue(rendered("https://github.com/example/alpha"), { ...indexRepo, ...pluginRepo("example/alpha", "alpha@example.org"), ...opened });
+    expect(gets[0]).toBe(ISSUE);
+    expect(outcome).toMatchObject({ outcome: "entry", entry: { repo: "example/alpha" } });
+  });
+
+  test.each([503, 404])("comments that the bot could not finish, leaves the issue open, and fails on an HTTP %i issue read", async (status) => {
+    const { outcome, result, sent, gets } = await runIssue("", { ...indexRepo, [ISSUE]: { status } });
+    expect(outcome).toEqual({ outcome: "failed", message: `cannot read issue 7: GET ${ISSUE} returned HTTP ${status}` });
+    expect(result.status).toBe(1);
+    expect(sent).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(new RegExp(`^The bot could not finish.*HTTP ${status}`, "s")) }]);
+    expect(gets).toEqual([ISSUE]);
   });
 });

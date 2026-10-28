@@ -176,8 +176,9 @@ export interface BotPulls {
   // The lowercase owner/repo of each bot pull request that is open or was closed without
   // a merge. A merged one's entry is in the index, which discovery reads.
   skip: Set<string>;
-  // The same pull requests by owner/repo, with their URLs.
-  pulls: Map<string, { url: string; open: boolean }>;
+  // The same pull requests by owner/repo, with their URLs, and for an open one, the issue
+  // its body closes when it has exactly one `Closes #<n>` line outside code blocks.
+  pulls: Map<string, { url: string; open: boolean; closes?: number }>;
   // The lowercase plugin ids whose entry directories the open ones add, so another repo
   // with the same id is not proposed beside them.
   ids: Set<string>;
@@ -188,7 +189,7 @@ export async function botPulls(fetch: Fetch, indexRepo: string): Promise<BotPull
   const github = githubClient(fetch);
   const list = (await github.pages(`${API}/repos/${indexRepo}/pulls?state=all&per_page=100`)) as PullJson[];
   const skip = new Set<string>();
-  const pulls = new Map<string, { url: string; open: boolean }>();
+  const pulls = new Map<string, { url: string; open: boolean; closes?: number }>();
   const ids = new Set<string>();
   for (const pull of list) {
     const ref = pull?.head?.ref;
@@ -201,8 +202,9 @@ export async function botPulls(fetch: Fetch, indexRepo: string): Promise<BotPull
       const repo = parts.join("/").toLowerCase();
       skip.add(repo);
       const url = typeof pull.html_url === "string" ? pull.html_url : `https://github.com/${indexRepo}/pull/${pull.number}`;
+      const closes = pull.state === "open" ? closesLines(typeof pull.body === "string" ? pull.body : "") : [];
       // An open one wins over a closed one for the same repo, whatever the list order.
-      if (!pulls.get(repo)?.open) pulls.set(repo, { url, open: pull.state === "open" });
+      if (!pulls.get(repo)?.open) pulls.set(repo, { url, open: pull.state === "open", ...(closes.length === 1 ? { closes: closes[0] } : {}) });
     }
     if (pull.state !== "open") continue;
     const files = (await github.pages(`${API}/repos/${indexRepo}/pulls/${pull.number}/files?per_page=100`)) as {
@@ -221,7 +223,31 @@ interface PullJson {
   state?: unknown;
   merged_at?: unknown;
   html_url?: unknown;
+  body?: unknown;
   head?: { ref?: unknown; repo?: { full_name?: unknown } | null };
+}
+
+// The issue numbers of the lines that are exactly `Closes #<n>`, outside fenced code
+// blocks. A fence closes on a line of the same character, at least as long, and nothing
+// else.
+export function closesLines(body: string): number[] {
+  const numbers: number[] = [];
+  let fence: string | undefined;
+  for (const line of body.split(/\r?\n/)) {
+    if (fence) {
+      const close = /^ {0,3}(`{3,}|~{3,})\s*$/.exec(line)?.[1];
+      if (close && close[0] === fence[0] && close.length >= fence.length) fence = undefined;
+      continue;
+    }
+    const open = /^ {0,3}(`{3,}|~{3,})/.exec(line)?.[1];
+    if (open) {
+      fence = open;
+      continue;
+    }
+    const closes = /^Closes #([1-9]\d*)$/.exec(line)?.[1];
+    if (closes) numbers.push(Number(closes));
+  }
+  return numbers;
 }
 
 export async function defaultBranch(fetch: Fetch, indexRepo: string): Promise<string> {
