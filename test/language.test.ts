@@ -87,12 +87,13 @@ describe("rowLanguages", () => {
 });
 
 describe("languageOptions", () => {
-  test("counts each subtag once per row and sorts by text", () => {
-    const records = [record(["zh-CN", "zh-TW"]), record(["zh-CN", "en"]), record(["fr"]), record([])];
+  test("counts each subtag once per row and sorts by count, then by name", () => {
+    const records = [record(["es", "zh-CN", "zh-TW"]), record(["fr", "de", "es"]), record(["fr-CA"]), record([])];
     expect(languageOptions(records)).toEqual([
-      { value: "zh", text: "Chinese (2)" },
-      { value: "en", text: "English (1)" },
-      { value: "fr", text: "French (1)" },
+      { value: "fr", text: "French (2)" },
+      { value: "es", text: "Spanish (2)" },
+      { value: "zh", text: "Chinese (1)" },
+      { value: "de", text: "German (1)" },
     ]);
   });
 });

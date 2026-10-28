@@ -203,10 +203,12 @@
   shows the override's languages in place of the list.
   If no language is left, the line says "None declared". The home page has
   a "Menus and settings in" menu that shows only the plugins with the
-  language you pick. It counts `zh-CN` and `zh-TW`
-  under one entry, Chinese. The page keeps the choice in the `language`
-  query parameter, such as `?language=zh`. A script runs the menu, so
-  without JavaScript the home page shows no menu and lists every plugin.
+  language you pick. It counts `zh-CN` and `zh-TW` under one entry,
+  Chinese. The menu lists the languages with the most plugins first, and
+  languages with the same number of plugins by name. The page keeps the
+  choice in the `language` query parameter, such as `?language=zh`. A
+  script runs the menu, so without JavaScript the home page shows no menu
+  and lists every plugin.
 - `pnpm build` stops each plugin read after 3 minutes, and its record fails
   with `request-failed`. It starts no plugin read after 18 minutes. Each
   entry that it did not read gets a record that fails with the new failure

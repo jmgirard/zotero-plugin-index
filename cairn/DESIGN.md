@@ -45,7 +45,9 @@ an override. A `languages` override records them for a plugin whose list
 is wrong or empty. Each plugin page shows them by name in a
 "Menus and settings in" line, outside the Details section, and the home
 page's "Menus and settings in" menu filters the list by language subtag,
-run by the site's one script (D-014, M024, M033).
+run by the site's one script (D-014, M024, M033). The menu lists the
+languages with the most plugins first, and languages with the same number
+of plugins in code-unit order of their English names (M035).
 The page shows the name, the description, the version pills, the declared
 range, the "Menus and settings in" line (M024, M033), the user reports on
 the release the index read with a "Works" and a "Broken" link (M021), and
