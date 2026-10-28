@@ -228,8 +228,8 @@ interface PullJson {
 }
 
 // The issue numbers of the lines that are exactly `Closes #<n>`, outside fenced code
-// blocks. A fence closes on a line of the same character, at least as long, and nothing
-// else.
+// blocks. A fence closes on a line of the same character, at least as long, with
+// nothing else on the line but whitespace.
 export function closesLines(body: string): number[] {
   const numbers: number[] = [];
   let fence: string | undefined;

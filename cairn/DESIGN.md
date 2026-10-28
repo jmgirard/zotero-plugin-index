@@ -188,8 +188,8 @@ exception is a report that is abuse.
   the "Add a plugin" form's repo URL from it, and writes its outcome into a
   handoff; a failed issue read is the `failed` outcome (M010, M011, M040).
   `pnpm propose <dir> [--limit <n>]` checks a handoff, then opens one pull
-  request for each entry, or, with `ISSUE_NUMBER` set, answers the issue: a pull request, or a comment with
-  the reason and a close (M009, M010, M011). A read of the repo that stops
+  request for each entry, or, with `ISSUE_NUMBER` set, answers the issue: a
+  pull request, or a comment with the reason and a close (M009, M010, M011). A read of the repo that stops
   with a build-level failure, or throws, gets a comment and leaves the issue
   open (M019), as do an error from the check of the drafted entry (M022),
   an entry that `writeEntry` cannot write to the output directory, with
@@ -454,7 +454,8 @@ reused._
   and each fails at the end when one of its runs fails. All three jobs set
   `cache-mode: none`. A sweep run takes its place in the group even when it
   picks no issue, so it can cancel a pending discover or issue run; a later
-  sweep answers that issue. Its write job holds `contents`,
+  sweep can answer that issue while it is at most 7 days old and among the
+  3 oldest unanswered issues. Its write job holds `contents`,
   `pull-requests`, and `issues` write, and it also runs when the read job
   failed, not when it was skipped; its download step may fail. In
   `src/discover/issue.ts`, `issueRead` reads the body from the API and
@@ -513,7 +514,8 @@ reused._
   without `cache-mode: none`; `ci.yml` keeps `cache: pnpm` (M016). It also
   checks `report-issue.yml`: its triggers, job condition, permissions,
   `cache-mode: none`, no cache line, its concurrency groups, the issue number
-  through `env:`, and no other use of `github.event` (M020, M040), and that
+  through `env:`, and no use of `github.event` other than the issue number,
+  its labels, and the repository's default branch (M020, M040), and that
   `pnpm report-issue` and its sweep get `secrets.GITHUB_TOKEN`, whose account
   the report count requires (M021). It checks the same kinds of fact for
   `add-plugin-issue.yml`, and that its read and write jobs take the issue

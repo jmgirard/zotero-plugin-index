@@ -144,11 +144,11 @@ export interface IssueRunResult {
 // checkout, which is the commit the read step saw. Then it opens a pull request that
 // closes the issue when it merges, or closes the issue. An open bot pull request whose
 // one `Closes` line names this issue gets the answer of a new pull request, and the
-// issue stays open. Each answer is a comment on the issue. If the read step failed, a build-level or thrown read of the repo, an entry
-// that writeEntry could not write to outDir, and a thrown check of the drafted entry
-// included, or the bot cannot read the index, its pull requests, or the default branch,
-// or the push or the pull request fails, the comment says so and the issue stays open,
-// and the status is 1.
+// issue stays open. Each answer is a comment on the issue. If the read step failed, a
+// build-level or thrown read of the repo, an entry that writeEntry could not write to
+// outDir, and a thrown check of the drafted entry included, or the bot cannot read the
+// index, its pull requests, or the default branch, or the push or the pull request
+// fails, the comment says so and the issue stays open, and the status is 1.
 export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRunResult> {
   const { root, fetch, indexRepo, issue, read } = options;
   const github = githubClient(fetch);

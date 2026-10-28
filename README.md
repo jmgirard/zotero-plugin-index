@@ -508,8 +508,8 @@ concurrency group holds one running run and one pending run. A newer run
 cancels the pending run. A sweep run that finds no issue is such a run too.
 So a sweep can cancel a pending `Discover plugins` run or a pending
 issue run, and a newer run can cancel a pending sweep. The issue of a
-canceled run gets no answer at first. If the issue is at most 7 days old, a
-later sweep answers it. Each sweep answers at most 3 issues, oldest first.
+canceled run gets no answer at first. A later sweep can answer it while it
+is at most 7 days old. Each sweep answers at most 3 issues, oldest first.
 
 ## Reporting whether a plugin works
 
@@ -557,8 +557,9 @@ them as `pnpm unanswered-issues` does for the label `report` and the
 workflow `report-issue.yml`, as "Proposing a plugin with an issue" says. A
 failed answer does not stop the others, and the command exits 1 at the end.
 The sweeps share one concurrency group, so two sweeps do not answer one
-issue at once. If an issue is at most 7 days old, a sweep answers it, also
-when its `report` label was added after it opened. An issue with a
+issue at once. A sweep can answer an issue from 1 hour to 7 days old. That
+holds also for an issue whose `report` label was added after it opened. An
+issue with a
 bot comment stays for a maintainer, as does a report issue opened more than
 7 days before the sweep.
 
