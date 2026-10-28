@@ -1,6 +1,7 @@
 import { readdir } from "node:fs/promises";
 import { code } from "../discover/propose.ts";
 import { type Fetch, githubClient } from "../upstream/reader.ts";
+import { REPORT_BOT } from "./count.ts";
 import { parseReport } from "./report.ts";
 
 const API = "https://api.github.com";
@@ -18,17 +19,19 @@ export interface ReportRunResult {
   // 1 when the bot could not read the issue or the entries, or could not post the
   // comment or close the issue. A refused report is 0.
   status: 0 | 1;
-  // The comment the run posted or tried to post, if it got that far.
+  // The comment the run posted or tried to post, if it got that far and the bot had not
+  // commented already.
   comment?: string;
   errors: string[];
 }
 
-// Answers one report issue. It reads the issue and the entry ids, then comments and
-// closes the issue: as completed when `parseReport` takes the report, and as not planned
-// with the problem when it refuses it. The comment puts each value taken from the issue
-// in a code span, so it cannot link or mention anyone. A failed read sends nothing, a
-// failed comment sends no close, and either failure, or a failed close, makes the
-// status 1.
+// Answers one report issue. It reads the issue, its comments, and the entry ids, then
+// comments and closes the issue: as completed when `parseReport` takes the report, and
+// as not planned with the problem when it refuses it. When the bot already commented,
+// as a run whose close failed did, it sends the close alone. The comment puts each value
+// taken from the issue in a code span, so it cannot link or mention anyone. A failed
+// read sends nothing, a failed comment sends no close, and either failure, or a failed
+// close, makes the status 1.
 export async function answerReport(options: ReportAnswerOptions): Promise<ReportRunResult> {
   const { root, fetch, indexRepo, issue } = options;
   const github = githubClient(fetch);
@@ -36,12 +39,15 @@ export async function answerReport(options: ReportAnswerOptions): Promise<Report
   let body: string;
   let labels: string[];
   let ids: Set<string>;
+  let answered: boolean;
   try {
     const record = (await github.json(issueUrl)) as { body?: unknown; labels?: unknown };
     body = typeof record?.body === "string" ? record.body : "";
     labels = (Array.isArray(record?.labels) ? record.labels : [])
       .map((label) => (typeof label === "string" ? label : label?.name))
       .filter((name): name is string => typeof name === "string");
+    const comments = (await github.pages(`${issueUrl}/comments?per_page=100`)) as { user?: { login?: unknown } | null }[];
+    answered = comments.some((comment) => comment?.user?.login === REPORT_BOT);
     ids = await entryIds(root);
   } catch (error) {
     return { status: 1, errors: [(error as Error).message] };
@@ -63,12 +69,12 @@ export async function answerReport(options: ReportAnswerOptions): Promise<Report
     close = "not_planned";
   }
   try {
-    await github.post(`${issueUrl}/comments`, { body: comment });
+    if (!answered) await github.post(`${issueUrl}/comments`, { body: comment });
     await github.patch(issueUrl, { state: "closed", state_reason: close });
   } catch (error) {
-    return { status: 1, comment, errors: [(error as Error).message] };
+    return { status: 1, ...(answered ? {} : { comment }), errors: [(error as Error).message] };
   }
-  return { status: 0, comment, errors: [] };
+  return { status: 0, ...(answered ? {} : { comment }), errors: [] };
 }
 
 // The names of the entry directories. Unlike `listEntries`, a missing directory fails,

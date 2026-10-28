@@ -227,10 +227,12 @@ describe("countReports", () => {
   });
 });
 
-// The issue's API record, and answers to the comment and the close requests.
+// The issue's API record with a comment by someone other than the bot, and answers to
+// the comment and the close requests.
 function issueResponses(body: string, labels: string[]): Responses {
   return {
     [ISSUE]: { json: { number: 7, body, labels: labels.map((name) => ({ name })) } },
+    [`${COMMENTS}?per_page=100`]: { json: [{ user: { login: "someone" }, body: "same here" }] },
     [`POST ${COMMENTS}`]: { status: 201, json: { id: 1 } },
     [`PATCH ${ISSUE}`]: { json: { number: 7, state: "closed" } },
   };
@@ -284,6 +286,26 @@ describe("answering a report issue", () => {
     const { result, sent } = await runReport({ ...issueResponses(rendered(valid), ["report", "works"]), [ISSUE]: { status: 503 } });
     expect(result.status).toBe(1);
     expect(result.errors[0]).toContain("HTTP 503");
+    expect(sent).toEqual([]);
+  });
+
+  test.each<[string, string[], string, "completed" | "not_planned"]>([
+    ["a taken report", ["report", "works"], "alpha@example.org", "completed"],
+    ["a refused report", ["report", "broken"], "gamma@example.org", "not_planned"],
+  ])("sends only the close when the bot already commented on %s", async (_name, labels, plugin, reason) => {
+    const responses = {
+      ...issueResponses(rendered({ ...valid, plugin }), labels),
+      [`${COMMENTS}?per_page=100`]: { json: [{ user: { login: "github-actions[bot]" }, body: "The bot took this report" }] },
+    };
+    const { result, sent } = await runReport(responses);
+    expect(result).toEqual({ status: 0, errors: [] });
+    expect(sent).toEqual([{ method: "PATCH", url: ISSUE, body: { state: "closed", state_reason: reason } }]);
+  });
+
+  test("sends nothing and fails when the comments read fails", async () => {
+    const { result, sent } = await runReport({ ...issueResponses(rendered(valid), ["report", "works"]), [`${COMMENTS}?per_page=100`]: { status: 500 } });
+    expect(result.status).toBe(1);
+    expect(result.errors[0]).toContain(`GET ${COMMENTS}?per_page=100 returned HTTP 500`);
     expect(sent).toEqual([]);
   });
 
