@@ -3,29 +3,85 @@ name: Add a plugin from an issue
 on:
   issues:
     types: [opened]
+  # A daily sweep answers the "Add a plugin" issues that no run answered, such as one
+  # whose run a newer run in the group canceled. 02:43 UTC is 12 hours from
+  # `Discover plugins`, so a sweep seldom meets a discover run in the group.
+  schedule:
+    - cron: "43 2 * * *"
+  workflow_dispatch:
 
-# Each job sets its own permissions. The read job reads the repo that the issue names, so
-# it cannot write; the write job pushes, opens the pull request, and answers the issue
-# from the read job's handoff, and reads no plugin repo itself.
+# Each job sets its own permissions. The pick job names the issues and reads no plugin
+# repo. The read job reads the repos that the issues name, so it cannot write; the write
+# job pushes, opens the pull requests, and answers the issues from the read job's
+# handoff, and reads no plugin repo itself.
 permissions: {}
 
 # The group that `Discover plugins` uses, so a run here and a discover run never push
 # the same branch at once. A group holds one running and one pending run, so a newer
-# run cancels a pending one, and that run's issue gets no answer.
+# run, a sweep included, cancels a pending one, and that run's issue gets no answer
+# until a later sweep.
 concurrency:
   group: discover
   cancel-in-progress: false
 
 jobs:
-  read:
-    # Issues opened from .github/ISSUE_TEMPLATE/add-plugin.yml carry this label. A user
-    # with write access can also set it when they open an issue.
-    if: contains(github.event.issue.labels.*.name, 'add-plugin')
+  pick:
+    # Issues opened from .github/ISSUE_TEMPLATE/add-plugin.yml carry the label
+    # `add-plugin`. A user with write access can also set it when they open an issue. A
+    # sweep runs on the schedule, or dispatched from the default branch.
+    if: (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'add-plugin')) || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
+    cache-mode: none
+    # The sweep reads the issues, their comments, and the runs of this workflow, so it
+    # picks no issue whose run is still on its way.
+    permissions:
+      contents: read
+      issues: read
+      actions: read
+    # The issue numbers, separated by spaces, or empty when there is none.
+    outputs:
+      issues: ${{ steps.event.outputs.issues || steps.sweep.outputs.issues }}
+    steps:
+      - id: event
+        if: github.event_name == 'issues'
+        run: echo "issues=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+      - if: github.event_name != 'issues'
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - if: github.event_name != 'issues'
+        uses: pnpm/action-setup@v6
+      # No dependency cache, as `cache-mode` above says.
+      - if: github.event_name != 'issues'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - if: github.event_name != 'issues'
+        run: pnpm install --frozen-lockfile
+      # The command prints one number per line, and a failed read fails the step.
+      - id: sweep
+        if: github.event_name != 'issues'
+        run: |
+          issues=$(pnpm --silent unanswered-issues --label add-plugin --workflow add-plugin-issue.yml --limit 3)
+          echo "issues=$(echo $issues)" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  read:
+    needs: pick
+    if: needs.pick.outputs.issues != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # This job reads repos that anyone can name, so it restores and saves no Actions
+    # cache, which a scheduled run could otherwise save for the default branch.
+    cache-mode: none
     permissions:
       contents: read
       pull-requests: read
+      issues: read
     # Empty when this attempt uploaded no handoff, so the write job never reads an
     # earlier attempt's.
     outputs:
@@ -35,22 +91,28 @@ jobs:
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@v6
-      # No dependency cache: a cache this job saved would reach later jobs.
+      # No dependency cache, as `cache-mode` above says.
       - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: pnpm install --frozen-lockfile
-      # The issue body is text that anyone can write, so it reaches the command only
-      # through the environment, never through an expression in the script.
-      - run: pnpm discover-issue --handoff handoff
+      # The command reads each issue's body from the API, so only the issue numbers reach
+      # it, and no text from an issue enters a shell script. Each issue gets its own
+      # handoff directory, and one failed issue does not stop the rest.
+      - run: |
+          status=0
+          for issue in $ISSUES; do
+            ISSUE_NUMBER="$issue" pnpm discover-issue --handoff "handoff/$issue" || status=1
+          done
+          exit "$status"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUES: ${{ needs.pick.outputs.issues }}
       # Also after a failed step that left a plan, such as a failed state write. A re-run
       # replaces the first attempt's handoff.
       - id: upload
         uses: actions/upload-artifact@v7
-        if: ${{ !cancelled() && hashFiles('handoff/plan.json') != '' }}
+        if: ${{ !cancelled() && hashFiles('handoff/*/plan.json') != '' }}
         with:
           name: handoff
           path: handoff/
@@ -59,12 +121,14 @@ jobs:
           overwrite: true
 
   write:
-    needs: read
-    # Also after a failed read job, so the issue gets an answer; not when the read job
-    # was skipped, which is every issue without the label.
+    needs: [pick, read]
+    # Also after a failed read job, so each issue gets an answer; not when the read job
+    # was skipped, which is every run with no issue.
     if: always() && needs.read.result != 'skipped'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    # This job comments on and closes issues, so it restores and saves no Actions cache.
+    cache-mode: none
     permissions:
       contents: write
       pull-requests: write
@@ -86,7 +150,14 @@ jobs:
         with:
           name: handoff
           path: handoff
-      - run: pnpm propose handoff
+      # One issue at a time, in the pick job's order, and one failed issue does not stop
+      # the rest. A rerun of this job answers each issue again.
+      - run: |
+          status=0
+          for issue in $ISSUES; do
+            ISSUE_NUMBER="$issue" pnpm propose "handoff/$issue" || status=1
+          done
+          exit "$status"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUES: ${{ needs.pick.outputs.issues }}

@@ -6,6 +6,7 @@ const ROOT = resolve(import.meta.dirname, "..");
 const BUILD = resolve(ROOT, ".github/workflows/build.yml");
 const REPORT = resolve(ROOT, ".github/workflows/report-issue.yml");
 const CLOSE = resolve(ROOT, ".github/workflows/close-add-plugin-issue.yml");
+const ADD = resolve(ROOT, ".github/workflows/add-plugin-issue.yml");
 
 // Each line of a workflow, other than a comment line, that uses an actions/cache action or
 // sets a `cache` key, in block or flow form. An inline comment stays in its line, so a
@@ -154,6 +155,66 @@ describe("report-issue.yml", () => {
 
   test("leaves other contexts alone", () => {
     expect(otherEventUses("run: echo ${{ github.repository }} ${{ github.event_name }} ${{ secrets.GITHUB_TOKEN }}\n", ISSUE_USES)).toEqual([]);
+  });
+});
+
+describe("add-plugin-issue.yml", () => {
+  const add = readFileSync(ADD, "utf8");
+  const [pick, read, write] = ["pick", "read", "write"].map((id) => jobText(add, id));
+  const LOOP_ENV = / {8}env:\n {10}GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}\n {10}ISSUES: \$\{\{ needs\.pick\.outputs\.issues \}\}\n/;
+
+  test("runs on opened issues, daily, and on dispatch, in the discover group, and its pick job for the label add-plugin or a sweep from the default branch", () => {
+    expect(triggers(add)).toBe('issues:\n    types: [opened]\n  schedule:\n    - cron: "43 2 * * *"\n  workflow_dispatch:');
+    expect(add).toMatch(/^concurrency:\n {2}group: discover\n {2}cancel-in-progress: false\n/m);
+    expect(add.slice(add.indexOf("\njobs:\n")).match(/^ {2}[\w-]+:$/gm)).toEqual(["  pick:", "  read:", "  write:"]);
+    expect(pick.match(/^ {4}if:.*$/gm)).toEqual([
+      "    if: (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'add-plugin')) || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch)",
+    ]);
+  });
+
+  test("gives each job only the permissions its steps use", () => {
+    expect(add).toMatch(/^permissions: \{\}$/m);
+    expect(pick).toMatch(/^ {4}permissions:\n {6}contents: read\n {6}issues: read\n {6}actions: read\n {4}\S/m);
+    expect(read).toMatch(/^ {4}permissions:\n {6}contents: read\n {6}pull-requests: read\n {6}issues: read\n {4}\S/m);
+    expect(write).toMatch(/^ {4}permissions:\n {6}contents: write\n {6}pull-requests: write\n {6}issues: write\n {4}\S/m);
+  });
+
+  test("restores no cache in any job", () => {
+    for (const job of [pick, read, write]) expect(job).toMatch(/^ {4}cache-mode: none$/m);
+    expect(cacheLines(add)).toEqual([]);
+  });
+
+  test("picks the event's issue, or up to 3 unanswered add-plugin issues for a sweep", () => {
+    expect(pick).toMatch(/^ {4}outputs:\n {6}issues: \$\{\{ steps\.event\.outputs\.issues \|\| steps\.sweep\.outputs\.issues \}\}$/m);
+    expect(pick).toMatch(
+      /^ {6}- id: event\n {8}if: github\.event_name == 'issues'\n {8}run: echo "issues=\$ISSUE_NUMBER" >> "\$GITHUB_OUTPUT"\n {8}env:\n {10}ISSUE_NUMBER: \$\{\{ github\.event\.issue\.number \}\}$/m,
+    );
+    expect(pick).toMatch(
+      /^ {6}- id: sweep\n {8}if: github\.event_name != 'issues'\n {8}run: \|\n {10}issues=\$\(pnpm --silent unanswered-issues --label add-plugin --workflow add-plugin-issue\.yml --limit 3\)\n/m,
+    );
+  });
+
+  test("runs pnpm discover-issue and pnpm propose once for each picked number, in ISSUE_NUMBER, and fails after the rest when one fails", () => {
+    expect(read).toMatch(/^ {4}needs: pick\n {4}if: needs\.pick\.outputs\.issues != ''$/m);
+    expect(write).toMatch(/^ {4}needs: \[pick, read\]$/m);
+    for (const [job, command] of [
+      [read, 'pnpm discover-issue --handoff "handoff/$issue"'],
+      [write, 'pnpm propose "handoff/$issue"'],
+    ]) {
+      const loop = `      - run: |\n          status=0\n          for issue in $ISSUES; do\n            ISSUE_NUMBER="$issue" ${command} || status=1\n          done\n          exit "$status"\n`;
+      expect(job).toContain(loop);
+      expect(job.slice(job.indexOf(loop) + loop.length)).toMatch(new RegExp(`^${LOOP_ENV.source}`));
+    }
+    expect(read).toMatch(/hashFiles\('handoff\/\*\/plan\.json'\)/);
+  });
+
+  test("passes issue numbers only through env, and the read and write jobs take them only from the pick job", () => {
+    expect(otherEventUses(add, ["github.event.issue.number", "github.event.issue.labels", "github.event.repository.default_branch"])).toEqual([]);
+    for (const job of [read, write]) {
+      expect(otherEventUses(job, [])).toEqual([]);
+      expect([...job.matchAll(/\$\{\{[^}]*\}\}/g)].map(([use]) => use).filter((use) => /issue/i.test(use))).toEqual(["${{ needs.pick.outputs.issues }}"]);
+    }
+    expect(add).not.toMatch(/ISSUE_BODY|issue\.body/);
   });
 });
 
