@@ -206,3 +206,17 @@ of rows that carries review findings from two milestones, and the hygiene
 rule files new findings for such a group as a new row. So the gaps are in
 candidate row "Close gaps in the build time limits", which names the first
 row. The rest of D-016 stands.
+
+### D-018: The v1 languages patterns refuse zxx and mul, narrowing schema v1
+
+2026-10-28, M036 plan. The language codes `zxx` ("No linguistic content")
+and `mul` ("Multiple languages") name no one interface language that a
+visitor can pick. The user chose at the plan question set to refuse them in
+`LANGUAGE_TAG`, as it refuses `und`, and so in the reader and in the
+`languages` patterns of both v1 schemas. The user rejected refusing them in
+the reader alone, which would let an override record them. The narrower
+pattern accepts a subset of what v1 accepted, so a consumer that validates
+new data against a saved copy of the schema still accepts it. The README's
+rule gives a new schema version to a breaking change, and this change does
+not break a consumer of the data. A `languages` override can no longer hold
+these codes.
