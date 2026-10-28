@@ -48,14 +48,14 @@ plugin.
 
 Each plugin has its own page. The page shows the name, the description, the
 pills, the declared range, and a "Menus and settings in" line. That line
-names the languages that the plugin's locale folders ship text in. It does
-not say how complete each one is. The description comes from the plugin's
-manifest or from an index override, so it can be in another language than
-the languages line names. The page also shows the user reports and links to
-the repository and its releases. The languages come from the `languages`
-list that "Using the data" describes. If a `languages` override applies to
-the plugin version that the index read,
-the override replaces that list. If no language is left, the page shows
+names the languages of the `languages` list that "Using the data"
+describes, which come from the plugin's locale folders. If a `languages`
+override applies to the plugin version that the index read, the override
+replaces that list. The line does not say how complete each language is.
+The description comes from the plugin's manifest or from an index override,
+so it can be in another language than the languages line names. The page
+also shows the user reports and links to the repository and its releases.
+If no language is left, the page shows
 "None declared". A closed "Details" section follows. It holds the plugin id,
 facts about the repository and its releases, and the overrides of the index
 for the plugin.

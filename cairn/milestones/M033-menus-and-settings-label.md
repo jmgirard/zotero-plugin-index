@@ -72,3 +72,27 @@ A site visitor reads the languages that a plugin page lists as the languages of 
 - 2026-10-28 AC4: `npx -y pnpm@12.15.0 test` — 17 files, 839 passed, 1 skipped (the case-sensitive-volume case, LESSONS M031); `npx -y pnpm@12.15.0 check` — 37 entries, 0 problems.
 - 2026-10-28 gate: `cairn_validate.py` all checks passed; no principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: README's plugin-page paragraph said the line names the locale folders' languages, which is false when a `languages` override applies — fix now
+- diff-bug #2: the "None declared" follow-up lives only in the work log, so archiving loses it — follow-up, row "Reword the empty languages line" written at hygiene
+- diff-bug #3: the loop over every built page repeats one template path after an exact assertion, which "What gets a test" excludes — reject, planned change (AC1 calls for that loop)
+- diff-bug #4: the absence check matches only the exact old string — reject, false (the templates only ever held that exact string, and no variant exists to catch)
+- diff-bug #5: test name "shows the interface languages for %s" is stale — reject, style
+- diff-bug #6: `src/site/languages.ts:1` comment still says "Interface languages" — reject, planned change (T3 kept comments that name the data)
+- diff-bug #7: DESIGN, README "Using the data", and CHANGELOG still call the data "interface languages" beside "menu and settings text" — reject, planned change (Scope keeps the data's name; interface text is the menus and settings)
+- diff-bug #8: DESIGN line 49 at 88 columns and a 39-column README line break the ~76-column wrap — fix now
+- diff-bug #9: "comes from the plugin's manifest" is loose, since a `__MSG_` description resolves through the default locale — reject, false (that text is still the manifest's own description)
+- diff-bug #10: the loop compares the page count, not the page set — reject, false (the test "writes the home page and one page for each record under its raw id" asserts the set)
+- blame-history #1: same as diff-bug #1 — fix now
+- blame-history #2: lowercase "interface" survives in CHANGELOG, DESIGN, README, a comment, and ROADMAP — reject, planned change (as diff-bug #7)
+- blame-history #3: same as diff-bug #2 — follow-up, row "Reword the empty languages line"
+- blame-history #4: screen readers announce "Menus and settings in" as the select's name — reject, planned change (the label chosen at the plan question set)
+- prior-review #1: DESIGN line 49 over the wrap width, a fault earlier reviews fixed — fix now
+- prior-review #2: README's short leftover line — fix now
+- prior-review #3: DESIGN and CHANGELOG keep "interface languages" for the data — reject, planned change (as diff-bug #7)
+- prior-review #4: DESIGN split the label "Menus and settings / in" across a line, which a plain grep misses — fix now
+- prior-review #5: `src/site/languages.ts:1` comment — reject, planned change (as diff-bug #6)
+- ripple #1: `src/site/languages.ts:1` comment — reject, planned change (as diff-bug #6)
+- ripple #2: DESIGN calls it "the language menu" elsewhere — reject, false (it is still a language menu; no label is quoted)
+- ripple #3: README "Using the data" says "interface text" — reject, planned change (as diff-bug #7)
+- ripple #4: test name — reject, style (as diff-bug #5)
+- ripple #5: data mentions of "interface language(s)" in CHANGELOG, DESIGN, ROADMAP — noted, no change requested

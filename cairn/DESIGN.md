@@ -38,17 +38,16 @@ folders name (M023), counting a folder only when one of its files holds a
 message, judged by file type (M027). They say which languages a plugin
 ships menu and settings text for, not whether a translation is complete,
 and not the language of the description, which comes from the manifest or
-an override. A
-`languages` override records them for a plugin whose list is wrong or
-empty. Each plugin page shows them by name in a "Menus and settings in"
-line, outside the Details section, and the home page's "Menus and settings
-in" menu filters the list by language subtag, run by the site's one script
-(D-014, M024, M033).
+an override. A `languages` override records them for a plugin whose list
+is wrong or empty. Each plugin page shows them by name in a
+"Menus and settings in" line, outside the Details section, and the home
+page's "Menus and settings in" menu filters the list by language subtag,
+run by the site's one script (D-014, M024, M033).
 The page shows the name, the description, the version pills, the declared
 range, the "Menus and settings in" line (M024, M033), the user reports on
-the release the index read with a "Works" and a "Broken" link (M021), and the repository
-and releases links first. The other facts sit in a closed "Details"
-section (M015). The home list marks an
+the release the index read with a "Works" and a "Broken" link (M021), and
+the repository and releases links first. The other facts sit in a closed
+"Details" section (M015). The home list marks an
 archived plugin with "(archived)" after its name, and the data carries the
 same `archived` fact (M013).
 The Details section also shows each override beside the upstream value it
