@@ -138,6 +138,7 @@ and `mul`, which name no one interface language.
 - 2026-10-28: claim audit: 16 claims read, 1 corrected — site/src/data.ts (the `languagesText` comment named one cause of an empty list as the rule; it now says "for example"; the reader re-read it as true).
 - 2026-10-28: claim audit note, decided: the reader also said "no translations found" misleads for a plugin whose only translations are under `_locales/`; no row, since `_locales/<x>/messages.json` holds the manifest's name and description, not menu or settings text, and the line is labeled "Menus and settings in".
 - 2026-10-28: implement done; pnpm test 860 passed, 1 skipped; pnpm check 0 problems; status review.
+- 2026-10-28: step-7 approval: m036-empty-languages-line approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->
