@@ -93,7 +93,7 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
 - [x] T2: Edit both workflows' `concurrency` blocks and the comments above
       them (`add-plugin-issue.yml` lines 19-23, `discover.yml` lines 18-19).
       Run `pnpm test` and `pnpm check`.
-- [ ] T3: Update README.md (the add-plugin paragraphs near lines 498-519),
+- [x] T3: Update README.md (the add-plugin paragraphs near lines 498-519),
       cairn/DESIGN.md (the discover.yml and add-plugin-issue.yml lines near
       445-475), CHANGELOG.md (the M040 entry near line 276 and a new entry),
       and the `MIN_AGE_MS` comment in `src/issues/unanswered.ts`, which must
@@ -123,6 +123,9 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
 - 2026-10-28: T1: `test/workflows.test.ts` gains a `concurrency` helper (the top-level block up to the next unindented line, and each non-comment line setting a `concurrency` key), an anchored block test for each workflow, and the shared `contains(...)` label check; the 3 new tests fail on main's files because the block lacks `queue: max` and the label clause; 38 others pass.
 - 2026-10-28: T1 choice: one group expression that wraps the issue clause and the dispatch clause in parentheses before `&& format(...)`, since GitHub's `&&` binds tighter than `||`.
 - 2026-10-28: T2: both `concurrency` blocks gain `queue: max`, the add-plugin-issue.yml group gains the unlabeled-issue clause, and both comments describe the queue; Ruby's YAML parser reads the three keys in each; `pnpm test` 936 passed, 1 skipped (the case-sensitive volume case); `pnpm check` 42 entries, 0 problems.
+- 2026-10-28: T3: README's group paragraph, DESIGN's add-plugin-issue.yml line, CHANGELOG's M040 entry (cancel example and sweep-cancel sentences removed) plus one new entry, the add-plugin-issue.yml schedule comment, and the `MIN_AGE_MS` comment now describe the queue; both sweeps call `unansweredIssues`, so the comment holds for both. `pnpm test` 936 passed, 1 skipped; `pnpm check` 0 problems.
+- 2026-10-28: T3 AC4 grep (27 hit lines): queue text at DESIGN.md:469-470, CHANGELOG.md:315-317, README.md:516, add-plugin-issue.yml:7 and 22, discover.yml:21; `cancel-in-progress` keys at add-plugin-issue.yml:27 and discover.yml:24; other subjects at DESIGN.md:555 (BASE_URL), CHANGELOG.md:133 and README.md:34, 72, 240, 722 (replaces), README.md:559 (report group), and the handoff `replaces` comments and `cancelled()` conditions at add-plugin-issue.yml:115, 118 and discover.yml:71, 74, 86; `src/issues/unanswered.ts` has none.
+- 2026-10-28: T3: added prose lines in README, CHANGELOG, and DESIGN are at most 80 characters; added workflow and source comments run to 88, as the comments around them do. The simple-english hook flagged older text (README.md:115, 480; CHANGELOG.md:174, 269, 312), left as is since this milestone does not own it.
 
 ## Decisions
 

@@ -4,8 +4,9 @@ on:
   issues:
     types: [opened]
   # A daily sweep answers the "Add a plugin" issues that no run answered, such as one
-  # whose run a newer run in the group canceled. 02:43 UTC is 12 hours from
-  # `Discover plugins`, so a sweep seldom meets a discover run in the group.
+  # whose run failed before its comment, or that GitHub canceled because 100 runs were
+  # already waiting in the group. 02:43 UTC is 12 hours from `Discover plugins`, so a
+  # sweep seldom waits for a discover run in the group.
   schedule:
     - cron: "43 2 * * *"
   workflow_dispatch:

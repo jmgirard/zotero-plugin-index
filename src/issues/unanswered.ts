@@ -3,7 +3,9 @@ import { type Fetch, githubClient } from "../upstream/reader.ts";
 
 const API = "https://api.github.com";
 const HOUR_MS = 60 * 60 * 1000;
-// An issue's own run can still be on its way for this long after it opens.
+// An issue's own run is usually done this long after the issue opens. A run that waits
+// longer in its concurrency group has not completed, so unansweredIssues returns none
+// until it has.
 export const MIN_AGE_MS = HOUR_MS;
 // An issue whose run keeps failing before it comments is retried for this long.
 export const MAX_AGE_MS = 7 * 24 * HOUR_MS;
