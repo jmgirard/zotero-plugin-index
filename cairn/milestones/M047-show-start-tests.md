@@ -1,6 +1,6 @@
 # M047: Show whether plugins start in Zotero
 
-- **Status:** review
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** M046
 - **Driving RR:** —
@@ -170,6 +170,7 @@ issues entry records this limit.
 - 2026-10-28: T5 run 40772271599: build and site succeeded; each start-test job's Zotero download check passed and its plugins started (37 "started" lines in the 10.0.6 log), then `pnpm start-tests` failed with ENOENT writing `--out` into a missing directory; deploy was skipped, not failed, since a job with a failed earlier job is skipped by default. Fixed: the CLI makes the `--out` parent (the CLI test now names a missing directory; without the fix it failed), and deploy gets `if: ${{ !cancelled() && needs.site.result == 'success' }}`, with a workflows test; README and DESIGN say so. Verify clean (1014 passed).
 - 2026-10-28: T5 done: run 40773444023 on branch head 471d7f2: build, the four start-test jobs, and site succeeded; each `sha256sum --check` printed OK; results 7.0.32 25, 8.0.4 30, 9.0.6 33, 10.0.6 37, all `started`, 0 without a result, the rest outside the manifest range; the site job kept 125 and dropped 0, and 41 of 42 records in the Pages artifact's `v1/plugins.json` have `startTests`; deploy failed with "Branch "m047-show-start-tests" is not allowed to deploy to github-pages due to environment protection rules"; the 7 artifacts (plugins-data, start-plan, four start-results, github-pages, its tar listed too) hold no `.xpi` file; the run took 6 minutes.
 - 2026-10-28: T8 done: verify clean (1014 passed, 6 skipped; 42 entries checked, 0 problems).
+- 2026-10-28: review return 1: diff-bug #1 (a results artifact holding a directory or an unreadable file makes `add-start-results` throw, so the site job deploys nothing) and diff-bug #2 (any `start-results-*` artifact name is accepted, so a leftover plugin process can add a Zotero version outside the matrix or create duplicates that erase real results); the fix-now findings of the Review section's first pass ride in the same task.
 
 ## Decisions
 
@@ -185,3 +186,35 @@ Evidence gathered 2026-10-28 on branch head a81d17f; `git diff 471d7f2..HEAD` ou
 - AC6: `test/site.test.ts` on the built HTML: "shows each start-test result in words outside the Details section, with the note that a start is not a working plugin" passes (the fixture's no-range record holds started, start-error, not-installed, timed-out; the line reads "Zotero 7.0.32 started; Zotero 8.0.4 failed at startup; Zotero 9.0.6 did not install; Zotero 10.0.6 gave no answer in time"; the note ends "A start test does not show that the plugin works."; `data-start-tests` comes before `<details>`); "shows no start-test line for …" passes for each of the 8 other records.
 - AC7: CHANGELOG `## Unreleased` holds one entry on the start tests, and "fetch the schema again" occurs once in the file, in that entry. DESIGN: Contract boundary names the start tests and that no artifact holds an XPI; "Data sources and contribution" gains "5. Start tests."; Known issues gains the forged-result entry naming the start-test job. Verify clean as above.
 - Gate: `cairn_validate.py` exit 0, all checks passed; no IP/GP changed, so no `cairn_impact` run; the generic profile's consistency-gate names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: a results artifact that holds a directory (or an unreadable file) makes `readResultsDir`'s `readFile` throw, `add-start-results` exits 1, and the site job deploys nothing, so a plugin process that outlives its start can stop every deploy — fix now, floor return (load-bearing: breaks "a failed start test does not stop the deploy")
+- diff-bug #2: any `start-results-*` artifact name is accepted, so a leftover plugin process that uploads `start-results-99` (or a name that duplicates other plugins' pairs) forges a version outside the matrix or erases real results — fix now, floor return (load-bearing: a wrong result on the pages with no error; past the Known issues bound)
+- diff-bug #3: on an `execFile` timeout only `cli.ts` is killed, leaving Zotero's detached group — reject, edge: reached only when `pnpm start-test` hangs 60 s past its own 90 s limit, which its own group kill and bounded `rm` retries prevent; the effect is a leftover process
+- diff-bug #4: `start-tests` can take 25.5 min, leaving little room under the job's 30 min, and a job timeout loses that release's results — fix now: `timeout-minutes: 40`, with the setup steps counted in the comment
+- diff-bug #5: the fixed deploy `if:` path (start test failed, deploy still runs) was not seen live — fix now: a dispatch with one planted bad hash in the return
+- diff-bug #6: the add-start-results CLI comment and README omit the exit 1 from an unreadable results directory — fix now, with #1
+- diff-bug #7: the schema lets a `failure` record carry `startTests`, and `zotero` has no pattern — fix now: `dependencies` ties `startTests` to `upstream`, and `zotero` gets a version pattern
+- diff-bug #8a: the `read` (record has `upstream`) check in `addResults` is never reached by a test — fix now
+- diff-bug #8b: a hex-pattern check on each sha256 follows the exact `toEqual` that pins them — fix now: removed
+- diff-bug #8c: the absent-line `test.each` repeats one code path over 8 records — fix now: one read record and the failure record
+- diff-bug #8d: untested error branches: `parsePlan` bad bound, `plan-unreadable`, Zotero version unknown, `start-failed` for an unreadable or wrong-shape result, `writePlan` failure, no results directory, no plugins list — fix now
+- diff-bug #8e: the schema `test.each` mostly tests Ajv — reject, planned change: it pins the field's contract (`minItems`, `enum`, no extra fields) that this milestone adds
+- diff-bug #9: no in-process race; two cross-process windows let a leftover process swap a later plugin's XPI or result — reject, false for in-process state; the cross-process case is the accepted Known issues limit
+- diff-bug #10: the time comment omits the setup steps — fix now, with #4
+- blame-history #1: a failing `add-start-results` is a third deploy-withholding cause that no D-entry records beside D-011 — fix now: D-024
+- blame-history #2: D-010 says the build job writes the site, which the site job now does — fix now: D-024 annotates D-010
+- blame-history #3: `pnpm build --out a --out b` now takes the last value where it was a usage error — fix now: a repeated option prints the usage
+- blame-history #4: `plugins-data` no longer holds the site pages — reject, planned change: the site job builds and uploads them
+- prior-review #1: README line 125 is 111 characters — fix now: rewrapped
+- prior-review #2: `execFile`'s 1 MiB output cap has no `ERR_CHILD_PROCESS_STDIO_MAXBUFFER` check — reject, edge: `cli.ts` prints one line and Zotero's output is ignored, so only a CLI printing over 1 MiB reaches it, and the effect is `start-failed` with no result
+- ripple #1: DESIGN's `build.yml` sentence says the build job runs `pnpm site` and keeps `dist/` — fix now
+- ripple #2: DESIGN's `pnpm build` usage lacks `[--plan <file>]` — fix now
+- ripple #3: DESIGN says `readUpstream` returns the facts, not the `xpi` read — fix now
+- ripple #4: DESIGN says `build.yml` runs `pnpm site` after the build — fix now
+- ripple #5: README's and `build.yml`'s exit-1 lists omit a failed `--plan` write, which exits 1 after the data file is written — fix now
+- ripple #6: DESIGN's plugin page list omits the "Starts in Zotero" line — fix now
+- ripple #7: README "The site does not test plugins." — fix now
+- ripple #8: the home page intro "does not test them" — fix now
+- ripple #9: README "Building the site" omits `pnpm add-start-results` — fix now
+- ripple #10: README "Building the data" names the `reports` list and not `startTests` — fix now
+- ripple #11: DESIGN's cache-mode test sentence names the build job only — fix now
