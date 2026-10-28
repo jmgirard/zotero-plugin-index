@@ -1,11 +1,11 @@
 import { copyFile, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { Ajv, type ErrorObject } from "ajv";
 import indexSchema from "../../schemas/index.v1.schema.json" with { type: "json" };
 import pluginsSchema from "../../schemas/plugins.v1.schema.json" with { type: "json" };
 import { listEntries } from "../check/check.ts";
 import { countReports, type ReportCount } from "../reports/count.ts";
-import { type Fetch, githubClient, ReadFailure, readUpstream, type UpstreamFacts } from "../upstream/reader.ts";
+import { type Fetch, githubClient, ReadFailure, readUpstream, type UpstreamFacts, type XpiRead } from "../upstream/reader.ts";
 import { duration, READ_LIMIT_MS, withinLimit } from "../upstream/time-limit.ts";
 
 export interface Override {
@@ -33,9 +33,30 @@ export interface PluginsFile {
   plugins: PluginRecord[];
 }
 
+// One plugin to start in Zotero: the entry id, the plugin id and version, and the range of
+// the manifest that the build read, without overrides, since Zotero installs by the manifest.
+// `xpiUrl` and `sha256` name the XPI that the build read, so a start-test job downloads the
+// same file and no artifact holds plugin files.
+export interface StartPlanItem {
+  entry: string;
+  id: string;
+  version: string;
+  strictMinVersion?: string;
+  strictMaxVersion?: string;
+  xpiUrl: string;
+  sha256: string;
+}
+
+export interface StartPlan {
+  plugins: StartPlanItem[];
+}
+
 // `buildLevel` lists the ids of the records whose failure usually points at the build, such as a
-// rate limit or a network error, in record order. It stays out of the data.
-export type BuildResult = { ok: true; data: PluginsFile; text: string; buildLevel: string[] } | { ok: false; problems: string[] };
+// rate limit or a network error, in record order. It and the plan stay out of the data. The
+// plan has one item for each record with upstream, in record order.
+export type BuildResult =
+  | { ok: true; data: PluginsFile; text: string; buildLevel: string[]; plan: StartPlan }
+  | { ok: false; problems: string[] };
 
 const ajv = new Ajv({ allErrors: true });
 const validateIndex = ajv.compile(indexSchema);
@@ -117,6 +138,7 @@ export async function buildData(
 
   const records: PluginRecord[] = [];
   const buildLevel: string[] = [];
+  const xpis = new Map<string, XpiRead>();
   for (const { id, repoUrl, overrides } of entries) {
     if (performance.now() - startedAt >= buildMs) {
       const message = `the build reads no plugin after ${duration(buildMs)}, its time limit`;
@@ -124,8 +146,9 @@ export async function buildData(
       buildLevel.push(id);
       continue;
     }
-    const { buildLevel: counts, ...read } = await readRecord(repoUrl, fetch, readMs);
+    const { buildLevel: counts, xpi, ...read } = await readRecord(repoUrl, fetch, readMs);
     if (counts) buildLevel.push(id);
+    if (xpi) xpis.set(id, xpi);
     const record: PluginRecord = { id, repoUrl, ...read, overrides };
     // Facts that the schema rejects, such as a repo body with no created_at, become this
     // record's failure, so one plugin cannot stop the whole file.
@@ -147,7 +170,15 @@ export async function buildData(
   // Check the file as written, where undefined fields are gone.
   const outputProblems = checkOutput(JSON.parse(text));
   if (outputProblems.length > 0) return { ok: false, problems: outputProblems.map((p) => `the output ${p}`) };
-  return { ok: true, data, text, buildLevel };
+  const plan: StartPlan = {
+    plugins: plugins.flatMap(({ id: entry, upstream }) => {
+      const xpi = xpis.get(entry);
+      if (!upstream || !xpi) return [];
+      const { id, version, strictMinVersion, strictMaxVersion } = upstream;
+      return [{ entry, id, version, strictMinVersion, strictMaxVersion, xpiUrl: xpi.url, sha256: xpi.sha256 }];
+    }),
+  };
+  return { ok: true, data, text, buildLevel, plan };
 }
 
 // The problems schemas/plugins.v1.schema.json finds in value, or none.
@@ -186,6 +217,20 @@ export async function writeData(outDir: string, text: string): Promise<{ ok: tru
   return { ok: true, path };
 }
 
+// Writes the start plan as JSON to path, through a temporary file as writeData does.
+export async function writePlan(path: string, plan: StartPlan): Promise<{ ok: true } | { ok: false; message: string }> {
+  const temporary = `${path}.tmp`;
+  try {
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(temporary, `${JSON.stringify(plan, null, 2)}\n`);
+    await rename(temporary, path);
+  } catch (error) {
+    await rm(temporary, { force: true }).catch(() => {});
+    return { ok: false, message: `cannot write ${path}: ${(error as Error).message}` };
+  }
+  return { ok: true };
+}
+
 async function readEntry(dir: string): Promise<{ repoUrl: string; overrides: Override[] } | { problem: string }> {
   const meta = await readJson(join(dir, "meta.json"));
   if ("problem" in meta) return meta;
@@ -204,10 +249,10 @@ async function readRecord(
   repoUrl: string,
   fetch: Fetch,
   readMs: number,
-): Promise<Pick<PluginRecord, "upstream" | "failure"> & { buildLevel?: boolean }> {
+): Promise<Pick<PluginRecord, "upstream" | "failure"> & { buildLevel?: boolean; xpi?: XpiRead }> {
   try {
     const read = await withinLimit(readMs, (signal) => readUpstream(repoUrl, fetch, { signal }));
-    if (read.ok) return { upstream: read.facts };
+    if (read.ok) return { upstream: read.facts, xpi: read.xpi };
     return { failure: { name: read.failure, message: read.message }, buildLevel: read.buildLevel };
   } catch (error) {
     // The reader names each problem it knows. Anything else is a bug or a surprise, and
