@@ -29,7 +29,7 @@ home list before it paints" and "Test the home page script in a browser".
 
 ## Acceptance criteria
 
-- [ ] AC1: `languageOptions` in `src/site/languages.ts` returns its options
+- [x] AC1: `languageOptions` in `src/site/languages.ts` returns its options
       sorted by the number of rows that carry each subtag, largest first,
       and options with the same number sorted by language name in code-unit
       order, and its comment states that order. A test in
@@ -37,14 +37,14 @@ home list before it paints" and "Test the home page script in a browser".
       give at least two subtags at each of two counts, where a sort by
       option text alone and a sort by count alone, keeping the order of
       first appearance, each give another order.
-- [ ] AC2: The home page's menu lists "All languages" first and then the
+- [x] AC2: The home page's menu lists "All languages" first and then the
       options in the AC1 order, as the menu test in `test/site.test.ts`
       asserts with the exact list built from the site fixture.
-- [ ] AC3: README's paragraph on the "Menus and settings in" menu and the
+- [x] AC3: README's paragraph on the "Menus and settings in" menu and the
       CHANGELOG `## Unreleased` entry that describes the menu each say that
       the menu lists the languages with the most plugins first, and
       languages with the same number of plugins by name.
-- [ ] AC4: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
+- [x] AC4: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
 
 ## Coverage
 
@@ -100,3 +100,8 @@ home list before it paints" and "Test the home page script in a browser".
 ## Decisions
 
 ## Review
+
+- AC1 evidence (2026-10-28): `src/site/languages.ts:43` sorts by `b.count - a.count`, then by name with `<`/`>`; the comment at lines 35-37 states that order. `test/language.test.ts` "counts each subtag once per row and sorts by count, then by name" passes (20/20); its records give French and Spanish at 2, Chinese and German at 1. Fresh plants: main's text sort and a count-only sort each fail that test; file restored, `git status` clean.
+- AC2 evidence (2026-10-28): the menu test in `test/site.test.ts:423-436` asserts All languages, Chinese (2), Spanish (2), English (1), French (1), German (1), Portuguese (1) on the home page built from the site fixture, and passes in `pnpm test`; with main's sort planted it fails (1 of 61), the only site test to fail.
+- AC3 evidence (2026-10-28): README.md:39-41 reads "The languages with the most plugins come first, and languages with the same number of plugins come in order of their names." CHANGELOG.md:207-208, in the Unreleased entry that introduces the menu, reads "The menu lists the languages with the most plugins first, and languages with the same number of plugins by name."
+- AC4 evidence (2026-10-28): `npx -y pnpm@12.15.0 test` exit 0, 17 files, 855 passed, 1 skipped; `npx -y pnpm@12.15.0 check` exit 0, 37 entries, 0 problems. (The AC4 box was ticked one edit before this line landed, after a failed edit; this line is the evidence it rests on.)
