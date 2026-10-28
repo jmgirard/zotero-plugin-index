@@ -106,7 +106,7 @@ issues entry records this limit.
 - AC1 → T1, T5
 - AC2 → T2
 - AC3 → T4, T5
-- AC4 → T3
+- AC4 → T3, T9
 - AC5 → T3, T7
 - AC6 → T6
 - AC7 → T7, T8
@@ -138,6 +138,7 @@ issues entry records this limit.
 - [x] T7: Write README "Using the data" and "Building the data" text, the
       CHANGELOG entry, and the DESIGN text.
 - [x] T8: Run the `verify` slot, and fix what fails.
+- [ ] T9: Fix review return 1: `add-start-results` drops each results entry it cannot read as a bad file, and keeps only the Zotero versions that the site job passes, which a workflows test matches to the matrix; then the first pass's fix-now findings (Review section).
 
 ## Work log
 
@@ -171,6 +172,8 @@ issues entry records this limit.
 - 2026-10-28: T5 done: run 40773444023 on branch head 471d7f2: build, the four start-test jobs, and site succeeded; each `sha256sum --check` printed OK; results 7.0.32 25, 8.0.4 30, 9.0.6 33, 10.0.6 37, all `started`, 0 without a result, the rest outside the manifest range; the site job kept 125 and dropped 0, and 41 of 42 records in the Pages artifact's `v1/plugins.json` have `startTests`; deploy failed with "Branch "m047-show-start-tests" is not allowed to deploy to github-pages due to environment protection rules"; the 7 artifacts (plugins-data, start-plan, four start-results, github-pages, its tar listed too) hold no `.xpi` file; the run took 6 minutes.
 - 2026-10-28: T8 done: verify clean (1014 passed, 6 skipped; 42 entries checked, 0 problems).
 - 2026-10-28: review return 1: diff-bug #1 (a results artifact holding a directory or an unreadable file makes `add-start-results` throw, so the site job deploys nothing) and diff-bug #2 (any `start-results-*` artifact name is accepted, so a leftover plugin process can add a Zotero version outside the matrix or create duplicates that erase real results); the fix-now findings of the Review section's first pass ride in the same task.
+- 2026-10-28: T9 choices: `readResultsDir` gives an entry no text (a bad file) when `lstat` shows no regular file, the file is over `RESULTS_MAX_BYTES` (1 MiB), or a read fails; `--tested <versions>` is required and listed in the site step, and a workflows test matches it to the matrix, since a matrix cannot read another job's values; `startTests` takes `startTestCli` so tests can stand in for `pnpm start-test`; the schema ties `startTests` to `upstream` with `dependencies` and gives `zotero` the pattern `^[0-9]+(\.[0-9]+)*$`; D-024 annotates D-010 and D-011.
+- 2026-10-28: T9 code done: the two return fixes (a planted plain `readFile` failed the directory, link, and size test; a planted unfiltered artifact version failed the untested-version test), `pnpm build` refuses a repeated option, the start-test job's limit is 40 min with the measured setup time in its comment, tests for every branch the first pass named, the narrower site and build tests, README and DESIGN fixes for ripple #1 to #11, the home intro, and D-024. Verify clean (1023 passed, 42 entries checked).
 
 ## Decisions
 

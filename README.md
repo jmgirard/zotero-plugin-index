@@ -17,8 +17,9 @@ declared range. A pill counts Zotero N as the versions from N.0 to N.9.
 Plugin authors often write a maximum such as 10.99.99 to mean every Zotero 10
 release. They also write a minimum such as 8.999 to mean Zotero 9 and newer.
 The declared range uses the overrides that apply to the plugin version that
-the index read. The site does not test plugins. The pills show what each
-plugin declares.
+the index read. The pills show what each plugin declares, not a test
+result. The daily start tests that "Using the data" describes appear only
+on each plugin's page.
 
 A plugin with no declared range shows "No declared range" in place of the
 pills. If the last build failed to read a plugin, its row shows the failure.
@@ -122,9 +123,9 @@ build-level. If every record carries a failure, whatever its name, the build
 also deploys nothing. If the build cannot read the report issues, or the
 site build fails, the build also
 deploys nothing. A failed start test does not stop the deploy.
-The data from the last good build then stays in place. "Building the data" below describes the file. A breaking
-change to the file gets a new schema version under a new path, such as `v2/`.
-By this project's rule, a new optional field does not get a new schema
+The data from the last good build then stays in place. "Building the data"
+below describes the file. A breaking change to the file gets a new schema
+version under a new path, such as `v2/`. By this project's rule, a new optional field does not get a new schema
 version. The schema rejects fields that it does not define. If you validate
 against a saved copy of the schema, fetch it again after such a change.
 
@@ -693,7 +694,8 @@ block also has a `prerelease` field, `true` or `false`. It says whether
 GitHub marks the release that the reader read as a prerelease. It also has
 a `languages` list, which "Using the data" describes. Each record
 with an `upstream` block has a `reports` list, which "Using the data"
-describes.
+describes. The command writes no `startTests` list. The daily build adds
+it with `pnpm add-start-results`, as "Starting plugins in Zotero" says.
 
 If the read of a plugin fails, its record has no `upstream` block. The
 record has a `failure` block with the failure name and a message. If the
@@ -759,7 +761,10 @@ The command writes no data file and exits with status 1 in these cases:
 - It cannot write the schema copies or the data file.
 
 A data file from an earlier run then stays in place. In the last case, the
-schema copies can already be in `dist/schemas/`.
+schema copies can already be in `dist/schemas/`. The command writes the
+data file before the start plan that `--plan` names. If it cannot write the
+plan, it prints `write-failed` with the plan's path and exits with status
+1. The new data file then stays in place.
 
 To read the entries in another directory, give its path: `pnpm build <dir>`.
 To write the file under another directory, add `--out <dir>`. As with
@@ -819,31 +824,39 @@ status 1.
 To add start results to a data file, run:
 
 ```bash
-pnpm add-start-results --data <file> --plan <file> --results <dir>
+pnpm add-start-results --data <file> --plan <file> --results <dir> --tested <versions>
 ```
 
 The command reads each file in each directory under `--results`. A
 directory named `start-results-<version>` holds the results of one Zotero
-version, as the daily build names its artifacts. If a result meets all of
-these conditions, the command keeps it:
+version, as the daily build names its artifacts. `--tested` lists the Zotero
+versions to keep, joined by commas, such as `7.0.32,10.0.6`. The daily build
+passes the versions of its start-test jobs. Plugin code in a start-test job
+can upload an artifact of another name, so the list stops it from adding a
+version. If a result meets all of these conditions, the command keeps it:
 
 - Its entry id, plugin id, and plugin version match an item of the plan.
 - Its entry's record in the data file has an `upstream` block.
-- Its Zotero version is the one in its directory's name.
+- Its Zotero version is the one in its directory's name, and `--tested`
+  lists it.
 - Its Zotero version is in the range of the item's manifest.
 - Its result is one of the four names.
 
 If two or more such results name one entry and one Zotero version, the
-command drops all of them. It also drops each file that is not a JSON
-array. Then it writes each record's kept results into the data file as
-`startTests`, ordered by Zotero version, and prints how many it dropped.
-The command can fail to read the data or the plan, or the schema can reject
-the new data. In each case, the command leaves the file as it was and exits
-with status 1.
+command drops all of them. It also drops each entry that is not a readable
+JSON array. Such an entry can be a directory, a link, or a file over 1 MiB.
+Then it writes each record's kept results into the data file as
+`startTests`, ordered by Zotero version, and prints how many it dropped. If
+`--results` does not exist, the command adds no results and exits with
+status 0. The command can fail to read the data, the plan, or the list of
+the results directories, or the schema can reject the new data. In each
+case, the command leaves the file as it was and exits with status 1.
 
 ## Building the site
 
-To build the site, first run `pnpm build`, then run:
+To build the site, first run `pnpm build`. To show start tests, also run
+`pnpm add-start-results` on `dist/v1/plugins.json`, as "Starting plugins in
+Zotero" says. Then run:
 
 ```bash
 pnpm site

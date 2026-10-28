@@ -86,6 +86,8 @@ export interface StartTestsOptions {
   startedAt?: number;
   // The --limit of each `pnpm start-test`, in seconds.
   startLimitSeconds?: number;
+  // The script run for each start, `pnpm start-test`'s by default.
+  startTestCli?: string;
   // Called after each plan item in range, with what became of it.
   onItem?: (entry: string, outcome: PlannedStart | SkippedStart) => void;
 }
@@ -109,7 +111,7 @@ export async function startTests(options: StartTestsOptions): Promise<StartTests
         outcome.notStarted.push(item.entry);
         continue;
       }
-      const done = await startOne(item, options.zotero, temp, fetch, lookup, options.startLimitSeconds);
+      const done = await startOne(item, options.zotero, temp, fetch, lookup, options.startLimitSeconds, options.startTestCli);
       if ("reason" in done) outcome.skipped.push(done);
       else outcome.results.push(done);
       onItem?.(item.entry, done);
@@ -127,6 +129,7 @@ async function startOne(
   fetch: Fetch,
   lookup: Lookup | undefined,
   startLimitSeconds: number | undefined,
+  cli = START_TEST_CLI,
 ): Promise<PlannedStart | SkippedStart> {
   const { entry } = item;
   let bytes: Uint8Array;
@@ -145,7 +148,7 @@ async function startOne(
   const xpi = join(dir, "plugin.xpi");
   const out = join(dir, "result.json");
   await writeFile(xpi, bytes);
-  const args = [START_TEST_CLI, "--zotero", binary, "--xpi", xpi, "--out", out];
+  const args = [cli, "--zotero", binary, "--xpi", xpi, "--out", out];
   if (startLimitSeconds !== undefined) args.push("--limit", String(startLimitSeconds));
   const limitMs = (startLimitSeconds ?? START_LIMIT_MS / 1000) * 1000;
   const run = await new Promise<{ code: number | null; stderr: string }>((resolveRun) => {

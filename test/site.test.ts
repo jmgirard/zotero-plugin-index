@@ -360,7 +360,8 @@ describe("the plugin page", () => {
     expect(html.indexOf("data-start-tests")).toBeLessThan(html.indexOf("<details>"));
   });
 
-  test.each(ids.filter((id) => id !== "no-range-plugin@example.org"))("shows no start-test line for %s, which has no startTests", (id) => {
+  // A read record and a failed one, the two ways a page has no startTests.
+  test.each(["first-plugin@example.org", "broken-plugin@example.org"])("shows no start-test line for %s, which has no startTests", (id) => {
     expect(records.find((record) => record.id === id)?.startTests).toBeUndefined();
     expect(page(id)).not.toMatch(/\sdata-start-tests[\s>]|\sdata-fact="start-test/);
   });

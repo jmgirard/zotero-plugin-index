@@ -74,8 +74,9 @@ jobs:
     runs-on: ubuntu-latest
     # `pnpm start-tests` starts no new plugin 20 minutes after it begins. The last item can
     # then take up to 3 minutes to download its XPI and 90 seconds to start, or 150 seconds
-    # if its `pnpm start-test` hangs and is killed.
-    timeout-minutes: 30
+    # if its `pnpm start-test` hangs and is killed. In run 40773444023 (2026-10-28) the steps
+    # before it took at most 38 seconds, and the longest job 3 minutes 48 seconds.
+    timeout-minutes: 40
     permissions: {}
     cache-mode: none
     strategy:
@@ -166,9 +167,11 @@ jobs:
         with:
           pattern: start-results-*
           path: ${{ runner.temp }}/results
+      # --tested lists the start-test matrix's Zotero versions, so a results artifact under any
+      # other name adds nothing. test/workflows.test.ts checks that the two lists match.
       - run: >-
           pnpm add-start-results --data dist/v1/plugins.json --plan "$RUNNER_TEMP/plan/start-plan.json"
-          --results "$RUNNER_TEMP/results"
+          --results "$RUNNER_TEMP/results" --tested 7.0.32,8.0.4,9.0.6,10.0.6
       # Writes the site pages into dist/ beside the data. A failed site build deploys
       # nothing.
       - run: pnpm site

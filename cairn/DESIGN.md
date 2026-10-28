@@ -62,7 +62,9 @@ While a filter is on, the same script writes a status line under the
 filters that says how many plugins show, or that none match (M044).
 The home intro links to the "Add a plugin" issue form (M037).
 The page shows the name, the description, the version pills, the declared
-range, the "Menus and settings in" line (M024, M033), the user reports on
+range, the "Menus and settings in" line (M024, M033), the "Starts in
+Zotero" line with its note when the record has `startTests` (M047), the
+user reports on
 the release the index read with a "Works" and a "Broken" link (M021), and
 the repository and releases links first. The other facts sit in a closed
 "Details" section (M015). The home list marks an
@@ -183,8 +185,9 @@ exception is a report that is abuse.
   characters, two overrides with the same `field` and `version`, and names
   a UTF-8 byte-order mark at the start of an entry file (M032).
 - Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch, {
-  lookup, signal })` returns the facts of one GitHub repo, or one named
-  inclusion-bar failure. The optional `lookup` resolves download hosts for
+  lookup, signal })` returns the facts of one GitHub repo with the URL and
+  SHA-256 of the XPI it read (M047), or one named inclusion-bar failure.
+  `downloadXpi` downloads one XPI with the same host check (M047). The optional `lookup` resolves download hosts for
   the host check (M004). When the optional `signal` aborts, the read fails
   as a build-level `request-failed` (M029). Added M002. `githubClient(fetch)` makes its GitHub
   API requests and refuses a URL on another host, so the token goes to the
@@ -230,7 +233,8 @@ exception is a report that is abuse.
   while any of the 100 newest `issues` runs of the given workflow has not
   completed. `pnpm unanswered-issues --label <l> --workflow <file> --limit
   <n>` prints them one per line. Added M040.
-- Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
+- Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>] [--plan
+  <file>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
   It exits 1 when more than half of the records carry a build-level failure,
@@ -282,11 +286,12 @@ exception is a report that is abuse.
   reader's `downloadXpi`, checks the plan's SHA-256, runs `pnpm start-test`
   in its own process, records no result for a failed download, a hash
   mismatch, or a failed start, and starts nothing new after 20 minutes.
-  `pnpm add-start-results --data --plan --results` keeps a result only when
-  its entry, plugin id, and version match the plan, its Zotero version
-  equals the one in its artifact's name and falls in the range, and its
-  result is one of the four names; it drops every result of a duplicate
-  pair and each file that is not a JSON array, and writes `startTests`
+  `pnpm add-start-results --data --plan --results --tested` keeps a result
+  only when its entry, plugin id, and version match the plan, its Zotero
+  version equals the one in its artifact's name, is listed in `--tested`,
+  and falls in the range, and its result is one of the four names; it
+  drops every result of a duplicate pair and each entry that is not a
+  readable JSON array file of at most 1 MiB, and writes `startTests`
   ordered by version (`addResults`, M047).
 
 ## Conventions
@@ -545,9 +550,9 @@ reused._
   the closed report issues, runs the upstream reader on each plugin in turn,
   writes the `countReports` counts into each read record's `reports`, and checks each record and then the whole output against
   `schemas/plugins.v1.schema.json` before it writes the file.
-  `.github/workflows/build.yml` runs `pnpm check`, then the build, then
-  `pnpm site` (M007), daily and on manual dispatch, and keeps `dist/` as a
-  workflow artifact (M003). The build also copies both schemas to `dist/schemas/`, and it exits 1 after it
+  `.github/workflows/build.yml` runs `pnpm check` and the build (M007),
+  daily and on manual dispatch, and keeps the data as a workflow artifact
+  (M003); since M047 a later site job runs `pnpm site`. The build also copies both schemas to `dist/schemas/`, and it exits 1 after it
   writes the file when more than half of the records carry a build-level
   failure, as README "Building the data" defines it (M017), or when every
   record carries a failure of any name (M018, D-012). A failed read of the
@@ -578,8 +583,8 @@ reused._
   step sets a `cache` input (D-010). Scheduled and dispatched runs of the
   discover read job can save caches in the default branch's scope, while
   `issues` runs get read-only cache access. `test/workflows.test.ts` fails on a
-  `cache` key or an `actions/cache` step in `build.yml`, or on a build job
-  without `cache-mode: none`; `ci.yml` keeps `cache: pnpm` (M016). It also
+  `cache` key or an `actions/cache` step in `build.yml`, or on a build,
+  start-test, or site job without `cache-mode: none` (M047); `ci.yml` keeps `cache: pnpm` (M016). It also
   checks `report-issue.yml`: its triggers, job condition, permissions,
   `cache-mode: none`, no cache line, its concurrency groups, the issue number
   through `env:`, and no use of `github.event` other than the issue number,
@@ -603,8 +608,8 @@ reused._
   `type="module"` script; the other pages carry none (D-014,
   D-019). The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
-  Astro's `import.meta.env.BASE_URL`. `build.yml` runs `pnpm site` after the
-  build, so a failed site build also deploys nothing. `tsconfig.json` includes
+  Astro's `import.meta.env.BASE_URL`. `build.yml`'s site job runs `pnpm site`
+  after the build job (M047), so a failed site build also deploys nothing. `tsconfig.json` includes
   `site/`, so `pnpm test` type-checks its `.ts` files; the `.astro` templates
   are compiled by Astro without a type check (M007). A plugin page shows the
   "Archived on GitHub" fact only for a record whose `archived` is a boolean,
@@ -651,6 +656,10 @@ reused._
   its own included, so the data can show a forged start. The job has no
   token permission and no secret, and `pnpm add-start-results` keeps only
   results whose entry, plugin id, version, and range match the plan and
-  whose Zotero version equals the job's artifact name. It cannot tell a
-  forged result from a real one inside those bounds. Accepted with D-023,
-  2026-10-28.
+  whose Zotero version equals the artifact's name and is one of the
+  matrix's versions. A process left from a start can also upload an
+  artifact; under another job's name it wins if it uploads first, and that
+  job's own upload then fails. The command cannot tell a forged result from
+  a real one inside those bounds, and an unreadable entry drops without
+  stopping the deploy. Accepted with D-023, 2026-10-28; bounds set in the
+  M047 review.

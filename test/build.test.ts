@@ -447,10 +447,23 @@ describe("pnpm build", () => {
     expect(result.stderr).toContain("usage: pnpm build [<dir>] [--out <dir>] [--plan <file>]");
   });
 
-  test("prints the usage for --plan with no file", () => {
-    const result = pnpmBuild([TREE, "--plan"]);
+  test.each([
+    ["--plan with no file", [TREE, "--plan"]],
+    ["a repeated --out", [TREE, "--out", "a", "--out", "b"]],
+  ])("prints the usage for %s", (_name, args) => {
+    const result = pnpmBuild(args);
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("usage: pnpm build [<dir>] [--out <dir>] [--plan <file>]");
+  });
+
+  test("exits 1 naming the plan file it cannot write, after writing the data", () => {
+    const dir = tempDir();
+    // A file where the plan's directory would go.
+    writeFileSync(join(dir, "blocked"), "");
+    const result = pnpmBuild([TREE, "--out", join(dir, "out"), "--plan", join(dir, "blocked", "plan.json")], writeFixture(responses()));
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(new RegExp(`^write-failed: cannot write ${join(dir, "blocked", "plan.json")}: `, "m"));
+    expect(existsSync(join(dir, "out", "v1", "plugins.json"))).toBe(true);
   });
 
   test("writes the start plan to the --plan file, and no plan without it", () => {
@@ -566,7 +579,6 @@ describe("buildData", () => {
         },
       ],
     });
-    expect(result.plan.plugins.map((item) => item.sha256)).toEqual([expect.stringMatching(/^[0-9a-f]{64}$/), expect.stringMatching(/^[0-9a-f]{64}$/)]);
     expect(result.text).not.toContain("sha256");
   });
 

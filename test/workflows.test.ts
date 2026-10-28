@@ -77,6 +77,13 @@ describe("build.yml", () => {
     expect(job).toContain('echo "$ZOTERO_SHA256  $RUNNER_TEMP/$ZOTERO_FILE" | sha256sum --check');
   });
 
+  test("passes pnpm add-start-results the start-test matrix's Zotero versions as --tested", () => {
+    const matrix = [...jobText(build, "start-test").matchAll(/^ {10}- zotero: "([^"]+)"$/gm)].map(([, version]) => version);
+    expect(matrix).toHaveLength(4);
+    const tested = /^ {10}--results \S+ --tested (\S+)$/m.exec(jobText(build, "site"))?.[1].split(",");
+    expect(tested).toEqual(matrix);
+  });
+
   test("runs the site job after a build that succeeded, whatever the start tests did, and deploys only after the site job", () => {
     const site = jobText(build, "site");
     expect(site).toMatch(/^ {4}needs: \[build, start-test\]$/m);

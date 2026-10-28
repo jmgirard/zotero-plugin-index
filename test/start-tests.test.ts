@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -138,6 +138,22 @@ describe("startTests", () => {
     expect(outcome.skipped).toEqual([{ entry: "silent", reason: "start-failed", message: expect.stringMatching(/^reporter-not-started: /) }]);
   });
 
+  // A stand-in for `pnpm start-test` that exits 0 and leaves the --out file missing or writes
+  // the given text to it.
+  test.each([
+    ["no result file", undefined, /^cannot read the result of pnpm start-test: /],
+    ["a result of the wrong shape", JSON.stringify({ id: "x", version: "1", zotero: "10.0.6", result: "works" }), /^pnpm start-test wrote a result of the wrong shape$/],
+  ])("writes no result when the start leaves %s", async (_name, text, message) => {
+    const { binary } = shim("report");
+    const cli = join(tempDir(), "start-test.mjs");
+    const write = text === undefined ? "" : `fs.writeFileSync(out, ${JSON.stringify(text)});`;
+    writeFileSync(cli, `import fs from "node:fs";\nconst out = process.argv[process.argv.indexOf("--out") + 1];\n${write}\n`);
+    const plan = { plugins: [item("odd", {})] };
+    const outcome = await startTests({ plan, zotero: binary, fetch: fixtureFetch(served(plan.plugins)).fetch, lookup: publicLookup, startTestCli: cli });
+    expect(outcome.results).toEqual([]);
+    expect(outcome.skipped).toEqual([{ entry: "odd", reason: "start-failed", message: expect.stringMatching(message) }]);
+  });
+
   test("starts no new plugin after the total limit and keeps the results it has", async () => {
     const { binary, starts } = shim("report");
     const plan = { plugins: ["first", "second", "third"].map((entry) => item(entry, {})) };
@@ -189,13 +205,31 @@ describe("pnpm start-tests", () => {
     expect(result.stdout).toContain("Zotero 10.0.6: 1 results, 0 without a result, 1 outside the manifest range\n");
   });
 
-  test("exits 1 naming a plan that is not a plan", async () => {
+  // Each case writes no --out file.
+  test.each([
+    ["a plan item with no id", JSON.stringify({ plugins: [{ entry: "a" }] }), "plan-invalid: plan item 0 has no string id\n"],
+    ["a bound that is not a string", JSON.stringify({ plugins: [{ ...item("a", {}), strictMaxVersion: 10 }] }), "plan-invalid: plan item 0 has no string strictMaxVersion\n"],
+    ["a plan that is not JSON", "{", /^plan-invalid: the plan is not JSON: /],
+    ["no plan file", undefined, /^plan-unreadable: cannot read .*plan\.json: ENOENT/],
+  ])("exits 1 naming %s", async (_name, text, stderr) => {
     const { binary } = shim("report");
     const dir = tempDir();
-    writeFileSync(join(dir, "plan.json"), JSON.stringify({ plugins: [{ entry: "a" }] }));
+    if (text !== undefined) writeFileSync(join(dir, "plan.json"), text);
     const result = await cli(["--plan", join(dir, "plan.json"), "--zotero", binary, "--out", join(dir, "out.json")]);
     expect(result.code).toBe(1);
-    expect(result.stderr).toBe("plan-invalid: plan item 0 has no string id\n");
+    if (typeof stderr === "string") expect(result.stderr).toBe(stderr);
+    else expect(result.stderr).toMatch(stderr);
+    expect(existsSync(join(dir, "out.json"))).toBe(false);
+  });
+
+  test("exits 1 with zotero-version-unknown for a binary with no application.ini", async () => {
+    const dir = tempDir();
+    writeFileSync(join(dir, "plan.json"), JSON.stringify({ plugins: [] }));
+    writeFileSync(join(dir, "zotero"), "#!/bin/sh\n");
+    const result = await cli(["--plan", join(dir, "plan.json"), "--zotero", join(dir, "zotero"), "--out", join(dir, "out.json")]);
+    expect(result.code).toBe(1);
+    expect(result.stderr).toMatch(/^zotero-version-unknown: /);
+    expect(existsSync(join(dir, "out.json"))).toBe(false);
   });
 
   test("prints the usage without --out", async () => {

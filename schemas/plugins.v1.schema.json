@@ -28,6 +28,7 @@
       "additionalProperties": false,
       "required": ["id", "repoUrl", "overrides"],
       "oneOf": [{ "required": ["upstream"] }, { "required": ["failure"] }],
+      "dependencies": { "startTests": ["upstream"] },
       "properties": {
         "id": {
           "description": "The entry directory name. pnpm check requires it to equal the id in the entry's meta.json; the build does not check it.",
@@ -138,7 +139,7 @@
       "additionalProperties": false,
       "required": ["zotero", "result"],
       "properties": {
-        "zotero": { "description": "The Zotero version started, such as 10.0.6.", "type": "string", "minLength": 1 },
+        "zotero": { "description": "The Zotero version started, such as 10.0.6.", "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$" },
         "result": {
           "description": "started: Zotero listed the plugin as active and logged no startup error within 3 seconds of the install. start-error: the plugin's startup threw or rejected in that time. not-installed: Zotero did not list the plugin, or listed it as inactive. timed-out: no answer came before the start's time limit.",
           "enum": ["started", "start-error", "not-installed", "timed-out"]

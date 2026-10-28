@@ -1,11 +1,11 @@
 import { execFile } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { afterAll, describe, expect, test } from "vitest";
 import { checkOutput, type PluginsFile, type StartPlan } from "../src/build/build.ts";
-import { addResults, readResultsDir } from "../src/start-test/add-results.ts";
+import { addResults, readResultsDir, RESULTS_MAX_BYTES } from "../src/start-test/add-results.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const CLI = resolve(ROOT, "src/start-test/add-results-cli.ts");
@@ -61,8 +61,13 @@ const PLAN: StartPlan = {
       xpiUrl: "https://x/b.xpi",
       sha256: "b",
     },
+    // A plan item whose record in the data failed, as when the plan and the data disagree.
+    { entry: "gamma", id: "gamma@example.org", version: "1.0.0", xpiUrl: "https://x/g.xpi", sha256: "g" },
   ],
 };
+
+// The versions the tests' artifacts name.
+const TESTED = ["7.0.32", "8.0.5", "9.0.6", "10.0.6"];
 
 const alpha = (zotero: string, result = "started") => ({ entry: "alpha", id: "alpha@example.org", version: "1.0.0", zotero, result });
 const beta = (zotero: string, result = "started") => ({ entry: "beta", id: "beta@example.org", version: "2.0.0", zotero, result });
@@ -86,7 +91,7 @@ describe("addResults", () => {
         { ...beta("10.0.6"), version: "1.9.0" },
         { ...beta("10.0.6"), id: "other@example.org" },
         { ...beta("10.0.6"), entry: "missing" },
-        { ...alpha("10.0.6"), entry: "gamma" },
+        { entry: "gamma", id: "gamma@example.org", version: "1.0.0", zotero: "10.0.6", result: "started" },
         alpha("10.0.6", "works"),
         beta("9.0.6"),
         "started",
@@ -97,7 +102,7 @@ describe("addResults", () => {
       "start-results-7.0.32": [alpha("7.0.32"), alpha("7.0.32", "start-error"), beta("7.0.32")],
       "start-results-8.0.5": "{ not json",
     });
-    const outcome = addResults(data(), PLAN, await readResultsDir(dir));
+    const outcome = addResults(data(), PLAN, await readResultsDir(dir), TESTED);
     const file = (version: string) => join(`start-results-${version}`, "start-results.json");
     expect(outcome.dropped).toEqual([
       { file: file("10.0.6"), index: 1, reason: "version-mismatch" },
@@ -120,11 +125,27 @@ describe("addResults", () => {
     ]);
   });
 
-  test("drops every result of a directory whose name holds no Zotero version", async () => {
-    const dir = resultsDir({ "other-artifact": [alpha("10.0.6")] });
-    const outcome = addResults(data(), PLAN, await readResultsDir(dir));
-    expect(outcome.dropped.map((drop) => drop.reason)).toEqual(["zotero-not-artifact"]);
+  test("drops every result of an artifact whose name holds no tested version", async () => {
+    const dir = resultsDir({ "other-artifact": [alpha("10.0.6")], "start-results-99": [alpha("99")], "start-results-": [alpha("")] });
+    const outcome = addResults(data(), PLAN, await readResultsDir(dir), TESTED);
+    expect(outcome.dropped.map((drop) => [drop.file.split("/")[0], drop.reason])).toEqual([
+      ["other-artifact", "untested-zotero"],
+      ["start-results-", "untested-zotero"],
+      ["start-results-99", "untested-zotero"],
+    ]);
     expect(outcome.data.plugins[0].startTests).toBeUndefined();
+  });
+
+  test("drops as a bad file an entry that is a directory, a link, or over the size limit, and keeps the rest", async () => {
+    const dir = resultsDir({ "start-results-10.0.6": [alpha("10.0.6")] });
+    mkdirSync(join(dir, "start-results-9.0.6", "start-results.json"), { recursive: true });
+    mkdirSync(join(dir, "start-results-8.0.5"));
+    symlinkSync(join(dir, "start-results-10.0.6", "start-results.json"), join(dir, "start-results-8.0.5", "start-results.json"));
+    mkdirSync(join(dir, "start-results-7.0.32"));
+    writeFileSync(join(dir, "start-results-7.0.32", "start-results.json"), `[${" ".repeat(RESULTS_MAX_BYTES)}]`);
+    const outcome = addResults(data(), PLAN, await readResultsDir(dir), TESTED);
+    expect(outcome.badFiles.map((file) => file.split("/")[0])).toEqual(["start-results-7.0.32", "start-results-8.0.5", "start-results-9.0.6"]);
+    expect(outcome.data.plugins[0].startTests).toEqual([{ zotero: "10.0.6", result: "started" }]);
   });
 
   test("orders each record's results by Zotero version, and writes no empty list", async () => {
@@ -135,7 +156,7 @@ describe("addResults", () => {
       "start-results-9.0.6": [alpha("9.0.6", "start-error"), beta("9.0.6")],
       "start-results-8.0.5": [alpha("8.0.5")],
     });
-    const outcome = addResults(data(), PLAN, await readResultsDir(dir));
+    const outcome = addResults(data(), PLAN, await readResultsDir(dir), TESTED);
     expect(outcome.data.plugins[0].startTests).toEqual([
       { zotero: "7.0.32", result: "not-installed" },
       { zotero: "8.0.5", result: "started" },
@@ -158,8 +179,15 @@ describe("the startTests schema", () => {
     ["an empty list", [], "/plugins/0/startTests must NOT have fewer than 1 items"],
     ["an unknown result", [{ zotero: "10.0.6", result: "works" }], "/plugins/0/startTests/0/result must be equal to one of the allowed values"],
     ["an extra field", [{ zotero: "10.0.6", result: "started", log: "x" }], "/plugins/0/startTests/0 must NOT have additional properties"],
+    ["a zotero value that is not a version", [{ zotero: "10.0.6 started", result: "started" }], '/plugins/0/startTests/0/zotero must match pattern "^[0-9]+(\\.[0-9]+)*$"'],
   ])("rejects %s", (_name, startTests, problem) => {
     expect(checkOutput(withTests(startTests))).toContain(problem);
+  });
+
+  test("rejects startTests on a record with no upstream", () => {
+    const file = data();
+    Object.assign(file.plugins[2], { startTests: [{ zotero: "10.0.6", result: "started" }] });
+    expect(checkOutput(JSON.parse(JSON.stringify(file)))).toContain("/plugins/2 must have property upstream when property startTests is present");
   });
 });
 
@@ -177,6 +205,8 @@ describe("pnpm add-start-results", () => {
       join(dir, "plan.json"),
       "--results",
       results,
+      "--tested",
+      "7.0.32,10.0.6",
     ]);
     const written = JSON.parse(readFileSync(join(dir, "plugins.json"), "utf8"));
     expect(written.plugins.map((record: { startTests?: unknown }) => record.startTests)).toEqual([
@@ -186,19 +216,41 @@ describe("pnpm add-start-results", () => {
     ]);
     expect(Object.keys(written.plugins[0])).toEqual(["id", "repoUrl", "upstream", "reports", "startTests", "overrides"]);
     expect(stdout).toContain('dropped "start-results-10.0.6/start-results.json" item 1: zotero-out-of-range\n');
-    expect(stdout).toContain('dropped "start-results-7.0.32/start-results.json": not a JSON array\n');
-    expect(stdout).toContain("kept 1 start results; dropped 1 results and 1 files that are not a JSON array\n");
+    expect(stdout).toContain('dropped "start-results-7.0.32/start-results.json": not a readable JSON array\n');
+    expect(stdout).toContain("kept 1 start results; dropped 1 results and 1 files that are not a readable JSON array\n");
   });
 
-  test("exits 1 and leaves the data file as it was when the plan is not a plan", async () => {
+  test("adds no results and exits 0 when the results directory is missing", async () => {
     const dir = tempDir();
-    const text = JSON.stringify(data());
+    writeFileSync(join(dir, "plugins.json"), JSON.stringify(data()));
+    writeFileSync(join(dir, "plan.json"), JSON.stringify(PLAN));
+    const missing = join(dir, "results");
+    const { stdout } = await run(process.execPath, addArgs(dir, missing));
+    expect(stdout).toContain(`no results directory at ${missing}, so no start results are added\n`);
+    expect(JSON.parse(readFileSync(join(dir, "plugins.json"), "utf8")).plugins.some((record: object) => "startTests" in record)).toBe(false);
+  });
+
+  // Each case leaves the data file as it was.
+  test.each([
+    ["the plan is not a plan", "[]", JSON.stringify(data()), "plan-invalid: the plan has no plugins list\n"],
+    ["the data has no plugins list", JSON.stringify(PLAN), "{}", "<data> has no plugins list\n"],
+  ])("exits 1 when %s", async (_name, plan, text, stderr) => {
+    const dir = tempDir();
     writeFileSync(join(dir, "plugins.json"), text);
-    writeFileSync(join(dir, "plan.json"), "[]");
-    const failed = await run(process.execPath, [CLI, "--data", join(dir, "plugins.json"), "--plan", join(dir, "plan.json"), "--results", dir]).catch(
-      (error) => error as { code: number; stderr: string },
-    );
-    expect(failed).toMatchObject({ code: 1, stderr: "plan-invalid: the plan has no plugins list\n" });
+    writeFileSync(join(dir, "plan.json"), plan);
+    const failed = await run(process.execPath, addArgs(dir, dir)).catch((error) => error as { code: number; stderr: string });
+    expect(failed).toMatchObject({ code: 1, stderr: stderr.replace("<data>", join(dir, "plugins.json")) });
     expect(readFileSync(join(dir, "plugins.json"), "utf8")).toBe(text);
   });
+
+  test("prints the usage without --tested", async () => {
+    const failed = await run(process.execPath, [CLI, "--data", "d", "--plan", "p", "--results", "r"]).catch(
+      (error) => error as { code: number; stderr: string },
+    );
+    expect(failed).toMatchObject({ code: 1, stderr: expect.stringContaining("--tested <version>") });
+  });
 });
+
+function addArgs(dir: string, results: string): string[] {
+  return [CLI, "--data", join(dir, "plugins.json"), "--plan", join(dir, "plan.json"), "--results", results, "--tested", TESTED.join(",")];
+}

@@ -300,3 +300,20 @@ forged start. The user rejected starting plugins outside their range with
 Zotero's compatibility check off, and finding the newest Zotero release at
 run time, since Zotero publishes no release list as data and such a
 download has no pinned hash to check.
+
+### D-024: The daily build's site and start-test jobs follow D-010, and start results never withhold a deploy, annotating D-010 and D-011
+
+2026-10-28, M047 review. M047 splits `build.yml` into build, start-test,
+site, and deploy jobs. The site job now writes the site that Pages
+publishes, so D-010's rule moves with it: the build, start-test, and site
+jobs each set `cache-mode: none`, and no step sets a `cache` input. The
+start-test job runs plugin code, so it sets no cache either. D-011 and
+D-012 still decide when the build withholds a deploy. Start tests add no
+reason of their own: a failed start-test job, a missing result, or a
+results entry that cannot be read drops those results, and the site still
+deploys. `pnpm add-start-results` exits 1, and so withholds the deploy, only
+when the build's own data or plan cannot be read or the schema rejects the
+merged data, the same kind of fault as a failed `pnpm site`. The deploy
+job's `if:` names the site job's result, since GitHub skips a job whose
+earlier jobs include a failed one unless its `if:` says otherwise. The cost
+is that a day whose start tests all fail deploys with no start results.

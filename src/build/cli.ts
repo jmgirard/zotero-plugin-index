@@ -6,16 +6,19 @@ const USAGE = "usage: pnpm build [<dir>] [--out <dir>] [--plan <file>]";
 
 async function main(): Promise<number> {
   const args = argv.slice(2);
-  // Each option takes the argument after it.
+  // Each option takes the argument after it, and may appear once.
   const options = new Map<string, string | undefined>();
   const positional: string[] = [];
+  let repeated = false;
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--out" || args[i] === "--plan") options.set(args[i], args[++i]);
-    else positional.push(args[i]);
+    if (args[i] === "--out" || args[i] === "--plan") {
+      repeated ||= options.has(args[i]);
+      options.set(args[i], args[++i]);
+    } else positional.push(args[i]);
   }
   const out = options.get("--out");
   const planFile = options.get("--plan");
-  if (positional.length > 1 || (options.has("--out") && !out) || (options.has("--plan") && !planFile)) {
+  if (repeated || positional.length > 1 || (options.has("--out") && !out) || (options.has("--plan") && !planFile)) {
     console.error(USAGE);
     return 1;
   }
