@@ -459,6 +459,14 @@ describe("the home page", () => {
     ]);
   });
 
+  test("holds one hidden status line between the version buttons and the list", () => {
+    const html = home();
+    expect(html.match(/\sdata-filter-status/g)).toHaveLength(1);
+    expect(html).toMatch(
+      /<div class="version-filter" hidden>.*?<\/div><\/div><p class="filter-status" role="status" data-filter-status hidden><\/p><ul class="plugins">/s,
+    );
+  });
+
   test("holds a hidden language menu with one option for each subtag", () => {
     const menu = /<p class="language-filter" hidden><label for="language">Menus and settings in<\/label> <select id="language" data-language-filter autocomplete="off">(.*?)<\/select><\/p>/.exec(home());
     expect(menu).not.toBeNull();

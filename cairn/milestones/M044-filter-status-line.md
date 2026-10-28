@@ -84,7 +84,7 @@ plugins" button in the line: not chosen at the plan question set.
 - [x] T1: Add `filterStatus` to `src/site/home-filter.ts` with a comment in
       the file's style. Add its four cases to `test/home-filter.test.ts`, run
       before the function exists, so each fails first.
-- [ ] T2: In `site/src/pages/index.astro`, add the hidden status `<p>`
+- [x] T2: In `site/src/pages/index.astro`, add the hidden status `<p>`
       between the `version-filter` div (lines 35-47) and the list (line 48).
       In the script, have `show()` write `filterStatus` into the line, with
       the count of rows it leaves shown, `rows.length`, and whether the
@@ -122,6 +122,7 @@ plugins" button in the line: not chosen at the plan question set.
 - 2026-10-28: lessons used: 2026-10-25 (M001), 2026-10-25 (M007), 2026-10-26 (M015), 2026-10-26 (M018), 2026-10-27 (M021), 2026-10-27 (M024), 2026-10-28 (M035), 2026-10-28 (M036), 2026-10-28 (M037).
 - 2026-10-28: started /milestone-implement on branch m044-filter-status-line, cut from main at 0a947f0.
 - 2026-10-28: T1 done: `filterStatus` in `src/site/home-filter.ts`; its four `test/home-filter.test.ts` cases failed with "filterStatus is not a function" first, then passed. `pnpm test` 940 passed, 1 skipped; `pnpm check` 0 problems.
+- 2026-10-28: T2 done: hidden `<p class="filter-status" role="status" data-filter-status hidden>` between the version buttons and the list; `show()` writes `filterStatus` (rows not hidden, `rows.length`, language or major not ""), and the script unhides the line with the controls. Chose `.filter-status:empty { margin: 0 }` over `display: none` for the empty line, so the live region stays in the page and screen readers hear each new text. The new `test/site.test.ts` case failed with index.astro stashed (`match` gave null), then passed. `pnpm test` 941 passed, 1 skipped; `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

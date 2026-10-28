@@ -45,6 +45,7 @@ const { plugins } = loadData();
       }
     </div>
   </div>
+  <p class="filter-status" role="status" data-filter-status hidden></p>
   <ul class="plugins">
     {
       plugins.map((record) => {
@@ -70,12 +71,13 @@ const { plugins } = loadData();
 </Base>
 
 <script>
-  import { chosenValue, filterHref, rowShows } from "../../../src/site/home-filter.ts";
+  import { chosenValue, filterHref, filterStatus, rowShows } from "../../../src/site/home-filter.ts";
 
-  // The menu and the buttons are hidden in the HTML, so a page without JavaScript shows every
-  // row and neither filter.
+  // The menu, the buttons, and the status line are hidden in the HTML, so a page without
+  // JavaScript shows every row and neither filter.
   const select = document.querySelector<HTMLSelectElement>("select[data-language-filter]");
   const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-version-filter] button")];
+  const status = document.querySelector<HTMLElement>("[data-filter-status]");
   if (select && buttons.length > 0) {
     const languages = [...select.options].map((option) => option.value);
     // The "Any version" button has no value attribute, so its value is "".
@@ -88,6 +90,10 @@ const { plugins } = loadData();
       const zotero = { value: major, options: majors };
       for (const row of rows) {
         row.hidden = !rowShows({ languages: row.dataset.languages ?? "", zotero: row.dataset.zotero ?? "" }, language, zotero);
+      }
+      if (status) {
+        const shown = rows.filter((row) => !row.hidden).length;
+        status.textContent = filterStatus(shown, rows.length, select.value !== "" || major !== "");
       }
     };
     const address = () => filterHref(filterHref(location.href, "language", select.value), "zotero", major);
@@ -116,5 +122,6 @@ const { plugins } = loadData();
     }
     select.closest("[hidden]")?.removeAttribute("hidden");
     buttons[0]!.closest("[hidden]")?.removeAttribute("hidden");
+    status?.removeAttribute("hidden");
   }
 </script>

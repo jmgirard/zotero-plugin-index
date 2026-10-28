@@ -88,6 +88,13 @@ const { generatedAt } = loadData();
       .version-filter[hidden] {
         display: none;
       }
+      /* Empty while no filter is on. It keeps its box so screen readers hear each new text. */
+      .filter-status {
+        margin: 0 0 1rem;
+      }
+      .filter-status:empty {
+        margin: 0;
+      }
       [data-version-filter] {
         display: flex;
         flex-wrap: wrap;
