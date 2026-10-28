@@ -100,7 +100,7 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
       say that an issue run can now wait longer than an hour and that the
       not-completed check covers that wait. Run the AC4 grep and classify
       each hit in one work-log line. List added lines over 80 characters.
-- [ ] T4: Push the branch. Make sure that `gh run list` shows no queued,
+- [x] T4: Push the branch. Make sure that `gh run list` shows no queued,
       waiting, pending, or in-progress run of either workflow, then run
       `gh workflow run <file> --ref <branch>` for each, and record each
       run's conclusion and jobs from `gh run view`.
@@ -126,6 +126,7 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
 - 2026-10-28: T3: README's group paragraph, DESIGN's add-plugin-issue.yml line, CHANGELOG's M040 entry (cancel example and sweep-cancel sentences removed) plus one new entry, the add-plugin-issue.yml schedule comment, and the `MIN_AGE_MS` comment now describe the queue; both sweeps call `unansweredIssues`, so the comment holds for both. `pnpm test` 936 passed, 1 skipped; `pnpm check` 0 problems.
 - 2026-10-28: T3 AC4 grep (27 hit lines): queue text at DESIGN.md:469-470, CHANGELOG.md:315-317, README.md:516, add-plugin-issue.yml:7 and 22, discover.yml:21; `cancel-in-progress` keys at add-plugin-issue.yml:27 and discover.yml:24; other subjects at DESIGN.md:555 (BASE_URL), CHANGELOG.md:133 and README.md:34, 72, 240, 722 (replaces), README.md:559 (report group), and the handoff `replaces` comments and `cancelled()` conditions at add-plugin-issue.yml:115, 118 and discover.yml:71, 74, 86; `src/issues/unanswered.ts` has none.
 - 2026-10-28: T3: added prose lines in README, CHANGELOG, and DESIGN are at most 80 characters; added workflow and source comments run to 88, as the comments around them do. The simple-english hook flagged older text (README.md:115, 480; CHANGELOG.md:174, 269, 312), left as is since this milestone does not own it.
+- 2026-10-28: T4: pushed the branch at 2c994ac; `gh run list` showed no run of either workflow other than `completed`; dispatched both on the branch: add-plugin-issue.yml run 40698348713 and discover.yml run 40698353541 each concluded `skipped`, every job `skipped` (pick, read, write; read, write), and `gh run view` showed no workflow-file error.
 
 ## Decisions
 
