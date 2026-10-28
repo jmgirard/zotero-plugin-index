@@ -20,15 +20,15 @@ afterAll(() => {
 });
 
 describe.skipIf(ZOTERO_BIN === undefined)("pnpm start-test with a real Zotero", () => {
-  test.each(START_FIXTURES)(
-    "the %s fixture gets that result",
-    async (name) => {
+  test.each(Object.entries(START_FIXTURES))(
+    "the %s fixture gets %s",
+    async (name, expected) => {
       const dir = mkdtempSync(join(tmpdir(), "zpi-start-zotero-"));
       temps.push(dir);
       const out = join(dir, "result.json");
       await run(process.execPath, [CLI, "--zotero", ZOTERO_BIN!, "--xpi", fixtureXpi(name, dir), "--out", out, "--limit", String(LIMIT_S)]);
       const result = JSON.parse(readFileSync(out, "utf8"));
-      expect(result).toMatchObject({ id: `${name}@start-test.invalid`, version: "1.0.0", result: name });
+      expect(result).toMatchObject({ id: `${name}@start-test.invalid`, version: "1.0.0", result: expected });
       console.log(`${name}: ${result.result} in Zotero ${result.zotero}`);
     },
     (LIMIT_S + 30) * 1000,

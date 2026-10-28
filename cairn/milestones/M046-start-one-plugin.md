@@ -130,3 +130,38 @@ Evidence at 4b7aad2, 2026-10-28; `main` had not moved since the branch cut (9e21
 - AC2: CI run 40764657998 on 4b7aad2 (the branch's last commit), job `start-test` success: `sha256sum --check` printed OK for Zotero 10.0.6 for Linux; under `xvfb-run`, `test/start-test-zotero.test.ts` passed 4 of 4, logging "started: started", "start-error: start-error", "not-installed: not-installed", and "timed-out: timed-out" in Zotero 10.0.6 (the last after its 60 s limit).
 - AC3: same run as AC1: "writes timed-out, and leaves no process of the group and no temp directory, when no report comes" and "leaves no process of the group and no temp directory after a report" passed. Plants on the implement branch (work log, T1–T4 and T6 lines): without the group kill both fail on the live pid list; without the temp removal both fail on the profile's directory.
 - AC4: `npx -y pnpm@12.15.0 test` at 4b7aad2: tsc clean, 971 passed, 5 skipped (the real-Zotero file, with no ZOTERO_BIN, among them); `pnpm check`: "checked 42 entries in plugins, 0 problems". CI job `check` on 4b7aad2: success.
+
+Consistency gate: `cairn_validate.py` all checks passed; the `generic` profile names no toolchain checks; no principle changed, so no `cairn_impact` run.
+
+spawned: diff-bug, blame-history, prior-review, ripple
+
+- diff-bug #1: `ci.yml` job `start-test` sets `cache: pnpm`, against D-023's "no cache" — reject (false): D-023 binds the start-test job that M047 adds to `build.yml`, where listed plugins' code runs; this `ci.yml` job runs only the repo's own fixtures, as the `check` job beside it with the same cache does.
+- diff-bug #2: the `ci.yml` job inherits `contents: read` and checkout keeps the token in `.git/config` — reject (false) for this job, as for #1; follow-up: M047's work log now asks for `persist-credentials: false` on its `build.yml` start-test job.
+- diff-bug #3: the temp directory is removed while killed processes may still be writing, so `rm` can throw ENOTEMPTY and the CLI exits with a stack trace — fix now.
+- diff-bug #4: a binary that relaunches itself and exits ends the run as `zotero-exited` — reject (edge): no relaunch seen on Zotero 10.0.6 for macOS or Linux CI; the effect is a named error.
+- diff-bug #5: any spawn error, such as EACCES, is reported as `zotero-missing` — fix now: new failure `zotero-not-runnable`.
+- diff-bug #6: a reporter that throws or never loads gives `timed-out` with exit 0, which M047 would publish as the plugin's result — fix now: the reporter marks its start and writes its own error; the command fails `reporter-not-started` or `reporter-failed`.
+- diff-bug #7: an async `startup` that rejects may get `started`, and one that never resolves gets `started` after the 3 s wait — reject (false) for a rejection within the wait: on Zotero 10.0.6, a new fixture whose async startup rejects gets start-error from Zotero's bootstrap message alone (a rule matching errors from the plugin's XPI file was tried and removed, since the result did not change without it); follow-up: M047's work log asks that the page text name the 3 s wait.
+- diff-bug #8: a plugin that quits or crashes Zotero gets `zotero-exited`, not one of the four results — reject (edge): a startup that quits Zotero is outside common use; the effect is a named error.
+- diff-bug #9: a `--limit` at or over 2147484 s overflows the timer and times out at once — fix now: `--limit` takes 1 to 3600.
+- diff-bug #10: the manifest read trusts the declared size and inflates the whole entry — fix now (with prior-review #1).
+- diff-bug #11: a manifest with no `version` gives `version: ""` — fix now: new failure `no-version`.
+- diff-bug #12: `finish` names `timer` and `poll` before their declarations — fix now: declared first.
+- diff-bug #13: the reporter and fixtures are JavaScript where DESIGN says TypeScript — reject (planned change): Zotero loads only a JavaScript `bootstrap.js`.
+- diff-bug (c): two `not-installed` rows run one branch, several error branches are not fired, and the real-Zotero test logs with `console.log` — fix now for the first two (one row dropped; tests added for a missing XPI, an XPI over the cap, two manifest.json entries, manifest not JSON, no version, a binary that cannot run, the reporter failures, and the CLI's usage refusals); reject (planned change) the `console.log`, which writes AC2's evidence in the CI log.
+- blame-history #1: same as diff-bug #1 — reject (false), as there.
+- blame-history #2: same as diff-bug #2 — reject (false), with the same follow-up.
+- blame-history #3: `xpinstall.signatures.required: false` turns off signature checks with no D-entry — reject (false): Zotero plugins are not signed, so a profile that checks signatures installs none; a code comment now says so.
+- prior-review #1: the manifest read reintroduces the unbounded inflate that M012 removed from the reader — fix now: the reader's guarded read is exported as `xpiManifestBytes` and used here.
+- prior-review #2: two manifest.json entries keep the last, against M005's refusal — fix now, by the same change.
+- prior-review #3: no entry-count bound and no 50 MiB cap — fix now, by the same change and a size check before the read.
+- prior-review #4: the timed-out shim test still races the shim's start under load — reject (false): the `sh` shim with a 5 s limit passed at load average 10, which lesson M038's exception for a shim that never ends allows.
+- prior-review #5: the real-Zotero test's 60 s limit inside a 90 s timeout — reject (false): the margin is by design, and CI passed on 4b7aad2.
+- prior-review #6: same as diff-bug #3 — fix now, as there.
+- ripple #1: DESIGN.md says `ci.yml` runs `pnpm test` and `pnpm check` only — follow-up: M047's work log names it, with DESIGN text planned there (Scope Out).
+- ripple #2: `vitest.config.ts` lists the tests that start pnpm processes without the new files — reject (false): neither file starts pnpm.
+- ripple #3: README "Running the tests" does not say the real-Zotero test needs `ZOTERO_BIN` — reject (planned change): README text is M047's (Scope Out); follow-up in M047's work log.
+- ripple #4: README has no section for `pnpm start-test` — reject (planned change), as #3, same follow-up.
+- ripple #5: DESIGN's Function Families has no start-test entry, and the reporter is JavaScript — reject (planned change) for DESIGN text, M047's; follow-up in M047's work log.
+- ripple #6: CHANGELOG has no entry — reject (planned change): the series' one entry is M047's (Scope Out).
+- ripple #7: the candidate row says the CI job installs listed plugins — reject (false): the row states the series' target, and M047 graduates it.

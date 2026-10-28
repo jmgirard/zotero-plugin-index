@@ -25,8 +25,9 @@ async function main(): Promise<number> {
   }
   let limitMs = START_LIMIT_MS;
   if (values.limit !== undefined) {
-    if (!/^[1-9]\d*$/.test(values.limit)) {
-      console.error(`--limit must be a whole number of seconds\n${USAGE}`);
+    // An hour at most, well inside the longest delay a Node timer takes.
+    if (!/^[1-9]\d*$/.test(values.limit) || Number(values.limit) > 3600) {
+      console.error(`--limit must be a whole number of seconds from 1 to 3600\n${USAGE}`);
       return 1;
     }
     limitMs = Number(values.limit) * 1000;
