@@ -71,7 +71,7 @@ const { plugins } = loadData();
 </Base>
 
 <script>
-  import { chosenValue, filterHref, filterStatus, rowShows } from "../../../src/site/home-filter.ts";
+  import { chosenValue, filterHref, filterOn, filterStatus, rowShows } from "../../../src/site/home-filter.ts";
 
   // The menu, the buttons, and the status line are hidden in the HTML, so a page without
   // JavaScript shows every row, neither filter, and no status line.
@@ -93,7 +93,7 @@ const { plugins } = loadData();
       }
       if (status) {
         const shown = rows.filter((row) => !row.hidden).length;
-        status.textContent = filterStatus(shown, rows.length, select.value !== "" || major !== "");
+        status.textContent = filterStatus(shown, rows.length, filterOn(language) || filterOn(zotero));
       }
     };
     const address = () => filterHref(filterHref(location.href, "language", select.value), "zotero", major);

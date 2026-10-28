@@ -463,7 +463,7 @@ describe("the home page", () => {
     const html = home();
     expect(html.match(/\sdata-filter-status/g)).toHaveLength(1);
     expect(html).toMatch(
-      /<div class="version-filter" hidden>.*?<\/div><\/div><p class="filter-status" role="status" data-filter-status hidden><\/p><ul class="plugins">/s,
+      /<div class="version-filter" hidden><span id="[^"]+">Declares Zotero<\/span><div role="group" aria-labelledby="[^"]+" data-version-filter>(?:<button[^>]*>[^<]*<\/button>)*<\/div><\/div><p class="filter-status" role="status" data-filter-status hidden><\/p><ul class="plugins">/,
     );
   });
 

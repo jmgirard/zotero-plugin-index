@@ -244,9 +244,9 @@ exception is a report that is abuse.
   `src/site/description.ts` holds `shownDescription`.
   `src/site/languages.ts` holds the applied languages, their names, and the
   menu options. `src/site/home-filter.ts` holds `passes`, `rowShows`,
-  `chosenValue`, `filterHref`, and `filterStatus`, which the home page's
-  script imports for the language menu, the version buttons, and the
-  status line (renamed from `language-filter.ts`, M037); `rowMajors` in
+  `chosenValue`, `filterHref`, `filterOn`, and `filterStatus`, which the
+  home page's script imports for the language menu, the version buttons,
+  and the status line (renamed from `language-filter.ts`, M037); `rowMajors` in
   `version.ts` gives each row's `data-zotero`. Added M007; pills and
   descriptions M015; languages M024; version buttons M037; status line
   M044.
@@ -554,8 +554,9 @@ reused._
   `site/src/data.ts`, `site/src/components/Support.astro`, and, for
   `ZOTERO_MAJORS`, `site/src/pages/index.astro`) import it. The
   pages carried no script from M015. Since M024 the home page carries one,
-  for the language menu and, since M037, the version buttons, which Astro
-  inlines as a `type="module"` script; the other pages carry none (D-014,
+  for the language menu and, since M037, the version buttons and, since
+  M044, the status line under them, which Astro inlines as a
+  `type="module"` script; the other pages carry none (D-014,
   D-019). The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
   Astro's `import.meta.env.BASE_URL`. `build.yml` runs `pnpm site` after the

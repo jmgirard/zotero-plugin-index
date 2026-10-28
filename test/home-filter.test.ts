@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { chosenValue, filterHref, filterStatus, passes, rowShows } from "../src/site/home-filter.ts";
+import { chosenValue, filterHref, filterOn, filterStatus, passes, rowShows } from "../src/site/home-filter.ts";
 
 const LANGUAGES = ["", "de", "en", "zh"];
 const MAJORS = ["", "7", "8", "9", "10"];
@@ -47,6 +47,16 @@ describe("chosenValue", () => {
     ["no parameter", null, ""],
   ])("chooses %s", (_, asked, value) => {
     expect(chosenValue(asked, MAJORS)).toBe(value);
+  });
+});
+
+describe("filterOn", () => {
+  test.each([
+    ["a value an option has", "zh", true],
+    ["All languages", "", false],
+    ["a value that no option has", "xx", false],
+  ])("%s", (_, value, on) => {
+    expect(filterOn({ value, options: LANGUAGES })).toBe(on);
   });
 });
 

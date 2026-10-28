@@ -128,6 +128,7 @@ plugins" button in the line: not chosen at the plan question set.
 - 2026-10-28: T5 done at 529e8a1 (also covers T3's files): `pnpm test` 19 files, 941 passed, 1 skipped; `pnpm check` 42 entries, 0 problems.
 - 2026-10-28: claim audit: 33 claims read, 2 corrected — README.md, CHANGELOG.md (M now "the number that the page lists, shown or not"), site/src/pages/index.astro (the no-JavaScript comment names the status line); the same reader re-read both and found them true. Left as is: the docs do not mention the singular "plugin" when M is 1, since the index lists more than one plugin. Not fixed here (text outside this branch, and ROADMAP is at 59 of 60 lines): README line 46 says an unknown `language` parameter shows every plugin, but not that the page removes the parameter, as the `zotero` paragraph says. Review can dispose of it.
 - 2026-10-28: after the claim audit fixes: `pnpm test` 941 passed, 1 skipped; `pnpm check` 0 problems. Status set to review.
+- 2026-10-28: review fix-now: `filterOn` added to `src/site/home-filter.ts` and used by `passes` and the script; its three `test/home-filter.test.ts` cases failed with the function missing, then passed. Placement regex pinned to the version-filter markup. DESIGN script paragraph and function list, and the `home-filter.ts` header, name the status line. `pnpm test` 944 passed, 1 skipped; `pnpm check` 0 problems. Browser pane on rebuilt sites: no parameter → ""; `?language=zh` → `Showing 27 of 42 plugins.`; `?zotero=8&language=xx` → address becomes `?zotero=8`, `Showing 30 of 42 plugins.`; fixture `?language=es&zotero=10` → `No plugins match these filters.`
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
@@ -142,3 +143,33 @@ Evidence at 9061f59, branch level with main at 0a947f0, 2026-10-28.
 - AC3: browser pane, `python3 -m http.server`, sites rebuilt at 9061f59 with `pnpm site --out`. Deployed `v1/plugins.json` (downloaded 2026-10-28, 42 rows): no parameter → line not hidden, text "", 42 of 42 rows shown; `?language=zh` → `Showing 27 of 42 plugins.`, 27 rows without `hidden`, 42 `li.plugin`; `?zotero=8` → `Showing 30 of 42 plugins.`, 30 and 42. The deployed data has no language and major pair that hides every row (all 45 × 4 pairs checked at T4), so the fixture build (9 rows) was used: `?language=es&zotero=10` → `No plugins match these filters.`, 0 shown; `?language=de&zotero=7` → the same, 0 shown. In every case the line had no `hidden` attribute after the script ran.
 - AC4: joined-copy search (`tr '\n' ' ' | sed 's/  */ /g' | grep -oF`): README.md holds `No plugins match these filters.` once and `Showing N of M plugins.` once; CHANGELOG.md holds each once, in the entry the diff adds at lines 322-329 under `## Unreleased` (the file's only `## ` heading). `cairn/DESIGN.md` line 247 names `filterStatus` in the `src/site/home-filter.ts` list.
 - AC5: `npx -y pnpm@12.15.0 test`: type check clean, 19 test files, 941 passed, 1 skipped (the case-sensitive volume case, per the M031 lesson). `npx -y pnpm@12.15.0 check`: 42 entries, 0 problems.
+
+Consistency gate: `cairn_validate.py` all checks passed (exit 0). No principle changed, so no `cairn_impact` run. The generic profile names no toolchain checks.
+
+spawned: diff-bug, blame-history, prior-review, ripple
+
+- diff-bug #1: returning to All languages and Any version writes "", so screen readers hear nothing — reject (planned change: the question set chose an empty line with no filter on).
+- diff-bug #2: a change that keeps the same count writes the same text, which some screen readers do not repeat — follow-up, row "Close gaps around the filter line".
+- diff-bug #3: on a load with `?language=` or `?zotero=` the first text is written while the line is still `hidden`, so it is not announced — follow-up, same row.
+- diff-bug #4: the placement regex in `test/site.test.ts` used `.*?` with the `s` flag, so it did not pin the version-filter div — fix now.
+- diff-bug #5: `cairn/DESIGN.md` lines 556-558 named only the menu and the buttons as the script's jobs — fix now.
+- diff-bug #6: ROADMAP row "Say when the filters hide every plugin" is still listed — reject (planned change: step 9 hygiene graduates it).
+- diff-bug #7: `filtering` was computed apart from `passes`, so a value that no option has could count as on in a future path — fix now (`filterOn`).
+- diff-bug #8: the `:empty` rule works — noted, no finding.
+- diff-bug #9: README line 46 does not say the page removes an unknown `language` parameter — follow-up, same row.
+- diff-bug (tests): no case has `filtering` false with `shown` 0 — reject (false: with no filter on every row shows, and the build refuses an empty index).
+- blame-history #1: the absorbed row is still listed — reject (planned change, as diff-bug #6).
+- blame-history #2: DESIGN lines 556-558 stale — fix now (as diff-bug #5).
+- blame-history #3: README line 46 — follow-up (as diff-bug #9).
+- blame-history #4: `if (status)` and `status?.` guard an element that is always in the HTML — reject (style: it matches the script's guard on the menu and buttons).
+- blame-history #5: the loose placement regex — fix now (as diff-bug #4).
+- prior-review #1: the status line's DOM code has only a hand check, and row "Test the home page script in a browser" does not name it — follow-up, row "Close gaps around the filter line" (that row holds findings from M024 and M037, so it is not extended).
+- prior-review #2: the on-or-off test for the filters sat in the untested script — fix now (`filterOn`, as diff-bug #7).
+- prior-review #3: on a filtered address the line appears after the first paint and moves the list down by its height and margin — follow-up, row "Close gaps around the filter line" (row "Filter the home list before it paints" holds findings from two milestones, so it is not extended).
+- prior-review #4: README line 46 — follow-up (as diff-bug #9).
+- prior-review #5: the regex test of built HTML does not reopen the `<div>` in `<p>` trap, since T4 ran `DOMParser` — noted, no finding.
+- ripple #1: the absorbed row is still listed — reject (planned change, as diff-bug #6).
+- ripple #2: row "Test the home page script in a browser" omits the status line — follow-up (as prior-review #1).
+- ripple #3: the `src/site/home-filter.ts` header named only the menu and the buttons — fix now.
+
+Row to add at step 9 (ROADMAP is at 59 lines until hygiene removes the absorbed row): `- [low] Close gaps around the filter line: (1) on a load with `?language=` or `?zotero=` the script writes the line's first text while the line is still hidden, so screen readers do not announce it, and a change that keeps the same count writes the same text, which some screen readers do not repeat; (2) on such a load the line appears after the first paint and moves the list down, as "Filter the home list before it paints" says for the rows; (3) the line's DOM code (the count, the unhide) has only a hand check, as "Test the home page script in a browser" says for the menu and buttons; (4) README line 46 says an unknown `language` parameter shows every plugin, but not that the page removes it, as the `zotero` paragraph says (M044 review) — added 2026-10-28 — M024, M037, M044`

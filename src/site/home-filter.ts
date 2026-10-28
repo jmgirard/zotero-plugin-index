@@ -1,5 +1,5 @@
-// The home page's filters: the language menu and the Zotero version buttons. The page's
-// script imports it, so it has no imports.
+// The home page's filters: the language menu, the Zotero version buttons, and the status
+// line under them. The page's script imports it, so it has no imports.
 
 // One filter's state: its chosen value and the values its menu or buttons offer.
 export interface Filter {
@@ -7,11 +7,16 @@ export interface Filter {
   options: readonly string[];
 }
 
+// Whether a filter is on: its value is not "" (All languages, Any version) and an option
+// has it.
+export function filterOn(filter: Filter): boolean {
+  return filter.value !== "" && filter.options.includes(filter.value);
+}
+
 // Whether a filter passes a row. list is the row's data-languages or data-zotero, its values
-// joined by spaces. "" (All languages, Any version) and a value that no option has pass
-// every row.
+// joined by spaces. A filter that is not on passes every row.
 export function passes(list: string, filter: Filter): boolean {
-  if (filter.value === "" || !filter.options.includes(filter.value)) return true;
+  if (!filterOn(filter)) return true;
   return list.split(" ").includes(filter.value);
 }
 
