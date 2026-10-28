@@ -53,6 +53,8 @@ page's "Declares Zotero" buttons, "Any version" and one per major of
 `ZOTERO_MAJORS`, filter the list to the plugins whose pill for the pressed
 major is all or part, one major at a time, together with the menu; the
 same script runs them and keeps the choice in `?zotero=` (D-019, M037).
+While a filter is on, the same script writes a status line under the
+filters that says how many plugins show, or that none match (M044).
 The home intro links to the "Add a plugin" issue form (M037).
 The page shows the name, the description, the version pills, the declared
 range, the "Menus and settings in" line (M024, M033), the user reports on
@@ -242,11 +244,12 @@ exception is a report that is abuse.
   `src/site/description.ts` holds `shownDescription`.
   `src/site/languages.ts` holds the applied languages, their names, and the
   menu options. `src/site/home-filter.ts` holds `passes`, `rowShows`,
-  `chosenValue`, and `filterHref`, which the home page's script imports for
-  the language menu and the version buttons (renamed from
-  `language-filter.ts`, M037); `rowMajors` in `version.ts` gives each row's
-  `data-zotero`. Added M007; pills and descriptions M015; languages M024;
-  version buttons M037.
+  `chosenValue`, `filterHref`, `filterOn`, and `filterStatus`, which the
+  home page's script imports for the language menu, the version buttons,
+  and the status line (renamed from `language-filter.ts`, M037); `rowMajors` in
+  `version.ts` gives each row's `data-zotero`. Added M007; pills and
+  descriptions M015; languages M024; version buttons M037; status line
+  M044.
 - Reports (`src/reports/`): `parseReport(body, labels, ids)` reads a report
   issue's plugin id, plugin version, Zotero major, and verdict, or names the
   first problem. `pnpm report-issue` reads the issue that `ISSUE_NUMBER`
@@ -551,8 +554,9 @@ reused._
   `site/src/data.ts`, `site/src/components/Support.astro`, and, for
   `ZOTERO_MAJORS`, `site/src/pages/index.astro`) import it. The
   pages carried no script from M015. Since M024 the home page carries one,
-  for the language menu and, since M037, the version buttons, which Astro
-  inlines as a `type="module"` script; the other pages carry none (D-014,
+  for the language menu and, since M037, the version buttons and, since
+  M044, the status line under them, which Astro inlines as a
+  `type="module"` script; the other pages carry none (D-014,
   D-019). The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
   Astro's `import.meta.env.BASE_URL`. `build.yml` runs `pnpm site` after the

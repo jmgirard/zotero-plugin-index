@@ -1,5 +1,5 @@
-// The home page's filters: the language menu and the Zotero version buttons. The page's
-// script imports it, so it has no imports.
+// The home page's filters: the language menu, the Zotero version buttons, and the status
+// line under them. The page's script imports it, so it has no imports.
 
 // One filter's state: its chosen value and the values its menu or buttons offer.
 export interface Filter {
@@ -7,11 +7,16 @@ export interface Filter {
   options: readonly string[];
 }
 
+// Whether a filter is on: its value is not "" (All languages, Any version) and an option
+// has it.
+export function filterOn(filter: Filter): boolean {
+  return filter.value !== "" && filter.options.includes(filter.value);
+}
+
 // Whether a filter passes a row. list is the row's data-languages or data-zotero, its values
-// joined by spaces. "" (All languages, Any version) and a value that no option has pass
-// every row.
+// joined by spaces. A filter that is not on passes every row.
 export function passes(list: string, filter: Filter): boolean {
-  if (filter.value === "" || !filter.options.includes(filter.value)) return true;
+  if (!filterOn(filter)) return true;
   return list.split(" ").includes(filter.value);
 }
 
@@ -25,6 +30,14 @@ export function rowShows(row: { languages: string; zotero: string }, language: F
 // (All languages, Any version).
 export function chosenValue(asked: string | null, options: readonly string[]): string {
   return asked !== null && options.includes(asked) ? asked : "";
+}
+
+// The text of the line under the filters: "" when no filter is on, else how many of the
+// list's total rows the filters show, or that none match.
+export function filterStatus(shown: number, total: number, filtering: boolean): string {
+  if (!filtering) return "";
+  if (shown === 0) return "No plugins match these filters.";
+  return `Showing ${shown} of ${total} ${total === 1 ? "plugin" : "plugins"}.`;
 }
 
 // The page's address with parameter name set to value, or with the parameter removed when
