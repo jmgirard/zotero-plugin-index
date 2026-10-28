@@ -1,6 +1,6 @@
 # M034: Skip translations under half done
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -64,6 +64,9 @@ The `languages` list leaves out a tag whose locale folders hold fewer than half 
 - 2026-10-28: T5: downloaded `zotmoov-1.2.34-fx.xpi` (58,914 bytes, the size GitHub lists) from the 1.2.34 release; `readUpstream` on the branch, served that file for the XPI request, gave version 1.2.34 and `languages` `["en-US", "sr-Latn-RS"]`. Its folders: `en-US/zotmoov.ftl` 5,461 bytes, `sr-Latn-RS` 5,854, `zh-CN` 569.
 - 2026-10-28: T5: `pnpm build` on the branch with a GitHub token wrote 37 records, 0 failed reads. Against the published `v1/plugins.json` (generatedAt 2026-10-27T23:27:21Z), one record differs: ZotMoov 1.2.34, `["en-US", "sr-Latn-RS", "zh-CN"]` → `["en-US", "sr-Latn-RS"]`. The other 36 records have the same version and `languages`.
 - 2026-10-28: T6: planted 7 defects in `reader.ts` from a copy, each restored from it: `.ftl` counting 1 per file, `.properties` counting comments, `.dtd` counting commented entities, a tag's files not summed, half excluded (`>`), half rounded down, and a count of 0 kept; each failed 1 to 6 reader cases. `pnpm test` 853 passed, 1 skipped; `pnpm check` 37 entries, 0 problems.
+- 2026-10-28: claim audit: 34 claims read, 2 corrected — src/upstream/reader.ts (the `languages` field comment left out the count of at least 1 and the tags kept whatever their count), test/upstream.test.ts (the helper comment named a .properties helper that does not exist); the same Opus reader re-read both as true.
+- 2026-10-28: the claim reader noted that test/upstream.test.ts line 130, "A file of each type that holds one message.", has the same gap; it is older text outside the branch's diff and stays.
+- 2026-10-28: status review; all six tasks done.
 
 ## Decisions
 

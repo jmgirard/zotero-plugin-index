@@ -29,8 +29,9 @@ export interface UpstreamFacts {
   // GitHub's archived flag, left out when the repo response has no boolean.
   archived?: boolean;
   // The language tags of the locale folders in the XPI whose manifest was read, each with a
-  // language that has an English name in the build's Node.js Intl data and with at least
-  // half the messages of the fullest tag (see localeLanguages). The reader always sets it;
+  // language that has an English name in the build's Node.js Intl data and with either at
+  // least one message and at least half the messages of the fullest tag, or a file that is
+  // not counted (see localeLanguages). The reader always sets it;
   // records written before it existed have none.
   languages?: string[];
 }

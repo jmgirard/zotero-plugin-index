@@ -130,7 +130,7 @@ describe("readUpstream", () => {
   // A file of each type that holds one message.
   const FTL = "hello = Hallo\n";
   const DTD = '<!ENTITY hello "Hallo">\n';
-  // A file of each type that holds `count` messages.
+  // An .ftl and a .dtd file that hold `count` messages.
   const lines = (count: number, line: (i: number) => string) => Array.from({ length: count }, (_, i) => line(i)).join("");
   const ftl = (count: number) => lines(count, (i) => `m${i} = Hallo\n`);
   const dtd = (count: number) => lines(count, (i) => `<!ENTITY m${i} "Hallo">\n`);
