@@ -287,12 +287,12 @@ describe("readHandoff when the branch-name check throws", () => {
     return dir;
   }
 
-  test.each<[string, string, RegExp]>([
-    ["passes its time limit", `#!/bin/sh\n[ "$1" = check-ref-format ] && exec sleep 600\nexec "${realGit}" "$@"\n`, /git check-ref-format passed its time limit of 300 ms/],
-    ["exits with a status other than 1", `#!/bin/sh\n[ "$1" = check-ref-format ] && { echo "shim: check-ref-format broke" >&2; exit 2; }\nexec "${realGit}" "$@"\n`, /shim: check-ref-format broke/],
-  ])("returns check-failed, not a refusal, when git %s", async (_name, script, message) => {
+  test.each<[string, string, number, RegExp]>([
+    ["passes its time limit", `#!/bin/sh\n[ "$1" = check-ref-format ] && exec sleep 600\nexec "${realGit}" "$@"\n`, 300, /git check-ref-format passed its time limit of 300 ms/],
+    ["exits with a status other than 1", `#!/bin/sh\n[ "$1" = check-ref-format ] && { echo "shim: check-ref-format broke" >&2; exit 2; }\nexec "${realGit}" "$@"\n`, REF_CHECK_LIMIT_MS, /shim: check-ref-format broke/],
+  ])("returns check-failed, not a refusal, when git %s", async (_name, script, ms, message) => {
     const dir = await alphaHandoff();
-    const read = await withShim("git", script, () => readHandoff(dir, "discover", 5, 300));
+    const read = await withShim("git", script, () => readHandoff(dir, "discover", 5, ms));
     expect(read).toEqual({ ok: false, refusal: "check-failed", message: expect.stringMatching(message) });
   });
 

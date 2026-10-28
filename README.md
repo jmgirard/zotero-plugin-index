@@ -397,8 +397,11 @@ process for one entry takes longer, that entry fails, and the command opens
 no pull request for it. If the fetch of the default branch takes longer,
 every entry fails, as when the fetch fails. The
 command also checks each branch name in the handoff with git again, with the
-30-second limit of "Finding new plugins". If that check takes longer, the
-command stops with an error before it pushes anything.
+30-second limit of "Finding new plugins". The check can pass that limit,
+or git can fail to start or exit with a status other than 1. Then the
+command pushes nothing, prints the error, and exits with status 1. In an
+issue run, the command first comments the error on the issue, as
+"Proposing a plugin with an issue" says.
 
 Both commands read the name of the index repository from the
 `GITHUB_REPOSITORY` environment variable, which GitHub Actions sets. The
@@ -446,13 +449,16 @@ branch-name check stopped at 30 seconds. "Finding new plugins" gives both
 time limits. The bot can fail to read `plugins/`, its own pull requests, or
 the default branch, or the push or the pull request can fail. The git and
 `pnpm check` limits of "Pull requests from the bot" also apply. The first
-job can also fail and leave no handoff.
+job can also fail and leave no handoff. In the second job, `pnpm propose`
+checks the branch name again, and that check can also stop with an error,
+`unexpected-error`: git cannot start, git exits with a status other than 1,
+or the check passes its 30-second limit.
 Then the bot comments the error and leaves the issue open, and the workflow
-run fails. If the read of the repository, the write of the entry, or the
-check of the entry failed, the comment also gives the failure name.
+run fails. If the read of the repository, the write of the entry, or a
+check failed, the comment also gives the failure name.
 If `pnpm propose` refuses the handoff, the bot does not answer the issue,
-and the workflow run fails. A check of the branch name by the command
-itself that passes its 30-second limit has the same result.
+and the workflow run fails. A branch name that git refuses, with status 1,
+is such a refusal.
 
 A maintainer can close a bot pull request without a merge. Then the
 `Close the issue of a closed bot pull request` workflow runs
