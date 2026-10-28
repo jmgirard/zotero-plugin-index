@@ -1,16 +1,15 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-28 (M033 done and archived; M030 row pruned, 1 row added at review; 6 lessons marked used, none captured)_
+_Last hygiene check: 2026-10-28 (M034 done and archived; M031 row pruned, 1 row added and 2 corrected at review; 6 lessons marked used, none captured)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
 | M033 | Label the languages as menus and settings | done | — | normal | milestones/archive/M033-menus-and-settings-label.md |
-| M034 | Skip translations under half done | review | — | normal | milestones/M034-half-done-translations.md |
+| M034 | Skip translations under half done | done | — | normal | milestones/archive/M034-half-done-translations.md |
 | M032 | Catch blank reasons, repeat overrides, and BOMs | done | — | normal | milestones/archive/M032-override-and-bom-checks.md |
-| M031 | Refuse unsafe entry names | done | — | normal | milestones/archive/M031-safe-entry-names.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
@@ -44,6 +43,7 @@ _Last hygiene check: 2026-10-28 (M033 done and archived; M030 row pruned, 1 row 
 - [low] Drop stale state records on a reread: a repo read again after a push or after 30 days whose read now fails without a record (a GitHub API error, a failed request, or a 429 or 5xx download answer) keeps its old discovery-state record and failure name; the old `pushedAt` or age still makes the next run read it, so no repo is hidden (M026 review) — added 2026-10-27 — M008, M026
 - [low] Label cut reads on plugin pages: the plugin page prints "Not read: <failure name>", so an entry the build did not reach shows "Not read: not-read" and a read cut at 3 minutes shows "Not read: request-failed"; say that the build's time limit cut the read (M029 review) — added 2026-10-27 — M029
 - [low] Quote entry text in check messages: `id-matches-directory` prints the `meta.json` id raw, and the registry schema does not limit it, so an id holding a newline makes `pnpm check` print a forged finding line in CI and in a bot pull request body; quote it with `JSON.stringify` as `unique-override` does (M032 review) — added 2026-10-28 — M001, M032
+- [low] Tighten the locale message counts: the M034 counters miscount some files: a `.properties` value wrapped with a trailing `\` counts once per line, a `.dtd` parameter entity (`<!ENTITY % …>`) counts as a message, a `<!--` inside an entity value hides the entities after it, and a file found twice, under both `locale/<tag>/` and `chrome/locale/<tag>/` or as two zip entries of one name, counts twice; a wrong count can drop a complete translation or keep a thin one; a stray file of another type, such as `.DS_Store`, also keeps its tag whatever its count, as AC2 asks; the M034 branch build of 2026-10-28 changed only ZotMoov's list; see "Drop locale folders that copy another" (M034 review) — added 2026-10-28 — M034
 - [parked] Check addresses when the reader connects: M004 checks the reader's own DNS answer before each download, and DNS can answer differently when fetch connects (rebinding); check the address at connect time, which needs the undici package and a decision entry; promote on evidence that the build publishes response bodies or that a rebinding answer reaches a service on the runner — added 2026-10-25 — M004
 - [parked] Keep the v1 data when v2 ships: each Pages deploy replaces the whole site, so a build that moves to `plugins.v2` must keep writing `v1/plugins.json` and its schema for the transition period DESIGN.md promises; promote when a v2 schema is planned (M006 review) — added 2026-10-25 — M006, cairn/DESIGN.md Contract boundary
 - [parked] Stop rereading hosts that keep failing: `pnpm discover` records no refusal from a 429 or 5xx download answer, so a repo whose download host keeps failing takes one of the run's 100 reads every day, newest pushed first; M030 bounds a run's time, not these rereads; promote when discover reports show the same repo refused with a 429 or 5xx answer on several runs in a row (M026 review) — added 2026-10-27 — M026

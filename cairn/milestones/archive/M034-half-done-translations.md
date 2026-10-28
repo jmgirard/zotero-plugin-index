@@ -1,0 +1,11 @@
+# M034: Skip translations under half done
+
+**Status:** done (2026-10-28, PR #61 https://github.com/jmgirard/zotero-plugin-index/pull/61)
+
+**Goal:** The `languages` list leaves out a tag whose locale folders hold fewer than half as many messages as the plugin's fullest tag, so ZotMoov 1.2.34, whose `zh-CN` folder holds 8 messages beside 82 in `en-US`, no longer lists `zh-CN`.
+
+**Outcome:** `localeLanguages` in `src/upstream/reader.ts` now sums a message count per tag over its `locale/` and `chrome/locale/` files through `MESSAGE_COUNTERS` (each `.ftl` message or term line, each `.properties` line that is not blank or a comment, each `.dtd` `<!ENTITY` outside comments), replacing `holdsMessage`. It keeps a tag when its count is at least 1 and twice its count is at least the largest count. A tag with a file it does not count (another extension, no longer inflated; over 1 MiB; another compression; past the 8 MiB budget; a failed inflate or a length mismatch) is kept whatever its count. Every counted file of a tag is now read, inside the same 8 MiB budget and 1 KiB pushes. README, CHANGELOG, the `languages` schema description, and DESIGN.md state the rule and that a listed language can still be incomplete. A branch build changed only ZotMoov 1.2.34, to `["en-US", "sr-Latn-RS"]`.
+
+**Decisions:** a file of another type is no longer inflated, since nothing reads its text; no D-entry, as the v1 shape stays the same.
+
+**Review:** fan-out of four lenses (diff-bug, blame-history, prior-review, ripple), 28 findings: 10 fixed on the branch (a dead byte-order-mark replace removed, since `strFromU8` drops the mark; schema and DESIGN wording on uncounted files; two lower-bound test cases; stale text in README, a reader comment, DESIGN, and two candidate rows), 9 sent to candidate rows, 8 rejected, 1 noted. New row "Tighten the locale message counts" (wrapped `.properties` values, `.dtd` parameter entities, files counted twice, stray files); row "Bound per-entry work in the locale walk" extended with the budget making the half rule depend on zip order. Claim audit before review: 34 claims, 2 corrected. Hygiene: M031 row pruned; 6 lessons marked used M034; none captured, retired, or unparked.
