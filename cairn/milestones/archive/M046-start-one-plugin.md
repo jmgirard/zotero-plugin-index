@@ -1,0 +1,13 @@
+# M046: Start one plugin in a headless Zotero
+
+**Status:** done (2026-10-28, PR #84 https://github.com/jmgirard/zotero-plugin-index/pull/84)
+
+**Goal:** `pnpm start-test` starts one Zotero build with one plugin XPI in a new profile and writes whether the plugin started.
+
+feature series: M046 -> M047
+
+**Outcome:** `src/start-test/start-test.ts` and `cli.ts`: `pnpm start-test --zotero <binary> --xpi <file> --out <file> [--limit 1..3600]` writes `{ id, version, zotero, result }` with `started`, `start-error`, `not-installed`, or `timed-out`, else exits 1 naming `zotero-missing`, `zotero-not-runnable`, `zotero-version-unknown`, `xpi-unreadable`, `no-manifest`, `no-zotero-id`, `no-version`, `zotero-exited`, `reporter-not-started`, or `reporter-failed`. The Zotero version comes from `app/application.ini` beside the binary (macOS: `../Resources/app/`). A reporter plugin (`src/start-test/reporter/`) in a temp profile marks its start, installs the XPI with `AddonManager.getInstallForFile` after `Zotero.uiReadyPromise`, waits 3 s, and reports the add-on's state and Zotero's "Error running bootstrap method 'startup' on <id>" message (sync throw and async rejection). Zotero runs with `MOZ_HEADLESS=1`, detached; the group is killed with SIGKILL at the 90 s limit or after the report, and the temp directory removed with retries. The manifest read reuses the reader's guarded read, exported as `xpiManifestBytes`, and the 50 MiB cap. Five fixtures under `test/fixtures/start/`; `test/start-test.test.ts` (22 tests, `sh` shims) and `test/start-test-zotero.test.ts` (runs with `ZOTERO_BIN`). `ci.yml` job `start-test` downloads Zotero 10.0.6 for Linux, checks its SHA-256, apt-installs xvfb, libasound2t64, libdbus-glib-1-2, and runs the fixtures under `xvfb-run`.
+
+**Decisions:** D-023 (plan). Scope amended at implement: a plugin loaded from the profile at start threw before the reporter could see it, so the reporter installs the XPI after Zotero is ready.
+
+**Review:** Plan audit 12 findings, all fixed. Four-lens pass: 30 findings, 12 fixed in cc8518a (temp removal retries, `zotero-not-runnable`, reporter start and failure no longer read as `timed-out`, `--limit` bound, `no-version`, the reader's zip guards, test gaps), 17 rejected (2 edge: a self-relaunching binary, a plugin that quits Zotero), 1 follow-up; six notes for M047 in its work log (checkout credentials, the 3 s wait in page text, README and DESIGN text). CI green on PR #84; merged as 505ac22. Candidate row "Test plugins load in headless Zotero" token moved to M047. Lessons: 6 marked used M046; 1 captured (Zotero headless start); 1 evicted at the limit: 2026-10-27 (M029, used M030), the fake-timer CI lesson.

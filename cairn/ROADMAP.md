@@ -1,23 +1,22 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-28 (M045 done and archived; 1 row graduated, 1 merged at plan, 2 corrected; 6 lessons marked used, none captured)_
+_Last hygiene check: 2026-10-28 (M046 done and archived; 1 row's token moved to M047; 6 lessons marked used, 1 captured, 1 evicted)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M046 | Start one plugin in a headless Zotero | review | — | normal | milestones/M046-start-one-plugin.md |
 | M047 | Show whether plugins start in Zotero | planned | M046 | normal | milestones/M047-show-start-tests.md |
+| M046 | Start one plugin in a headless Zotero | done | — | normal | milestones/archive/M046-start-one-plugin.md |
 | M045 | Count more GitHub answers as build-level | done | — | normal | milestones/archive/M045-more-build-level-answers.md |
 | M044 | Say how many plugins the filters show | done | — | normal | milestones/archive/M044-filter-status-line.md |
-| M043 | Queue runs in the discover group | done | — | normal | milestones/archive/M043-queue-discover-runs.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
 - Let old v1 schemas accept new fields: the v1 `upstream` block keeps `additionalProperties: false`, so a saved copy of the schema rejects each optional field that D-006 lets v1 gain; allowing unknown fields would let old copies accept later additions, but it changes what the schema checks; see "Keep the v1 data when v2 ships" (M013 review) — added 2026-10-26 — M013, D-007
 - Answer report issues left open: a report issue whose close failed after the bot's comment stays open until a hand rerun closes it, and a report issue whose `report` label was added more than 7 days after it opened gets no answer from a sweep (M020 review); narrowed 2026-10-28 by M040, whose daily sweep answers the report issues that no bot comment answers and whose `answerReport` sends no second comment — added 2026-10-27 — M020, M040
-- Test plugins load in headless Zotero: a CI job installs each listed plugin into a headless Zotero and records whether it loads, shown as its own source beside declared ranges and reports; promote when the data pipeline and user reports ship (both shipped, M021) — added 2026-10-24 — cairn/DESIGN.md Data sources — started M046
+- Test plugins load in headless Zotero: a CI job installs each listed plugin into a headless Zotero and records whether it loads, shown as its own source beside declared ranges and reports; promote when the data pipeline and user reports ship (both shipped, M021) — added 2026-10-24 — cairn/DESIGN.md Data sources — started M047
 - Make close-issue safe on retry and races: `pnpm close-issue` skips when a bot comment already says the pull request was closed without a merge, so a run whose comment posted and whose close failed cannot be rerun (AC2 asks for that skip); a pull request reopened, or an issue closed as completed, between the read and the close is still closed as not planned; a pull request closed before the issue run's comment lands, an issue comment that names only the branch, or a renamed repo leaves the issue open; a backtick fence whose info string holds a backtick hides the `Closes` line, and one inside an HTML comment counts (M022 review) — added 2026-10-27 — M022
 - Close gaps in the build time limits: M029's 3- and 18-minute limits bound the plugin reads only; the report issue read before them has no total limit, only 60 s for each page, and no page cap, so a flood of report issues lengthens each build toward the job's 30-minute limit (see "Limit floods of report issues") (M021 review); a host lookup whose wait a limit ended keeps running and can hold the process open after the file is written; and since entries are read in sorted order, a build that the 18-minute limit cuts skips the same last plugins every day (M029 review, D-016); row "Bound the build's report issue read" merged 2026-10-28 by the M045 plan for the line cap — added 2026-10-27 — M021, M029, D-016
 - Bound the whole discover workflow's time: M030 limits each `git` process of `pnpm propose` to 2 minutes and each `pnpm check` to 5, but not the whole run, so five entries whose check hangs take 25 of the write job's 30 minutes, and one issue entry can pass its job's time limit, which then posts no comment (corrected M040); the search and bot pull request reads before the read loop have only a 60-second limit per request; a host lookup whose wait a limit ended can hold the process open, as "Close gaps in the build time limits" says for the build (M030 review) — added 2026-10-27 — M030
