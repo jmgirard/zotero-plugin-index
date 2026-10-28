@@ -271,3 +271,28 @@
   Neither run pushes a branch. Before, the command stopped with a stack
   trace, and the issue got no answer. A handoff that the command refuses
   still gets no answer on the issue.
+- A daily sweep answers the "Add a plugin" issues and the report issues that
+  no run answered. Before, such an issue got no answer. An example is an
+  issue whose run a newer run in the `discover` concurrency group canceled.
+  The sweep takes the open issues of the label that are 1 hour to 7 days old
+  and have no comment from `github-actions[bot]`. While a run for a new issue
+  of the same workflow has not finished, the sweep takes no issue. The
+  `Add a plugin from an issue` workflow sweeps at 02:43 UTC, at most 3
+  issues in each run. The `Answer a report` workflow sweeps at 03:13 UTC, at
+  most 20 issues in each run. A maintainer can also run either sweep by hand
+  from the default branch. `pnpm unanswered-issues` prints the issues that a
+  sweep takes, and `pnpm report-issue --sweep` answers the report issues. An
+  issue with any bot comment stays for a maintainer. A sweep run that finds
+  no issue still takes its place in the concurrency group. So it can cancel
+  a pending `Discover plugins` run or a pending issue run.
+- `pnpm discover-issue` reads the issue body from the GitHub API for
+  `ISSUE_NUMBER`. It no longer reads the `ISSUE_BODY` environment variable.
+  If the read fails, the bot comments `The bot could not finish` with the
+  error and leaves the issue open.
+- If the bot already commented on a report issue, `pnpm report-issue` closes
+  the issue with no second comment.
+- An open bot pull request can have exactly one `Closes #<issue>` line
+  outside code blocks for the issue that a run answers. Then the bot
+  comments the link of that pull request and leaves the issue open. Before,
+  it said that it already proposed the repository and closed the issue as
+  not planned.
