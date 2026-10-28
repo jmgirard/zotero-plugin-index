@@ -24,7 +24,7 @@
             "value": {
               "description": "For languages: one or more language tags joined by \", \", such as \"zh-CN, en-US\".",
               "type": "string",
-              "pattern": "^(?![Uu][Nn][Dd](?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?(, (?![Uu][Nn][Dd](?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?)*$"
+              "pattern": "^(?!([Uu][Nn][Dd]|[Zz][Xx][Xx]|[Mm][Uu][Ll])(?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?(, (?!([Uu][Nn][Dd]|[Zz][Xx][Xx]|[Mm][Uu][Ll])(?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?)*$"
             }
           }
         },

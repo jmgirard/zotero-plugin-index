@@ -43,7 +43,8 @@ with half the fullest tag's messages stays. They do not say the language
 of the description, which comes from the manifest or
 an override. A `languages` override records them for a plugin whose list
 is wrong or empty. Each plugin page shows them by name in a
-"Menus and settings in" line, outside the Details section, and the home
+"Menus and settings in" line, outside the Details section. When no language
+is left, the line reads "Unknown (no translations found)" (M036). The home
 page's "Menus and settings in" menu filters the list by language subtag,
 run by the site's one script (D-014, M024, M033). The menu lists the
 languages with the most plugins first, and languages with the same number
@@ -75,7 +76,9 @@ contributor needs a GitHub account.
 The generated JSON data is a public API at a stable URL, with a schema
 version. A breaking change gets a new schema version. The old version stays
 available for a transition period. A new optional field is not a breaking
-change, and it stays in the current version (D-006, D-007). The v1 schema
+change, and it stays in the current version (D-006, D-007). A narrower
+pattern that the published data already meets is not a breaking change
+either, and it stays in the current version (D-018). The v1 schema
 rejects fields it does not define, so a consumer that validates against a
 saved copy must fetch the schema again after such a change. The URL is
 `https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json`, and the
@@ -105,8 +108,9 @@ shows each one separately.
    request.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
    `manifest.json` in the newest stable release that has an `.xpi` file,
-   the names of that XPI's locale folders whose language has an English
-   name in the build's Node.js `Intl` data and whose files, judged by type,
+   the names of that XPI's locale folders whose language is not `und`,
+   `zxx`, or `mul` (M036), has an English
+   name in the build's Node.js `Intl` data, and whose files, judged by type,
    hold at least one message and at least half as many as the fullest
    tag's, or hold a file that the reader does not count (M023, M025,
    M027, M034), so a listed language can still be incomplete, and the
@@ -326,7 +330,9 @@ reused._
   the files declare. So each XPI takes up to three walks over the claimed
   count: for `manifest.json`, the default locale's `messages.json`, and the
   locale folders. A
-  folder name is a tag when it matches `LANGUAGE_TAG` and its language
+  folder name is a tag when it matches `LANGUAGE_TAG`, which refuses the
+  language subtags `und`, `zxx`, and `mul` in any letter case (D-018,
+  M036), and its language
   subtag has an English name in the build's Node.js `Intl` data
   (`Intl.DisplayNames` with `fallback: "none"`), so a node upgrade can
   change which rare codes are tags.

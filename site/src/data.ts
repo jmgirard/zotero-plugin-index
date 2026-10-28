@@ -39,10 +39,12 @@ export function rangeText(record: PluginRecord): string {
   return "No declared range";
 }
 
-// The names of the languages after overrides, in list order, or "None declared".
+// The names of the languages after overrides, in list order, or "Unknown (no translations
+// found)" when none is left. The list is empty when, for example, a plugin writes its text in
+// its code and ships no locale folders, so the index cannot tell which language that text is in.
 export function languagesText(record: PluginRecord): string {
   const tags = appliedLanguages(record);
-  return tags.length > 0 ? tags.map(languageName).join(", ") : "None declared";
+  return tags.length > 0 ? tags.map(languageName).join(", ") : "Unknown (no translations found)";
 }
 
 // The row's data-languages value (see rowLanguages). Astro writes an attribute whose value

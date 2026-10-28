@@ -56,10 +56,9 @@ replaces that list. The line does not say how complete each language is.
 The description comes from the plugin's manifest or from an index override,
 so it can be in another language than the languages line names. The page
 also shows the user reports and links to the repository and its releases.
-If no language is left, the page shows
-"None declared". A closed "Details" section follows. It holds the plugin id,
-facts about the repository and its releases, and the overrides of the index
-for the plugin.
+If no language is left, the page shows "Unknown (no translations found)".
+A closed "Details" section follows. It holds the plugin id, facts about the
+repository and its releases, and the overrides of the index for the plugin.
 If the last build failed to read a plugin, its page shows the failure in place
 of the pills. That page has no "Menus and settings in" line.
 
@@ -116,12 +115,15 @@ most about 9 MiB of locale files from each XPI. A tag with a file that the
 build does not read, or cannot inflate, is kept whatever its count too.
 Such a file adds no messages to any count. The build writes each tag in its
 standard form, so `zh_CN` becomes `zh-CN`, and sorts the list. It
-leaves out a folder whose name does not have the form of a language tag, and
-the tag `und` (undetermined). It also leaves out a tag whose language has no
-English name in the `Intl` data of the Node.js that runs the build. So a
-folder such as `locale/img/` or `locale/js/` adds no language. It does not
-check the script, region, or variant of a tag, so `en-XX` stays. A
-`languages` override value is not checked this way. The list says which
+leaves out a folder whose name does not have the form of a language tag. It
+also leaves out a tag whose language is `und` (undetermined), `zxx` (no
+linguistic content), or `mul` (multiple languages), in any letter case. It
+skips such a folder before it counts messages, so the folder cannot drop
+another tag. It also leaves out a tag whose language has no English name in
+the `Intl` data of the Node.js that runs the build. So a folder such as
+`locale/img/` or `locale/js/` adds no language. It does not check the
+script, region, or variant of a tag, so `en-XX` stays. A `languages`
+override value is not checked for an English name. The list says which
 languages a plugin ships interface text for. A listed language can still be
 incomplete, since a tag with half the fullest tag's messages stays. A
 plugin that writes
@@ -181,7 +183,8 @@ only registry fields. Its `id` must equal the directory name.
     language tags joined by a comma and a space, such as `zh-CN, en-US`. A
     tag starts with a language of 2 or 3 letters. An optional script,
     region, and variant follow, each after a `-`. Examples are `zh`,
-    `zh-TW`, and `sr-Latn-RS`. The tag `und` is not allowed.
+    `zh-TW`, and `sr-Latn-RS`. A tag whose language is `und`, `zxx`, or
+    `mul`, in any letter case, is not allowed.
   - `reason`: why the upstream value is wrong. The reason must hold a
     character other than whitespace, as JavaScript's `\s` defines it, and
     Unicode format characters, such as U+200B.

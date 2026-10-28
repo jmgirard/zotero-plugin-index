@@ -230,6 +230,19 @@ describe("readUpstream", () => {
       { "locale/en-US/a.ftl": ftl(10), "locale/de/a.ftl": ftl(3), "locale/de/b.dtd": dtd(2) },
       ["de", "en-US"],
     ],
+    [
+      "no zxx or mul folder, and none sets the largest count",
+      {
+        "locale/en-US/a.ftl": ftl(2),
+        "locale/zxx/a.ftl": ftl(5),
+        "locale/ZXX/b.properties": lines(5, (i) => `m${i}=Hallo\n`),
+        "chrome/locale/mul/a.ftl": ftl(5),
+        "locale/Mul_Latn/a.ftl": ftl(5),
+        "locale/zxx_US/a.ftl": ftl(5),
+        "locale/mul/a.json": "{}",
+      },
+      ["en-US"],
+    ],
   ])("lists %s as the languages", async (_name, files, languages) => {
     const { result } = await read((r) => Object.assign(r[XPI].xpi!, files));
     expect(result.ok && result.facts.languages).toEqual(languages);
@@ -348,6 +361,14 @@ describe("readUpstream", () => {
       expect(override.if).toEqual({ required: ["field"], properties: { field: { const: "languages" } } });
       expect(override.then.properties.value.pattern).toBe(list);
     }
+  });
+
+  test.each([
+    ["refuses", ["zxx", "ZXX", "mul", "Mul-Latn", "zxx-US"], false],
+    ["matches", ["mus", "zh", "en-US"], true],
+  ])("its language tag pattern %s %j", (_verb, tags, matches) => {
+    const whole = new RegExp(`^${LANGUAGE_TAG}$`, "u");
+    for (const tag of tags) expect(whole.test(tag), tag).toBe(matches);
   });
 
   test("reads the newest published stable release with an .xpi, whatever the list order", async () => {

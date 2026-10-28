@@ -107,12 +107,12 @@
           "type": "boolean"
         },
         "languages": {
-          "description": "The language tags of the locale folders (locale/<tag>/ and chrome/locale/<tag>/) in the XPI whose manifest was read, each with a language that has an English name in the build's Node.js Intl data, in canonical form, each once, in code-unit order. A tag's count is the number of messages in the files of its folders: each Fluent message or term line of an .ftl file, each line of a .properties file that is not blank and not a # or ! comment, and each <!ENTITY outside comments in a .dtd file. A tag is listed when its count is at least 1 and at least half the largest count among the XPI's tags. A tag with a file of any other type, or with a file that the reader does not inflate, cannot inflate, or inflates to a length other than its declared size, is listed whatever its count, and such a file adds nothing to any count. Empty when the XPI has no such tag. A listed language can still be incomplete, since a tag with half the fullest tag's messages is listed.",
+          "description": "The language tags of the locale folders (locale/<tag>/ and chrome/locale/<tag>/) in the XPI whose manifest was read, each with a language other than und, zxx, and mul that has an English name in the build's Node.js Intl data, in canonical form, each once, in code-unit order. A tag's count is the number of messages in the files of its folders: each Fluent message or term line of an .ftl file, each line of a .properties file that is not blank and not a # or ! comment, and each <!ENTITY outside comments in a .dtd file. A tag is listed when its count is at least 1 and at least half the largest count among the XPI's tags. A tag with a file of any other type, or with a file that the reader does not inflate, cannot inflate, or inflates to a length other than its declared size, is listed whatever its count, and such a file adds nothing to any count. Empty when the XPI has no such tag. A listed language can still be incomplete, since a tag with half the fullest tag's messages is listed.",
           "type": "array",
           "uniqueItems": true,
           "items": {
             "type": "string",
-            "pattern": "^(?![Uu][Nn][Dd](?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?$"
+            "pattern": "^(?!([Uu][Nn][Dd]|[Zz][Xx][Xx]|[Mm][Uu][Ll])(?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?$"
           }
         }
       }
@@ -137,7 +137,7 @@
           "value": {
             "description": "For languages: one or more language tags joined by \", \", such as \"zh-CN, en-US\".",
             "type": "string",
-            "pattern": "^(?![Uu][Nn][Dd](?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?(, (?![Uu][Nn][Dd](?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?)*$"
+            "pattern": "^(?!([Uu][Nn][Dd]|[Zz][Xx][Xx]|[Mm][Uu][Ll])(?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?(, (?!([Uu][Nn][Dd]|[Zz][Xx][Xx]|[Mm][Uu][Ll])(?![A-Za-z0-9]))[A-Za-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))?)*$"
           }
         }
       },

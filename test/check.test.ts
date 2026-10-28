@@ -202,7 +202,7 @@ describe("pnpm check <root>", () => {
     expect(result.stdout).toContain(path);
   });
 
-  test.each(["Chinese (China)", "zh-CN,,en", "abcd", "en-u-ca-gregory", "UND"])(
+  test.each(["Chinese (China)", "zh-CN,,en", "abcd", "en-u-ca-gregory", "UND", "zxx", "en-US, MUL"])(
     "index-schema: a languages override with the value %j",
     (value) => {
       const root = treeWith((dir) =>
