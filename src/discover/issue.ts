@@ -39,11 +39,12 @@ export interface IssueReadOptions {
   lookup?: Lookup;
   // The index repo as owner/repo.
   indexRepo: string;
-  // The issue's body.
-  body: string;
+  // The issue's number, whose body the read step reads from the API.
+  issue: number;
 }
 
-// The read step of an issue run, which makes no GitHub write. If the body names a repo
+// The read step of an issue run, which makes no GitHub write. It reads the issue's body
+// from the API; if that read fails, the outcome is `failed`. If the body names a repo
 // that the index or a bot pull request already has, it reads nothing. If the parser or
 // draftEntry refuses, the outcome names the failure; that includes a GitHub HTTP 404
 // for a repo that does not exist. If the read of the repo stops with a failure that the
@@ -64,7 +65,15 @@ export async function issueRead(options: IssueReadOptions): Promise<IssueOutcome
 
 async function readOutcome(options: IssueReadOptions): Promise<IssueOutcome> {
   const { root, fetch, indexRepo } = options;
-  const parsed = parseIssueBody(options.body);
+  let body: string;
+  try {
+    const record = (await githubClient(fetch).json(`${API}/repos/${indexRepo}/issues/${options.issue}`)) as { body?: unknown } | null;
+    // GitHub gives null for an issue with no body.
+    body = typeof record?.body === "string" ? record.body : "";
+  } catch (error) {
+    return { outcome: "failed", message: `cannot read issue ${options.issue}: ${(error as Error).message}` };
+  }
+  const parsed = parseIssueBody(body);
   if (!parsed.ok) return { outcome: "refused", failure: parsed.problem, message: parsed.message };
   let index: Awaited<ReturnType<typeof indexed>>;
   try {
@@ -133,12 +142,13 @@ export interface IssueRunResult {
 // The write step of an issue run. It checks the bot pull requests again by repo and
 // plugin id, since they can change while the read step runs, and the index in its
 // checkout, which is the commit the read step saw. Then it opens a pull request that
-// closes the issue when it merges, or closes the issue. Each answer is a comment on the
-// issue. If the read step failed, a build-level or thrown read of the repo, an entry
-// that writeEntry could not write to outDir, and a thrown check of the drafted entry
-// included, or the bot cannot read the index, its pull requests, or the default branch,
-// or the push or the pull request fails, the comment says so and the issue stays open,
-// and the status is 1.
+// closes the issue when it merges, or closes the issue. An open bot pull request whose
+// one `Closes` line names this issue gets the answer of a new pull request, and the
+// issue stays open. Each answer is a comment on the issue. If the read step failed, a
+// build-level or thrown read of the repo, an entry that writeEntry could not write to
+// outDir, and a thrown check of the drafted entry included, or the bot cannot read the
+// index, its pull requests, or the default branch, or the push or the pull request
+// fails, the comment says so and the issue stays open, and the status is 1.
 export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRunResult> {
   const { root, fetch, indexRepo, issue, read } = options;
   const github = githubClient(fetch);
@@ -188,6 +198,9 @@ export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRun
     if (entry) return answer(`The index already lists this repo in the entry \`plugins/${entry}/\`.`, "completed");
     const pull = pulls.pulls.get(name);
     if (!pull) return undefined;
+    // This issue's own pull request, as an earlier run whose comment failed, or a sweep
+    // after it, finds it.
+    if (pull.open && pull.closes === issue) return answer(openedComment(pull.url));
     return answer(
       pull.open
         ? `The bot already proposed this repo in ${pull.url}.`
@@ -213,9 +226,13 @@ export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRun
   // The create request's answer can lack the URL; the branch still names the pull request.
   // `pnpm close-issue` closes the issue only when this comment holds the URL.
   if (!url) return answer(`The bot opened a pull request from the branch \`${branch}\`. This issue closes when that pull request merges.`);
-  return answer(
-    `The bot opened ${url}. This issue closes when that pull request merges. If that pull request is closed without a merge, the bot closes this issue as not planned.`,
-  );
+  return answer(openedComment(url));
+}
+
+// The answer for an open pull request that closes the issue. `pnpm close-issue` closes
+// the issue only when this comment holds the pull request's URL.
+function openedComment(url: string): string {
+  return `The bot opened ${url}. This issue closes when that pull request merges. If that pull request is closed without a merge, the bot closes this issue as not planned.`;
 }
 
 // The lowercase owner/repo of a URL on github.com, which the reader would read.

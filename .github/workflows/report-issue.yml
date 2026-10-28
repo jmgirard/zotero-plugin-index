@@ -3,25 +3,39 @@ name: Answer a report
 on:
   issues:
     types: [opened]
+  # A daily sweep answers the report issues that no run answered, such as one whose run
+  # failed before its comment or whose `report` label was added after it opened.
+  schedule:
+    - cron: "13 3 * * *"
+  workflow_dispatch:
 
 # The job sets its own permissions.
 permissions: {}
 
-# No concurrency group: each report is answered on its own, so no run waits for another
-# or cancels one that waits.
+# Each report run has a group of its own, so no report run waits for another or cancels
+# one that waits. The sweeps share one group, so two sweeps never answer one issue at
+# once; a newer sweep cancels a pending one. A dispatch from another branch or a tag runs
+# no job, so it takes a group of its own and cancels nothing.
+concurrency:
+  group: ${{ github.event_name == 'issues' && format('report-{0}', github.run_id) || github.event_name == 'workflow_dispatch' && github.ref != format('refs/heads/{0}', github.event.repository.default_branch) && format('report-skipped-{0}', github.run_id) || 'report-sweep' }}
+  cancel-in-progress: false
 
 jobs:
   answer:
-    # Only issues opened with the label `report`, which works.yml and broken.yml add.
-    if: contains(github.event.issue.labels.*.name, 'report')
+    # Issues opened with the label `report`, which works.yml and broken.yml add, and a
+    # sweep on the schedule or dispatched from the default branch.
+    if: (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'report')) || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # This job comments on and closes issues, so it restores and saves no Actions cache,
     # like the build job of `Build data`. GitHub's cache service enforces this mode.
     cache-mode: none
+    # The sweep reads the runs of this workflow, so it answers no issue whose run is
+    # still on its way.
     permissions:
       contents: read
       issues: write
+      actions: read
     steps:
       - uses: actions/checkout@v7
         with:
@@ -34,7 +48,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # The command reads the issue's body and labels from the API, so only the issue's
       # number reaches it, and no text from the issue enters a shell script.
-      - run: pnpm report-issue
+      - if: github.event_name == 'issues'
+        run: pnpm report-issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+      - if: github.event_name != 'issues'
+        run: pnpm report-issue --sweep
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

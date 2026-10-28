@@ -109,8 +109,9 @@ shows each one separately.
    result of `pnpm check` on the entry in its body. A bot pull request closed
    without a merge keeps the bot from proposing that owner/repo name again
    (M009). A person can also paste one repository URL into an issue
-   form, and the bot drafts the entry. The maintainer approves each pull
-   request.
+   form, and the bot drafts the entry. A daily sweep answers such an issue
+   that no run answered, up to 3 a run (M040). The maintainer approves each
+   pull request.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
    `manifest.json` in the newest stable release that has an `.xpi` file,
    the names of that XPI's locale folders whose language is not `und`,
@@ -133,8 +134,9 @@ shows each one separately.
    or will not fix upstream. Each override states its reason.
 4. User reports. Two issue forms take a "works" or a "broken" report with
    the plugin id, the plugin version, and the Zotero version. A bot checks
-   each report, comments, and closes the issue (M020). Each plugin page has
-   a "Works" link and a "Broken" link. Each link opens a form with the
+   each report, comments, and closes the issue (M020), and a daily sweep
+   answers up to 20 report issues that no run answered (M040). Each plugin
+   page has a "Works" link and a "Broken" link. Each link opens a form with the
    plugin and its version filled in, so the reporter adds only the Zotero
    version. The daily build reads the closed report issues and counts those
    that `github-actions[bot]`, the account the bot runs as, closed as
@@ -182,11 +184,12 @@ exception is a report that is abuse.
   and skipped. Added M008. With `--handoff <dir>`, it also skips the repos of
   the bot pull requests and writes the entries and a `plan.json` into a
   handoff for `pnpm propose` (M011). `pnpm discover-issue --handoff <dir>`
-  reads the "Add a plugin" form's repo URL from `ISSUE_BODY` and writes its
-  outcome into a handoff (M010, M011). `pnpm propose <dir> [--limit <n>]`
-  checks a handoff, then opens one pull request for each entry, or, with
-  `ISSUE_NUMBER` set, answers the issue: a pull request, or a comment with
-  the reason and a close (M009, M010, M011). A read of the repo that stops
+  reads the body of the issue that `ISSUE_NUMBER` names from the API, takes
+  the "Add a plugin" form's repo URL from it, and writes its outcome into a
+  handoff; a failed issue read is the `failed` outcome (M010, M011, M040).
+  `pnpm propose <dir> [--limit <n>]` checks a handoff, then opens one pull
+  request for each entry, or, with `ISSUE_NUMBER` set, answers the issue: a
+  pull request, or a comment with the reason and a close (M009, M010, M011). A read of the repo that stops
   with a build-level failure, or throws, gets a comment and leaves the issue
   open (M019), as do an error from the check of the drafted entry (M022),
   an entry that `writeEntry` cannot write to the output directory, with
@@ -202,7 +205,16 @@ exception is a report that is abuse.
   is a bot pull request closed without a merge, the command comments on the
   open "Add a plugin" issue that its `Closes #<n>` line names and closes it
   as not planned. `.github/workflows/close-add-plugin-issue.yml` runs it
-  when a pull request closes (M022).
+  when a pull request closes (M022). An open bot pull request whose body has
+  exactly one `Closes #<n>` line outside code blocks naming the issue gets
+  the new-pull-request answer, and the issue stays open (`closesLines`,
+  moved to `propose.ts`, M040).
+- Issue sweeps (`src/issues/`): `unansweredIssues` returns, oldest first and
+  at most `limit`, the open issues of one label created 1 hour to 7 days
+  before `now` with no `github-actions[bot]` comment on any page, and none
+  while any of the 100 newest `issues` runs of the given workflow has not
+  completed. `pnpm unanswered-issues --label <l> --workflow <file> --limit
+  <n>` prints them one per line. Added M040.
 - Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
@@ -233,7 +245,10 @@ exception is a report that is abuse.
 - Reports (`src/reports/`): `parseReport(body, labels, ids)` reads a report
   issue's plugin id, plugin version, Zotero major, and verdict, or names the
   first problem. `pnpm report-issue` reads the issue that `ISSUE_NUMBER`
-  names, comments, and closes it as completed or not planned. Added M020.
+  names, comments, and closes it as completed or not planned, sending the
+  close alone when the bot already commented. Added M020; no second comment
+  M040. `pnpm report-issue --sweep` answers, with `sweepReports`, up to 20
+  report issues that `unansweredIssues` returns (M040).
   `countReports(issues, records)` (`src/reports/count.ts`) counts the closed
   report issues for each record that has `upstream`, by Zotero major
   (M021).
@@ -366,12 +381,16 @@ reused._
   A failed search ends the run before any read and leaves the state file as
   it was. The report names, for each entry written, its version and declared
   range (M008).
-- Each bot workflow that reads plugin repos runs in two jobs (M011). The
+- Each bot workflow that reads plugin repos splits the work into a read job
+  and a write job (M011); `add-plugin-issue.yml` adds a `pick` job before
+  them that reads no plugin repo (M040). The
   report workflow reads no plugin repo and runs in one job (M020). The read
   job has only read permissions and a checkout with
   `persist-credentials: false`. It reads the
   repos that anyone can name and leaves a handoff as an artifact:
-  `plan.json` and `entries/<id>/` (`src/discover/handoff.ts`). The write job
+  `plan.json` and `entries/<id>/` (`src/discover/handoff.ts`), in
+  `add-plugin-issue.yml` one such directory `handoff/<issue>/` per issue
+  (M040). The write job
   holds the write permissions, runs only `pnpm install` and `pnpm propose`,
   and reads no plugin repo. Neither job uses the dependency cache.
   `readHandoff` treats the handoff as untrusted: it checks `plan.json`
@@ -428,12 +447,27 @@ reused._
 - `.github/ISSUE_TEMPLATE/add-plugin.yml` is a form with one required input,
   `Repository URL`, that adds the label `add-plugin`.
   `.github/workflows/add-plugin-issue.yml` runs on `issues: opened` when that
-  label is set, in the `discover` concurrency group, with the issue body
-  passed only through `env:`. Its write job holds `contents`,
+  label is set, daily at 02:43 UTC, and on dispatch from the default branch,
+  in the `discover` concurrency group (M040). Its `pick` job (`contents`,
+  `issues`, and `actions` read) outputs the event's issue number, or for a
+  sweep the up to 3 numbers that `pnpm unanswered-issues` prints; it reads
+  no plugin repo. The read job (`contents`, `pull-requests`, and `issues`
+  read) and the write job run `pnpm discover-issue` and `pnpm propose` once
+  for each number, with one handoff directory per number in one artifact,
+  each number passed only through `env:` (`ISSUES`, then `ISSUE_NUMBER`),
+  and each fails at the end when one of its runs fails. All three jobs set
+  `cache-mode: none`. A sweep run takes its place in the group even when it
+  picks no issue, so it can cancel a pending discover or issue run, and a
+  newer run can cancel a pending sweep; a later sweep can answer that issue
+  while it is at most 7 days old and among the 3 oldest unanswered issues.
+  An issue with any bot comment, such as "The bot could not finish", stays
+  for a maintainer. A rerun of the write job answers each issue of its run
+  again. Its write job holds `contents`,
   `pull-requests`, and `issues` write, and it also runs when the read job
   failed, not when it was skipped; its download step may fail. In
-  `src/discover/issue.ts`, `issueRead` parses the body and checks the entries
-  and the bot pull requests by repo name before and after the read.
+  `src/discover/issue.ts`, `issueRead` reads the body from the API and
+  checks the entries and the bot pull requests by repo name before and after
+  the read.
   `issueAnswer` checks them again by repo and id, and opens the pull request
   through the same propose step, with `Closes #<issue>` in its body (M010,
   M011). `.github/workflows/close-add-plugin-issue.yml` runs
@@ -448,10 +482,13 @@ reused._
   the inputs `plugin`, `version`, and `zotero`. Each adds the label `report`
   and its verdict label, `works` or `broken`. `.github/workflows/report-issue.yml`
   runs `pnpm report-issue` on `issues: opened` when `report` is set, with
-  only the issue number passed through `env:`. Its one job holds
-  `contents: read` and `issues: write`, sets `cache-mode: none`, and has no
-  concurrency group. `answerReport` (`src/reports/issue.ts`) reads the
-  issue's body and labels from the API and the entry ids with its own
+  only the issue number passed through `env:`, and `pnpm report-issue
+  --sweep` daily at 03:13 UTC and on dispatch from the default branch
+  (M040). Its one job holds `contents: read`, `issues: write`, and
+  `actions: read`, and sets `cache-mode: none`. Each report run has a
+  concurrency group of its own, and the sweeps share the group
+  `report-sweep` (M040). `answerReport` (`src/reports/issue.ts`) reads the
+  issue's body, labels, and comments from the API and the entry ids with its own
   `readdir`, so a missing `plugins/` fails the run instead of refusing every
   report. The comment puts each value from the issue in a code span (M020).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
@@ -482,11 +519,14 @@ reused._
   `issues` runs get read-only cache access. `test/workflows.test.ts` fails on a
   `cache` key or an `actions/cache` step in `build.yml`, or on a build job
   without `cache-mode: none`; `ci.yml` keeps `cache: pnpm` (M016). It also
-  checks `report-issue.yml`: its trigger, label condition, permissions,
-  `cache-mode: none`, no cache line, no concurrency group, the issue number
-  through `env:`, and no other use of `github.event` (M020), and that
-  `pnpm report-issue` gets `secrets.GITHUB_TOKEN`, whose account the report
-  count requires (M021).
+  checks `report-issue.yml`: its triggers, job condition, permissions,
+  `cache-mode: none`, no cache line, its concurrency groups, the issue number
+  through `env:`, and no use of `github.event` other than the issue number,
+  its labels, and the repository's default branch (M020, M040), and that
+  `pnpm report-issue` and its sweep get `secrets.GITHUB_TOKEN`, whose account
+  the report count requires (M021). It checks the same kinds of fact for
+  `add-plugin-issue.yml`, and that its read and write jobs take the issue
+  numbers only from the `pick` job (M040).
 - `site/` is an Astro project (D-004), and `src/site/` builds it. `pnpm site`
   reads `<out>/v1/plugins.json`, builds into a temporary directory, because
   Astro empties its output directory, and copies the pages into `<out>` beside

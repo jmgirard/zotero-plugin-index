@@ -31,7 +31,8 @@ async function main(): Promise<number> {
     console.error(`GITHUB_REPOSITORY must name the index repo as <owner>/<repo>\n${USAGE}`);
     return 1;
   }
-  // The issue number comes from the workflow's event, never from the handoff.
+  // The issue number comes from the workflow, never from the handoff: the event's
+  // issue, or a number the sweep's pick job read from the API.
   const issueNumber = process.env.ISSUE_NUMBER;
   if (issueNumber !== undefined && !/^[1-9]\d*$/.test(issueNumber)) {
     console.error(`ISSUE_NUMBER must be the number of an issue\n${USAGE}`);

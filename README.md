@@ -417,14 +417,21 @@ of the plugin's GitHub repository. The form adds the label `add-plugin` to the
 issue. If the repository has no such label, GitHub does not add it.
 
 When an issue with that label opens, the `Add a plugin from an issue` workflow
-runs in two jobs, as `Discover plugins` does. The first job runs
-`pnpm discover-issue --handoff handoff`. The command reads the URL from the
-issue body, writes its outcome and any new entry into the handoff, and makes no
-change on GitHub. The second job runs `pnpm propose handoff` with the issue
-number, which answers the issue. If an entry already names the repository, the bot comments the entry and closes
-the issue as completed. A bot pull request for the repository can be open, or
-closed without a merge. Then the bot comments its link and closes the issue as
-not planned. In these cases the bot does not read the repository.
+runs in three jobs. The `pick` job names the issue. The read job and the write
+job split the work as those of `Discover plugins` do. The read job runs
+`pnpm discover-issue --handoff handoff/<issue>` with the issue number in
+`ISSUE_NUMBER`. The command reads the issue body from the GitHub API and
+takes the URL from it. It writes its outcome and any new entry into the
+handoff, and makes no change on GitHub. The write job runs
+`pnpm propose handoff/<issue>` with the issue number, which answers the
+issue. If an entry already names the repository, the bot comments the entry
+and closes the issue as completed. A bot pull request for the repository can
+be open, or closed without a merge.
+Then the bot comments its link and closes the issue as not planned. An open
+bot pull request whose body has exactly one `Closes #<issue>` line outside
+code blocks, for this issue, is the exception: the bot comments its link as
+for a new pull request and leaves the issue open. In these cases the bot does
+not read the repository.
 
 Otherwise, the bot reads the repository in the same way as `pnpm add-plugin`.
 If the plugin passes the inclusion bar, the bot opens a pull request in the
@@ -440,7 +447,8 @@ and it closes the issue as not planned. A failed read includes a GitHub API
 answer of HTTP 404, which a repository that does not exist or is private
 gives.
 
-The bot itself can fail. Its read of the repository can stop with a
+The bot itself can fail. Its read of the issue can fail, for example with
+an HTTP 503 or 404 answer. Its read of the repository can stop with a
 build-level failure, as "Building the data" defines it. Examples are a rate
 limit, an outage, a read stopped at 3 minutes, and an error that the reader
 does not name. The bot can fail to write the entry: its directory can
@@ -450,8 +458,8 @@ error, `unexpected-error`. Examples are a git that cannot start and a
 branch-name check stopped at 30 seconds. "Finding new plugins" gives both
 time limits. The bot can fail to read `plugins/`, its own pull requests, or
 the default branch, or the push or the pull request can fail. The git and
-`pnpm check` limits of "Pull requests from the bot" also apply. The first
-job can also fail and leave no handoff. In the second job, `pnpm propose`
+`pnpm check` limits of "Pull requests from the bot" also apply. The read
+job can also fail and leave no handoff. In the write job, `pnpm propose`
 checks the branch name again, and that check can also stop with an error,
 `unexpected-error`: git cannot start, git ends with any result other than
 exit status 1, or the check passes its 30-second limit.
@@ -478,12 +486,30 @@ file from the default branch and runs no code from the pull request. A pull
 request that the bot's own token closes starts no workflow run, so its issue
 stays open.
 
-The first job gets the issue body in the `ISSUE_BODY` environment variable.
-The second job gets the issue number in `ISSUE_NUMBER`. The workflow runs in the
-concurrency group of `Discover plugins`, so the two workflows do not push at
-the same time. A concurrency group holds one running run and one pending run.
-A newer run cancels the pending run, and the issue of that run gets no
-answer.
+Once a day at 02:43 UTC, the workflow also sweeps for issues that no run
+answered. A maintainer can also run the sweep by hand from the default
+branch. The `pick` job runs
+`pnpm unanswered-issues --label add-plugin --workflow add-plugin-issue.yml --limit 3`.
+The command prints, oldest first, at most 3 open issues with the label
+`add-plugin`. Each issue was opened at least 1 hour and at most 7 days
+before, and has no comment from `github-actions[bot]`. The command prints
+none while any of the 100 newest `issues` runs of the workflow has not
+finished. Then the read job and the write job handle each of these issues in
+turn, as for a new issue. A failure for one issue does not stop the others,
+and the job fails at the end. A rerun of the write job answers each issue of
+its run again. An issue with any bot comment stays for a maintainer. An
+example is the comment that starts with `The bot could not finish`.
+
+The jobs get only issue numbers. The read job and the write job get them
+from the `pick` job in the `ISSUES` environment variable. Each command gets
+one in `ISSUE_NUMBER`. The workflow runs in the concurrency group of
+`Discover plugins`, so the two workflows do not push at the same time. A
+concurrency group holds one running run and one pending run. A newer run
+cancels the pending run. A sweep run that finds no issue is such a run too.
+So a sweep can cancel a pending `Discover plugins` run or a pending
+issue run, and a newer run can cancel a pending sweep. The issue of a
+canceled run gets no answer at first. A later sweep can answer it while it
+is at most 7 days old. Each sweep answers at most 3 issues, oldest first.
 
 ## Reporting whether a plugin works
 
@@ -495,9 +521,9 @@ and `broken`. If the repository has no such label, GitHub does not add it.
 
 When an issue with the label `report` opens, the `Answer a report` workflow
 runs `pnpm report-issue` with the issue number in `ISSUE_NUMBER`. The
-command reads the issue's body and labels from the GitHub API, and the entry
-directories under `plugins/`. If all of these hold, the bot takes the
-report:
+command reads the issue's body, labels, and comments from the GitHub API,
+and the entry directories under `plugins/`. If all of these hold, the bot
+takes the report:
 
 - Each of the three fields has a value.
 - The plugin id is the name of an entry directory under `plugins/`.
@@ -516,11 +542,26 @@ comments the name and the message of the first problem it found, and
 closes the issue as not planned. The comment puts each value from the issue
 in a code span, so the value cannot link to a page or mention a user.
 
-If the bot cannot read the issue or `plugins/`, it sends nothing. If it
-cannot post the comment, it does not close the issue. In these cases the
-workflow run fails. A failed close also fails the run. The workflow has no
-concurrency group, so a report run does not wait for another run or cancel
-one. Its job restores no Actions cache.
+If the bot cannot read the issue, its comments, or `plugins/`, it sends
+nothing. If it cannot post the comment, it does not close the issue. In
+these cases the workflow run fails. A failed close also fails the run. If
+the bot already commented on the issue, it sends the close alone. So a
+rerun of a run whose close failed closes the issue with no second comment.
+Each report run has a concurrency group of its own, so a report run does
+not wait for another run or cancel one. Its job restores no Actions cache.
+
+Once a day at 03:13 UTC, the workflow runs `pnpm report-issue --sweep`. A
+maintainer can also run it by hand from the default branch. The command
+answers, in turn, at most 20 report issues that no run answered. It picks
+them as `pnpm unanswered-issues` does for the label `report` and the
+workflow `report-issue.yml`, as "Proposing a plugin with an issue" says. A
+failed answer does not stop the others, and the command exits 1 at the end.
+The sweeps share one concurrency group, so two sweeps do not answer one
+issue at once. A sweep can answer an issue from 1 hour to 7 days old. That
+holds also for an issue whose `report` label was added after it opened. An
+issue with a
+bot comment stays for a maintainer, as does a report issue opened more than
+7 days before the sweep.
 
 ## Checking entries
 

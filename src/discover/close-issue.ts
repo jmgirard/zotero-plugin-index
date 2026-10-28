@@ -1,5 +1,5 @@
 import { type Fetch, githubClient } from "../upstream/reader.ts";
-import { PREFIX } from "./propose.ts";
+import { closesLines, PREFIX } from "./propose.ts";
 
 const API = "https://api.github.com";
 // The account that posts the comments of a workflow run with the built-in token.
@@ -82,29 +82,6 @@ export async function closeIssue(options: CloseIssueOptions): Promise<CloseIssue
     return { status: 1, comment, errors: [(error as Error).message] };
   }
   return { status: 0, comment, errors: [] };
-}
-
-// The issue numbers of the lines that are exactly `Closes #<n>`, outside fenced code
-// blocks. A fence closes on a line of the same character, at least as long, and nothing
-// else.
-function closesLines(body: string): number[] {
-  const numbers: number[] = [];
-  let fence: string | undefined;
-  for (const line of body.split(/\r?\n/)) {
-    if (fence) {
-      const close = /^ {0,3}(`{3,}|~{3,})\s*$/.exec(line)?.[1];
-      if (close && close[0] === fence[0] && close.length >= fence.length) fence = undefined;
-      continue;
-    }
-    const open = /^ {0,3}(`{3,}|~{3,})/.exec(line)?.[1];
-    if (open) {
-      fence = open;
-      continue;
-    }
-    const closes = /^Closes #([1-9]\d*)$/.exec(line)?.[1];
-    if (closes) numbers.push(Number(closes));
-  }
-  return numbers;
 }
 
 interface PullJson {
