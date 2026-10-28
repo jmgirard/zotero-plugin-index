@@ -220,3 +220,13 @@ new data against a saved copy of the schema still accepts it. The README's
 rule gives a new schema version to a breaking change, and this change does
 not break a consumer of the data. A `languages` override can no longer hold
 these codes.
+
+### D-019: The home page's one script also runs the version buttons, annotating D-014
+
+2026-10-28, M037 plan. D-014 gave the home page one script, for the language
+menu. M037 adds buttons that filter the home list by a declared Zotero major.
+They act on the same rows and keep their choice in the address beside the
+language, so they join that script rather than add a second one. The home
+page still carries one script, and the other pages carry none. The buttons
+are hidden in the HTML, so without JavaScript the home page shows every row
+and no buttons, as D-014 says for the menu.

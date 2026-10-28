@@ -1,0 +1,150 @@
+<!-- Section ownership + write-modes: see tracking-rules.md "Milestone-file
+     section ownership". A phase skill never rewrites another phase's section. -->
+# M037: Filter by Zotero version and link the add form
+
+- **Status:** planned
+- **Priority:** normal
+- **Depends on:** —
+- **Driving RR:** —
+- **Principles touched:** —
+- **Resolves:** —
+- **Surface tier:** user-facing — site visitors see and use the buttons and the link
+- **Branch/PR:** —
+
+## Goal
+
+A site visitor can narrow the home list to the plugins that declare a chosen Zotero major version, and can reach the "Add a plugin" form from the home page.
+
+## Scope
+
+**In:** A `data-zotero` attribute on each home row listing the majors whose
+pill is all or part. A button group, "Declares Zotero", with "Any version"
+and one button per entry of `ZOTERO_MAJORS`, one choice at a time, hidden in
+the HTML and shown by the home page's one script (D-014, annotated by
+D-019). The script combines the buttons with the language menu and keeps
+the choice in a `zotero` address parameter, replacing the address as the
+language menu does. Pure functions in `src/site/` for the row test, the
+parameter read, and the address write. A link reading "Add a plugin" in the
+home intro to the issue form. Button styles in `Base.astro`, light and dark.
+README, CHANGELOG, and DESIGN updates.
+
+**Out:** Showing the list before the script runs: candidate row "Filter the
+home list before it paints". An automated browser test: candidate row "Test
+the home page script in a browser". Choosing several versions at once and
+counts on the buttons: not planned (question set chose one at a time; no
+counts, see work log). Script on the plugin pages: none (D-014).
+
+## Acceptance criteria
+
+- [ ] AC1: Each row of the home list carries a `data-zotero` attribute: the
+      majors of `ZOTERO_MAJORS` for which `majorSupport` gives `all` or
+      `some`, in `ZOTERO_MAJORS` order, joined by single spaces, and
+      `data-zotero=""` when no major gives either. A test in
+      `test/site.test.ts` matches each row's `data-plugin` and `data-zotero`
+      on the home page built from the site fixture against values written
+      out by hand for every fixture row, among them a row whose pills are
+      all `none`.
+- [ ] AC2: The home page HTML holds a `<p class="version-filter" hidden>`
+      holding a `<div role="group">` whose `aria-labelledby` names an
+      element reading "Declares Zotero", and in the group one
+      `<button type="button">` reading "Any version" with
+      `aria-pressed="true"`, then one per entry of `ZOTERO_MAJORS`, in that
+      order, reading the major, with `aria-pressed="false"`. The home page
+      holds one `<script>` element. A test in `test/site.test.ts` matches
+      that markup.
+- [ ] AC3: Functions in `src/site/` decide which rows show and what the
+      address says, and Vitest tests cover each of these cases: a row shows
+      if and only if both the language value and the version value pass it;
+      the version value "" or a value no button has passes every row; a
+      major passes a row whose `data-zotero` lists it and fails a row whose
+      `data-zotero` is "" or lists only other majors, `10` among them; a
+      `zotero` parameter that names a button's value becomes the chosen
+      value, and any other value, or none, gives ""; choosing a major sets
+      `zotero=<major>` in the address, choosing "" or holding a `zotero`
+      value no button has removes the parameter, and in each case a
+      `language` parameter keeps its value.
+- [ ] AC4: In the browser pane, on a site that `pnpm site` builds from one
+      fetched copy of the deployed `v1/plugins.json`, for each of the five
+      buttons, once with the language menu at "All languages" and once at a
+      language whose plugins include one that declares the pressed major and
+      one that does not: the ids of the rows shown, collected by script in
+      the pane, equal the ids whose `data-zotero` lists the pressed major
+      (for "Any version", every id) among those the language menu shows, as
+      computed with `majorSupport` from that same copy; the pressed button
+      alone has `aria-pressed="true"`; and the address carries
+      `zotero=<major>`, or no `zotero` parameter for "Any version". Changing
+      the language menu while a major is pressed keeps `zotero=<major>` in
+      the address and both filters on the rows, and opening the page at an
+      address with `zotero=8` shows the "8" button pressed and its rows.
+- [ ] AC5: The home page's intro holds a link reading "Add a plugin" whose
+      href is
+      `https://github.com/jmgirard/zotero-plugin-index/issues/new?template=add-plugin.yml`.
+      A test in `test/site.test.ts` checks the link and that
+      `.github/ISSUE_TEMPLATE/` holds the file its `template` value names.
+- [ ] AC6: `README.md` describes the version buttons (what a pressed button
+      shows, the `zotero` parameter, and that without JavaScript the page
+      shows no buttons and every plugin) and the "Add a plugin" link, and
+      `CHANGELOG.md`'s Unreleased section has one entry for both.
+- [ ] AC7: `pnpm test` and `pnpm check` pass.
+
+## Coverage
+
+- AC1 → T1
+- AC2 → T3
+- AC3 → T2
+- AC4 → T3, T6
+- AC5 → T4
+- AC6 → T5
+- AC7 → T1, T2, T3, T4
+
+## Tasks
+
+- [ ] T1: Add `rowMajors` (or a like name) beside `majorSupport` in
+      `src/site/version.ts` and an attribute wrapper in `site/src/data.ts`
+      that passes `new String("")` for an empty value, as
+      `rowLanguagesAttribute` does (LESSONS M024). Add a fixture record whose
+      pills are all `none`. Write `data-zotero` on each row in
+      `site/src/pages/index.astro`; test every row against hand-written
+      values.
+- [ ] T2: Add the version filter functions to `src/site/` (extend
+      `language-filter.ts` or rename it to cover both filters, keeping the
+      script's imports plain TypeScript with no imports): row test, `zotero`
+      parameter read, address write that keeps other parameters. Tests for
+      each AC3 case.
+- [ ] T3: Add the hidden button group after the language menu in
+      `index.astro`; extend the one script to read `?zotero=`, set
+      `aria-pressed`, filter rows by both values on button press, menu
+      change, load, and `popstate`, replace the address, and unhide the
+      group. Pressed and focus styles in `Base.astro` for light and dark.
+      Site tests for the markup and the one `<script>`; match attribute
+      forms, not bare strings (LESSONS M007).
+- [ ] T4: Add the "Add a plugin" link to the home intro, with `{" "}` at
+      line ends where text meets an element (LESSONS M021); site test for
+      the href and the template file.
+- [ ] T5: README home page section (buttons, parameter, no-JavaScript
+      fallback, link), one CHANGELOG Unreleased entry, DESIGN Contract
+      boundary and Architecture (the one script now runs both filters).
+      Wrap prose near 76 columns and list long added lines (LESSONS M036).
+- [ ] T6: Hand check in the browser pane per AC4: fetch the deployed data
+      once, `pnpm site --out <dir>`, serve with `python3 -m http.server`
+      from a `.claude/launch.json` entry kept out of git (LESSONS M015,
+      M035), collect shown ids by script for each case, and compare with
+      ids from `majorSupport` over the same copy.
+
+## Work log
+
+- 2026-10-28: created by /milestone-plan.
+- 2026-10-28: tier check: milestone — new home page behavior with a design decision on what a version button keeps.
+- 2026-10-28: idea vet: one concern, which plugins a version button keeps (part of a version is mostly a maximum of `10.0.*`, 11 of 42 live plugins for Zotero 10); question set chose all or part. Framing as "Declares Zotero" follows DESIGN's rule that pills show only the declared range.
+- 2026-10-28: question set: which plugins a button keeps — all or part; one version or several — one at a time; where the add link goes — home page intro.
+- 2026-10-28: lessons used: 2026-10-25 (M001), 2026-10-25 (M007), 2026-10-26 (M015), 2026-10-27 (M021), 2026-10-27 (M024), 2026-10-28 (M035), 2026-10-28 (M036).
+- 2026-10-28: collision check: D-014 says the home page carries one language-filter script; the buttons join that script, recorded as D-019 annotating D-014. D-009 and M015 removed a typed version field for pills; the buttons filter by the pills' majors and add no typed field, so no rejection applies. Candidate rows "Filter the home list before it paints" and "Test the home page script in a browser" also cover the new buttons and stay as rows.
+- 2026-10-28: inbox sweep: 0 open issues; 1 open PR (bot discovery PR #57), no overlap.
+- 2026-10-28: criteria audit (full mode, fresh Opus reader): 9 findings, all fixed — AC1 named a fixture shape that does not exist, now hand-written values for every row plus an all-none fixture row; AC2 markup and labeling pinned, one `<script>` added; AC3 if-and-only-if, empty and other-major rows, unknown parameter removal, wiring claim dropped to AC4; AC4 one fetched data copy, ids collected by script, a mixed language, language change while a major is pressed; D-014 annotation and DESIGN update added (D-019, T5).
+- 2026-10-28: plan gate chose replacing the address on a button press over adding a history entry because the language menu replaces it and Back then leaves the page for both; falsified by visitors or the maintainer expecting Back to undo a filter press.
+- 2026-10-28: plan gate chose one script for both filters over a second script because D-014 keeps the site at one script and both filters act on the same rows; falsified by the script growing past what one module can test through pure functions.
+- 2026-10-28: plan gate chose buttons with no counts over counts like the language menu's because a count that ignores the chosen language misleads beside a filtered list; falsified by visitors asking how many plugins declare a version.
+
+## Decisions
+
+## Review
