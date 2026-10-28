@@ -77,6 +77,8 @@ A daily run answers each open "Add a plugin" or report issue that no bot run ans
 - 2026-10-28: implement done: T1–T6 checked, `pnpm test` and `pnpm check` clean; status set to review.
 - 2026-10-28: review return 1: AC7 — CHANGELOG lacks that a pending sweep can be canceled, that a later sweep answers a canceled run's issue while it is at most 7 days old, 3 a sweep, oldest first, and that a write-job rerun answers its batch again; DESIGN lacks that an issue with any bot comment stays for a maintainer, that a pending sweep can be canceled, and that a write-job rerun answers its batch again. AC1–AC6 verified and ticked.
 - 2026-10-28: T7 added for review return 1 (minor amendment; Coverage AC7 → T6, T7) and done: the CHANGELOG sweep bullet and DESIGN's `add-plugin-issue.yml` bullet gained the missing AC7 items; a joined-text check of each file finds each item. `pnpm test` 921 passed, `pnpm check` clean; status set to review.
+- 2026-10-28: review pass 2: AC7 verified; 39 findings settled (12 fix now in 276595a, 8 follow-up, 19 rejected, 0 edge); new row "Close the gaps in the issue sweeps"; M039's archived ROADMAP row pruned to keep the cap.
+- 2026-10-28: step-7 approval: m040-sweep-unanswered-issues approved for merge
 
 ## Decisions
 
