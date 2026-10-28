@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M043: Queue runs in the discover group
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — people who file "Add a plugin" issues wait for the bot's answer, and daily discovery opens the bot's pull requests
-- **Branch/PR:** —
+- **Branch/PR:** m043-queue-discover-runs
 
 ## Goal
 
@@ -85,7 +85,7 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
 
 ## Tasks
 
-- [ ] T1: Tests first in `test/workflows.test.ts`. The add-plugin-issue.yml
+- [x] T1: Tests first in `test/workflows.test.ts`. The add-plugin-issue.yml
       case uses `toContain` today, so it still passes with a key appended.
       Anchor it from `concurrency:` to the next top-level key, add a
       discover.yml describe that does the same, and add the `contains(...)`
@@ -119,6 +119,9 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
 - 2026-10-28: criteria audit (full, Opus reader): 9 findings, all taken. Background said the test asserts the block exactly; it uses `toContain`, so T1 anchors it. AC1 now names the three keys and the anchored text, and the docs citation moved to Scope. AC2 now ties the group to the `pick` job's `contains(...)` text and no longer promises a Review-section evaluation. AC3 now covers both workflows, an empty group, and the `skipped` conclusion of a run whose jobs all skip. AC4 now uses paragraphs, the docs' overflow wording, and `src/issues/unanswered.ts`; the ROADMAP row leaves at review hygiene. AC5 no longer says "no longer" of a state no release had. Mixed queue settings: T4 dispatches into an empty group, and old-branch dispatches went to a row. The `MIN_AGE_MS` comment joined T3. GitHub's docs name no maximum pending time, so the docs will say only "up to 100 pending".
 - 2026-10-28: T4's branch dispatches run no job and were not posed at the question set; the agent takes them as part of implement's checks.
 - 2026-10-28: changelog: one entry under Unreleased (AC5), or an edit of the M040 entry.
+- 2026-10-28: implement started on branch m043-queue-discover-runs, cut from main at 171917a.
+- 2026-10-28: T1: `test/workflows.test.ts` gains a `concurrency` helper (the top-level block up to the next unindented line, and each non-comment line setting a `concurrency` key), an anchored block test for each workflow, and the shared `contains(...)` label check; the 3 new tests fail on main's files because the block lacks `queue: max` and the label clause; 38 others pass.
+- 2026-10-28: T1 choice: one group expression that wraps the issue clause and the dispatch clause in parentheses before `&& format(...)`, since GitHub's `&&` binds tighter than `||`.
 
 ## Decisions
 
