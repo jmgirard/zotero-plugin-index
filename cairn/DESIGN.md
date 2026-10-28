@@ -385,7 +385,8 @@ reused._
   `request-failed`, or `unexpected-error` result is not kept, nor a write
   refused by the output directory (`entry-exists` there, `write-failed`),
   nor a refusal caused by an HTTP 429 or 5xx answer from a download host,
-  which the reader marks build-level (M026).
+  or by a 403 to a download that requested a GitHub release URL, which the
+  reader marks build-level (M026, M045).
   A failed search ends the run before any read and leaves the state file as
   it was. The report names, for each entry written, its version and declared
   range (M008).

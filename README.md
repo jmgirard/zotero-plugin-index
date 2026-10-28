@@ -328,7 +328,9 @@ records each refused repository. A later run reads that repository again
 only after a new push or after 30 days. The file does not record a GitHub API
 error, such as a rate limit, or a failed request. It also does not record an
 HTTP 429 or 5xx answer to the download of the XPI or the `update.json`, after
-any redirects. Such a repository is read again on the next run. To use
+any redirects. Nor does it record a 403 answer to a download that requested
+a GitHub release download URL, as "Building the data" defines it. Such a
+repository is read again on the next run. To use
 another file, add `--state <file>`.
 
 The command gives each repository read 3 minutes, as `pnpm build` does. If a
