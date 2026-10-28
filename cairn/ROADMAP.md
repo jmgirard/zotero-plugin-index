@@ -7,9 +7,9 @@ _Last hygiene check: 2026-10-28 (M034 done and archived; M031 row pruned, 1 row 
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
+| M035 | Sort the language menu by count | planned | — | normal | milestones/M035-language-menu-order.md |
 | M033 | Label the languages as menus and settings | done | — | normal | milestones/archive/M033-menus-and-settings-label.md |
 | M034 | Skip translations under half done | done | — | normal | milestones/archive/M034-half-done-translations.md |
-| M032 | Catch blank reasons, repeat overrides, and BOMs | done | — | normal | milestones/archive/M032-override-and-bom-checks.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
