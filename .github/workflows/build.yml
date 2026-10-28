@@ -28,8 +28,8 @@ jobs:
     # This job restores and saves no Actions cache. The read job of `Discover plugins`
     # reads repos that anyone can tag, and its scheduled and dispatched runs can save
     # caches that a run on the default branch restores. A dependency store planted there
-    # could be restored into this job before `pnpm install`, and this job writes the site
-    # and data that Pages publishes. GitHub enforces this mode with the job's cache token.
+    # could be restored into this job before `pnpm install`, and this job writes the
+    # data that Pages publishes. GitHub enforces this mode with the job's cache token.
     cache-mode: none
     steps:
       - uses: actions/checkout@v7
@@ -43,28 +43,140 @@ jobs:
       # Exits 1 when more than half of the records carry a build-level failure, such as
       # a rate limit or a network error (README "Building the data" lists them), and
       # when every record carries a failure of any name, and when it cannot read the
-      # report issues. The steps below without an `if:` are then skipped, so nothing is
-      # deployed.
-      - run: pnpm build
+      # report issues. The steps below without an `if:` are then skipped, and the jobs
+      # after this one do not run, so nothing is deployed. The start plan names the URL
+      # and SHA-256 of each XPI the build read, and no artifact holds an XPI.
+      - run: pnpm build --plan start-plan.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # Writes the site pages into dist/ beside the data. A failed site build also
-      # deploys nothing.
-      - run: pnpm site
       # Kept after a failed build too, so the failures can be read. Skipped when no data
-      # file exists, for example after a failed `pnpm check`.
+      # file exists, for example after a failed `pnpm check`. The site job builds the
+      # pages from it.
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() && hashFiles('dist/v1/plugins.json') != '' }}
         with:
           name: plugins-data
           path: dist/
           if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        with:
+          name: start-plan
+          path: start-plan.json
+          if-no-files-found: error
+
+  # Starts each plugin of the plan in one Zotero release for Linux, for each release whose
+  # line a maintainer adds here when Zotero ships it (D-023). Plugin code runs in this job,
+  # so it holds no token permission, reads no secret, keeps no git credentials, and uses no
+  # cache. Plugin code can still rewrite this job's results, so the site job reads them as
+  # untrusted.
+  start-test:
+    needs: build
+    runs-on: ubuntu-latest
+    # `pnpm start-tests` starts no new plugin after 20 minutes, and one start takes at most
+    # 90 seconds.
+    timeout-minutes: 30
+    permissions: {}
+    cache-mode: none
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The SHA-256 of each file from download.zotero.org. Zotero 7 ships .tar.bz2 for
+          # Linux, and 8.0.4 is the newest Zotero 8 with a Linux build.
+          - zotero: "7.0.32"
+            file: Zotero-7.0.32_linux-x86_64.tar.bz2
+            sha256: PENDING
+          - zotero: "8.0.4"
+            file: Zotero-8.0.4_linux-x86_64.tar.xz
+            sha256: PENDING
+          - zotero: "9.0.6"
+            file: Zotero-9.0.6_linux-x86_64.tar.xz
+            sha256: PENDING
+          - zotero: "10.0.6"
+            file: Zotero-10.0.6_linux-x86_64.tar.xz
+            sha256: 246c2574a9ac526abeaf3027ffd22fc45536a5ab25f227bb1df932fca9cedd63
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: pnpm install --frozen-lockfile
+      # xvfb gives Zotero a display, as in ci.yml.
+      - run: sudo apt-get update && sudo apt-get install -y xvfb libasound2t64 libdbus-glib-1-2
+      - name: Download Zotero
+        env:
+          ZOTERO_VERSION: ${{ matrix.zotero }}
+          ZOTERO_FILE: ${{ matrix.file }}
+          ZOTERO_SHA256: ${{ matrix.sha256 }}
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/$ZOTERO_FILE" "https://download.zotero.org/client/release/$ZOTERO_VERSION/$ZOTERO_FILE"
+          echo "$ZOTERO_SHA256  $RUNNER_TEMP/$ZOTERO_FILE" | sha256sum --check
+          tar -xf "$RUNNER_TEMP/$ZOTERO_FILE" -C "$RUNNER_TEMP"
+      - uses: actions/download-artifact@v8
+        with:
+          name: start-plan
+          path: ${{ runner.temp }}/plan
+      - run: >-
+          xvfb-run --auto-servernum pnpm start-tests --plan "$RUNNER_TEMP/plan/start-plan.json"
+          --zotero "$RUNNER_TEMP/Zotero_linux-x86_64/zotero" --out "$RUNNER_TEMP/results/start-results.json"
+      # The artifact name holds the Zotero version, which `pnpm add-start-results` checks
+      # each result against.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: start-results-${{ matrix.zotero }}
+          path: ${{ runner.temp }}/results/start-results.json
+          if-no-files-found: error
+
+  # Adds the start results to the data and builds the site. It runs once the build job
+  # succeeded, whatever the start-test jobs' results, so a failed start test still deploys.
+  site:
+    needs: [build, start-test]
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    # No cache, as in the build job: this job writes the site and data that Pages publishes.
+    cache-mode: none
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v8
+        with:
+          name: plugins-data
+          path: dist
+      - uses: actions/download-artifact@v8
+        with:
+          name: start-plan
+          path: ${{ runner.temp }}/plan
+      # A run whose start-test jobs all failed has no results, and the site deploys
+      # without start tests.
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: start-results-*
+          path: ${{ runner.temp }}/results
+      - run: >-
+          pnpm add-start-results --data dist/v1/plugins.json --plan "$RUNNER_TEMP/plan/start-plan.json"
+          --results "$RUNNER_TEMP/results"
+      # Writes the site pages into dist/ beside the data. A failed site build deploys
+      # nothing.
+      - run: pnpm site
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist/
 
   deploy:
-    needs: build
+    needs: site
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

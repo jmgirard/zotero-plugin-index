@@ -12,6 +12,7 @@ import {
   reportHref,
   safeHref,
   shownDescription,
+  startTestsText,
   upstreamValue,
   type PluginRecord,
 } from "../../../data.ts";
@@ -24,6 +25,8 @@ const { record } = Astro.props as { record: PluginRecord };
 const { upstream, failure, overrides } = record;
 // Data written before the build counted reports has no reports field.
 const reports = record.reports ?? [];
+// Data written before the start tests, and a record no tested release gave a result for, have none.
+const startTests = record.startTests ?? [];
 const repoUrl = upstream?.repoUrl ?? record.repoUrl;
 const repoHref = safeHref(repoUrl);
 const description = shownDescription(record);
@@ -54,6 +57,19 @@ const { min, max } = declaredRange(record);
       <p class="languages">
         Menus and settings in: <span data-fact="languages">{languagesText(record)}</span>
       </p>
+    )
+  }
+  {
+    upstream && startTests.length > 0 && (
+      <div class="start-tests" data-start-tests>
+        <p>
+          Starts in Zotero: <span data-fact="start-tests">{startTestsText(record)}</span>
+        </p>
+        <p class="status" data-fact="start-test-note">
+          The daily build installs version {upstream.version} in a new Zotero profile on Linux and
+          waits 3 seconds. A start test does not show that the plugin works.
+        </p>
+      </div>
     )
   }
   {
