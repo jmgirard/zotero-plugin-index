@@ -1,0 +1,8 @@
+{
+  "id": "zotero-deselect@local",
+  "name": "Zotero Deselect",
+  "description": "Brings the familiar Finder and Windows File Explorer deselection behavior to Zotero. Click empty space to clear the current selection.",
+  "homepage": "https://github.com/cczmd/zotero-deselect",
+  "repoUrl": "https://github.com/cczmd/zotero-deselect",
+  "updateUrl": "https://raw.githubusercontent.com/cczmd/zotero-deselect/main/updates.json"
+}
