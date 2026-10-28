@@ -69,3 +69,25 @@ A bot pull request body stays under GitHub's 65,536-character limit, because `bo
 - 2026-10-28 AC4: joined-copy grep (LESSONS M018 recipe) finds 1 match each: CHANGELOG.md "If the output of `pnpm check` is longer than 10,000 characters, the body quotes only its first 10,000 characters and says that the output is cut." in the Unreleased bot entry, and README.md "If the output is longer than 10,000 characters, the body quotes only its first 10,000 characters and says that the output is cut." in the pull request body passage.
 - 2026-10-28 AC5: `pnpm test` on 68649bc: 18 files, 888 passed, 1 skipped (the case-sensitive volume case); `pnpm check`: 42 entries, 0 problems. main had not moved since the branch was cut.
 - 2026-10-28 gate: `cairn_validate.py` all checks passed; no principle changed, so no `cairn_impact`; the generic profile's consistency-gate names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the cut counts code points, so it can split a grapheme cluster (a ZWJ emoji or a letter and its combining mark) — reject, planned change (AC1 names code points).
+- diff-bug #2: the comment gives the schema limits in characters and leaves out the `code()` and fence overhead — reject, false (the comment's claim holds: 35,683 units measured, about 36,283 with an emoji URL by the claim audit).
+- diff-bug #3: `CHECK_OUTPUT_MAX` is exported and nothing imports it — fix now, the export dropped, fixed bd64aa7.
+- diff-bug #4: `toLocaleString("en-US")` depends on the ICU build — reject, false (Node's small-ICU build also carries English data).
+- diff-bug #5: the `not.toContain` lines after the exact fenced `toContain` in the 100,000-character and emoji tests add nothing — fix now, removed, fixed bd64aa7.
+- diff-bug #6: the length test's cut-line check repeats the first test on the same path — fix now, removed, fixed bd64aa7.
+- diff-bug #7: the `repoUrl` length check tests the test's own input — reject, planned change (it holds the input to AC3's 300 characters).
+- diff-bug #8: `entry` and `cutLine` are shared at block scope while older tests write inline — reject, style.
+- ripple #1: `cairn/DESIGN.md` line 415 says the body carries the check's output with no cut — fix now, the cut added, fixed bd64aa7.
+- ripple #2: the candidate row "Stop retrying a failing bot pull request" still names a body over GitHub's limit as a live failure — follow-up, narrowed at this milestone's hygiene.
+- ripple #3: README and CHANGELOG say "characters" where the code counts code points — reject, false (a code point is a Unicode character; AC1 chose the word).
+- ripple #4: no test name changed against main — reject, false (the two names changed inside this branch, so main has neither).
+- ripple #5: the M039 ROADMAP status has no other statement — reject, false (the lens reports no ripple).
+- prior-review #1: "characters" against code points, the kind of wording M009's claim audit fixed — reject, false (as ripple #3).
+- prior-review #2: a cut at a line break leaves a blank line before the closing fence — fix now, the cut text trimmed again, fixed bd64aa7.
+- prior-review #3: "far below" rests on the handoff caps, which the diff does not recheck — reject, false (the comment names handoff.ts as its source, and the AC3 test uses those caps).
+- blame-history #1: the cut drops the tail of the output, with `pnpm check`'s summary line, and the cut line does not say so — follow-up, new candidate row "Keep the check summary in a cut body".
+- blame-history #2: "characters" against code points — reject, false (as ripple #3).
+- blame-history #3: "far below" carries no figure — reject, false (the derived-figures rule keeps figures out of the comment; the test is the procedure).
+- blame-history #4: the cut also bounds the `Math.max(...)` argument count, which could throw a RangeError on main after the push — noted, no change asked.
+- 2026-10-28 after fixes: `pnpm test` 888 passed, 1 skipped; `pnpm check` 0 problems; `cairn_validate.py` all checks passed.
