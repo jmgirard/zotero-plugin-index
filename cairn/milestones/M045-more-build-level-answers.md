@@ -107,7 +107,7 @@ plugin read and is not changed.
       columns, list long added lines with
       `git diff -U0 main | grep '^+' | awk 'length > 80'`, and search joined
       copies for AC3's phrases.
-- [ ] T4: Run `pnpm test` and `pnpm check` (through
+- [x] T4: Run `pnpm test` and `pnpm check` (through
       `npx -y pnpm@12.15.0`).
 
 ## Work log
@@ -131,6 +131,7 @@ plugin read and is not changed.
 - 2026-10-28: T2 choice: `Download` returns `{ response, from }`, with `from` "github-release" once any requested URL passes `isReleaseUrl` (host `github.com`, third path segment `releases`), and `buildLevelStatus` gains that case (403, plus the any-host 429 and 5xx).
 - 2026-10-28: T2 done: the nine AC2 rows; the six build-level rows failed before the fix only on the missing mark. Planted defects: a first-URL-only check turned the redirect-from-another-host row red, and the rejected host-name list turned 5 rows red, the direct asset URL row among them; file restored from a copy. `pnpm test` 955 passed, 1 skipped; `pnpm check` 0 problems.
 - 2026-10-28: T3 done: README build-level list gains two items, CHANGELOG gains one entry; joined-copy search finds `body is not JSON` and `release download URL` once in each file. Minor amendment: the entry says an issue run leaves the issue open for both cases, so two rows join the build-level table in `test/issue.test.ts`; both failed with main's reader and pass. `pnpm test` 957 passed, 1 skipped; `pnpm check` 0 problems.
+- 2026-10-28: T4 done: the T3 run covers the final code (07d56d4): `pnpm test` 957 passed, 1 skipped; `pnpm check` 42 entries, 0 problems. Claim audit (fresh Opus reader) running.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
