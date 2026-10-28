@@ -681,8 +681,9 @@ are build-level:
 - an answer from the GitHub API that succeeds but whose body is not JSON,
   such as an HTML error page,
 - an HTTP 403 answer to an XPI or `update.json` download that requested a
-  GitHub release download URL, as its first URL or after a redirect. Such a
-  URL is on `github.com`. The third part of its path is `releases`, as in
+  GitHub release download URL, as its first URL or after a redirect. The
+  rule counts any URL on `github.com` whose path has `releases` as its
+  third part. An example is
   `https://github.com/<owner>/<repo>/releases/download/<tag>/<file>`,
 - an HTTP 429 or 5xx answer from any host.
 

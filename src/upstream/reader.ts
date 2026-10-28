@@ -102,7 +102,7 @@ export function buildLevelStatus(status: number, from: "github-api" | "github-re
 
 // A URL on github.com whose third path segment is `releases`, such as
 // /<owner>/<repo>/releases/download/<tag>/<file> or /<owner>/<repo>/releases/latest/download/<file>.
-// GitHub's release file service answers it, so a 403 there is GitHub's.
+// GitHub answers it, or the release file host that it redirects to, so a 403 there is GitHub's.
 function isReleaseUrl(url: URL): boolean {
   return url.host === "github.com" && url.pathname.split("/")[3] === "releases";
 }
