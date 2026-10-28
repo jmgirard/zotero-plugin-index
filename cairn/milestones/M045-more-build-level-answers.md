@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M045: Count more GitHub answers as build-level
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -133,6 +133,8 @@ plugin read and is not changed.
 - 2026-10-28: T3 done: README build-level list gains two items, CHANGELOG gains one entry; joined-copy search finds `body is not JSON` and `release download URL` once in each file. Minor amendment: the entry says an issue run leaves the issue open for both cases, so two rows join the build-level table in `test/issue.test.ts`; both failed with main's reader and pass. `pnpm test` 957 passed, 1 skipped; `pnpm check` 0 problems.
 - 2026-10-28: T4 done: the T3 run covers the final code (07d56d4): `pnpm test` 957 passed, 1 skipped; `pnpm check` 42 entries, 0 problems. Claim audit (fresh Opus reader) running.
 - 2026-10-28: claim audit corrections: the `isReleaseUrl` comment no longer says GitHub's file service answers every such URL; README and CHANGELOG state that the rule counts any `github.com` URL whose third path part is `releases`; the CHANGELOG's 403 sentence no longer reads as if GitHub always sends one. Re-read by the same reader pending.
+- 2026-10-28: claim audit: 31 claims read, 3 corrected — src/upstream/reader.ts, README.md, CHANGELOG.md; the same reader's one re-read found all three hold.
+- 2026-10-28: implement done; status review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

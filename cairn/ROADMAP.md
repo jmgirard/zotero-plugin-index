@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-28 (M044 done and archived; 1 row graduated, 1 adde
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M045 | Count more GitHub answers as build-level | in-progress | — | normal | milestones/M045-more-build-level-answers.md |
+| M045 | Count more GitHub answers as build-level | review | — | normal | milestones/M045-more-build-level-answers.md |
 | M044 | Say how many plugins the filters show | done | — | normal | milestones/archive/M044-filter-status-line.md |
 | M043 | Queue runs in the discover group | done | — | normal | milestones/archive/M043-queue-discover-runs.md |
 | M042 | Check the index at the push base | done | — | normal | milestones/archive/M042-index-at-push-base.md |
