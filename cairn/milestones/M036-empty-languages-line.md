@@ -108,7 +108,7 @@ and `mul`, which name no one interface language.
 - [x] T4: Update README.md, cairn/DESIGN.md (plugin-page paragraph near
       line 46, locale walk near line 329), and the CHANGELOG.md Unreleased
       languages entry near line 174. Run the AC2 sweep.
-- [ ] T5: Run `pnpm test` and `pnpm check`. Build the site from the
+- [x] T5: Run `pnpm test` and `pnpm check`. Build the site from the
       deployed `v1/plugins.json` and read the pages of
       `mktero@tenglvjun.github.io` and `zotero-except@local` in the browser
       pane.
@@ -134,6 +134,7 @@ and `mul`, which name no one interface language.
 - 2026-10-28: T3 done: with main's index schema copied in, the `zxx` and `en-US, MUL` cases failed; with the new schema restored from a copy they passed; pnpm test 860 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: T4 done: README.md, CHANGELOG.md, and cairn/DESIGN.md name zxx and mul and the new empty text; README and CHANGELOG also say an override cannot hold und, zxx, or mul; AC2 sweep read 171 files with 0 hits, and finds 1 hit in main's README.md; pnpm test 860 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: left 3 simple-english lint hits in README.md (lines 99, 438) and CHANGELOG.md (line 172) as they are, since this milestone does not touch those lines.
+- 2026-10-28: T5 done: pnpm test 860 passed, 1 skipped; pnpm check 0 problems; the site built from the deployed v1/plugins.json gives "Unknown (no translations found)" on exactly the pages of mktero@tenglvjun.github.io and zotero-except@local, and the browser pane showed it on zotero-except@local's page.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->
