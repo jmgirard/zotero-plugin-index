@@ -98,12 +98,12 @@ plugins" button in the line: not chosen at the plan question set.
       DESIGN.md function list (near line 244) and its home page text (near
       line 49). Keep prose near 76 columns, and list long added lines with
       `git diff -U0 main | grep '^+' | awk 'length > 80'`.
-- [ ] T4: Hand check AC3. Download the deployed `v1/plugins.json`, run
+- [x] T4: Hand check AC3. Download the deployed `v1/plugins.json`, run
       `pnpm site --out <dir>`, serve it with a `.claude/launch.json` entry
       kept out of git, and read each case with `read_page` or JavaScript.
       Check the page's nesting with `DOMParser`. Write each case's address
       and the text read in the work log for review.
-- [ ] T5: Run `pnpm test` and `pnpm check` (through
+- [x] T5: Run `pnpm test` and `pnpm check` (through
       `npx -y pnpm@12.15.0`).
 
 ## Work log
@@ -124,6 +124,8 @@ plugins" button in the line: not chosen at the plan question set.
 - 2026-10-28: T1 done: `filterStatus` in `src/site/home-filter.ts`; its four `test/home-filter.test.ts` cases failed with "filterStatus is not a function" first, then passed. `pnpm test` 940 passed, 1 skipped; `pnpm check` 0 problems.
 - 2026-10-28: T2 done: hidden `<p class="filter-status" role="status" data-filter-status hidden>` between the version buttons and the list; `show()` writes `filterStatus` (rows not hidden, `rows.length`, language or major not ""), and the script unhides the line with the controls. Chose `.filter-status:empty { margin: 0 }` over `display: none` for the empty line, so the live region stays in the page and screen readers hear each new text. The new `test/site.test.ts` case failed with index.astro stashed (`match` gave null), then passed. `pnpm test` 941 passed, 1 skipped; `pnpm check` 0 problems.
 - 2026-10-28: T3 done: README paragraph after the version buttons, CHANGELOG entry at the end of `## Unreleased`, DESIGN home page text and `home-filter.ts` list. Joined-copy search: each of README and CHANGELOG holds each of the two texts once; DESIGN names `filterStatus`. No added prose line over 80 columns. The simple-english hook flags the README sentence ending in "Showing N of M plugins." as long because it does not split after a period inside quotes; the sentence has 16 words, so it stays. The CSS comment in `Base.astro` was reworded to state only what the rule does.
+- 2026-10-28: T4 hand check (browser pane, `python3 -m http.server` on a site built at 529e8a1, deployed `v1/plugins.json` downloaded 2026-10-28, 42 rows): no parameter → line not hidden, text "", 42 shown, margin 0px; `?language=zh` → "Showing 27 of 42 plugins.", 27 rows not hidden; `?zotero=7` → "Showing 25 of 42 plugins.", 25; `?language=de&zotero=10` → "Showing 8 of 42 plugins.", 8; `?language=xx` → address cleared, text ""; menu set to ja → "Showing 5 of 42 plugins.", 5; then button 8 → same, 5; then All languages and Any version → "". The deployed data has no language and major pair that hides every row, so per AC3 the fixture build (`test/fixtures/site/plugins.json`, 9 rows) was used: `?language=es&zotero=10` → "No plugins match these filters.", 0 rows shown, margin 16px. `DOMParser` on the page: the line's next sibling is `ul.plugins`.
+- 2026-10-28: T5 done at 529e8a1 (also covers T3's files): `pnpm test` 19 files, 941 passed, 1 skipped; `pnpm check` 42 entries, 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
