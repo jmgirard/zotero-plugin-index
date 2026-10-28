@@ -92,7 +92,7 @@ canceled" and "Answer report issues left open".
       `test/propose.test.ts` for the three throws: a `git` shim that runs
       `exec sleep 600` on `check-ref-format` with a short `refCheckMs`, a shim
       that prints a fixed stderr line and exits 2, and an empty `PATH`.
-- [ ] T2: In `src/discover/propose-cli.ts`, map `check-failed`. An issue run
+- [x] T2: In `src/discover/propose-cli.ts`, map `check-failed`. An issue run
       calls `issueAnswer` with a `failed` outcome
       (`failure: "unexpected-error"`). A discover run prints "could not check
       the handoff: <message>" and "sent no request and pushed nothing" and
@@ -117,6 +117,7 @@ canceled" and "Answer report issues left open".
 - 2026-10-28: lessons used: 2026-10-25 (M001), 2026-10-27 (M030, `exec sleep 600` git shim), 2026-10-27 (M022, empty PATH), 2026-10-26 (M018), 2026-10-28 (M036), 2026-10-27 (M027).
 - 2026-10-28: implement started on branch m038-answer-recheck-failures, cut from main at dee9810.
 - 2026-10-28: T1 done — `readHandoff` takes `refCheckMs` and returns `check-failed` with "checking the branch name of <repo> threw: <message>"; `withShim` moved to file scope in `test/propose.test.ts`; the 3 new tests failed on main by the 3 expected throws and pass; pnpm test 880 passed, 1 skipped; pnpm check 0 problems.
+- 2026-10-28: T2 done — `propose-cli.ts` gives an issue run a `failed` outcome with `unexpected-error` and prefixes a discover run's message with "could not check the handoff: "; 2 CLI tests and 1 issue-run refusal case in `test/handoff.test.ts`; without the CLI change the issue test got the "read step left no handoff" comment and the discover test lacked the prefix; pnpm test 883 passed, 1 skipped; pnpm check 0 problems.
 
 ## Decisions
 
