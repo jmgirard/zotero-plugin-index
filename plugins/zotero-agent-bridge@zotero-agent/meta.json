@@ -1,0 +1,8 @@
+{
+  "id": "zotero-agent-bridge@zotero-agent",
+  "name": "Zotero Agent Bridge",
+  "description": "Local write endpoint for Zotero: POST /zotero-agent runs privileged JS, token-protected. The write path for the zotero-agent CLI, MCP server and agent skill.",
+  "homepage": "https://github.com/alex-roc/zotero-agent",
+  "repoUrl": "https://github.com/alex-roc/zotero-agent",
+  "updateUrl": "https://raw.githubusercontent.com/alex-roc/zotero-agent/main/updates.json"
+}
