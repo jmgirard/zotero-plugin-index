@@ -95,11 +95,11 @@ function triggers(text: string): string | undefined {
 }
 
 // The top-level `concurrency:` block of a workflow, up to the next line that is not
-// indented, and each line, other than a comment line, that sets a `concurrency` key.
+// indented, and each line that sets a `concurrency` key at any level, quoted or not.
 function concurrency(text: string): { block: string | undefined; keys: string[] } {
   return {
     block: text.match(/^concurrency:\n(?: .*\n)*/m)?.[0],
-    keys: text.split("\n").filter((line) => !line.trimStart().startsWith("#") && /concurrency\s*:/.test(line)),
+    keys: text.split("\n").filter((line) => /^\s*["']?concurrency["']?\s*:/i.test(line)),
   };
 }
 
@@ -182,8 +182,6 @@ describe("add-plugin-issue.yml", () => {
     ]);
   });
 
-  // A run whose pick job skips, an issue without the label or a dispatch from another ref,
-  // takes a group of its own; the others queue in the discover group.
   test("queues the runs whose pick job can run in the discover group, and gives each other run a group of its own", () => {
     expect(concurrency(add)).toEqual({
       block:
@@ -193,9 +191,9 @@ describe("add-plugin-issue.yml", () => {
   });
 
   test("tests the label in the group with the same text as the pick job", () => {
-    const label = "contains(github.event.issue.labels.*.name, 'add-plugin')";
+    const label = pick.match(/github\.event_name == 'issues' && (contains\([^)]*\))/)?.[1];
+    expect(label).toBeDefined();
     expect(concurrency(add).block).toContain(`github.event_name == 'issues' && !${label}`);
-    expect(pick).toContain(`github.event_name == 'issues' && ${label}`);
   });
 
   test("gives each job only the permissions its steps use", () => {

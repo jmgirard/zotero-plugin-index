@@ -19,8 +19,8 @@ permissions: {}
 
 # The group that `Discover plugins` uses, so a run here and a discover run never push
 # the same branch at once. With `queue: max`, up to 100 runs wait in the group and run
-# in turn; GitHub cancels runs past that, and a later sweep can answer such a run's
-# issue while it is at most 7 days old.
+# one at a time, in an order GitHub does not promise; GitHub cancels runs past that,
+# and a later sweep can answer such a run's issue while it is at most 7 days old.
 # A run whose pick job skips, for an issue without the label `add-plugin` or a dispatch
 # from another branch or a tag, takes a group of its own and waits for no run.
 concurrency:

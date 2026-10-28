@@ -510,14 +510,16 @@ example is the comment that starts with `The bot could not finish`.
 
 The jobs get only issue numbers. The read job and the write job get them
 from the `pick` job in the `ISSUES` environment variable. Each command gets
-one in `ISSUE_NUMBER`. The workflow runs in the concurrency group of
-`Discover plugins`, so the two workflows do not push at the same time. Up
-to 100 runs wait in the group, and they run in turn. If 100 runs already
-wait, GitHub cancels a new run. The issue of a canceled run gets no answer
-at first. A later sweep can answer it while it is at most 7 days old. Each
-sweep answers at most 3 issues, oldest first. An issue without the label
-`add-plugin` also starts a run of the workflow. That run does nothing, so
-it takes a group of its own and waits for no other run.
+one in `ISSUE_NUMBER`. Some runs share the concurrency group of
+`Discover plugins`, so the two workflows do not push at the same time.
+These are a run for an issue with the label `add-plugin`, a sweep, and a
+dispatch from the default branch. Up to 100 runs wait in the group, and
+they run one at a time. GitHub does not promise their order. If 100 runs
+already wait, GitHub cancels a new run. The issue of a canceled run gets no
+answer at first. A later sweep can answer it while it is at most 7 days
+old. Each sweep answers at most 3 issues, oldest first. An issue without
+the label `add-plugin` also starts a run of the workflow. That run does
+nothing, so it takes a group of its own and waits for no other run.
 
 ## Reporting whether a plugin works
 

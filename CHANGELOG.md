@@ -312,9 +312,10 @@
   entry fails. An issue run then leaves the issue open with its "could not
   finish" comment.
 - Runs of `Discover plugins` and `Add a plugin from an issue` wait in turn in
-  their shared concurrency group, up to 100 pending. If 100 runs already
-  wait, GitHub cancels a new run, and a later sweep can answer its issue.
-  Before, a new run in the group canceled the run that waited, for example
-  a waiting `Discover plugins` run that an issue or a sweep met. The run that an
-  issue without the label `add-plugin` starts does nothing, and it now takes
-  a group of its own.
+  their shared concurrency group, up to 100 pending. GitHub does not promise
+  their order. If 100 runs already wait, GitHub cancels a new run, and a
+  later sweep can answer its issue, as for any unanswered issue. Before, a
+  new run in the group canceled the run that waited, for example a waiting
+  `Discover plugins` run that an issue or a sweep met. The run that an issue
+  without the label `add-plugin` starts does nothing, and it now takes a
+  group of its own.
