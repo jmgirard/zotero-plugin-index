@@ -213,6 +213,44 @@ describe("proposing pull requests", () => {
     );
     expect(sent).toContain("- Version: ` 2.0 @someone `\n");
   });
+
+  const entry: Written = { repo: "example/x", repoUrl: "https://github.com/example/x", outcome: "written", id: "x@example.org", dir: "/tmp/x", version: "2.0" };
+  const cutLine = "The output above is cut to its first 10,000 characters.";
+
+  test("the body quotes the first 10,000 characters of a longer check output and says so", () => {
+    const sent = body(entry, { status: 1, output: `${"a".repeat(100_000)}\n` });
+    expect(sent).toContain(`\`\`\`\n${"a".repeat(10_000)}\n\`\`\`\n\n${cutLine}\n`);
+    expect(sent).not.toContain("a".repeat(10_001));
+  });
+
+  test("the body cuts a check output by characters, so no emoji is split", () => {
+    const emoji = String.fromCodePoint(0x1f600);
+    const sent = body(entry, { status: 1, output: emoji.repeat(10_001) });
+    expect(sent).toContain(`\`\`\`\n${emoji.repeat(10_000)}\n\`\`\`\n\n${cutLine}\n`);
+    expect(sent).not.toContain(emoji.repeat(10_001));
+  });
+
+  test("the body quotes a check output of 10,000 characters and a newline whole, with no cut line", () => {
+    const output = `${"b".repeat(10_000)}\n`;
+    const sent = body(entry, { status: 1, output });
+    expect(sent).toContain(`\`\`\`\n${output}\`\`\`\n\nIf this pull request`);
+    expect(sent).not.toContain("is cut to");
+  });
+
+  test("the body stays within GitHub's 65,536 characters for the longest handoff values and check output", () => {
+    const ticks = "`".repeat(500);
+    const long: Written = {
+      ...entry,
+      repoUrl: `https://github.com/${"a".repeat(281)}`,
+      version: ticks,
+      strictMinVersion: ticks,
+      strictMaxVersion: ticks,
+    };
+    expect(long.repoUrl).toHaveLength(300);
+    const sent = body(long, { status: 1, output: "`".repeat(100_000) }, 7);
+    expect(sent.length).toBeLessThanOrEqual(65_536);
+    expect(sent).toContain(cutLine);
+  });
 });
 
 describe("an entry the write step would refuse", () => {

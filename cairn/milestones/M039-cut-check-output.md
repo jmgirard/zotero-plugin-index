@@ -1,13 +1,13 @@
 # M039: Cut the check output in bot pull requests
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the bot's pull request bodies and its answers on "Add a plugin" issues reach the maintainer and the people who open those issues
-- **Branch/PR:** —
+- **Branch/PR:** m039-cut-check-output
 
 ## Goal
 
@@ -37,7 +37,7 @@ A bot pull request body stays under GitHub's 65,536-character limit, because `bo
 
 ## Tasks
 
-- [ ] T1: In the `proposing pull requests` block of `test/propose.test.ts` (the `body(` tests near line 198), add the tests that AC1, AC2, and AC3 name, and see each fail on main for the reason it names. Build emoji with `String.fromCodePoint`, not a `\u` escape typed through the Edit tool.
+- [x] T1: In the `proposing pull requests` block of `test/propose.test.ts` (the `body(` tests near line 198), add the tests that AC1, AC2, and AC3 name, and see each fail on main for the reason it names. Build emoji with `String.fromCodePoint`, not a `\u` escape typed through the Edit tool.
 - [ ] T2: In `body()`, measure and cut `checked.output.trimEnd()` by code points to a `CHECK_OUTPUT_MAX` of 10,000, build the fence from the cut text, and add the cut line after the closing fence. Put a code comment beside the constant that gives the longest body the entry schema in `src/discover/handoff.ts` allows. Run `pnpm test` and `pnpm check`.
 - [ ] T3: Add the cut to the `## Unreleased` bot entry in `CHANGELOG.md` (the sentence on what each pull request body gives, near line 66) and to the `README.md` passage near line 377, wrapped near 76 columns. Run `pnpm test` and `pnpm check`.
 
@@ -53,6 +53,7 @@ A bot pull request body stays under GitHub's 65,536-character limit, because `bo
 - 2026-10-28: inbox sweep: 0 open issues; 1 open pull request, a discovery bot pull request (#57), with no overlap.
 - 2026-10-28: lessons used: 2026-10-25 (M001), 2026-10-26 (M014), 2026-10-28 (M032), 2026-10-28 (M036), 2026-10-26 (M018).
 - 2026-10-28: test scope: the three body cases that AC1 to AC3 name; no workflow or CLI test, since `body()` is the one function that builds both runs' bodies.
+- 2026-10-28: T1: four body tests added; on main the 100,000-character and emoji tests fail on the missing cut text, the length test fails on its length (305,626 units), and the 10,000-character test passes, since it pins behavior the cut must keep (AC2).
 
 ## Decisions
 

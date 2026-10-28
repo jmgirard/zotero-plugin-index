@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-28 (M038 done and archived; 1 row graduated, 2 adde
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M039 | Cut the check output in bot pull requests | planned | — | normal | milestones/M039-cut-check-output.md |
+| M039 | Cut the check output in bot pull requests | in-progress | — | normal | milestones/M039-cut-check-output.md |
 | M038 | Answer issues when the recheck fails | done | — | normal | milestones/archive/M038-answer-recheck-failures.md |
 | M037 | Filter by Zotero version and link the add form | done | — | normal | milestones/archive/M037-version-buttons-and-add-link.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
