@@ -127,9 +127,10 @@ jobs:
     # was skipped, which is every run with no issue.
     if: always() && needs.read.result != 'skipped'
     runs-on: ubuntu-latest
-    # Each of up to 3 issues can take about 26 minutes in `pnpm propose`: for one entry,
-    # `propose` in src/discover/propose.ts runs 10 git processes, each stopped at 2
-    # minutes, then `pnpm check`, stopped at 5, after a 30-second branch-name check.
+    # Each of up to 3 issues can take about 30 minutes in `pnpm propose`: for one entry,
+    # `fetchBase` and `propose` in src/discover/propose.ts run 12 git processes, each
+    # stopped at 2 minutes, then `pnpm check`, stopped at 5, after a 30-second
+    # branch-name check.
     timeout-minutes: 90
     # This job comments on and closes issues, so it restores and saves no Actions cache.
     cache-mode: none

@@ -7,7 +7,7 @@ import { promisify } from "node:util";
 import type { Lookup } from "../upstream/host-guard.ts";
 import { type Fetch, githubClient, ReadFailure } from "../upstream/reader.ts";
 import { duration } from "../upstream/time-limit.ts";
-import { type DiscoverResult, type DiscoveryState, discover, indexed, type ReadItem } from "./discover.ts";
+import { type DiscoverResult, type DiscoveryState, discover, type indexed, type ReadItem, repoName } from "./discover.ts";
 
 const API = "https://api.github.com";
 // The bot's branches are `discover/<owner>/<repo>`, lowercase.
@@ -113,8 +113,6 @@ export async function discoverRead(options: DiscoverReadOptions): Promise<Discov
 }
 
 export interface ProposeHandoffOptions {
-  // The index's entries.
-  root: string;
   fetch: Fetch;
   // The index repo as owner/repo, and a checkout of it whose remote takes the pushes.
   indexRepo: string;
@@ -138,19 +136,13 @@ export type ProposeHandoffResult =
   | { ok: false; message: string };
 
 // The write step of a discover run. It checks the bot pull requests again by repo and
-// plugin id, since they can change while the read step runs, and the index in its
-// checkout, which is the commit the read step saw. It opens one pull request for each
-// entry neither has. A failed read of the index, the pull
-// requests, or the default branch ends the run before any push; a failure for one entry
-// is reported, and the run goes on.
+// plugin id, since they can change while the read step runs, and the index at the
+// default branch's newest commit, which each pull request builds on. It opens one pull
+// request for each entry neither has. A failed read of the pull requests or the default
+// branch ends the run before any push. A failed fetch of the default branch, or read of
+// its index, fails every entry; a failure for one entry is reported, and the run goes on.
 export async function proposeHandoff(options: ProposeHandoffOptions): Promise<ProposeHandoffResult> {
-  const { root, fetch, indexRepo, entries } = options;
-  let index: Awaited<ReturnType<typeof indexed>>;
-  try {
-    index = await indexed(root);
-  } catch (error) {
-    return { ok: false, message: `cannot read ${root}: ${(error as Error).message}` };
-  }
+  const { fetch, indexRepo, entries } = options;
   let pulls: BotPulls;
   let base: string;
   try {
@@ -160,6 +152,15 @@ export async function proposeHandoff(options: ProposeHandoffOptions): Promise<Pr
     if (error instanceof ReadFailure) return { ok: false, message: error.message };
     throw error;
   }
+  if (entries.length === 0) return { ok: true, proposed: [], failed: [], skipped: [] };
+  let pushBase: PushBase;
+  try {
+    pushBase = await fetchBase({ ...options, base });
+  } catch (error) {
+    const failed = entries.map(({ repo, id }) => ({ repo, id, message: (error as Error).message }));
+    return { ok: true, proposed: [], failed, skipped: [] };
+  }
+  const { index } = pushBase;
   const skipped: SkippedEntry[] = [];
   const written: Written[] = [];
   for (const entry of entries) {
@@ -168,7 +169,7 @@ export async function proposeHandoff(options: ProposeHandoffOptions): Promise<Pr
     else if (pulls.skip.has(repo) || pulls.ids.has(id.toLowerCase())) skipped.push({ repo, id, reason: "in-bot-pull" });
     else written.push(entry);
   }
-  const { proposed, failed } = await propose({ ...options, base, written });
+  const { proposed, failed } = await propose({ ...options, pushBase, written });
   return { ok: true, proposed, failed, skipped };
 }
 
@@ -257,12 +258,125 @@ export async function defaultBranch(fetch: Fetch, indexRepo: string): Promise<st
   return repo.default_branch;
 }
 
+type Git = (args: string[], env?: Record<string, string>) => Promise<string>;
+
+// Runs git in `gitDir` and returns its trimmed output. A process that passes `ms` is
+// killed, and the error says so.
+function gitRunner(gitDir: string, ms: number): Git & { bytes: (args: string[], input: string) => Promise<Buffer> } {
+  // Runs git with `input`, if any, on its stdin, and returns its output as bytes.
+  async function bytes(args: string[], input?: string, env: Record<string, string> = {}): Promise<Buffer> {
+    try {
+      const pending = run("git", args, {
+        cwd: gitDir,
+        env: { ...process.env, ...env },
+        timeout: ms,
+        maxBuffer: GIT_OUTPUT_MAX,
+        encoding: "buffer",
+      });
+      if (input !== undefined) pending.child.stdin?.end(input);
+      return (await pending).stdout;
+    } catch (error) {
+      const { code, killed, stderr } = error as { code?: unknown; killed?: unknown; stderr?: Buffer };
+      if (code === "ERR_CHILD_PROCESS_STDIO_MAXBUFFER") throw new Error(`git ${args[0]} wrote more than ${GIT_OUTPUT_MAX} bytes`);
+      if (killed) throw new Error(`git ${args[0]} passed its time limit of ${duration(ms)}`);
+      throw new Error(`git ${args[0]} failed: ${stderr?.toString().trim() || (error as Error).message}`);
+    }
+  }
+  const git: Git = async (args, env = {}) => (await bytes(args, undefined, env)).toString("utf8").trim();
+  return Object.assign(git, { bytes: (args: string[], input: string) => bytes(args, input) });
+}
+
+// The most output one git process may write. The index's ls-tree listing takes about 300
+// bytes for each entry.
+const GIT_OUTPUT_MAX = 64 * 1024 * 1024;
+
+// The fetch and the push reach the remote with the token, if one is set, as the header
+// that actions/checkout would store. It goes through git's environment configuration,
+// so it is in no argument and no config file.
+function tokenEnv(): Record<string, string> {
+  const token = process.env.GITHUB_TOKEN;
+  return token
+    ? {
+        GIT_CONFIG_COUNT: "1",
+        GIT_CONFIG_KEY_0: "http.https://github.com/.extraheader",
+        GIT_CONFIG_VALUE_0: `AUTHORIZATION: basic ${Buffer.from(`x-access-token:${token}`).toString("base64")}`,
+      }
+    : {};
+}
+
+// The default branch, the commit fetched from it, which each pull request builds on,
+// and the index at that commit.
+export interface PushBase {
+  branch: string;
+  commit: string;
+  index: Awaited<ReturnType<typeof indexed>>;
+}
+
+// Fetches the default branch `base` from `remote` and reads the index at the fetched
+// commit, with four git processes at most. A commit with no plugins/ folder fails, so a
+// missing folder is never read as an empty index.
+export async function fetchBase(options: { gitDir: string; remote?: string; base: string; gitMs?: number }): Promise<PushBase> {
+  const { gitDir, remote = "origin", base, gitMs = GIT_LIMIT_MS } = options;
+  const git = gitRunner(gitDir, gitMs);
+  await git(["fetch", "--quiet", remote, base], tokenEnv());
+  const commit = await git(["rev-parse", "FETCH_HEAD^{commit}"]);
+  return { branch: base, commit, index: await indexAt(git, base, commit) };
+}
+
+// The index at `commit`, in the shape of `indexed`: each folder under plugins/ whose name
+// does not start with "." is an entry, and a meta.json in it that is JSON names its repo.
+// Two git processes read it: one ls-tree, from the repo root whatever the checkout's
+// current folder, and one cat-file for every meta.json.
+async function indexAt(git: ReturnType<typeof gitRunner>, branch: string, commit: string): Promise<PushBase["index"]> {
+  const repos = new Map<string, string>();
+  const ids = new Set<string>();
+  const metas: [string, string][] = [];
+  let folder = false;
+  for (const line of (await git(["ls-tree", "-r", "-t", "-z", "--full-tree", commit, "--", "plugins"])).split("\0")) {
+    const match = /^\d+ (\w+) ([0-9a-f]+)\tplugins(\/.+)?$/s.exec(line);
+    if (!match) continue;
+    const [, type, object, sub] = match;
+    if (!sub) {
+      folder = type === "tree";
+      continue;
+    }
+    const path = sub.slice(1);
+    if (type === "tree" && !path.includes("/") && !path.startsWith(".")) ids.add(path.toLowerCase());
+    const name = /^([^/.][^/]*)\/meta\.json$/.exec(path)?.[1];
+    if (type === "blob" && name) metas.push([name, object]);
+  }
+  if (!folder) throw new Error(`the default branch ${branch} at ${commit} has no plugins/ folder`);
+  if (metas.length === 0) return { repos, ids };
+  // Each object comes back as "<object> blob <size>", a newline, its bytes, and a newline.
+  const out = await git.bytes(["cat-file", "--batch"], metas.map(([, object]) => `${object}\n`).join(""));
+  let at = 0;
+  for (const [name] of metas) {
+    const end = out.indexOf(0x0a, at);
+    const header = out.subarray(at, end < 0 ? undefined : end).toString("utf8");
+    const size = Number(/^[0-9a-f]+ blob (\d+)$/.exec(header)?.[1] ?? Number.NaN);
+    if (end < 0 || !Number.isSafeInteger(size)) throw new Error(`git cat-file returned "${header}" for plugins/${name}/meta.json`);
+    const text = out.subarray(end + 1, end + 1 + size).toString("utf8");
+    at = end + 1 + size + 1;
+    let meta: { repoUrl?: unknown } | null;
+    try {
+      meta = JSON.parse(text);
+    } catch {
+      // Not JSON, so only the id counts.
+      continue;
+    }
+    const repo = repoName(meta?.repoUrl);
+    if (repo) repos.set(repo, name);
+  }
+  return { repos, ids };
+}
+
 export interface ProposeOptions {
   fetch: Fetch;
   indexRepo: string;
   gitDir: string;
   remote?: string;
-  base: string;
+  // From fetchBase, run on the same checkout.
+  pushBase: PushBase;
   written: Written[];
   check: CheckRunner;
   // The longest one git process may take.
@@ -272,44 +386,23 @@ export interface ProposeOptions {
 }
 
 // For each entry, runs the check on a directory that holds only that entry, force-pushes
-// the branch `discover/<owner>/<repo>` with one commit on top of the default branch that
-// adds the entry's two files, and opens a pull request from it. The commits are built
-// with a temporary index file, so the checkout's working tree and branch do not change.
-// A git process that passes `gitMs` is killed and fails its entry, or every entry for the
-// fetch.
+// the branch `discover/<owner>/<repo>` with one commit on top of the fetched default
+// branch commit that adds the entry's two files, and opens a pull request from it. The
+// commits are built with a temporary index file, so the checkout's working tree and
+// branch do not change. A git process that passes `gitMs` is killed and fails its entry.
 export async function propose(options: ProposeOptions): Promise<{ proposed: Proposed[]; failed: ProposeFailure[] }> {
-  const { fetch, indexRepo, gitDir, remote = "origin", base, written, check, gitMs = GIT_LIMIT_MS, issue } = options;
+  const { fetch, indexRepo, gitDir, remote = "origin", pushBase, written, check, gitMs = GIT_LIMIT_MS, issue } = options;
+  const { branch: base, commit: baseCommit } = pushBase;
   const proposed: Proposed[] = [];
   const failed: ProposeFailure[] = [];
   if (written.length === 0) return { proposed, failed };
   const github = githubClient(fetch);
-  // The fetch and the push reach the remote with the token, if one is set, as the header
-  // that actions/checkout would store. It goes through git's environment configuration,
-  // so it is in no argument and no config file.
-  const token = process.env.GITHUB_TOKEN;
-  const auth: Record<string, string> = token
-    ? {
-        GIT_CONFIG_COUNT: "1",
-        GIT_CONFIG_KEY_0: "http.https://github.com/.extraheader",
-        GIT_CONFIG_VALUE_0: `AUTHORIZATION: basic ${Buffer.from(`x-access-token:${token}`).toString("base64")}`,
-      }
-    : {};
-  const git = async (args: string[], env: Record<string, string> = {}) => {
-    try {
-      return (await run("git", args, { cwd: gitDir, env: { ...process.env, ...env }, timeout: gitMs })).stdout.trim();
-    } catch (error) {
-      if ((error as { killed?: unknown }).killed) throw new Error(`git ${args[0]} passed its time limit of ${duration(gitMs)}`);
-      const { stderr } = error as { stderr?: string };
-      throw new Error(`git ${args[0]} failed: ${stderr?.trim() || (error as Error).message}`);
-    }
-  };
+  const auth = tokenEnv();
+  const git = gitRunner(gitDir, gitMs);
   let work: string | undefined;
   try {
-    let baseCommit: string;
     try {
       work = await mkdtemp(join(tmpdir(), "zpi-propose-"));
-      await git(["fetch", "--quiet", remote, base], auth);
-      baseCommit = await git(["rev-parse", "FETCH_HEAD^{commit}"]);
     } catch (error) {
       for (const { repo, id } of written) failed.push({ repo, id, message: (error as Error).message });
       return { proposed, failed };

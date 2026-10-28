@@ -370,9 +370,12 @@ no request, in cases such as these:
 - An entry directory holds anything other than the regular files `meta.json`
   and `index.json`.
 
-Before it pushes, the command reads the bot pull requests again, and the
-index in its checkout. It skips an entry that one of them has. It gives
-the token to git only in git's environment, and `pnpm check` gets no token.
+Before it pushes, the command reads the bot pull requests again. It also
+fetches the default branch and reads the index at the fetched commit. Each
+pull request builds on that commit, so an entry merged before the fetch
+counts, also one merged while the read job ran. It skips an entry that the
+pull requests or that index has. It gives the token to git only in git's
+environment, and `pnpm check` gets no token.
 
 The workflow uses the built-in `GITHUB_TOKEN`, and a pull request that this
 token opens starts no CI run. Thus the body of each pull request gives the
@@ -391,7 +394,10 @@ propose it again.
 
 If the push or the pull request fails for one entry, the command goes on to
 the next entry. At the end, it names each failed entry with its error and
-exits with status 1.
+exits with status 1. If the fetch of the default branch fails, every entry
+fails, and the command pushes nothing. If the fetched commit has no
+`plugins/` folder, the same happens. An entry that a bot pull request adds
+also fails then.
 
 `pnpm propose` stops each git process that fetches, builds, or pushes a
 commit after 2 minutes, and each `pnpm check` process after 5 minutes. If a
@@ -456,9 +462,11 @@ already be in the output directory (`entry-exists`), or the write can fail
 (`write-failed`). The check of the written entry can also stop with an
 error, `unexpected-error`. Examples are a git that cannot start and a
 branch-name check stopped at 30 seconds. "Finding new plugins" gives both
-time limits. The bot can fail to read `plugins/`, its own pull requests, or
-the default branch, or the push or the pull request can fail. The git and
-`pnpm check` limits of "Pull requests from the bot" also apply. The read
+time limits. The bot can fail to read `plugins/` in its checkout, its own
+pull requests, or the default branch. It can fail to fetch the default
+branch, or the fetched commit can have no `plugins/` folder. The push or the
+pull request can also fail. The git and `pnpm check` limits of "Pull
+requests from the bot" also apply. The read
 job can also fail and leave no handoff. In the write job, `pnpm propose`
 checks the branch name again, and that check can also stop with an error,
 `unexpected-error`: git cannot start, git ends with any result other than

@@ -5,7 +5,6 @@ import { issueAnswer } from "./issue.ts";
 import { pnpmCheck, proposeHandoff, type Written } from "./propose.ts";
 
 const USAGE = "usage: pnpm propose <handoff dir> [--limit <n>], with GITHUB_REPOSITORY set, and ISSUE_NUMBER for an issue run";
-const PACKAGE_ROOT = resolve(import.meta.dirname, "../..");
 
 // The write step of a discover run, or of an issue run when ISSUE_NUMBER is set. It reads
 // the handoff that `pnpm discover --handoff` or `pnpm discover-issue --handoff` wrote,
@@ -47,7 +46,6 @@ async function main(): Promise<number> {
     return 1;
   }
   const common = {
-    root: resolve(PACKAGE_ROOT, "plugins"),
     fetch: (url: string, init?: RequestInit) => fetch(url, init),
     indexRepo,
     // The checkout whose remote takes the pushes is the caller's directory.

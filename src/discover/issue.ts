@@ -3,7 +3,7 @@ import type { Lookup } from "../upstream/host-guard.ts";
 import { type Fetch, githubClient } from "../upstream/reader.ts";
 import { draftEntry, indexed, repoName } from "./discover.ts";
 import { type IssueOutcome, MESSAGE_MAX, planned, plannableRepo } from "./handoff.ts";
-import { type BotPulls, botPulls, type CheckRunner, code, defaultBranch, propose, type Written } from "./propose.ts";
+import { type BotPulls, botPulls, type CheckRunner, code, defaultBranch, fetchBase, propose, type PushBase, type Written } from "./propose.ts";
 
 const API = "https://api.github.com";
 
@@ -116,14 +116,14 @@ async function readOutcome(options: IssueReadOptions): Promise<IssueOutcome> {
 }
 
 export interface IssueAnswerOptions {
-  // The index's entries.
-  root: string;
   fetch: Fetch;
   // The index repo as owner/repo, and a checkout of it whose remote takes the push.
   indexRepo: string;
   gitDir: string;
   remote?: string;
   check: CheckRunner;
+  // The longest one git process may take.
+  gitMs?: number;
   // The issue's number, and the read step's outcome with the drafted entry's directory,
   // or undefined when the read step left no handoff.
   issue: number;
@@ -140,17 +140,18 @@ export interface IssueRunResult {
 }
 
 // The write step of an issue run. It checks the bot pull requests again by repo and
-// plugin id, since they can change while the read step runs, and the index in its
-// checkout, which is the commit the read step saw. Then it opens a pull request that
-// closes the issue when it merges, or closes the issue. An open bot pull request whose
-// one `Closes` line names this issue gets the answer of a new pull request, and the
-// issue stays open. Each answer is a comment on the issue. If the read step failed, a
-// build-level or thrown read of the repo, an entry that writeEntry could not write to
-// outDir, and a thrown check of the drafted entry included, or the bot cannot read the
-// index, its pull requests, or the default branch, or the push or the pull request
-// fails, the comment says so and the issue stays open, and the status is 1.
+// plugin id, since they can change while the read step runs, and the index at the
+// default branch's newest commit, which the pull request builds on. Then it opens a pull
+// request that closes the issue when it merges, or closes the issue. An open bot pull
+// request whose one `Closes` line names this issue gets the answer of a new pull request,
+// and the issue stays open. Each answer is a comment on the issue. If the read step
+// failed, a build-level or thrown read of the repo, an entry that writeEntry could not
+// write to outDir, and a thrown check of the drafted entry included, or the bot cannot
+// read its pull requests or the default branch, cannot fetch the default branch or read
+// the index there, or the push or the pull request fails, the comment says so and the
+// issue stays open, and the status is 1.
 export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRunResult> {
-  const { root, fetch, indexRepo, issue, read } = options;
+  const { fetch, indexRepo, issue, read } = options;
   const github = githubClient(fetch);
   const issueUrl = `${API}/repos/${indexRepo}/issues/${issue}`;
   const errors: string[] = [];
@@ -178,20 +179,15 @@ export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRun
   const { outcome } = read;
   if (outcome.outcome === "failed") return failed(outcome.message, outcome.failure);
   if (outcome.outcome === "refused") return refuse(outcome.failure, outcome.message);
-  let index: Awaited<ReturnType<typeof indexed>>;
-  try {
-    index = await indexed(root);
-  } catch (error) {
-    return failed(`cannot read ${root}: ${(error as Error).message}`);
-  }
   let pulls: BotPulls;
-  let base: string;
+  let pushBase: PushBase;
   try {
     pulls = await botPulls(fetch, indexRepo);
-    base = await defaultBranch(fetch, indexRepo);
+    pushBase = await fetchBase({ ...options, base: await defaultBranch(fetch, indexRepo) });
   } catch (error) {
     return failed((error as Error).message);
   }
+  const { index } = pushBase;
   // The entry or the bot pull request that already has the repo `name`.
   const known = (name: string) => {
     const entry = index.repos.get(name);
@@ -220,7 +216,7 @@ export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRun
   if (pulls.ids.has(id)) return refuse("entry-exists", `an open pull request already adds an entry for the id ${entry.id}`);
 
   const written: Written = { ...entry, outcome: "written", dir: read.dir! };
-  const result = await propose({ ...options, base, written: [written], issue });
+  const result = await propose({ ...options, pushBase, written: [written], issue });
   if (result.failed.length > 0) return failed(result.failed[0].message);
   const { url, branch } = result.proposed[0];
   // The create request's answer can lack the URL; the branch still names the pull request.

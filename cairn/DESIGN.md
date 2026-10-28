@@ -421,8 +421,11 @@ reused._
   outputs its upload's `artifact-id`, and the write side downloads only
   when this attempt uploaded one. The issue number comes from
   `ISSUE_NUMBER`, never from the handoff. The write step reads the bot pull
-  requests again, and the index in its own checkout, which is the commit
-  the read job saw, and skips an entry that either has. `propose` gives
+  requests again. `fetchBase` fetches the default branch and reads
+  `plugins/` at the fetched commit with `git ls-tree` and `git cat-file`,
+  and the write step skips an entry that the pull requests or that index
+  has; a fetched commit with no `plugins/` fails every entry (M042).
+  `propose` builds on that same commit. `fetchBase` and `propose` give
   `git fetch` and `git push` the token as an
   `http.https://github.com/.extraheader` through `GIT_CONFIG_COUNT`, and
   `pnpmCheck` runs the check without `GITHUB_TOKEN`.
@@ -433,7 +436,8 @@ reused._
   or closed without a merge. A merged one's entry is in the index. The write
   step, `proposeHandoff`, runs `propose`: for each entry, it runs `pnpm check`
   on a temporary directory that holds only that entry. Then it builds one
-  commit on top of the default branch with a temporary git index file,
+  commit on top of the commit that `fetchBase` read, with a temporary git
+  index file,
   `commit-tree`, and the `github-actions[bot]` identity, force-pushes it to
   the branch, and sends one create-pull-request request whose body carries
   the check's status and output, cut to its first 10,000 characters (M039).

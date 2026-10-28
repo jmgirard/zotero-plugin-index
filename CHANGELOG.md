@@ -307,3 +307,11 @@
   site then keeps the data of the last good build. Before, a missing label
   gave report counts of zero, and the counts left out each issue with no
   `closed_by` field. The build went on in both cases.
+- `pnpm propose` reads the index at the commit of the default branch that it
+  fetches, and each pull request builds on that commit. Before, it read the
+  index in its checkout, so it proposed again an entry merged during a run.
+  A discover run now skips such an entry. An issue run comments the entry
+  and closes the issue as completed, or refuses an id that the index has
+  with `entry-exists`. If the fetched commit has no `plugins/` folder, every
+  entry fails. An issue run then leaves the issue open with its "could not
+  finish" comment.

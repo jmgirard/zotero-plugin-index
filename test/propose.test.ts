@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
@@ -7,7 +7,7 @@ import type { ReadItem, SkippedItem } from "../src/discover/discover.ts";
 import { entriesDir, planned, plannedProblem, REF_CHECK_LIMIT_MS, readHandoff, writePlan } from "../src/discover/handoff.ts";
 import { body, type CheckRunner, discoverRead, GIT_LIMIT_MS, pnpmCheck, proposeHandoff, type Written } from "../src/discover/propose.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
-import { checkout as gitCheckout, git } from "./support/git-checkout.ts";
+import { checkout as gitCheckout, git, pushFromClone } from "./support/git-checkout.ts";
 import { pluginRepo, searchPage } from "./support/plugin-repo.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -92,7 +92,6 @@ async function twoStep(responses: Responses, gitDir = tempDir(), check?: CheckRu
   if (!checked.ok || checked.plan.kind !== "discover") throw new Error(`handoff refused: ${JSON.stringify(checked)}`);
   const entries = checked.plan.entries.map((entry): Written => ({ ...entry, outcome: "written", dir: checked.dirs.get(entry.id)! }));
   const result = await proposeHandoff({
-    root,
     fetch,
     indexRepo: "example/index",
     gitDir,
@@ -377,7 +376,6 @@ describe("read and write step failures", () => {
     for (const file of ["meta.json", "index.json"]) writeFileSync(join(entriesDir(handoff), entry.id, file), "{}\n");
     const { fetch, requests } = fixtureFetch({ ...indexRepo, [INDEX]: { json: { full_name: "example/index" } } });
     const result = await proposeHandoff({
-      root: tempDir(),
       fetch,
       indexRepo: "example/index",
       gitDir: work,
@@ -476,9 +474,9 @@ describe("the write step's process time limits", () => {
   });
 });
 
-describe("the write step checks the bot pull requests again and the index in its checkout", () => {
+describe("the write step checks the bot pull requests again and the index at the commit it fetched", () => {
   test("skips, with no push or request, an entry whose repo an entry names or whose id an open bot pull request adds", async () => {
-    const { remote, work } = checkout();
+    const { remote, work } = gitCheckout(tempDir(), resolve(ROOT, "test/fixtures/build/plugins"));
     const handoff = tempDir();
     for (const [repo, id] of [
       ["example/second-plugin", "new-id@example.org"],
@@ -493,7 +491,6 @@ describe("the write step checks the bot pull requests again and the index in its
     ];
     const { fetch, requests } = fixtureFetch(loadFixture(resolve(ROOT, "test/fixtures/discover/pulls.json")).responses);
     const result = await proposeHandoff({
-      root: resolve(ROOT, "test/fixtures/build/plugins"),
       fetch,
       indexRepo: "example/index",
       gitDir: work,
@@ -508,6 +505,73 @@ describe("the write step checks the bot pull requests again and the index in its
         { repo: "example/second-plugin", id: "new-id@example.org", reason: "in-index" },
         { repo: "example/fresh", id: "open-pr@example.org", reason: "in-bot-pull" },
       ],
+    });
+    expect(requests.filter(({ method }) => method !== "GET")).toEqual([]);
+    expect(git(remote, "for-each-ref", "refs/heads/discover")).toBe("");
+  });
+
+  // Handoff entries example/<name> with the id <name>@example.org.
+  function handoffEntries(names: string[]): Written[] {
+    const handoff = tempDir();
+    return names.map((name) => {
+      const id = `${name}@example.org`;
+      const dir = join(entriesDir(handoff), id);
+      mkdirSync(dir, { recursive: true });
+      for (const file of ["meta.json", "index.json"]) writeFileSync(join(dir, file), "{}\n");
+      return { repo: `example/${name}`, repoUrl: `https://github.com/example/${name}`, id, version: "1.0", outcome: "written", dir };
+    });
+  }
+
+  test("skips an entry that main gained after the checkout, by repo, by id in another letter case, or by a folder whose meta.json is not JSON", async () => {
+    const { remote, work } = checkout();
+    pushFromClone(remote, tempDir(), {
+      "plugins/other@example.org/meta.json": JSON.stringify({ repoUrl: "https://github.com/Example/Alpha" }),
+      "plugins/Beta@Example.org/meta.json": JSON.stringify({ repoUrl: "https://github.com/example/unrelated" }),
+      "plugins/gamma@example.org/meta.json": "not json",
+    });
+    const { fetch, requests } = fixtureFetch({
+      ...indexRepo,
+      [`POST ${PULLS}`]: { status: 201, json: { html_url: "https://github.com/example/index/pull/1" } },
+    });
+    const result = await proposeHandoff({
+      fetch,
+      indexRepo: "example/index",
+      gitDir: work,
+      check: async () => ({ status: 0, output: "" }),
+      entries: handoffEntries(["alpha", "beta", "gamma", "delta"]),
+    });
+    expect(result).toEqual({
+      ok: true,
+      proposed: [expect.objectContaining({ repo: "example/delta" })],
+      failed: [],
+      skipped: [
+        { repo: "example/alpha", id: "alpha@example.org", reason: "in-index" },
+        { repo: "example/beta", id: "beta@example.org", reason: "in-index" },
+        { repo: "example/gamma", id: "gamma@example.org", reason: "in-index" },
+      ],
+    });
+    expect(requests.filter(({ method }) => method === "POST")).toHaveLength(1);
+    expect(git(remote, "for-each-ref", "--format=%(refname)", "refs/heads/discover")).toBe("refs/heads/discover/example/delta");
+    expect(git(remote, "rev-parse", "discover/example/delta^")).toBe(git(remote, "rev-parse", "main"));
+    expect(existsSync(join(work, "plugins", "Beta@Example.org"))).toBe(false);
+  });
+
+  test("fails every entry, one an open bot pull request adds included, when main has no plugins folder", async () => {
+    const { remote, work } = checkout();
+    pushFromClone(remote, tempDir(), {}, ["plugins"]);
+    const [fresh] = handoffEntries(["fresh"]);
+    const pending = { ...fresh, id: "open-pr@example.org" };
+    const { fetch, requests } = fixtureFetch(loadFixture(resolve(ROOT, "test/fixtures/discover/pulls.json")).responses);
+    const result = await proposeHandoff({ fetch, indexRepo: "example/index", gitDir: work, check: pnpmCheck, entries: [pending, ...handoffEntries(["new"])] });
+    const message = expect.stringMatching(/^the default branch main at [0-9a-f]{40} has no plugins\/ folder$/);
+    expect(result).toEqual({
+      ok: true,
+      proposed: [],
+      failed: [
+        { repo: "example/fresh", id: "open-pr@example.org", message },
+        { repo: "example/new", id: "new@example.org", message },
+      ],
+      skipped: [],
     });
     expect(requests.filter(({ method }) => method !== "GET")).toEqual([]);
     expect(git(remote, "for-each-ref", "refs/heads/discover")).toBe("");
@@ -547,6 +611,7 @@ describe("the token", () => {
     }
     expect(git(remote, "for-each-ref", "--format=%(refname)", "refs/heads/discover")).toBe("refs/heads/discover/example/alpha");
     const calls = readFileSync(gitLog, "utf8");
+    expect(calls).toMatch(/^fetch --quiet origin main \| key=http\.https:\/\/github\.com\/\.extraheader$/m);
     expect(calls).toMatch(/^push --quiet --force origin \S+ \| key=http\.https:\/\/github\.com\/\.extraheader$/m);
     expect(calls).not.toContain(token);
     expect(calls).not.toContain(header);
