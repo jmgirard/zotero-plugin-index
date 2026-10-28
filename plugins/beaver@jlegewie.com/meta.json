@@ -1,0 +1,8 @@
+{
+  "id": "beaver@jlegewie.com",
+  "name": "Beaver Local",
+  "description": "Beaver for Zotero running on your own LLM provider: no account, no Beaver servers. Fork of Beaver by JL.",
+  "homepage": "https://github.com/chgwan/beaver-zotero-local",
+  "repoUrl": "https://github.com/chgwan/beaver-zotero-local",
+  "updateUrl": "https://github.com/chgwan/beaver-zotero-local/releases/download/release/update.json"
+}
