@@ -485,7 +485,8 @@ reused._
   format (`cairn/references/mozilla-toolkit-version.md`), finds a record's
   declared range with overrides applied, and, in `majorSupport`, how much of
   one Zotero major that range covers. The tests and the templates (through
-  `site/src/data.ts` and `site/src/components/Support.astro`) import it. The
+  `site/src/data.ts`, `site/src/components/Support.astro`, and, for
+  `ZOTERO_MAJORS`, `site/src/pages/index.astro`) import it. The
   pages carried no script from M015. Since M024 the home page carries one,
   for the language menu and, since M037, the version buttons, which Astro
   inlines as a `type="module"` script; the other pages carry none (D-014,

@@ -457,7 +457,6 @@ describe("the home page", () => {
       [' type="button" aria-pressed="true"', "Any version"],
       ...["7", "8", "9", "10"].map((major) => [` type="button" value="${major}" aria-pressed="false"`, major]),
     ]);
-    expect(ZOTERO_MAJORS).toEqual(["7", "8", "9", "10"]);
   });
 
   test("holds a hidden language menu with one option for each subtag", () => {

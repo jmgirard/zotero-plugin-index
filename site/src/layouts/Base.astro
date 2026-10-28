@@ -98,7 +98,7 @@ const { generatedAt } = loadData();
         font-size: 0.875rem;
         min-width: 3rem;
         padding: 0.25rem 0.75rem;
-        border: 1px solid var(--line);
+        border: 1px solid var(--muted);
         border-radius: 999px;
         background: var(--card);
         color: var(--text);
@@ -113,6 +113,12 @@ const { generatedAt } = loadData();
       [data-version-filter] button:focus-visible {
         outline: 2px solid var(--link);
         outline-offset: 2px;
+      }
+      /* Forced colors replace the backgrounds, so a thicker border marks the pressed button. */
+      @media (forced-colors: active) {
+        [data-version-filter] button[aria-pressed="true"] {
+          border: 3px solid ButtonText;
+        }
       }
       .plugins {
         list-style: none;

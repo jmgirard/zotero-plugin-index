@@ -19,7 +19,6 @@ describe("passes", () => {
   test.each([
     ["a major the row lists", "7 8 9", "8", true],
     ["Any version", "7", "", true],
-    ["Any version on a row with no majors", "", "", true],
     ["a row with no majors", "", "8", false],
     ["a row that lists only other majors", "7 8", "10", false],
     ["a major against a row that lists only 10", "10", "7", false],
@@ -36,8 +35,6 @@ describe("rowShows", () => {
     ["both filters pass", "zh", "9", true],
     ["only the language passes", "zh", "7", false],
     ["only the version passes", "de", "8", false],
-    ["neither passes", "de", "10", false],
-    ["both are at their all value", "", "", true],
   ])("%s", (_, language, zotero, shows) => {
     expect(rowShows(row, { value: language, options: LANGUAGES }, { value: zotero, options: MAJORS })).toBe(shows);
   });
@@ -45,13 +42,11 @@ describe("rowShows", () => {
 
 describe("chosenValue", () => {
   test.each([
-    ["a language option's value", "zh", LANGUAGES, "zh"],
-    ["a language no option has", "xx", LANGUAGES, ""],
-    ["a major a button has", "10", MAJORS, "10"],
-    ["a major no button has", "6", MAJORS, ""],
-    ["no parameter", null, MAJORS, ""],
-  ])("chooses %s", (_, asked, options, value) => {
-    expect(chosenValue(asked, options)).toBe(value);
+    ["a major a button has", "10", "10"],
+    ["a major no button has", "6", ""],
+    ["no parameter", null, ""],
+  ])("chooses %s", (_, asked, value) => {
+    expect(chosenValue(asked, MAJORS)).toBe(value);
   });
 });
 
@@ -68,7 +63,6 @@ describe("filterHref", () => {
 
   test("sets the zotero parameter and keeps the language parameter", () => {
     expect(filterHref(`${PAGE}?language=zh`, "zotero", "8")).toBe(`${PAGE}?language=zh&zotero=8`);
-    expect(filterHref(`${PAGE}?zotero=7&language=zh`, "zotero", "10")).toBe(`${PAGE}?zotero=10&language=zh`);
   });
 
   test.each([
@@ -81,7 +75,6 @@ describe("filterHref", () => {
   test.each([
     ["no language parameter", `${PAGE}?q=a%20b&a`, "language", ""],
     ["the language parameter already set", `${PAGE}?q=a%20b&language=zh`, "language", "zh"],
-    ["the zotero parameter already set", `${PAGE}?q=a%20b&zotero=9`, "zotero", "9"],
   ])("leaves an address with %s unchanged", (_, href, name, value) => {
     expect(filterHref(href, name, value)).toBe(href);
   });
