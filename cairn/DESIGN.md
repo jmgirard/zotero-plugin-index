@@ -91,8 +91,9 @@ schemas are under `https://jmgirard.github.io/zotero-plugin-index/schemas/`,
 each schema's `$id` being its own URL (M006). Each record that has
 `upstream` carries the report counts in the optional `reports` field. The
 daily build counts them from its read of the index repo's closed report
-issues, and a build that cannot read those issues deploys nothing (D-013,
-M021).
+issues, and a build that cannot read those issues or their `report` label,
+or that finds a listed issue with no `closed_by` key, deploys nothing
+(D-013, M021, D-021, M041).
 
 Out of scope: install buttons, mirrors for regions that cannot reach GitHub,
 user accounts, and a combined compatibility verdict.
@@ -498,9 +499,9 @@ reused._
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request, except those the built-in token makes, such as the
   discovery bot's (M009).
-- `src/build/` reads the entries, then every page of the closed report
-  issues, runs the upstream reader on each plugin in turn, writes the
-  `countReports` counts into each read record's `reports`, and checks each record and then the whole output against
+- `src/build/` reads the entries, then the `report` label and every page of
+  the closed report issues, runs the upstream reader on each plugin in turn,
+  writes the `countReports` counts into each read record's `reports`, and checks each record and then the whole output against
   `schemas/plugins.v1.schema.json` before it writes the file.
   `.github/workflows/build.yml` runs `pnpm check`, then the build, then
   `pnpm site` (M007), daily and on manual dispatch, and keeps `dist/` as a

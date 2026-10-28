@@ -288,11 +288,12 @@ describe("pnpm build and the report issues", () => {
     ["the first item of the first page", ISSUES, (items: Record<string, unknown>[]) => delete items[0].closed_by, "issue #41"],
     ["an item of the second page", ISSUES_PAGE_2, (items: Record<string, unknown>[]) => delete items[1].closed_by, "issue #38"],
     [
-      "an item with no numeric number after a valid item",
+      "an item with no numeric number after a valid item and before another such item",
       ISSUES,
       (items: Record<string, unknown>[]) => {
         delete items[1].closed_by;
         items[1].number = "40";
+        items.push({ ...items[0], number: 42, closed_by: undefined });
       },
       "an issue",
     ],
@@ -310,7 +311,7 @@ describe("pnpm build and the report issues", () => {
       "a pull request with no closed_by key",
       (items: Record<string, unknown>[]) => items.push({ number: 42, pull_request: { url: "https://api.github.com/x" } }),
     ],
-    ["an item that is not an object", (items: Record<string, unknown>[]) => items.push(null as never, "x" as never)],
+    ["an item that is not an object", (items: Record<string, unknown>[]) => items.push(null as never, "x" as never, [] as never)],
   ])("builds when the list holds %s", (_, change) => {
     const { result, out } = loggedBuild(changedList(responses(), ISSUES, change));
     expect(result.stderr).not.toContain("cannot read the report issues");

@@ -618,10 +618,12 @@ To build the data file, run:
 pnpm build
 ```
 
-The command reads each entry under `plugins/`. Then it reads every page of
-the closed issues with the label `report`. It reads them from the
-repository that `GITHUB_REPOSITORY` names. If that variable is not set, it
-reads them from `jmgirard/zotero-plugin-index`. Then it reads each plugin
+The command reads each entry under `plugins/`. Then it reads the label
+`report` and every page of the closed issues with that label. It reads them
+from the repository that `GITHUB_REPOSITORY` names. If that variable is not
+set, it reads them from `jmgirard/zotero-plugin-index`. A fork that builds
+the data must have a label named `report`, or the build exits 1. Then it
+reads each plugin
 from GitHub in the same way as `pnpm add-plugin`. It writes one file,
 `dist/v1/plugins.json`. The file has a `schemaVersion` of `1`, a
 `generatedAt` time, and one record for each entry. Each record keeps the
@@ -681,7 +683,8 @@ The command writes no data file and exits with status 1 in these cases:
 - An entry is not valid, for example a `meta.json` with no `repoUrl`.
 - It cannot read the `report` label, which it reads before the report
   issues. After a rename or a delete of the label, GitHub answers HTTP 404.
-  It prints a line that names the failure, and it reads no plugin.
+  It prints a line that names the failure, and it reads neither the report
+  issues nor any plugin.
 - It cannot read a page of the report issues, for example after an HTTP
   error, a network error, or an answer that is not a list. It prints a line
   that names the failure, and it reads no plugin.

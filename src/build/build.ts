@@ -107,7 +107,8 @@ export async function buildData(
   // An issue with no closed_by key cannot be counted, so the counts cannot be read. An
   // item that is not an object, or a pull request, is left for countReports to drop.
   const unclosed = issues.find(
-    (item) => typeof item === "object" && item !== null && !("pull_request" in item) && !("closed_by" in item),
+    (item) =>
+      typeof item === "object" && item !== null && !Array.isArray(item) && !("pull_request" in item) && !("closed_by" in item),
   ) as { number?: unknown } | undefined;
   if (unclosed) {
     const which = typeof unclosed.number === "number" ? `issue #${unclosed.number}` : "an issue";

@@ -246,3 +246,18 @@ run says nothing about whether the handoff can be trusted. The user kept
 the rule that a refused handoff sends no request, and a refusal by any
 other check wins over a check that cannot run. The user rejected refusing
 quietly, which left the issue unanswered.
+
+### D-021: A missing report label or closed_by key withholds the deploy, annotating D-013
+
+2026-10-28, M041 plan and review. D-013 withholds a deploy when the build
+cannot read the report issues. A renamed or deleted `report` label makes
+GitHub answer the issue list with no issues, and an issue with no
+`closed_by` key cannot be counted, so both gave counts of zero with no
+failure. At the plan question set the user chose that the build reads the
+label before the list and stops when that read fails. The build also stops
+when a listed issue has no `closed_by` key. Each case is a failed read
+under D-013. The cost adds to D-013's: a renamed or deleted label, or a
+fork that builds the data with issues on but no `report` label, stops
+every deploy until the label exists. An issue whose `closed_by` is `null`
+still counts as read, so a list that keeps the key and sends `null` on
+every issue still gives counts of zero.
