@@ -618,8 +618,7 @@ describe("readUpstream", () => {
     expect(result).toEqual({ ok: false, failure, message: expect.stringContaining(detail), buildLevel: true });
   });
 
-  // A 403 is build-level when the download requested a github.com URL whose third path
-  // segment is `releases`, at any hop, and plugin-level otherwise.
+  // The release URL can be any hop of the download, not only the last.
   const ASSET = "https://release-assets.githubusercontent.com/github-production-release-asset/486255787/asset";
   const LATEST = "https://github.com/windingwind/zotero-better-notes/releases/latest/download/update.json";
   const RAW = "https://raw.githubusercontent.com/windingwind/zotero-better-notes/main/update.json";
