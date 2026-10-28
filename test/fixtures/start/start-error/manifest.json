@@ -1,0 +1,13 @@
+{
+  "manifest_version": 2,
+  "name": "Start test: start-error",
+  "version": "1.0.0",
+  "applications": {
+    "zotero": {
+      "id": "start-error@start-test.invalid",
+      "update_url": "https://example.invalid/update.json",
+      "strict_min_version": "6.999",
+      "strict_max_version": "10.*"
+    }
+  }
+}

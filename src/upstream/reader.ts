@@ -489,6 +489,18 @@ function downloader(fetch: Fetch, lookup: Lookup, signal?: AbortSignal): Downloa
   };
 }
 
+// The bytes of the XPI's manifest.json, or undefined when it holds none. It fails when the
+// zip claims more entries than its bytes can hold, holds more than one manifest.json, or
+// holds one over UNZIPPED_MAX_BYTES or one that inflates past its declared size.
+// `pnpm start-test` reads the plugin id with it too.
+export function xpiManifestBytes(zip: Uint8Array, tag: string): Uint8Array | undefined {
+  const count = zipEntryCount(zip);
+  if (count !== undefined && count * CENTRAL_HEADER_MIN_BYTES > zip.length) {
+    fail("xpi-unreadable", `the XPI of ${tag} claims ${count} entries, more than its ${zip.length} bytes can hold`);
+  }
+  return unzipOne(zip, "manifest.json", tag);
+}
+
 async function readManifest(
   download: Download,
   url: string,
@@ -501,11 +513,7 @@ async function readManifest(
   const zip = await readCapped(response, url, XPI_MAX_BYTES, () =>
     fail("xpi-too-large", `the XPI of ${tag} at ${url} is larger than ${XPI_MAX_BYTES} bytes`),
   );
-  const count = zipEntryCount(zip);
-  if (count !== undefined && count * CENTRAL_HEADER_MIN_BYTES > zip.length) {
-    fail("xpi-unreadable", `the XPI of ${tag} claims ${count} entries, more than its ${zip.length} bytes can hold`);
-  }
-  const bytes = unzipOne(zip, "manifest.json", tag);
+  const bytes = xpiManifestBytes(zip, tag);
   if (!bytes) fail("no-manifest", `the XPI of ${tag} holds no manifest.json`);
   let manifest: unknown;
   try {
