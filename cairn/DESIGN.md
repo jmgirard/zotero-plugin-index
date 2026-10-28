@@ -187,9 +187,10 @@ exception is a report that is abuse.
 - Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch, {
   lookup, signal })` returns the facts of one GitHub repo with the URL and
   SHA-256 of the XPI it read (M047), or one named inclusion-bar failure.
-  `downloadXpi` downloads one XPI with the same host check (M047). The optional `lookup` resolves download hosts for
-  the host check (M004). When the optional `signal` aborts, the read fails
-  as a build-level `request-failed` (M029). Added M002. `githubClient(fetch)` makes its GitHub
+  `downloadXpi` downloads one XPI with the same host check (M047). The
+  optional `lookup` resolves download hosts for the host check (M004).
+  When the optional `signal` aborts, the read fails as a build-level
+  `request-failed` (M029). Added M002. `githubClient(fetch)` makes its GitHub
   API requests and refuses a URL on another host, so the token goes to the
   API only (exported M008).
 - Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
@@ -239,7 +240,8 @@ exception is a report that is abuse.
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
   It exits 1 when more than half of the records carry a build-level failure,
   as README "Building the data" defines it, and also when every record carries a
-  failure, whatever its name. It prints a summary of failure
+  failure, whatever its name, and, after writing the data, when it cannot
+  write the `--plan` file (M047). It prints a summary of failure
   names and a `::warning::` line for build-level failures. Before any plugin
   read it reads the `report` label and the closed report issues of
   `GITHUB_REPOSITORY`, or of `INDEX_REPO`, and writes `reports` on each
@@ -552,8 +554,9 @@ reused._
   `schemas/plugins.v1.schema.json` before it writes the file.
   `.github/workflows/build.yml` runs `pnpm check` and the build (M007),
   daily and on manual dispatch, and keeps the data as a workflow artifact
-  (M003); since M047 a later site job runs `pnpm site`. The build also copies both schemas to `dist/schemas/`, and it exits 1 after it
-  writes the file when more than half of the records carry a build-level
+  (M003); since M047 a later site job runs `pnpm site`. The build also
+  copies both schemas to `dist/schemas/`, and it exits 1 after it writes
+  the file when more than half of the records carry a build-level
   failure, as README "Building the data" defines it (M017), or when every
   record carries a failure of any name (M018, D-012). A failed read of the
   `report` label or the report issues, or a listed issue with no
@@ -584,8 +587,9 @@ reused._
   discover read job can save caches in the default branch's scope, while
   `issues` runs get read-only cache access. `test/workflows.test.ts` fails on a
   `cache` key or an `actions/cache` step in `build.yml`, or on a build,
-  start-test, or site job without `cache-mode: none` (M047); `ci.yml` keeps `cache: pnpm` (M016). It also
-  checks `report-issue.yml`: its triggers, job condition, permissions,
+  start-test, or site job without `cache-mode: none` (M047); `ci.yml` keeps
+  `cache: pnpm` (M016). It also checks `report-issue.yml`: its triggers,
+  job condition, permissions,
   `cache-mode: none`, no cache line, its concurrency groups, the issue number
   through `env:`, and no use of `github.event` other than the issue number,
   its labels, and the repository's default branch (M020, M040), and that
@@ -609,8 +613,9 @@ reused._
   D-019). The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
   Astro's `import.meta.env.BASE_URL`. `build.yml`'s site job runs `pnpm site`
-  after the build job (M047), so a failed site build also deploys nothing. `tsconfig.json` includes
-  `site/`, so `pnpm test` type-checks its `.ts` files; the `.astro` templates
+  after the build job (M047), so a failed site build also deploys nothing.
+  `tsconfig.json` includes `site/`, so `pnpm test` type-checks its `.ts`
+  files; the `.astro` templates
   are compiled by Astro without a type check (M007). A plugin page shows the
   "Archived on GitHub" fact only for a record whose `archived` is a boolean,
   and the home list's `data-archived` marker only for `archived: true` (M013).

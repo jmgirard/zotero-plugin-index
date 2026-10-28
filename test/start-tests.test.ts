@@ -6,7 +6,7 @@ import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { afterAll, afterEach, describe, expect, test, vi } from "vitest";
 import type { StartPlanItem } from "../src/build/build.ts";
-import { startTests } from "../src/start-test/start-tests.ts";
+import { startTests, summaryLines } from "../src/start-test/start-tests.ts";
 import { fixtureFetch, type Responses } from "./support/fixture-fetch.ts";
 import { fixtureXpi } from "./support/start-fixtures.ts";
 
@@ -171,6 +171,10 @@ describe("startTests", () => {
     expect(outcome.results.map((result) => result.entry)).toEqual(["first"]);
     expect(outcome.notStarted).toEqual(["second", "third"]);
     expect(startCount(starts)).toBe(1);
+    expect(summaryLines(outcome)).toEqual([
+      "Zotero 10.0.6: 1 results, 0 without a result, 0 outside the manifest range",
+      "::warning::2 plugins were not started after the limit of 20 minutes",
+    ]);
   });
 });
 
@@ -203,6 +207,7 @@ describe("pnpm start-tests", () => {
     ]);
     expect(result.stdout).toContain("inside: started\n");
     expect(result.stdout).toContain("Zotero 10.0.6: 1 results, 0 without a result, 1 outside the manifest range\n");
+    expect(result.stdout).not.toContain("::warning::");
   });
 
   // Each case writes no --out file.

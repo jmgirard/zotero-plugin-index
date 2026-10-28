@@ -3,7 +3,7 @@ import { dirname } from "node:path";
 import process from "node:process";
 import { parseArgs } from "node:util";
 import { StartFailure } from "./start-test.ts";
-import { parsePlan, START_TESTS_LIMIT_MS, startTests } from "./start-tests.ts";
+import { parsePlan, startTests, summaryLines } from "./start-tests.ts";
 
 const USAGE = "usage: pnpm start-tests --plan <file> --zotero <binary> --out <file>";
 
@@ -57,13 +57,7 @@ async function main(): Promise<number> {
   }
   await mkdir(dirname(values.out), { recursive: true });
   await writeFile(values.out, `${JSON.stringify(run.results, null, 2)}\n`);
-  console.log(
-    `Zotero ${run.zotero}: ${run.results.length} results, ${run.skipped.length} without a result, ` +
-      `${run.outOfRange.length} outside the manifest range`,
-  );
-  if (run.notStarted.length > 0) {
-    console.log(`::warning::${run.notStarted.length} plugins were not started after the ${START_TESTS_LIMIT_MS / 60_000}-minute limit`);
-  }
+  for (const line of summaryLines(run)) console.log(line);
   console.log(`wrote ${run.results.length} results to ${values.out}`);
   return 0;
 }

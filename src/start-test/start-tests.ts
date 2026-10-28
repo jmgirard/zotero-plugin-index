@@ -45,6 +45,19 @@ export interface StartTestsResult {
   notStarted: string[];
 }
 
+// The summary that `pnpm start-tests` prints: the counts, and a `::warning::` line, which
+// GitHub Actions shows on the run, when the total limit left items in range unstarted.
+export function summaryLines(run: StartTestsResult, limitMs = START_TESTS_LIMIT_MS): string[] {
+  const lines = [
+    `Zotero ${run.zotero}: ${run.results.length} results, ${run.skipped.length} without a result, ` +
+      `${run.outOfRange.length} outside the manifest range`,
+  ];
+  if (run.notStarted.length > 0) {
+    lines.push(`::warning::${run.notStarted.length} plugins were not started after the limit of ${duration(limitMs)}`);
+  }
+  return lines;
+}
+
 // Whether the manifest range of `item` covers the Zotero version, compared as Zotero
 // compares versions. A missing bound leaves that side open.
 export function inRange(item: Pick<StartPlanItem, "strictMinVersion" | "strictMaxVersion">, zotero: string): boolean {

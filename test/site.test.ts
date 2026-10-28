@@ -356,8 +356,10 @@ describe("the plugin page", () => {
     expect(note).toBe(
       "The daily build installs version 1.0.0 in a new Zotero profile on Linux and waits 3 seconds. A start test does not show that the plugin works.",
     );
-    expect(html.indexOf("data-start-tests")).toBeGreaterThan(-1);
     expect(html.indexOf("data-start-tests")).toBeLessThan(html.indexOf("<details>"));
+    // The note's 3 seconds is the reporter's wait after the install.
+    const reporter = readFileSync(resolve(ROOT, "src/start-test/reporter/bootstrap.js"), "utf8");
+    expect(/^const SETTLE_MS = (\d+);$/m.exec(reporter)?.[1]).toBe("3000");
   });
 
   // A read record and a failed one, the two ways a page has no startTests.

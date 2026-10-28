@@ -317,3 +317,15 @@ merged data, the same kind of fault as a failed `pnpm site`. The deploy
 job's `if:` names the site job's result, since GitHub skips a job whose
 earlier jobs include a failed one unless its `if:` says otherwise. The cost
 is that a day whose start tests all fail deploys with no start results.
+
+### D-025: Correct D-024's list of the add-start-results failures that withhold a deploy, superseding that sentence of D-024
+
+2026-10-28, M047 review. D-024 says `pnpm add-start-results` withholds the
+deploy only when the build's data or plan cannot be read or the schema
+rejects the merged data. The command also exits 1, and so withholds the
+deploy, when it cannot list the results directory for a reason other than
+its absence, when it cannot write the data file, and when its `--tested`
+list is not a list of versions. Each is a fault of the site job's own files
+or of the workflow, never a start result, so D-024's rule stands: no start
+result withholds a deploy. The site job runs no plugin code, so plugin code
+cannot cause these faults.

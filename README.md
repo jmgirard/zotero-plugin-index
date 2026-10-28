@@ -120,13 +120,15 @@ A daily build updates the data. If more than half of the records carry a
 build-level failure, such as a rate limit or a network error, the build
 deploys nothing. "Building the data" below says which failures are
 build-level. If every record carries a failure, whatever its name, the build
-also deploys nothing. If the build cannot read the report issues, or the
-site build fails, the build also
-deploys nothing. A failed start test does not stop the deploy.
+also deploys nothing. The build also deploys nothing in these cases: it
+cannot read the report issues, it cannot write the start plan,
+`pnpm add-start-results` fails, or the site build fails. "The daily build"
+below names the commands. A failed start test does not stop the deploy.
 The data from the last good build then stays in place. "Building the data"
 below describes the file. A breaking change to the file gets a new schema
-version under a new path, such as `v2/`. By this project's rule, a new optional field does not get a new schema
-version. The schema rejects fields that it does not define. If you validate
+version under a new path, such as `v2/`. By this project's rule, a new
+optional field does not get a new schema version. The schema rejects fields
+that it does not define. If you validate
 against a saved copy of the schema, fetch it again after such a change.
 
 Each `upstream` block has a `languages` list, such as `["en-US", "zh-CN"]`.
@@ -216,9 +218,11 @@ field is new in schema v1. If you validate against a saved copy of the
 schema, fetch the schema again.
 
 Plugin code runs during its start test. Code that runs in a start-test job
-can rewrite that job's results, its own included, so a `startTests` item
-can be forged. "Starting plugins in Zotero" below says which results the
-build keeps.
+can rewrite that job's results, its own included. That code can also leave
+a process running. If the process uploads results under the artifact name
+of another tested release before that release's job does, its results
+count. So a `startTests` item can be forged. "Starting plugins in Zotero"
+below says which results the build keeps.
 
 ## Plugin entries
 

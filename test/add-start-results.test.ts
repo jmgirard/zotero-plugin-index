@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -126,14 +126,21 @@ describe("addResults", () => {
   });
 
   test("drops every result of an artifact whose name holds no tested version", async () => {
-    const dir = resultsDir({ "other-artifact": [alpha("10.0.6")], "start-results-99": [alpha("99")], "start-results-": [alpha("")] });
+    const dir = resultsDir({ "other-artifact": [alpha("10.0.6")], "start-results-99": [alpha("99")] });
     const outcome = addResults(data(), PLAN, await readResultsDir(dir), TESTED);
     expect(outcome.dropped.map((drop) => [drop.file.split("/")[0], drop.reason])).toEqual([
       ["other-artifact", "untested-zotero"],
-      ["start-results-", "untested-zotero"],
       ["start-results-99", "untested-zotero"],
     ]);
     expect(outcome.data.plugins[0].startTests).toBeUndefined();
+  });
+
+  // A root user can read a file with no permissions.
+  test.skipIf(process.getuid?.() === 0)("drops as a bad file an entry that it cannot read", async () => {
+    const dir = resultsDir({ "start-results-10.0.6": [alpha("10.0.6")] });
+    chmodSync(join(dir, "start-results-10.0.6", "start-results.json"), 0o000);
+    const outcome = addResults(data(), PLAN, await readResultsDir(dir), TESTED);
+    expect(outcome.badFiles).toEqual([join("start-results-10.0.6", "start-results.json")]);
   });
 
   test("drops as a bad file an entry that is a directory, a link, or over the size limit, and keeps the rest", async () => {
@@ -230,26 +237,62 @@ describe("pnpm add-start-results", () => {
     expect(JSON.parse(readFileSync(join(dir, "plugins.json"), "utf8")).plugins.some((record: object) => "startTests" in record)).toBe(false);
   });
 
-  // Each case leaves the data file as it was.
-  test.each([
-    ["the plan is not a plan", "[]", JSON.stringify(data()), "plan-invalid: the plan has no plugins list\n"],
-    ["the data has no plugins list", JSON.stringify(PLAN), "{}", "<data> has no plugins list\n"],
-  ])("exits 1 when %s", async (_name, plan, text, stderr) => {
+  // A record that the schema rejects: its upstream has no version.
+  const invalid = data();
+  delete (invalid.plugins[0].upstream as { version?: string }).version;
+
+  test.each<[string, { plan?: string; text?: string; results?: string }, RegExp]>([
+    ["the plan is not a plan", { plan: "[]" }, /^plan-invalid: the plan has no plugins list\n$/],
+    ["the data has no plugins list", { text: "{}" }, /^\S+plugins\.json has no plugins list\n$/],
+    ["the data is not JSON", { text: "{" }, /^cannot read the data or the plan: /],
+    ["the schema rejects the new data", { text: JSON.stringify(invalid) }, /^the output \/plugins\/0\/upstream must have required property 'version'\n[\s\S]*wrote no file\n$/],
+    ["the results path is a file", { results: "plugins.json" }, /^cannot read the results directory \S+plugins\.json: ENOTDIR/],
+  ])("exits 1 and leaves the data file as it was when %s", async (_name, { plan = JSON.stringify(PLAN), text = JSON.stringify(data()), results }, stderr) => {
     const dir = tempDir();
     writeFileSync(join(dir, "plugins.json"), text);
     writeFileSync(join(dir, "plan.json"), plan);
-    const failed = await run(process.execPath, addArgs(dir, dir)).catch((error) => error as { code: number; stderr: string });
-    expect(failed).toMatchObject({ code: 1, stderr: stderr.replace("<data>", join(dir, "plugins.json")) });
+    const failed = await fails(addArgs(dir, results ? join(dir, results) : dir));
+    expect(failed.code).toBe(1);
+    expect(failed.stderr).toMatch(stderr);
     expect(readFileSync(join(dir, "plugins.json"), "utf8")).toBe(text);
   });
 
-  test("prints the usage without --tested", async () => {
-    const failed = await run(process.execPath, [CLI, "--data", "d", "--plan", "p", "--results", "r"]).catch(
-      (error) => error as { code: number; stderr: string },
-    );
-    expect(failed).toMatchObject({ code: 1, stderr: expect.stringContaining("--tested <version>") });
+  // A root user can write the read-only directory.
+  test.skipIf(process.getuid?.() === 0)("exits 1 with write-failed and leaves the data file as it was when it cannot write", async () => {
+    const dir = tempDir();
+    const text = JSON.stringify(data());
+    writeFileSync(join(dir, "plugins.json"), text);
+    writeFileSync(join(dir, "plan.json"), JSON.stringify(PLAN));
+    const results = resultsDir({ "start-results-10.0.6": [alpha("10.0.6")] });
+    chmodSync(dir, 0o555);
+    try {
+      const failed = await fails(addArgs(dir, results));
+      expect(failed.code).toBe(1);
+      expect(failed.stderr).toMatch(/^write-failed: cannot write \S+plugins\.json: EACCES/);
+    } finally {
+      chmodSync(dir, 0o755);
+    }
+    expect(readFileSync(join(dir, "plugins.json"), "utf8")).toBe(text);
+  });
+
+  test.each([
+    ["without --tested", ["--data", "d", "--plan", "p", "--results", "r"], "--tested <version>"],
+    ["for a --tested list with an empty version", ["--data", "d", "--plan", "p", "--results", "r", "--tested", "7.0.32,,10.0.6"], "--tested must list Zotero versions"],
+  ])("prints the usage %s", async (_name, args, message) => {
+    const failed = await fails([CLI, ...args]);
+    expect(failed).toMatchObject({ code: 1, stderr: expect.stringContaining(message) });
   });
 });
+
+// The exit code and stderr of a run that is meant to fail; a run that exits 0 gives code 0.
+async function fails(args: string[]): Promise<{ code: number; stderr: string }> {
+  try {
+    const { stderr } = await run(process.execPath, args);
+    return { code: 0, stderr };
+  } catch (error) {
+    return error as { code: number; stderr: string };
+  }
+}
 
 function addArgs(dir: string, results: string): string[] {
   return [CLI, "--data", join(dir, "plugins.json"), "--plan", join(dir, "plan.json"), "--results", results, "--tested", TESTED.join(",")];

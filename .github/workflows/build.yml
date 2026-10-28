@@ -140,6 +140,8 @@ jobs:
     needs: [build, start-test]
     if: ${{ !cancelled() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
+    # The job took 20 seconds in run 40777702698 (2026-10-28). A job that GitHub stops at
+    # this limit deploys nothing, as a failed `pnpm site` does.
     timeout-minutes: 15
     permissions:
       contents: read

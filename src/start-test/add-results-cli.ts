@@ -28,6 +28,10 @@ async function main(): Promise<number> {
     return 1;
   }
   const tested = values.tested.split(",");
+  if (!tested.every((version) => /^[0-9]+(\.[0-9]+)*$/.test(version))) {
+    console.error(`--tested must list Zotero versions joined by commas, such as 7.0.32,10.0.6\n${USAGE}`);
+    return 1;
+  }
   let data: PluginsFile;
   let planText: string;
   try {
@@ -50,7 +54,10 @@ async function main(): Promise<number> {
   try {
     files = await readResultsDir(values.results);
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      console.error(`cannot read the results directory ${values.results}: ${(error as Error).message}`);
+      return 1;
+    }
     console.log(`no results directory at ${values.results}, so no start results are added`);
     files = [];
   }
