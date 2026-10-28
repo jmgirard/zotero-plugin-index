@@ -53,6 +53,8 @@ page's "Declares Zotero" buttons, "Any version" and one per major of
 `ZOTERO_MAJORS`, filter the list to the plugins whose pill for the pressed
 major is all or part, one major at a time, together with the menu; the
 same script runs them and keeps the choice in `?zotero=` (D-019, M037).
+While a filter is on, the same script writes a status line under the
+filters that says how many plugins show, or that none match (M044).
 The home intro links to the "Add a plugin" issue form (M037).
 The page shows the name, the description, the version pills, the declared
 range, the "Menus and settings in" line (M024, M033), the user reports on
@@ -242,11 +244,12 @@ exception is a report that is abuse.
   `src/site/description.ts` holds `shownDescription`.
   `src/site/languages.ts` holds the applied languages, their names, and the
   menu options. `src/site/home-filter.ts` holds `passes`, `rowShows`,
-  `chosenValue`, and `filterHref`, which the home page's script imports for
-  the language menu and the version buttons (renamed from
-  `language-filter.ts`, M037); `rowMajors` in `version.ts` gives each row's
-  `data-zotero`. Added M007; pills and descriptions M015; languages M024;
-  version buttons M037.
+  `chosenValue`, `filterHref`, and `filterStatus`, which the home page's
+  script imports for the language menu, the version buttons, and the
+  status line (renamed from `language-filter.ts`, M037); `rowMajors` in
+  `version.ts` gives each row's `data-zotero`. Added M007; pills and
+  descriptions M015; languages M024; version buttons M037; status line
+  M044.
 - Reports (`src/reports/`): `parseReport(body, labels, ids)` reads a report
   issue's plugin id, plugin version, Zotero major, and verdict, or names the
   first problem. `pnpm report-issue` reads the issue that `ISSUE_NUMBER`

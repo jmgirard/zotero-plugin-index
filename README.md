@@ -60,6 +60,13 @@ page acts as if "Any version" is pressed and removes the parameter. The
 script that runs the menu also runs the buttons, so without JavaScript the
 home page shows no buttons and lists every plugin.
 
+While a filter is on, a line under the filters reads "Showing N of M
+plugins." N is the number of plugins that the filters show, and M is the
+number on the page. If the filters show no plugin, the line reads "No
+plugins match these filters." With "All languages" and "Any version", the
+line is empty. The same script writes the line, so without JavaScript the
+home page shows no line.
+
 The home page intro links to the "Add a plugin" issue form, which
 "Proposing a plugin with an issue" describes. The form needs a GitHub
 account.

@@ -93,7 +93,7 @@ plugins" button in the line: not chosen at the plan question set.
       `site/src/layouts/Base.astro` if the line needs one. In
       `test/site.test.ts`, assert AC2 in the form of the existing menu and
       button tests, and keep the one-script test.
-- [ ] T3: Add the line to the README's home page paragraphs (lines 30-62),
+- [x] T3: Add the line to the README's home page paragraphs (lines 30-62),
       a `CHANGELOG.md` entry under `## Unreleased`, and `filterStatus` to the
       DESIGN.md function list (near line 244) and its home page text (near
       line 49). Keep prose near 76 columns, and list long added lines with
@@ -123,6 +123,7 @@ plugins" button in the line: not chosen at the plan question set.
 - 2026-10-28: started /milestone-implement on branch m044-filter-status-line, cut from main at 0a947f0.
 - 2026-10-28: T1 done: `filterStatus` in `src/site/home-filter.ts`; its four `test/home-filter.test.ts` cases failed with "filterStatus is not a function" first, then passed. `pnpm test` 940 passed, 1 skipped; `pnpm check` 0 problems.
 - 2026-10-28: T2 done: hidden `<p class="filter-status" role="status" data-filter-status hidden>` between the version buttons and the list; `show()` writes `filterStatus` (rows not hidden, `rows.length`, language or major not ""), and the script unhides the line with the controls. Chose `.filter-status:empty { margin: 0 }` over `display: none` for the empty line, so the live region stays in the page and screen readers hear each new text. The new `test/site.test.ts` case failed with index.astro stashed (`match` gave null), then passed. `pnpm test` 941 passed, 1 skipped; `pnpm check` 0 problems.
+- 2026-10-28: T3 done: README paragraph after the version buttons, CHANGELOG entry at the end of `## Unreleased`, DESIGN home page text and `home-filter.ts` list. Joined-copy search: each of README and CHANGELOG holds each of the two texts once; DESIGN names `filterStatus`. No added prose line over 80 columns. The simple-english hook flags the README sentence ending in "Showing N of M plugins." as long because it does not split after a period inside quotes; the sentence has 16 words, so it stays. The CSS comment in `Base.astro` was reworded to state only what the rule does.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

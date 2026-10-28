@@ -319,3 +319,10 @@
   `Discover plugins` run that an issue or a sweep met. The run that an issue
   without the label `add-plugin` starts does nothing, and it now takes a
   group of its own.
+- While a filter is on, the home page shows a line under its filters that
+  reads "Showing N of M plugins.", where N is the number of plugins that
+  the filters show and M is the number on the page. If the filters show no
+  plugin, the line reads "No plugins match these filters." Before, the
+  list was blank with no message. With "All languages" and "Any version",
+  the line is empty. The script that runs the filters writes the line, so
+  without JavaScript the home page shows no line.
