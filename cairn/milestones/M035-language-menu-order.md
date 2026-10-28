@@ -71,7 +71,7 @@ home list before it paints" and "Test the home page script in a browser".
       Unreleased menu entry (lines 205-209), written against the built page's
       output. Search joined copies of README, CHANGELOG, and DESIGN for other
       text on the menu order and fix any found.
-- [ ] T4: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
+- [x] T4: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
       `check` can fail offline with `registry-schema-unavailable`, so rerun it
       online before calling it red. Build the site from the local
       `dist/v1/plugins.json` with `pnpm site` and read the real menu's order
@@ -93,6 +93,7 @@ home list before it paints" and "Test the home page script in a browser".
 - 2026-10-28: T1 done: `languageOptions` sorts by count, then name; the new test failed on the old text sort and on a planted count-only sort, and passes with the change; `pnpm test` 855 passed, 1 skipped; `pnpm check` 37 entries, 0 problems.
 - 2026-10-28: T2 done: the fixture's first-plugin gained `es`, so Chinese and Spanish have 2 plugins and Spanish sorts after English (1); the menu test expects that list and failed only on the old sort; the row and plugin-page tests follow the fixture; `pnpm test` 855 passed, 1 skipped; `pnpm check` 0 problems.
 - 2026-10-28: T3 done: README and the Unreleased CHANGELOG menu entry state the order, matching the T2 menu test's list; joined-copy searches of README, CHANGELOG, DESIGN, and a grep of src, site/src, and test found no other order text; the simple-english hook flagged README lines 100 and 436 and CHANGELOG line 172, which this branch did not write, so they stay.
+- 2026-10-28: T4 done: `pnpm test` 855 passed, 1 skipped; `pnpm check` 37 entries, 0 problems. The local `dist/v1/plugins.json` predates the languages field, so the site was built from the deployed `v1/plugins.json` (38 pages); its menu reads All languages, English (35), Chinese (27), Italian (8), German (6), then on to the 44 count-sorted options; the browser pane showed that order, and picking Italian showed 8 rows.
 
 ## Decisions
 
