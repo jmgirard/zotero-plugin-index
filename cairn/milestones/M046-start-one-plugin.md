@@ -119,6 +119,7 @@ works is not planned, because a start is the whole claim.
 - 2026-10-28: T5 done: `ci.yml` job `start-test` downloads Zotero 10.0.6 for Linux, checks SHA-256 246c2574…dd63 (read from one download on 2026-10-28), apt-installs xvfb, libasound2t64, and libdbus-glib-1-2, and runs the real-Zotero test under `xvfb-run`. Ruby YAML parse clean. CI run 40763793696 on 0878eff: `check` and `start-test` both success.
 - 2026-10-28: T6 done: the first full `pnpm test` at load average 11 to 14 failed the timed-out shim test (the node shim had not written its pid file within the 2 s limit) and the registry-schema cached-copy case (lesson M038). The shim is now a `sh` script and that test's limit 5 s. Plants rerun: both AC3 tests fail without the group kill and without the temp removal. Full `pnpm test`: 971 passed, 5 skipped; `pnpm check`: 42 entries, 0 problems.
 - 2026-10-28: claim audit: not owed — internal tier.
+- 2026-10-28: step-7 approval: m046-start-one-plugin approved for merge
 
 ## Decisions
 
