@@ -327,3 +327,13 @@
   languages" and "Any version", the line is empty. The script that runs
   the filters writes the line, so without JavaScript the home page shows
   no line.
+- Two more failures are build-level. One is an answer from the GitHub API
+  that succeeds but whose body is not JSON, such as an HTML error page. The
+  other is an HTTP 403 answer to an XPI or `update.json` download that
+  requested a GitHub release download URL. Such a URL is on `github.com`,
+  and its path has `releases` as its third part. GitHub sends such a 403,
+  for example from the host that serves release files after a redirect.
+  Before, both failures belonged to the plugin, so an outage that failed
+  most reads this way did not stop the deploy. Now they count toward the
+  build's more-than-half rule, and an issue run that meets one leaves the
+  issue open with its "could not finish" comment.

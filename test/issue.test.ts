@@ -251,6 +251,7 @@ describe("an issue run's refusals with names the reader gives", () => {
 describe("an issue run's read failures that point at the bot", () => {
   const ALPHA = "https://api.github.com/repos/example/alpha";
   const UPDATE = "https://raw.githubusercontent.com/example/alpha/main/update.json";
+  const XPI = "https://github.com/example/alpha/releases/download/v1.0.0/plugin.xpi";
   const failingLookup = async (): Promise<string[]> => {
     throw new Error("getaddrinfo ENOTFOUND");
   };
@@ -260,6 +261,8 @@ describe("an issue run's read failures that point at the bot", () => {
     ["a GitHub API HTTP 503", { [ALPHA]: { status: 503, text: "unavailable" } }, undefined, "github-http-error", "returned HTTP 503"],
     ["a GitHub API HTTP 403", { [ALPHA]: { status: 403, text: "rate limited" } }, undefined, "github-http-error", "returned HTTP 403"],
     ["an update.json HTTP 503", { [UPDATE]: { status: 503, text: "unavailable" } }, undefined, "update-json-http-error", "returned HTTP 503"],
+    ["a GitHub API body that is not JSON", { [ALPHA]: { text: "<html>" } }, undefined, "request-failed", "not JSON"],
+    ["an XPI HTTP 403 at a GitHub release URL", { [XPI]: { status: 403, text: "forbidden" } }, undefined, "xpi-unreadable", "returned HTTP 403"],
     ["a rejected fetch", { [ALPHA]: { error: "read ECONNRESET" } }, undefined, "request-failed", "read ECONNRESET"],
     ["a failed host lookup", {}, failingLookup, "request-failed", "getaddrinfo ENOTFOUND"],
     ["a read that throws", { [ALPHA]: { unexpected: "meta exploded" } }, undefined, "unexpected-error", "meta exploded"],

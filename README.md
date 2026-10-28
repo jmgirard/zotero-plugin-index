@@ -678,6 +678,12 @@ are build-level:
   network error, or a timeout, such as a read stopped at 3 minutes,
 - a `not-read` entry,
 - an HTTP 401 or 403 answer from the GitHub API,
+- an answer from the GitHub API that succeeds but whose body is not JSON,
+  such as an HTML error page,
+- an HTTP 403 answer to an XPI or `update.json` download that requested a
+  GitHub release download URL, as its first URL or after a redirect. Such a
+  URL is on `github.com`. The third part of its path is `releases`, as in
+  `https://github.com/<owner>/<repo>/releases/download/<tag>/<file>`,
 - an HTTP 429 or 5xx answer from any host.
 
 Every other failure, a 404 included, belongs to the plugin. First, the

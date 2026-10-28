@@ -100,7 +100,7 @@ plugin read and is not changed.
       (line 484) and the `update.json` read (line 784) mark a 403. Keep the
       `buildLevelStatus` sweep test (`test/upstream.test.ts:1141`) covering
       every status for each case, and update the comment at line 93.
-- [ ] T3: Add both cases to the README list (`README.md:672-681`) as two
+- [x] T3: Add both cases to the README list (`README.md:672-681`) as two
       items, defining a release download URL as a `github.com` URL whose
       path's third segment is `releases`, and a `CHANGELOG.md` entry under
       `## Unreleased`. Keep prose near 76
@@ -130,6 +130,7 @@ plugin read and is not changed.
 - 2026-10-28: T1 done: `get` marks a body that is not JSON build-level; the three rows (repo, first and second releases pages) failed before the fix and pass; `pnpm test` 946 passed, 1 skipped; `pnpm check` 0 problems.
 - 2026-10-28: T2 choice: `Download` returns `{ response, from }`, with `from` "github-release" once any requested URL passes `isReleaseUrl` (host `github.com`, third path segment `releases`), and `buildLevelStatus` gains that case (403, plus the any-host 429 and 5xx).
 - 2026-10-28: T2 done: the nine AC2 rows; the six build-level rows failed before the fix only on the missing mark. Planted defects: a first-URL-only check turned the redirect-from-another-host row red, and the rejected host-name list turned 5 rows red, the direct asset URL row among them; file restored from a copy. `pnpm test` 955 passed, 1 skipped; `pnpm check` 0 problems.
+- 2026-10-28: T3 done: README build-level list gains two items, CHANGELOG gains one entry; joined-copy search finds `body is not JSON` and `release download URL` once in each file. Minor amendment: the entry says an issue run leaves the issue open for both cases, so two rows join the build-level table in `test/issue.test.ts`; both failed with main's reader and pass. `pnpm test` 957 passed, 1 skipped; `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
