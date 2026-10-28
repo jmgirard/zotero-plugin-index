@@ -38,15 +38,14 @@ The home page has a "Menus and settings in" menu. It lists each language on
 at least one plugin's languages list, after overrides, with the number of
 those plugins, such as "Chinese (2)". The languages with the most plugins
 come first, and languages with the same number of plugins come in order of
-their names. If you pick a language, the list shows
-only the plugins whose languages list includes it. The menu groups the
-regional forms of a language, so a plugin with `zh-CN` or `zh-TW` counts
-under Chinese. "All languages" shows every plugin. The page keeps your
-choice in the `language` query parameter of its address, such as
-`?language=zh`, so you can link to the filtered list. If the parameter names
-no language in the menu, the page shows every plugin. A script runs the
-menu. Without JavaScript, the home page shows no menu and lists every
-plugin.
+their names. If you pick a language, the list shows only the plugins whose
+languages list includes it. The menu groups the regional forms of a
+language, so a plugin with `zh-CN` or `zh-TW` counts under Chinese.
+"All languages" shows every plugin. The page keeps your choice in the
+`language` query parameter of its address, such as `?language=zh`, so you
+can link to the filtered list. If the parameter names no language in the
+menu, the page shows every plugin. A script runs the menu. Without
+JavaScript, the home page shows no menu and lists every plugin.
 
 Each plugin has its own page. The page shows the name, the description, the
 pills, the declared range, and a "Menus and settings in" line. That line
