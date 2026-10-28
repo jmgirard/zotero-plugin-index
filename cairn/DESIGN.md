@@ -222,14 +222,18 @@ exception is a report that is abuse.
   as README "Building the data" defines it, and also when every record carries a
   failure, whatever its name. It prints a summary of failure
   names and a `::warning::` line for build-level failures. Before any plugin
-  read it reads the closed report issues of `GITHUB_REPOSITORY`, or of
-  `INDEX_REPO`, and writes `reports` on each record that has `upstream`; a
-  failed issue read writes no file and exits 1 (D-013). A plugin read stops
+  read it reads the `report` label and the closed report issues of
+  `GITHUB_REPOSITORY`, or of `INDEX_REPO`, and writes `reports` on each
+  record that has `upstream`; a failed label or issue read, or a listed
+  issue with no `closed_by` key, writes no file and exits 1 (D-013). A
+  pull request or an item that is not an object is left for `countReports`
+  to drop. A plugin read stops
   at 3 minutes and fails as `request-failed`. After 18 minutes from the
   command's start, the build reads no more plugins, and each entry left
   fails as `not-read`. Both are build-level (D-015). Added M003;
   schemas and exit rule M006; build-level rule and summary M017; every-record
-  rule M018; reports M021; time limits M029.
+  rule M018; reports M021; time limits M029; label read and `closed_by`
+  check M041.
 - Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
   home page and one page per record into `dist/`, or `<dir>`, from the data
   file there. `src/site/version.ts` holds the version and range functions
@@ -504,8 +508,9 @@ reused._
   writes the file when more than half of the records carry a build-level
   failure, as README "Building the data" defines it (M017), or when every
   record carries a failure of any name (M018, D-012). A failed read of the
-  report issues stops the build before any plugin read and writes no file
-  (D-013, M021). The build job holds `contents: read` and `issues: read`
+  `report` label or the report issues, or a listed issue with no
+  `closed_by` key, stops the build before any plugin read and writes no file
+  (D-013, M021, M041). The build job holds `contents: read` and `issues: read`
   for that read, and `test/workflows.test.ts` checks both (M021). The reader
   marks a failure build-level beside its name, and `buildData` returns the
   marked ids outside the data, so the published file keeps its shape

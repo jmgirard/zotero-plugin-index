@@ -679,9 +679,14 @@ The command writes no data file and exits with status 1 in these cases:
 
 - It finds no entries, or it cannot read the entry directory.
 - An entry is not valid, for example a `meta.json` with no `repoUrl`.
+- It cannot read the `report` label, which it reads before the report
+  issues. After a rename or a delete of the label, GitHub answers HTTP 404.
+  It prints a line that names the failure, and it reads no plugin.
 - It cannot read a page of the report issues, for example after an HTTP
   error, a network error, or an answer that is not a list. It prints a line
   that names the failure, and it reads no plugin.
+- An issue in the list of report issues has no `closed_by` field. It prints
+  a line that names the field and the issue number, and it reads no plugin.
 - The file it built is not valid against the schema.
 - It cannot write the schema copies or the data file.
 
