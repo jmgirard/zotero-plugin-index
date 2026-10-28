@@ -5,8 +5,10 @@
 - Each plugin entry is a directory `plugins/<id>/` with a registry `meta.json`
   and an `index.json` for index-only data, such as overrides with reasons.
 - `pnpm check` checks every entry. It makes sure that both files exist, that
-  each file is valid against its schema, that the `meta.json` id equals the
-  directory name, and that each override reason contains text.
+  each file is valid against its schema, and that the `meta.json` id equals
+  the directory name. Each override reason must hold a character other than
+  whitespace, as JavaScript's `\s` defines it, and Unicode format
+  characters.
 - `pnpm add-plugin <github-url>` drafts an entry from the GitHub repository of
   a plugin. It reads the manifest in the newest stable release that has an
   `.xpi` file, as the entry on prereleases below says. It writes `meta.json`
@@ -228,3 +230,11 @@
   `unique-ignoring-case` refuses two directory names that differ only in
   case. `pnpm add-plugin` and `pnpm discover` refuse the same ids with
   `unsafe-id` and `entry-exists`.
+- `pnpm check` refuses more override problems. `reason-not-blank` refuses a
+  reason that holds only whitespace, as JavaScript's `\s` defines it, and
+  Unicode format characters, such as U+200B. Before, it refused only a reason of whitespace. The new rule
+  `unique-override` refuses two overrides with the same `field` and
+  `version`. Before, the command passed them, and the site ignored the
+  repeat. A file can start with a UTF-8 byte-order mark. For such a
+  `meta.json` or `index.json`, the line now names the mark, in place of "is
+  not valid JSON".

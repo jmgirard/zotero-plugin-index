@@ -3,7 +3,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symli
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import { caseClashes, entryNameProblem } from "../src/check/check.ts";
+import { caseClashes, checkTree, compileValidators, entryNameProblem } from "../src/check/check.ts";
 
 const VALID = "test/fixtures/check/valid";
 const ENTRY = "first-plugin@example.org";
@@ -170,6 +170,16 @@ describe("pnpm check <root>", () => {
     expect(result.stdout).toContain("meta.json is not valid JSON");
   });
 
+  test.each([
+    ["meta.json", "registry-schema"],
+    ["index.json", "index-schema"],
+  ])("%s that starts with a UTF-8 byte-order mark", (file, rule) => {
+    const root = treeWith((dir) => writeFileSync(join(dir, file), `\uFEFF${readFileSync(join(dir, file), "utf8")}`));
+    const result = expectOnlyRule(root, rule);
+    expect(result.findings).toHaveLength(1);
+    expect(result.stdout).toContain(`${file} starts with a UTF-8 byte-order mark`);
+  });
+
   test("registry-schema: meta.json with a field the registry does not define", () => {
     const root = treeWith((dir) => editJson(join(dir, "meta.json"), (meta) => (meta.downloads = 5)));
     const result = expectOnlyRule(root, "registry-schema");
@@ -255,6 +265,82 @@ describe("pnpm check <root>", () => {
     expect(result.status).toBe(1);
     expect(result.findings).toEqual([{ entry: "Foo@example.org", rule: "unique-ignoring-case" }]);
     expect(result.stdout).toContain("Foo@example.org, foo@example.org");
+  });
+});
+
+// An empty registry schema passes any meta.json, so these cases call checkTree without
+// fetching the registry schema or spawning pnpm.
+async function overrideFindings(overrides: object[]) {
+  const root = treeWith((dir) => editJson(join(dir, "index.json"), (index) => (index.overrides = overrides)));
+  return (await checkTree(root, compileValidators({}))).findings;
+}
+
+describe("checkTree", () => {
+  test.each([
+    ["U+200B", "\u200B"],
+    ["U+200D and a space", "\u200D "],
+  ])("reason-not-blank: a reason of %s", async (_name, reason) => {
+    expect(await overrideFindings([{ field: "name", value: "First", reason }])).toEqual([
+      { entry: ENTRY, rule: "reason-not-blank", message: "overrides[0].reason holds only whitespace or format characters" },
+    ]);
+  });
+
+  test("passes a reason with a format character beside a letter", async () => {
+    expect(await overrideFindings([{ field: "name", value: "First", reason: "ok\u200B" }])).toEqual([]);
+  });
+
+  test("passes a byte-order mark inside a JSON string", async () => {
+    expect(await overrideFindings([{ field: "name", value: "x", reason: "a\uFEFFb" }])).toEqual([]);
+  });
+
+  const override = (field: string, version?: string) => ({ field, value: "x", reason: "r", ...(version && { version }) });
+
+  test("unique-override: two name overrides with no version", async () => {
+    expect(await overrideFindings([override("name"), override("name")])).toEqual([
+      {
+        entry: ENTRY,
+        rule: "unique-override",
+        message: 'overrides[1] has the same field "name" and no version as overrides[0]',
+      },
+    ]);
+  });
+
+  test("unique-override: three name overrides name the first", async () => {
+    expect(await overrideFindings([override("name"), override("name"), override("name")])).toEqual([
+      { entry: ENTRY, rule: "unique-override", message: 'overrides[1] has the same field "name" and no version as overrides[0]' },
+      { entry: ENTRY, rule: "unique-override", message: 'overrides[2] has the same field "name" and no version as overrides[0]' },
+    ]);
+  });
+
+  test("unique-override: a newline in the field stays on the finding's line", async () => {
+    const field = "name\nok: forged";
+    const findings = await overrideFindings([override(field), override(field)]);
+    expect(findings.filter((finding) => finding.rule === "unique-override")).toEqual([
+      {
+        entry: ENTRY,
+        rule: "unique-override",
+        message: 'overrides[1] has the same field "name\\nok: forged" and no version as overrides[0]',
+      },
+    ]);
+  });
+
+  test("unique-override: a newline in the version stays on the finding's line", async () => {
+    const version = "1\nok: forged";
+    expect(await overrideFindings([override("name", version), override("name", version)])).toEqual([
+      {
+        entry: ENTRY,
+        rule: "unique-override",
+        message: 'overrides[1] has the same field "name" and version "1\\nok: forged" as overrides[0]',
+      },
+    ]);
+  });
+
+  test.each([
+    ["no version beside 1.0", [override("name"), override("name", "1.0")]],
+    ["1.0 beside 1.0.0", [override("name", "1.0"), override("name", "1.0.0")]],
+    ["name beside description at 1.0", [override("name", "1.0"), override("description", "1.0")]],
+  ])("passes overrides of %s", async (_name, overrides) => {
+    expect(await overrideFindings(overrides)).toEqual([]);
   });
 });
 

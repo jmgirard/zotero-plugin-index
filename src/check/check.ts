@@ -9,6 +9,7 @@ export type Rule =
   | "index-schema"
   | "id-matches-directory"
   | "reason-not-blank"
+  | "unique-override"
   | "entry-name"
   | "entry-is-directory"
   | "unique-ignoring-case";
@@ -146,10 +147,12 @@ async function checkEntry(dir: string, entry: string, validators: Validators): P
   if (meta.readError) add("files-present", `cannot read meta.json: ${meta.readError}`);
   if (index.readError) add("files-present", `cannot read index.json: ${index.readError}`);
 
-  if (meta.error) add("registry-schema", `meta.json is not valid JSON: ${meta.error}`);
+  if (meta.bom) add("registry-schema", `meta.json ${BOM_MESSAGE}`);
+  else if (meta.error) add("registry-schema", `meta.json is not valid JSON: ${meta.error}`);
   else if ("value" in meta) validate(validators.meta, meta.value, "meta.json", "registry-schema", add);
 
-  if (index.error) add("index-schema", `index.json is not valid JSON: ${index.error}`);
+  if (index.bom) add("index-schema", `index.json ${BOM_MESSAGE}`);
+  else if (index.error) add("index-schema", `index.json is not valid JSON: ${index.error}`);
   else if ("value" in index) validate(validators.index, index.value, "index.json", "index-schema", add);
 
   const id = (meta.value as { id?: unknown } | undefined)?.id;
@@ -159,10 +162,23 @@ async function checkEntry(dir: string, entry: string, validators: Validators): P
 
   const overrides = (index.value as { overrides?: unknown } | undefined)?.overrides;
   if (Array.isArray(overrides)) {
+    // The index of the first override for each field and version. The site's usedOverride
+    // (src/site/version.ts) never applies a later one.
+    const first = new Map<string, number>();
     overrides.forEach((override, i) => {
-      const reason = (override as { reason?: unknown } | null)?.reason;
-      if (typeof reason === "string" && reason.length > 0 && !/\S/.test(reason)) {
-        add("reason-not-blank", `overrides[${i}].reason holds only whitespace`);
+      const { reason, field, version } = (override ?? {}) as { reason?: unknown; field?: unknown; version?: unknown };
+      // \p{Cf} is the Unicode format characters, such as U+200B, most of which print nothing.
+      if (typeof reason === "string" && reason.length > 0 && !/[^\s\p{Cf}]/u.test(reason)) {
+        add("reason-not-blank", `overrides[${i}].reason holds only whitespace or format characters`);
+      }
+      if (typeof field !== "string" || !(version === undefined || typeof version === "string")) return;
+      const key = JSON.stringify([field, version ?? null]);
+      const earlier = first.get(key);
+      if (earlier === undefined) first.set(key, i);
+      else {
+        // Quoted as JSON, so a newline in a version cannot print a line of its own.
+        const which = version === undefined ? "no version" : `version ${JSON.stringify(version)}`;
+        add("unique-override", `overrides[${i}] has the same field ${JSON.stringify(field)} and ${which} as overrides[${earlier}]`);
       }
     });
   }
@@ -191,9 +207,12 @@ function describe(error: ErrorObject): string {
 interface JsonRead {
   missing: boolean;
   readError?: string;
+  bom?: boolean;
   error?: string;
   value?: unknown;
 }
+
+const BOM_MESSAGE = "starts with a UTF-8 byte-order mark (U+FEFF): save it as UTF-8 without one";
 
 async function readJson(path: string): Promise<JsonRead> {
   let text: string;
@@ -203,6 +222,8 @@ async function readJson(path: string): Promise<JsonRead> {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return { missing: true };
     return { missing: false, readError: (error as Error).message };
   }
+  // The utf8 read keeps a leading byte-order mark, and JSON.parse refuses it.
+  if (text.startsWith("\uFEFF")) return { missing: false, bom: true };
   try {
     return { missing: false, value: JSON.parse(text) };
   } catch (error) {

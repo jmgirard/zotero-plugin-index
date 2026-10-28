@@ -142,7 +142,10 @@ exception is a report that is abuse.
   directory under `plugins/`, or under `dir`, and prints one line for each
   problem. Added M001. It also refuses a file beside the entries, a
   directory name that `entryNameProblem` refuses, and names that differ
-  only in case; `writeEntry` refuses the same ids (M031).
+  only in case; `writeEntry` refuses the same ids (M031). It refuses an
+  override reason of only JavaScript `\s` whitespace and Unicode format
+  characters, two overrides with the same `field` and `version`, and names
+  a UTF-8 byte-order mark at the start of an entry file (M032).
 - Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch, {
   lookup, signal })` returns the facts of one GitHub repo, or one named
   inclusion-bar failure. The optional `lookup` resolves download hosts for
