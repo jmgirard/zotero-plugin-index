@@ -309,8 +309,14 @@ describe("the plugin page", () => {
     expect(fact(page(id), "languages")).toBe(text);
   });
 
-  test("labels the interface languages fact", () => {
-    expect(page("first-plugin@example.org")).toContain(`<p class="languages">Interface languages: <span data-fact="languages">`);
+  test("labels the languages fact as menus and settings", () => {
+    expect(page("first-plugin@example.org")).toContain(`<p class="languages">Menus and settings in: <span data-fact="languages">`);
+  });
+
+  test("leaves the old languages label off every plugin page", () => {
+    const pages = htmlFiles(join(out, "plugins"));
+    expect(pages.length).toBe(ids.length);
+    for (const path of pages) expect(readFileSync(join(out, "plugins", path), "utf8"), path).not.toContain("Interface languages:");
   });
 
   test.each([
@@ -415,7 +421,7 @@ describe("the home page", () => {
   });
 
   test("holds a hidden language menu with one option for each subtag", () => {
-    const menu = /<p class="language-filter" hidden><label for="language">Interface language<\/label> <select id="language" data-language-filter autocomplete="off">(.*?)<\/select><\/p>/.exec(home());
+    const menu = /<p class="language-filter" hidden><label for="language">Menus and settings in<\/label> <select id="language" data-language-filter autocomplete="off">(.*?)<\/select><\/p>/.exec(home());
     expect(menu).not.toBeNull();
     const options = [...menu![1]!.matchAll(/<option value="([^"]*)">([^<]*)<\/option>/g)].map(([, value, text]) => [value, text]);
     expect(options).toEqual([

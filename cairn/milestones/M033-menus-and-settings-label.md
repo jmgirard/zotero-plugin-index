@@ -1,13 +1,13 @@
 # M033: Label the languages as menus and settings
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes the text that each plugin page and the home page show to site visitors
-- **Branch/PR:** —
+- **Branch/PR:** m033-menus-and-settings-label
 
 ## Goal
 
@@ -35,8 +35,8 @@ A site visitor reads the languages that a plugin page lists as the languages of 
 
 ## Tasks
 
-- [ ] T1: In `test/site.test.ts`, rewrite the test "labels the interface languages fact" (line 312) for the new label, add the loop over every built plugin page, and change the home menu test's pattern (line 418). See them fail first.
-- [ ] T2: Change the label in `site/src/pages/plugins/[id]/index.astro:55` and `site/src/pages/index.astro:16`. Read the built pages' text, not only the templates, for the space after the colon (LESSONS M021).
+- [x] T1: In `test/site.test.ts`, rewrite the test "labels the interface languages fact" (line 312) for the new label, add the loop over every built plugin page, and change the home menu test's pattern (line 418). See them fail first.
+- [x] T2: Change the label in `site/src/pages/plugins/[id]/index.astro:55` and `site/src/pages/index.astro:16`. Read the built pages' text, not only the templates, for the space after the colon (LESSONS M021).
 - [ ] T3: Update README's home-menu and plugin-page paragraphs (lines 37-59) and the CHANGELOG Unreleased languages entry. Change "interface languages" in DESIGN's facts paragraph and in the comment of `src/site/languages.ts:1` where the text names the label. Search joined copies for each phrase (LESSONS M018).
 - [ ] T4: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` (LESSONS M001). Plant the old label from a copy of each template and restore from the copy, and see the T1 tests fail (LESSONS M010).
 
@@ -51,6 +51,8 @@ A site visitor reads the languages that a plugin page lists as the languages of 
 - 2026-10-28: plan gate chose the label "Menus and settings in" over "Translated into" and over a note line under the old label, because it names what the list holds for a plugin with English only too; falsified by visitors who still read the list as the description's language.
 - 2026-10-28: criteria audit (full): AC1 now reads every built plugin page for the old label, not one page; AC3 states the label's absence as the promise and the joined search as its check, and names both README paragraphs. AC2 and AC4 had no finding.
 - 2026-10-28: criteria re-audit (full) on the final wording: no finding.
+- 2026-10-28: implement started on branch m033-menus-and-settings-label, cut from main at 0b34819.
+- 2026-10-28: T1, T2 done: the label test, a loop over all 8 built plugin pages, and the menu test failed on the old labels, then passed with both templates changed (61 site tests).
 
 ## Decisions
 
