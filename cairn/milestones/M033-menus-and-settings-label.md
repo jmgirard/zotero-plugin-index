@@ -38,7 +38,7 @@ A site visitor reads the languages that a plugin page lists as the languages of 
 - [x] T1: In `test/site.test.ts`, rewrite the test "labels the interface languages fact" (line 312) for the new label, add the loop over every built plugin page, and change the home menu test's pattern (line 418). See them fail first.
 - [x] T2: Change the label in `site/src/pages/plugins/[id]/index.astro:55` and `site/src/pages/index.astro:16`. Read the built pages' text, not only the templates, for the space after the colon (LESSONS M021).
 - [x] T3: Update README's home-menu and plugin-page paragraphs (lines 37-59) and the CHANGELOG Unreleased languages entry. Change "interface languages" in DESIGN's facts paragraph and in the comment of `src/site/languages.ts:1` where the text names the label. Search joined copies for each phrase (LESSONS M018).
-- [ ] T4: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` (LESSONS M001). Plant the old label from a copy of each template and restore from the copy, and see the T1 tests fail (LESSONS M010).
+- [x] T4: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` (LESSONS M001). Plant the old label from a copy of each template and restore from the copy, and see the T1 tests fail (LESSONS M010).
 
 ## Work log
 
@@ -54,6 +54,7 @@ A site visitor reads the languages that a plugin page lists as the languages of 
 - 2026-10-28: implement started on branch m033-menus-and-settings-label, cut from main at 0b34819.
 - 2026-10-28: T1, T2 done: the label test, a loop over all 8 built plugin pages, and the menu test failed on the old labels, then passed with both templates changed (61 site tests).
 - 2026-10-28: T3 done: README's two paragraphs, the CHANGELOG languages entry, and DESIGN's facts paragraph name "Menus and settings in" and say the description is the author's text; joined search finds 0 "Interface language" in README.md and CHANGELOG.md. The comment in `src/site/languages.ts:1` names the data, not the label, so it stays.
+- 2026-10-28: T4 done: `pnpm test` 839 passed, 1 skipped; `pnpm check` 37 entries, 0 problems. Planting both old labels from copies failed the 3 label tests; restored from the copies. A site built from the published data of 2026-10-28 showed the new line on ZotMoov's page and the new menu label in the browser pane.
 
 ## Decisions
 
