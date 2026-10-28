@@ -40,8 +40,8 @@ export function rangeText(record: PluginRecord): string {
 }
 
 // The names of the languages after overrides, in list order, or "Unknown (no translations
-// found)" when none is left. A plugin that writes its text in its code has no locale folders,
-// so the index cannot tell which language that text is in.
+// found)" when none is left. The list is empty when, for example, a plugin writes its text in
+// its code and ships no locale folders, so the index cannot tell which language that text is in.
 export function languagesText(record: PluginRecord): string {
   const tags = appliedLanguages(record);
   return tags.length > 0 ? tags.map(languageName).join(", ") : "Unknown (no translations found)";

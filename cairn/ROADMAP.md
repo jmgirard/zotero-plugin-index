@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-28 (M035 done and archived; M032 row pruned at plan
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M036 | Reword the empty languages line | in-progress | — | normal | milestones/M036-empty-languages-line.md |
+| M036 | Reword the empty languages line | review | — | normal | milestones/M036-empty-languages-line.md |
 | M035 | Sort the language menu by count | done | — | normal | milestones/archive/M035-language-menu-order.md |
 | M034 | Skip translations under half done | done | — | normal | milestones/archive/M034-half-done-translations.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->

@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M036: Reword the empty languages line
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -135,6 +135,9 @@ and `mul`, which name no one interface language.
 - 2026-10-28: T4 done: README.md, CHANGELOG.md, and cairn/DESIGN.md name zxx and mul and the new empty text; README and CHANGELOG also say an override cannot hold und, zxx, or mul; AC2 sweep read 171 files with 0 hits, and finds 1 hit in main's README.md; pnpm test 860 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: left 3 simple-english lint hits in README.md (lines 99, 438) and CHANGELOG.md (line 172) as they are, since this milestone does not touch those lines.
 - 2026-10-28: T5 done: pnpm test 860 passed, 1 skipped; pnpm check 0 problems; the site built from the deployed v1/plugins.json gives "Unknown (no translations found)" on exactly the pages of mktero@tenglvjun.github.io and zotero-except@local, and the browser pane showed it on zotero-except@local's page.
+- 2026-10-28: claim audit: 16 claims read, 1 corrected — site/src/data.ts (the `languagesText` comment named one cause of an empty list as the rule; it now says "for example"; the reader re-read it as true).
+- 2026-10-28: claim audit note, decided: the reader also said "no translations found" misleads for a plugin whose only translations are under `_locales/`; no row, since `_locales/<x>/messages.json` holds the manifest's name and description, not menu or settings text, and the line is labeled "Menus and settings in".
+- 2026-10-28: implement done; pnpm test 860 passed, 1 skipped; pnpm check 0 problems; status review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->
