@@ -380,11 +380,11 @@ reused._
   count against the limit, and each entry directory for exactly the regular
   files `meta.json` and `index.json`. Any failed check refuses the whole
   handoff before a request. A branch-name check that cannot run (git does
-  not start or exits with a status other than 1) or passes its limit is not
-  a refusal: `readHandoff` returns `check-failed`, an issue run comments it
-  as `unexpected-error` and leaves the issue open, and a discover run
-  prints it and exits 1 (M038). So that one plugin cannot refuse a run's
-  handoff, `draftEntry` runs the same entry and file checks
+  not start or ends with any result other than exit status 1) or passes its
+  limit is not a refusal: `readHandoff` returns `check-failed`, an issue run
+  comments it as `unexpected-error` and leaves the issue open, and a
+  discover run prints it and exits 1 (M038). So that one plugin cannot
+  refuse a run's handoff, `draftEntry` runs the same entry and file checks
   (`plannedProblem`) after it writes an entry, and refuses a failing one as
   `not-proposable`, a recorded failure; a check that throws, such as git
   failing to start, is `unexpected-error`, not recorded. Discovery plans a
@@ -393,11 +393,12 @@ reused._
   The read step cuts each issue message to 2,001 characters. Each read job
   outputs its upload's `artifact-id`, and the write side downloads only
   when this attempt uploaded one. The issue number comes from
-  `ISSUE_NUMBER`, never from the handoff. The write step reads the bot pull requests again, and the
-  index in its own checkout, which is the commit the read job saw, and skips
-  an entry that either has. `propose` gives `git fetch` and
-  `git push` the token as an `http.https://github.com/.extraheader` through
-  `GIT_CONFIG_COUNT`, and `pnpmCheck` runs the check without `GITHUB_TOKEN`.
+  `ISSUE_NUMBER`, never from the handoff. The write step reads the bot pull
+  requests again, and the index in its own checkout, which is the commit
+  the read job saw, and skips an entry that either has. `propose` gives
+  `git fetch` and `git push` the token as an
+  `http.https://github.com/.extraheader` through `GIT_CONFIG_COUNT`, and
+  `pnpmCheck` runs the check without `GITHUB_TOKEN`.
 - `src/discover/propose.ts` holds both steps of a discover run. The read step,
   `discoverRead`, first lists the index repo's pull requests (`state=all`,
   every page) and puts in the skip set each repo whose
