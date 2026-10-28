@@ -70,3 +70,26 @@ The daily build withholds the deploy, instead of publishing report counts of zer
 - AC3 evidence (2026-10-28, `git diff main...HEAD`): README's exit-1 list gains a label-read bullet and a `closed_by` bullet; DESIGN.md's Data build bullet ("a failed label or issue read, or a listed issue with no `closed_by` key, writes no file and exits 1") and its `build.yml` passage ("A failed read of the `report` label or the report issues, or a listed issue with no `closed_by` key, stops the build") name both; CHANGELOG.md `## Unreleased` has one new last entry naming both; README line 110's "If the build cannot read the report issues" sentence is unchanged.
 - AC4 evidence (2026-10-28, 7cb463d): `pnpm test` (`tsc --noEmit && vitest run`) 19 files, 929 passed, 1 skipped (the case-sensitive-volume case); `pnpm check` "checked 42 entries in plugins, 0 problems".
 - Consistency gate (2026-10-28): `cairn_validate.py` all checks passed; no DESIGN principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple (21 items: 8 fixed, 1 follow-up, 10 rejected, 2 noted).
+- diff-bug #1: GitHub could keep `closed_by` and send `null` on every issue, so counts read zero and the build deploys — follow-up: the row "Fail builds when closed_by goes missing", narrowed at hygiene; the gap is also stated in D-021.
+- diff-bug #2: no test pins that the line names the first offending item — fix now, fixed abdd691 (the no-number case adds a later item #42 with no `closed_by`; "an issue" pins the first).
+- diff-bug #3: the second-page case runs the same code as the first-page case — reject (planned change: AC1's Verified-by names it).
+- diff-bug #4: the 404 and rejected-fetch label cases share one catch — reject (planned change: AC2's Verified-by names both).
+- diff-bug #5: an array item passes `typeof item === "object"` and trips the check, against the comment and DESIGN — fix now, fixed abdd691 (`!Array.isArray(item)`; `[]` added to the not-an-object case, which went red with the fix removed).
+- diff-bug #6: README's label bullet does not say the issue list is skipped — fix now, fixed abdd691.
+- diff-bug #7: a fork with issues on and no `report` label now exits 1 — fix now, fixed abdd691 (README "Building the data" line; D-021 records the cost).
+- diff-bug #8: test title "…, first and writes the counted reports" reads badly — reject (style).
+- blame-history #1: D-013 records only the issues-off cost, not the missing-label cost — fix now, fixed abdd691 (D-021 annotates D-013).
+- blame-history #2: one issue with no `closed_by` stops the build while `counted()` drops other malformed items — reject (planned change: D-013 and D-021; the build.ts comment it cites is about plugin records).
+- blame-history #3: header comment says "the counts come only from the issues" though the label read gates the build — reject (false: the counts still come only from the issues).
+- prior-review #1: DESIGN.md Contract-boundary sentence names only the issue read — fix now, fixed abdd691.
+- prior-review #2: the reflowed `buildData` comment ends with a short line — reject (style).
+- prior-review #3: one-line problem output and which-failure assertions hold — noted.
+- ripple #1: ROADMAP row "Fail builds when closed_by goes missing" still describes the closed gap — reject (planned change: step 9 hygiene narrows the started row).
+- ripple #2: README "Building the data" request order omits the label read — fix now, fixed abdd691.
+- ripple #3: DESIGN.md `src/build/` bullet omits the label read — fix now, fixed abdd691.
+- ripple #4: README line 110 umbrella sentence — reject (planned change: AC3 keeps it as written).
+- ripple #5: CHANGELOG M021 entry "If the build cannot read the report issues" — reject (false: both new cases print "cannot read the report issues" and write no file).
+- ripple #6: `build.yml` comment "when it cannot read the report issues" — reject (false, as ripple #5).
+- ripple #7: whether `issues: read` covers the label read under the job token — noted: the repo is public, and T4's live read used a user token; the first scheduled build after merge shows it.
+- After fixes (2026-10-28, abdd691): `pnpm test` 929 passed, 1 skipped; `pnpm check` clean. No finding shows a criterion failing or a load-bearing defect, so no return.
