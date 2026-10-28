@@ -36,7 +36,9 @@ not apply to an override.
 
 The home page has a "Menus and settings in" menu. It lists each language on
 at least one plugin's languages list, after overrides, with the number of
-those plugins, such as "Chinese (2)". If you pick a language, the list shows
+those plugins, such as "Chinese (2)". The languages with the most plugins
+come first, and languages with the same number of plugins come in order of
+their names. If you pick a language, the list shows
 only the plugins whose languages list includes it. The menu groups the
 regional forms of a language, so a plugin with `zh-CN` or `zh-TW` counts
 under Chinese. "All languages" shows every plugin. The page keeps your

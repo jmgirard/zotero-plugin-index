@@ -67,7 +67,7 @@ home list before it paints" and "Test the home page script in a browser".
       and each other site test the fixture change moves, such as the row
       languages at `test/site.test.ts:412-420`. See the menu test fail
       against the current sort.
-- [ ] T3: Add the order to README (lines 37-47) and to the CHANGELOG
+- [x] T3: Add the order to README (lines 37-47) and to the CHANGELOG
       Unreleased menu entry (lines 205-209), written against the built page's
       output. Search joined copies of README, CHANGELOG, and DESIGN for other
       text on the menu order and fix any found.
@@ -92,6 +92,7 @@ home list before it paints" and "Test the home page script in a browser".
 - 2026-10-28: implement started on branch m035-language-menu-order, cut from main at 49783ad.
 - 2026-10-28: T1 done: `languageOptions` sorts by count, then name; the new test failed on the old text sort and on a planted count-only sort, and passes with the change; `pnpm test` 855 passed, 1 skipped; `pnpm check` 37 entries, 0 problems.
 - 2026-10-28: T2 done: the fixture's first-plugin gained `es`, so Chinese and Spanish have 2 plugins and Spanish sorts after English (1); the menu test expects that list and failed only on the old sort; the row and plugin-page tests follow the fixture; `pnpm test` 855 passed, 1 skipped; `pnpm check` 0 problems.
+- 2026-10-28: T3 done: README and the Unreleased CHANGELOG menu entry state the order, matching the T2 menu test's list; joined-copy searches of README, CHANGELOG, DESIGN, and a grep of src, site/src, and test found no other order text; the simple-english hook flagged README lines 100 and 436 and CHANGELOG line 172, which this branch did not write, so they stay.
 
 ## Decisions
 
