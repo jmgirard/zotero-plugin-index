@@ -61,6 +61,7 @@ A site visitor reads the languages that a plugin page lists as the languages of 
 - 2026-10-28: follow-up for review hygiene: an empty list shows "Menus and settings in: None declared", which can read as "no menus" for a plugin whose text is in its code; reword that empty case. Owed as a candidate row; ROADMAP is at its 59-line cap.
 - 2026-10-28: claim audit: 16 claims read, 4 corrected — README.md, CHANGELOG.md (description source, what the line names, what the menu lists, what the filter keeps; the re-read found all four fixed and one long line, rewrapped).
 - 2026-10-28: implement done; status review.
+- 2026-10-28: step-7 approval: m033-menus-and-settings-label approved for merge
 
 ## Decisions
 
