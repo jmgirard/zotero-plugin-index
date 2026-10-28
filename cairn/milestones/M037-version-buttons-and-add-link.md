@@ -156,6 +156,7 @@ counts, see work log). Script on the plugin pages: none (D-014).
 - 2026-10-28: T6 done — deployed `v1/plugins.json` fetched once (generatedAt 2026-10-28T02:03:27.093Z, sha256 prefix ea94c5b5489d10d1, 42 plugins), site built from it, served on port 4321; expected ids per case from `majorSupport` and `rowLanguages` over that copy. Language `zh` (28 plugins) mixes declaring and not declaring every major. All 10 cases (5 buttons × All languages, zh) matched exactly (counts 42/26/31/34/38 and 28/17/20/23/25), one pressed button each, `zotero` parameter set or absent as AC4 says; language change while 8 pressed kept `zotero=8` and both filters; `?zotero=8` opened with 8 pressed and its 31 rows; `?zotero=6&language=zh` became `?language=zh` with Any version pressed. DOMParser of the served HTML: wrapper hidden, all 5 buttons inside it, no row hidden, 1 script. Screenshots at desktop and 375 px width, dark scheme.
 - 2026-10-28: claim audit: 31 claims read, 1 corrected — test/home-filter.test.ts (a test name said a value no button has is removed by `filterHref`; it passes "" and the removal comes from `chosenValue`; renamed, re-read true).
 - 2026-10-28: implement complete; `pnpm test` 883 passed, `pnpm check` 0 problems; status set to review.
+- 2026-10-28: step-7 approval: m037-version-buttons-and-add-link approved for merge
 
 ## Decisions
 
