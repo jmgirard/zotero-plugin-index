@@ -1,13 +1,13 @@
 # M040: Answer issues that no bot run answered
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the bot's comments and closes on "Add a plugin" and report issues reach the people who open them, and a closed report changes the published counts
-- **Branch/PR:** —
+- **Branch/PR:** m040-sweep-unanswered-issues
 
 ## Goal
 
@@ -41,7 +41,7 @@ A daily run answers each open "Add a plugin" or report issue that no bot run ans
 
 ## Tasks
 
-- [ ] T1: Write `test/unanswered.test.ts`, then `src/issues/unanswered.ts` with `unansweredIssues({ fetch, indexRepo, label, workflow, limit, now })`. Read `issues?labels=<label>&state=open&sort=created&direction=asc&per_page=100` and each candidate's `comments?per_page=100` with `githubClient(fetch).pages`, and the runs with one `github.json` call on `actions/workflows/<file>/runs?event=issues&per_page=100`, reading its `workflow_runs` (`pages` refuses a body that is not a list). Take the login from `REPORT_BOT` (`src/reports/count.ts`). Add `pnpm unanswered-issues --label <l> --workflow <file> --limit <n>` (`src/issues/cli.ts`), which prints one number per line, with an argument test.
+- [x] T1: Write `test/unanswered.test.ts`, then `src/issues/unanswered.ts` with `unansweredIssues({ fetch, indexRepo, label, workflow, limit, now })`. Read `issues?labels=<label>&state=open&sort=created&direction=asc&per_page=100` and each candidate's `comments?per_page=100` with `githubClient(fetch).pages`, and the runs with one `github.json` call on `actions/workflows/<file>/runs?event=issues&per_page=100`, reading its `workflow_runs` (`pages` refuses a body that is not a list). Take the login from `REPORT_BOT` (`src/reports/count.ts`). Add `pnpm unanswered-issues --label <l> --workflow <file> --limit <n>` (`src/issues/cli.ts`), which prints one number per line, with an argument test.
 - [ ] T2: In `answerReport`, read `<issue>/comments` after the issue and skip the post when a `github-actions[bot]` comment exists; add the AC2 tests to `test/report.test.ts`.
 - [ ] T3: Add `--sweep` to `src/reports/issue-cli.ts` (no `ISSUE_NUMBER` then), with a test of the sweep through the CLI or an exported `sweepReports`. In `report-issue.yml` add `schedule` (daily, 03:13 UTC) and `workflow_dispatch`, an `if:` that admits them only from the default branch, `actions: read`, the sweep step, and a group such as `${{ github.event_name == 'issues' && format('report-{0}', github.run_id) || 'report-sweep' }}`. Update its `test/workflows.test.ts` block, which today asserts the `issues: opened` trigger alone and no concurrency group.
 - [ ] T4: Make `pnpm discover-issue` read the body with `githubClient(fetch).json` for `ISSUE_NUMBER` (`src/discover/issue-cli.ts`, `issueRead`), mapping a failed read to `failed`. Add `body` to `PullJson` and keep each open bot pull request's `Closes` numbers in `botPulls` (`src/discover/propose.ts:187`), sharing the parser `closesLines` (`src/discover/close-issue.ts:90`), and use them in `issueAnswer`'s `known`. Add the AC4 body-read and AC5 tests to `test/issue.test.ts` and `test/handoff.test.ts`.
@@ -66,6 +66,7 @@ A daily run answers each open "Add a plugin" or report issue that no bot run ans
 - 2026-10-28: criteria audit (full mode, fresh Opus reader), 11 findings, all taken: T1 reads the runs with one `json` call, since `pages` refuses the runs object and would read every page; AC4's `issues: opened` arm names no number for an unlabeled issue; report sweeps share one concurrency group (AC3); a write-job rerun re-answering its batch and a sweep canceling a pending `Discover plugins` run are stated (Scope Out, AC7); AC7's later-sweep claim narrowed to under 7 days, 3 a day, oldest first; test wording moved to "Verified by:" clauses; probes added (second comments page, `queued` and `in_progress` runs, fenced and doubled `Closes` lines, HTTP 404); AC6 names the `answer` job; T4 adds `body` to `PullJson`. No D-entry blocks a criterion.
 - 2026-10-28: sizing: the old AC5 (body read from the API) merged into AC4, leaving 7 criteria, since both describe the add-plugin sweep's read step.
 - 2026-10-28: plan gate chose one concurrency group for report sweep runs over a check of the comments right before each post, because only a group stops two sweeps from reading "no bot comment" at once; falsified by two sweep comments on one report issue.
+- 2026-10-28: T1 done: `src/issues/unanswered.ts` checks the runs first and reads comments only for issues that pass the other conditions, stopping at the limit; it re-checks state and label on each listed item; `pnpm unanswered-issues` (`src/issues/cli.ts`) takes a limit from 1 to 100. 10 tests in `test/unanswered.test.ts`; planted defects (`>` for the 1-hour bound, no pull request filter, only `queued` blocking) each failed one test. `pnpm test` 898 passed, `pnpm check` clean.
 
 ## Decisions
 
