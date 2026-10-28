@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-28 (M036 done and archived; 2 rows graduated, 1 cor
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M037 | Filter by Zotero version and link the add form | in-progress | — | normal | milestones/M037-version-buttons-and-add-link.md |
+| M037 | Filter by Zotero version and link the add form | review | — | normal | milestones/M037-version-buttons-and-add-link.md |
 | M036 | Reword the empty languages line | done | — | normal | milestones/archive/M036-empty-languages-line.md |
 | M035 | Sort the language menu by count | done | — | normal | milestones/archive/M035-language-menu-order.md |
 | M034 | Skip translations under half done | done | — | normal | milestones/archive/M034-half-done-translations.md |

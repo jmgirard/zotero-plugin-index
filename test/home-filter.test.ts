@@ -72,9 +72,9 @@ describe("filterHref", () => {
   });
 
   test.each([
-    ["Any version", "8"],
+    ["a major", "8"],
     ["a value no button has", "6"],
-  ])("removes the zotero parameter for %s and keeps the language parameter", (_, held) => {
+  ])("removes a held zotero parameter (%s) when the value is \"\" and keeps the language parameter", (_, held) => {
     expect(filterHref(`${PAGE}?zotero=${held}&language=zh`, "zotero", "")).toBe(`${PAGE}?language=zh`);
   });
 
