@@ -39,7 +39,7 @@ works is not planned, because a start is the whole claim.
 
 ## Acceptance criteria
 
-- [ ] AC1: `pnpm start-test --zotero <binary> --xpi <file> --out <file>`
+- [x] AC1: `pnpm start-test --zotero <binary> --xpi <file> --out <file>`
       writes one JSON object to `--out`. The object holds the plugin id
       and version from the XPI's `manifest.json`, the Zotero version that
       the binary reports, and a `result`. The result is `started`,
@@ -48,19 +48,19 @@ works is not planned, because a start is the whole claim.
       writes no `--out` file in three cases: the binary does not exist,
       the XPI is not a readable zip, or the XPI's manifest has no
       `applications.zotero.id`. A test asserts each named failure.
-- [ ] AC2: With Zotero 10.0.6 for Linux under `xvfb-run`, the four
+- [x] AC2: With Zotero 10.0.6 for Linux under `xvfb-run`, the four
       fixture plugins get these results. The plugin whose `startup` returns
       gets `started`. The plugin whose `startup` throws gets `start-error`.
       The plugin whose `strict_max_version` is `9.*` gets `not-installed`.
       The plugin whose `startup` never returns gets `timed-out`.
       `test/start-test-zotero.test.ts` asserts the four results, and it
       passes in the `ci.yml` job `start-test` on the branch's last commit.
-- [ ] AC3: After the time limit passes, or after the reporter plugin
+- [x] AC3: After the time limit passes, or after the reporter plugin
       reports, no process of the run's process group stays alive, and the
       run's temp directory is gone. Two shim tests show both: one shim
       writes no report and never exits, under a short limit, and one shim
       writes a report and leaves a child process alive.
-- [ ] AC4: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
+- [x] AC4: The `verify` slot is clean: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -123,3 +123,10 @@ works is not planned, because a start is the whole claim.
 ## Decisions
 
 ## Review
+
+Evidence at 4b7aad2, 2026-10-28; `main` had not moved since the branch cut (9e210b1).
+
+- AC1: `vitest run test/start-test.test.ts --reporter=verbose`, 12 passed: the four results, each from the CLI with exit 0 and the expected `{ id, version, zotero, result }` in `--out` (not-installed from both a missing and an inactive add-on); `zotero-missing`, `xpi-unreadable`, and `no-zotero-id` each exit 1 with the name first on stderr and no `--out` file (also `zotero-version-unknown`, `no-manifest`, `zotero-exited`).
+- AC2: CI run 40764657998 on 4b7aad2 (the branch's last commit), job `start-test` success: `sha256sum --check` printed OK for Zotero 10.0.6 for Linux; under `xvfb-run`, `test/start-test-zotero.test.ts` passed 4 of 4, logging "started: started", "start-error: start-error", "not-installed: not-installed", and "timed-out: timed-out" in Zotero 10.0.6 (the last after its 60 s limit).
+- AC3: same run as AC1: "writes timed-out, and leaves no process of the group and no temp directory, when no report comes" and "leaves no process of the group and no temp directory after a report" passed. Plants on the implement branch (work log, T1–T4 and T6 lines): without the group kill both fail on the live pid list; without the temp removal both fail on the profile's directory.
+- AC4: `npx -y pnpm@12.15.0 test` at 4b7aad2: tsc clean, 971 passed, 5 skipped (the real-Zotero file, with no ZOTERO_BIN, among them); `pnpm check`: "checked 42 entries in plugins, 0 problems". CI job `check` on 4b7aad2: success.
