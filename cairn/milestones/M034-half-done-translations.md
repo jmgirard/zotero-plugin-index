@@ -67,6 +67,7 @@ The `languages` list leaves out a tag whose locale folders hold fewer than half 
 - 2026-10-28: claim audit: 34 claims read, 2 corrected — src/upstream/reader.ts (the `languages` field comment left out the count of at least 1 and the tags kept whatever their count), test/upstream.test.ts (the helper comment named a .properties helper that does not exist); the same Opus reader re-read both as true.
 - 2026-10-28: the claim reader noted that test/upstream.test.ts line 130, "A file of each type that holds one message.", has the same gap; it is older text outside the branch's diff and stays.
 - 2026-10-28: status review; all six tasks done.
+- 2026-10-28: step-7 approval: m034-half-done-translations approved for merge
 
 ## Decisions
 
