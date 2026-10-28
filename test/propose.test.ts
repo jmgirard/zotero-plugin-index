@@ -103,6 +103,24 @@ async function twoStep(responses: Responses, gitDir = tempDir(), check?: CheckRu
   return { read, result, posts: requests.filter(({ method }) => method === "POST"), requests };
 }
 
+// Puts a shim named `name` first on PATH, or in npm_execpath for pnpm, for the call.
+async function withShim<T>(name: "git" | "pnpm", script: string, call: () => Promise<T>): Promise<T> {
+  const shims = tempDir();
+  writeFileSync(join(shims, name), script);
+  chmodSync(join(shims, name), 0o755);
+  const saved = { PATH: process.env.PATH, npm_execpath: process.env.npm_execpath };
+  if (name === "git") process.env.PATH = `${shims}:${saved.PATH}`;
+  else process.env.npm_execpath = join(shims, name);
+  try {
+    return await call();
+  } finally {
+    for (const [key, value] of Object.entries(saved)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+}
+
 describe("proposing pull requests", () => {
   test("pnpm discover --handoff then pnpm propose pushes one branch with one entry and sends one request for each entry, at most 5 by default", () => {
     const { remote, work } = checkout();
@@ -256,6 +274,42 @@ describe("the read step's entry check", () => {
   });
 });
 
+describe("readHandoff when the branch-name check throws", () => {
+  const ALPHA = { repo: "example/alpha", repoUrl: "https://github.com/example/alpha", id: "alpha@example.org", version: "1.0" };
+  const realGit = spawnSync("sh", ["-c", "command -v git"], { encoding: "utf8" }).stdout.trim();
+
+  async function alphaHandoff(): Promise<string> {
+    const dir = tempDir();
+    mkdirSync(join(entriesDir(dir), ALPHA.id), { recursive: true });
+    writeFileSync(join(entriesDir(dir), ALPHA.id, "meta.json"), "{}\n");
+    writeFileSync(join(entriesDir(dir), ALPHA.id, "index.json"), "{}\n");
+    await writePlan(dir, { kind: "discover", entries: [ALPHA] });
+    return dir;
+  }
+
+  test.each<[string, string, number, RegExp]>([
+    ["passes its time limit", `#!/bin/sh\n[ "$1" = check-ref-format ] && exec sleep 600\nexec "${realGit}" "$@"\n`, 300, /git check-ref-format passed its time limit of 300 ms/],
+    ["exits with a status other than 1", `#!/bin/sh\n[ "$1" = check-ref-format ] && { echo "shim: check-ref-format broke" >&2; exit 2; }\nexec "${realGit}" "$@"\n`, REF_CHECK_LIMIT_MS, /shim: check-ref-format broke/],
+  ])("returns check-failed, not a refusal, when git %s", async (_name, script, ms, message) => {
+    const dir = await alphaHandoff();
+    const read = await withShim("git", script, () => readHandoff(dir, "discover", 5, ms));
+    expect(read).toEqual({ ok: false, refusal: "check-failed", message: expect.stringMatching(message) });
+  });
+
+  test("returns check-failed, not a refusal, when git cannot start", async () => {
+    const dir = await alphaHandoff();
+    const saved = process.env.PATH;
+    process.env.PATH = tempDir();
+    let read: Awaited<ReturnType<typeof readHandoff>>;
+    try {
+      read = await readHandoff(dir, "discover", 5);
+    } finally {
+      process.env.PATH = saved;
+    }
+    expect(read).toEqual({ ok: false, refusal: "check-failed", message: expect.stringMatching(/ENOENT/) });
+  });
+});
+
 describe("read and write step failures", () => {
   test("the read step refuses, without recording, a repo whose plugin id an open bot pull request adds", async () => {
     const { read, posts } = await twoStep({
@@ -334,24 +388,6 @@ describe("the write step's process time limits", () => {
     ...passing(["beta", "alpha"]),
     [`POST ${PULLS}`]: { status: 201, json: { html_url: "https://github.com/example/index/pull/1" } },
   });
-
-  // Puts a shim named `name` first on PATH, or in npm_execpath for pnpm, for the call.
-  async function withShim<T>(name: "git" | "pnpm", script: string, call: () => Promise<T>): Promise<T> {
-    const shims = tempDir();
-    writeFileSync(join(shims, name), script);
-    chmodSync(join(shims, name), 0o755);
-    const saved = { PATH: process.env.PATH, npm_execpath: process.env.npm_execpath };
-    if (name === "git") process.env.PATH = `${shims}:${saved.PATH}`;
-    else process.env.npm_execpath = join(shims, name);
-    try {
-      return await call();
-    } finally {
-      for (const [key, value] of Object.entries(saved)) {
-        if (value === undefined) delete process.env[key];
-        else process.env[key] = value;
-      }
-    }
-  }
 
   test("stops a pnpm check after 5 minutes by default", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });

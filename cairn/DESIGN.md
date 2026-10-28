@@ -188,9 +188,10 @@ exception is a report that is abuse.
   `ISSUE_NUMBER` set, answers the issue: a pull request, or a comment with
   the reason and a close (M009, M010, M011). A read of the repo that stops
   with a build-level failure, or throws, gets a comment and leaves the issue
-  open (M019), as do an error from the check of the drafted entry (M022)
-  and an entry that `writeEntry` cannot write to the output directory, with
-  `entry-exists` or `write-failed` (M028). Each repo read stops at 3
+  open (M019), as do an error from the check of the drafted entry (M022),
+  an entry that `writeEntry` cannot write to the output directory, with
+  `entry-exists` or `write-failed` (M028), and a branch-name check in
+  `pnpm propose` that cannot run (M038). Each repo read stops at 3
   minutes as a build-level `request-failed`, not recorded, and `pnpm
   discover` starts no read after 18 minutes from the command's start,
   counting the rest in `unread` with a warning. The `git check-ref-format`
@@ -378,22 +379,29 @@ reused._
   each repo as a lowercase owner/repo whose `discover/` branch
   `git check-ref-format` accepts and whose URL is its GitHub URL, the entry
   count against the limit, and each entry directory for exactly the regular
-  files `meta.json` and `index.json`. Any failure refuses the whole handoff
-  before a request. So that one plugin cannot refuse a run's handoff,
-  `draftEntry` runs the same entry and file checks (`plannedProblem`) after
-  it writes an entry, and refuses a failing one as `not-proposable`, a
-  recorded failure; a check that throws, such as git failing to start, is
-  `unexpected-error`, not recorded. Discovery plans a written entry under the
-  name GitHub gives, which the check read. An issue's repo whose name has a
-  shape the handoff refuses is never `known`. The read step cuts each issue
-  message to 2,001 characters. Each read job outputs its upload's
-  `artifact-id`, and the write side downloads only when this attempt
-  uploaded one. The issue number comes from `ISSUE_NUMBER`, never from
-  the handoff. The write step reads the bot pull requests again, and the
-  index in its own checkout, which is the commit the read job saw, and skips
-  an entry that either has. `propose` gives `git fetch` and
-  `git push` the token as an `http.https://github.com/.extraheader` through
-  `GIT_CONFIG_COUNT`, and `pnpmCheck` runs the check without `GITHUB_TOKEN`.
+  files `meta.json` and `index.json`. Any check that runs and fails refuses
+  the whole handoff before a request. A branch-name check that cannot run
+  (git does not start or ends with any result other than exit status 1) or
+  passes its limit is not a refusal: `readHandoff` returns `check-failed`
+  once every other check passes, so a handoff that another check refuses
+  stays refused. An issue run comments `check-failed` as `unexpected-error`
+  and leaves the issue open, and a discover run prints it and exits 1
+  (M038). So that one plugin cannot
+  refuse a run's handoff, `draftEntry` runs the same entry and file checks
+  (`plannedProblem`) after it writes an entry, and refuses a failing one as
+  `not-proposable`, a recorded failure; a check that throws, such as git
+  failing to start, is `unexpected-error`, not recorded. Discovery plans a
+  written entry under the name GitHub gives, which the check read. An
+  issue's repo whose name has a shape the handoff refuses is never `known`.
+  The read step cuts each issue message to 2,001 characters. Each read job
+  outputs its upload's `artifact-id`, and the write side downloads only
+  when this attempt uploaded one. The issue number comes from
+  `ISSUE_NUMBER`, never from the handoff. The write step reads the bot pull
+  requests again, and the index in its own checkout, which is the commit
+  the read job saw, and skips an entry that either has. `propose` gives
+  `git fetch` and `git push` the token as an
+  `http.https://github.com/.extraheader` through `GIT_CONFIG_COUNT`, and
+  `pnpmCheck` runs the check without `GITHUB_TOKEN`.
 - `src/discover/propose.ts` holds both steps of a discover run. The read step,
   `discoverRead`, first lists the index repo's pull requests (`state=all`,
   every page) and puts in the skip set each repo whose

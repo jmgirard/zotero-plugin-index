@@ -230,3 +230,19 @@ language, so they join that script rather than add a second one. The home
 page still carries one script, and the other pages carry none. The buttons
 are hidden in the HTML, so without JavaScript the home page shows every row
 and no buttons, as D-014 says for the menu.
+
+### D-020: A branch-name check that cannot run answers the issue, narrowing M011's no-request rule
+
+2026-10-28, M038. M011 made `pnpm propose` refuse a handoff it cannot trust
+before any request, so an issue whose handoff is refused gets no answer.
+M030 put a time limit on the branch-name check in that path, and a check
+that threw then stopped the command with a stack trace, so that issue got
+no answer either. At the M038 plan question set the user chose to treat a
+branch-name check that cannot run (git does not start, ends with any result
+other than exit status 1, or passes its limit) as a failure of the write
+step, not a refusal. An issue run comments `unexpected-error` and leaves
+the issue open, as it does for a failed push, because a check that cannot
+run says nothing about whether the handoff can be trusted. The user kept
+the rule that a refused handoff sends no request, and a refusal by any
+other check wins over a check that cannot run. The user rejected refusing
+quietly, which left the issue unanswered.

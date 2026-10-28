@@ -59,6 +59,9 @@ async function main(): Promise<number> {
     if (read.ok && read.plan.kind === "issue") {
       const { kind: _kind, ...outcome } = read.plan;
       issueRead = { outcome, dir: outcome.outcome === "entry" ? read.dirs.get(outcome.entry.id) : undefined };
+    } else if (!read.ok && read.refusal === "check-failed") {
+      // The check failed to run, so the issue gets the same answer as a read that threw.
+      issueRead = { outcome: { outcome: "failed", failure: "unexpected-error", message: read.message } };
     }
     const result = await issueAnswer({ ...common, issue: Number(issueNumber), read: issueRead });
     console.log(result.comment);
@@ -67,7 +70,8 @@ async function main(): Promise<number> {
   }
 
   if (!read.ok) {
-    console.error(`${read.message}\nsent no request and pushed nothing`);
+    const lead = read.refusal === "check-failed" ? "could not check the handoff: " : "";
+    console.error(`${lead}${read.message}\nsent no request and pushed nothing`);
     return 1;
   }
   if (read.plan.kind !== "discover") return 1;

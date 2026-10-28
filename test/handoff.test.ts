@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
@@ -96,6 +96,7 @@ describe("pnpm propose refuses a handoff it cannot trust, with no request and no
     ["a repo with capital letters", () => discover([{ ...ALPHA, repo: "Example/Alpha" }]), {}, /is not a lowercase owner\/repo/],
     ["a repo with three parts", () => discover([{ ...ALPHA, repo: "example/alpha/x", repoUrl: "https://github.com/example/alpha/x" }]), {}, /is not a lowercase owner\/repo/],
     ["a repo whose branch git refuses", () => discover([entry("example/.alpha", ALPHA.id)]), {}, /discover\/example\/\.alpha is not a valid git branch name/],
+    ["an issue repo whose branch git refuses", () => issueEntry({ entry: entry("example/.alpha", ALPHA.id) }), issue, /discover\/example\/\.alpha is not a valid git branch name/],
     ["a repo URL for another repo", () => discover([{ ...ALPHA, repoUrl: "https://github.com/example/other" }]), {}, /is not the GitHub URL of example\/alpha/],
     ["more entries than the limit", () => discover([ALPHA, entry("example/beta", "beta@example.org")]), {}, /more than the limit of 1/],
     ["a second entry directory for an issue", () => issueEntry({}, [ALPHA.id, "beta@example.org"]), issue, /holds "beta@example.org", which the plan does not name/],
@@ -143,6 +144,48 @@ describe("pnpm propose refuses a handoff it cannot trust, with no request and no
     const { result, sent, branches } = propose(dir);
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(new RegExp(`^refused the handoff: .*${message.source}`, "s"));
+    expect(sent).toEqual([]);
+    expect(branches).toBe("");
+  });
+});
+
+describe("pnpm propose when its branch-name check cannot run", () => {
+  function brokenGit(): Record<string, string> {
+    const shims = tempDir();
+    const realGit = spawnSync("sh", ["-c", "command -v git"], { encoding: "utf8" }).stdout.trim();
+    writeFileSync(join(shims, "git"), `#!/bin/sh\n[ "$1" = check-ref-format ] && { echo "shim: check-ref-format broke" >&2; exit 2; }\nexec "${realGit}" "$@"\n`);
+    chmodSync(join(shims, "git"), 0o755);
+    return { PATH: `${shims}:${process.env.PATH}` };
+  }
+
+  test("an issue run comments the error, leaves the issue open, pushes nothing, and exits 1", () => {
+    const dir = handoff({ kind: "issue", outcome: "entry", entry: ALPHA }, [ALPHA.id]);
+    const { result, sent, branches } = propose(dir, { ISSUE_NUMBER: "7", ...brokenGit() });
+    expect(result.status).toBe(1);
+    expect(sent.map(({ method, url }) => `${method} ${url}`)).toEqual([`POST ${COMMENTS}`]);
+    const comment: string = JSON.parse(sent[0].body).body;
+    expect(comment).toMatch(/^The bot could not finish, so this issue stays open for a maintainer\./);
+    expect(comment).toMatch(/`unexpected-error`: ` [^`]*shim: check-ref-format broke[^`]* `/);
+    expect(branches).toBe("");
+  });
+
+  test("a discover run prints the error with no stack trace, sends no request, pushes nothing, and exits 1", () => {
+    const dir = handoff({ kind: "discover", entries: [ALPHA] }, [ALPHA.id]);
+    const { result, sent, branches } = propose(dir, brokenGit());
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/^could not check the handoff: [^\n]*example\/alpha/);
+    expect(result.stderr).toContain("shim: check-ref-format broke");
+    expect(result.stderr).not.toMatch(/^\s+at /m);
+    expect(result.stderr).toContain("sent no request and pushed nothing");
+    expect(sent).toEqual([]);
+    expect(branches).toBe("");
+  });
+
+  test("an issue run still refuses, with no request, a handoff that another check refuses", () => {
+    const dir = handoff({ kind: "issue", outcome: "entry", entry: ALPHA }, [ALPHA.id, "beta@example.org"]);
+    const { result, sent, branches } = propose(dir, { ISSUE_NUMBER: "7", ...brokenGit() });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/^refused the handoff: .*holds "beta@example.org", which the plan does not name/s);
     expect(sent).toEqual([]);
     expect(branches).toBe("");
   });

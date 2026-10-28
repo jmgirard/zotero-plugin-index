@@ -259,3 +259,13 @@
   `?zotero=8`. The script that runs the menu also runs the buttons, so
   without JavaScript the home page shows no buttons and lists every plugin.
   The home page intro also links to the "Add a plugin" issue form.
+- `pnpm propose` checks each branch name in the handoff with git again. The
+  check can fail to run: git cannot start, git ends with any result other
+  than exit status 1, or the check passes its 30-second limit. An issue run
+  then comments the error on the issue with the failure name
+  `unexpected-error`, and the issue stays open. A discover run prints
+  "could not check the handoff:" and the error, with no stack trace, and
+  exits with status 1.
+  Neither run pushes a branch. Before, the command stopped with a stack
+  trace, and the issue got no answer. A handoff that the command refuses
+  still gets no answer on the issue.
