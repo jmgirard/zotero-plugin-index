@@ -177,7 +177,8 @@ describe("pnpm start-tests", () => {
     const dir = tempDir();
     const plugins = [item("inside", {}), item("below", { strictMaxVersion: "9.*" })];
     writeFileSync(join(dir, "plan.json"), JSON.stringify({ plugins }));
-    const out = join(dir, "results.json");
+    // The daily build names a directory that does not exist yet.
+    const out = join(dir, "results", "start-results.json");
     const result = await cli(["--plan", join(dir, "plan.json"), "--zotero", binary, "--out", out], served(plugins));
     expect(result.stderr).toBe("");
     expect(result.code).toBe(0);

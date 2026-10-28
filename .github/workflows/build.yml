@@ -176,8 +176,11 @@ jobs:
         with:
           path: dist/
 
+  # A job whose earlier jobs include a failed one is skipped unless its `if:` says
+  # otherwise, so this `if:` keeps a failed start-test job from skipping the deploy.
   deploy:
     needs: site
+    if: ${{ !cancelled() && needs.site.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

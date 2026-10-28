@@ -1,4 +1,5 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import process from "node:process";
 import { parseArgs } from "node:util";
 import { StartFailure } from "./start-test.ts";
@@ -54,6 +55,7 @@ async function main(): Promise<number> {
     }
     throw error;
   }
+  await mkdir(dirname(values.out), { recursive: true });
   await writeFile(values.out, `${JSON.stringify(run.results, null, 2)}\n`);
   console.log(
     `Zotero ${run.zotero}: ${run.results.length} results, ${run.skipped.length} without a result, ` +

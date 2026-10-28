@@ -878,7 +878,8 @@ hand. It has four jobs:
    runs in it.
 3. The site job runs `pnpm add-start-results` and then `pnpm site`. It runs
    when the build job succeeded, whatever the start-test jobs' results.
-4. The deploy job deploys `dist/` to GitHub Pages after the site job.
+4. If the site job succeeded, the deploy job deploys `dist/` to GitHub
+   Pages, whatever the start-test jobs' results.
 
 If `pnpm build`, `pnpm add-start-results`, or `pnpm site` exits with
 status 1, the workflow deploys nothing. The site and data from the last

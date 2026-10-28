@@ -82,6 +82,7 @@ describe("build.yml", () => {
     expect(site).toMatch(/^ {4}needs: \[build, start-test\]$/m);
     expect(site).toMatch(/^ {4}if: \$\{\{ !cancelled\(\) && needs\.build\.result == 'success' \}\}$/m);
     expect(jobText(build, "deploy")).toMatch(/^ {4}needs: site$/m);
+    expect(jobText(build, "deploy")).toMatch(/^ {4}if: \$\{\{ !cancelled\(\) && needs\.site\.result == 'success' \}\}$/m);
   });
 
   test.each([

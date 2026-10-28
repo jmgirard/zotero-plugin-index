@@ -567,8 +567,10 @@ reused._
   code runs in it (D-023). The site job, whose `if:` is
   `${{ !cancelled() && needs.build.result == 'success' }}`, runs
   `pnpm add-start-results` and `pnpm site` and uploads `dist/` as the Pages
-  artifact, so a failed start test still deploys. A deploy job that needs
-  the site job publishes it. A failed build deploys nothing, and the
+  artifact. A deploy job that needs the site job publishes it; its `if:`
+  is `${{ !cancelled() && needs.site.result == 'success' }}`, since a job
+  with a failed earlier job is skipped by default, so a failed start test
+  still deploys. A failed build deploys nothing, and the
   `github-pages` environment takes deploys from `main` only (M006).
   The build, start-test, and site jobs of `build.yml` restore no Actions
   cache (M047). The build job's rule came first: the job sets
