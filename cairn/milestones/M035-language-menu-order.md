@@ -108,13 +108,14 @@ home list before it paints" and "Test the home page script in a browser".
 - consistency gate (2026-10-28): `cairn_validate.py` exit 0, all checks passed; no principle changed, so no `cairn_impact` run; the generic profile names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
 - diff-bug #1: the name tie-break is code-unit order, so a subtag `Intl.DisplayNames` cannot name sorts as its lowercase tag after capitalized names, and two subtags with one name keep first-appearance order — reject (planned change: the plan chose code-unit order and recorded this as its falsifier; no deployed name hits it)
-- diff-bug #2: README.md:41 and CHANGELOG.md:209 leave short wrapped lines — fix now
+- diff-bug #2: README.md:41 and CHANGELOG.md:209 leave short wrapped lines — fix now, fixed f381d05
 - diff-bug #3: the renamed "three upstream tags" case follows from the fixture change — reject (false: it reports no defect)
 - blame-history #1: the sort replaces M024's text order — reject (planned change)
-- blame-history #2: CHANGELOG.md:209 short line after the edit — fix now (same fix as diff-bug #2)
+- blame-history #2: CHANGELOG.md:209 short line after the edit — fix now (same fix as diff-bug #2), fixed f381d05
 - blame-history #3: the fixture's new `es` breaks no other fixture user — reject (false: it reports no defect)
 - blame-history #4: two subtags with one display name keep first-appearance order — reject (planned change, as diff-bug #1)
 - blame-history #5: DESIGN states no old order — reject (false: it reports no defect; prior-review #1 covers the missing new order)
-- prior-review #1: DESIGN's menu paragraph (cairn/DESIGN.md:46-48) does not state the new order, though M033's review had DESIGN state the menu's rules — fix now
-- prior-review #2: README.md:41 and CHANGELOG.md:209 ragged wrap — fix now (same fix as diff-bug #2)
+- prior-review #1: DESIGN's menu paragraph (cairn/DESIGN.md:46-48) does not state the new order, though M033's review had DESIGN state the menu's rules — fix now, fixed f381d05
+- prior-review #2: README.md:41 and CHANGELOG.md:209 ragged wrap — fix now (same fix as diff-bug #2), fixed f381d05
+- fix verify (2026-10-28): after f381d05, `pnpm test` 855 passed, 1 skipped; `pnpm check` 0 problems; the edited README, CHANGELOG, and DESIGN lines are 60 to 75 columns.
 - ripple: no ripple evidence
