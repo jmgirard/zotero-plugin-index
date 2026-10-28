@@ -29,8 +29,9 @@ export interface UpstreamFacts {
   // GitHub's archived flag, left out when the repo response has no boolean.
   archived?: boolean;
   // The language tags of the locale folders in the XPI whose manifest was read, each with a
-  // language that has an English name in the build's Node.js Intl data and with a file that
-  // holds a message, judged by file type (see localeLanguages). The reader always sets it;
+  // language that has an English name in the build's Node.js Intl data and with either at
+  // least one message and at least half the messages of the fullest tag, or a file that is
+  // not counted (see localeLanguages). The reader always sets it;
   // records written before it existed have none.
   languages?: string[];
 }
@@ -71,7 +72,7 @@ const FETCH_TIMEOUT_MS = 60_000;
 export const XPI_MAX_BYTES = 50 * 1024 * 1024;
 export const UPDATE_JSON_MAX_BYTES = 1024 * 1024;
 // Each file the reader unzips: manifest.json, the default locale's messages.json, and each
-// locale file that localeLanguages reads. A locale file over it counts as holding a message.
+// locale file that localeLanguages reads. A locale file over it keeps its tag.
 export const UNZIPPED_MAX_BYTES = 1024 * 1024;
 
 export class ReadFailure extends Error {
@@ -210,7 +211,7 @@ type ReleaseFacts = Pick<
   | "languages"
 > & { release: ReleaseJson };
 
-// Reads the manifest and the language tags of the locale folders that hold a message in one
+// Reads the manifest and the language tags of the locale folders (see localeLanguages) in one
 // release's XPI, and checks the update.json the manifest names.
 async function readRelease(download: Download, release: ReleaseJson, xpi: { browser_download_url: string }): Promise<ReleaseFacts> {
   const { manifest, messages, languages } = await readManifest(download, xpi.browser_download_url, release.tag_name);
@@ -535,23 +536,29 @@ export const LOCALE_MAX_BYTES = 8 * 1024 * 1024;
 // of output for each byte of input keeps one push to about 1 MiB of output.
 const LOCALE_INFLATE_CHUNK_BYTES = 1024;
 
-// The language tag of each locale folder in the zip that holds a message, the <tag> of an
-// entry name locale/<tag>/<file> or chrome/locale/<tag>/<file>. A "_" in <tag> reads as "-".
-// A <tag> that is not LANGUAGE_TAG is left out, and so is one whose language subtag has no
-// English name in the Node.js Intl data, such as img or js; its script, region, and variant
-// are not checked. A tag is kept when one file in its folders holds a message (see
-// holdsMessage); its later files are not read. Each tag is in the form
-// Intl.getCanonicalLocales returns, once, in code-unit order.
+// The language tags of the locale folders in the zip, the <tag> of an entry name
+// locale/<tag>/<file> or chrome/locale/<tag>/<file>. A "_" in <tag> reads as "-". A <tag>
+// that is not LANGUAGE_TAG is left out, and so is one whose language subtag has no English
+// name in the Node.js Intl data, such as img or js; its script, region, and variant are not
+// checked. A tag's count is the sum of the messages in the files of its folders (see
+// MESSAGE_COUNTERS). A tag is kept when its count is at least 1 and twice its count is at
+// least the largest count among the zip's tags, so a translation with under half the
+// messages of the fullest one is left out. Each tag is in the form Intl.getCanonicalLocales
+// returns, once, in code-unit order.
 // It reads the zip one header at a time, in one walk, and inflates each file from the header
-// it is on, so it keeps no list of the zip's entries. A file that it does not inflate counts
-// as holding a message: one whose declared or compressed size is over UNZIPPED_MAX_BYTES,
-// whose compression is neither stored nor deflate, or whose larger size would take the
-// total past LOCALE_MAX_BYTES. So does a file whose inflate fails or whose output length
-// differs from its declared size, so no locale file fails the read. A file whose output
-// passes its declared size adds that output to the total, so files that each declare a
-// small size cannot make it inflate more than about 1 MiB past LOCALE_MAX_BYTES.
+// it is on, so it keeps no list of the zip's entries. A tag is kept whatever its count when
+// one of its files is of another type, which it does not inflate, or is a file it does not
+// inflate: one whose declared or compressed size is over UNZIPPED_MAX_BYTES, whose
+// compression is neither stored nor deflate, or whose larger size would take the total past
+// LOCALE_MAX_BYTES. So is a tag with a file whose inflate fails or whose output length
+// differs from its declared size, so no locale file fails the read. Such a file adds nothing
+// to any count. A file whose output passes its declared size adds that output to the total,
+// so files that each declare a small size cannot make it inflate more than about 1 MiB past
+// LOCALE_MAX_BYTES.
 function localeLanguages(zip: Uint8Array): string[] {
-  const tags = new Set<string>();
+  const counts = new Map<string, number>();
+  // The tags kept whatever their count.
+  const kept = new Set<string>();
   let inflated = 0;
   for (const { fileName: name, header, zip64 } of centralEntries(zip)) {
     const folder = LOCALE_FOLDER.exec(name)?.[1].replaceAll("_", "-");
@@ -564,12 +571,18 @@ function localeLanguages(zip: Uint8Array): string[] {
       // A tag that Intl rejects is left out like any other folder that is not a tag.
       continue;
     }
-    if (tags.has(tag)) continue;
+    const count = counts.get(tag) ?? 0;
+    counts.set(tag, count);
+    const counter = MESSAGE_COUNTERS.get(/\.([^./]*)$/.exec(name)?.[1].toLowerCase() ?? "");
+    if (!counter) {
+      kept.add(tag);
+      continue;
+    }
     try {
       const entry = entryAt(zip, header, zip64);
       const bytes = Math.max(entry.size, entry.originalSize);
       if (bytes > UNZIPPED_MAX_BYTES || ![0, 8].includes(entry.compression) || inflated + bytes > LOCALE_MAX_BYTES) {
-        tags.add(tag);
+        kept.add(tag);
         continue;
       }
       let output = 0;
@@ -583,38 +596,37 @@ function localeLanguages(zip: Uint8Array): string[] {
           LOCALE_INFLATE_CHUNK_BYTES,
           (length) => (output += length),
         );
-        if (data.length !== entry.originalSize || holdsMessage(name, strFromU8(data))) tags.add(tag);
+        if (data.length !== entry.originalSize) kept.add(tag);
+        else counts.set(tag, count + counter(strFromU8(data)));
       } finally {
         inflated += Math.max(bytes, output);
       }
     } catch {
-      tags.add(tag);
+      kept.add(tag);
     }
   }
-  return [...tags].sort();
+  let largest = 0;
+  for (const count of counts.values()) largest = Math.max(largest, count);
+  return [...counts]
+    .filter(([tag, count]) => kept.has(tag) || (count >= 1 && 2 * count >= largest))
+    .map(([tag]) => tag)
+    .sort();
 }
 
-const FLUENT_ENTRY = /^-?[A-Za-z][A-Za-z0-9_-]*[ \t]*=/m;
+const FLUENT_ENTRY = /^-?[A-Za-z][A-Za-z0-9_-]*[ \t]*=/gm;
 
-// Whether the text of the locale file `name` holds a message, after a byte-order mark at its
-// start. An .ftl file needs a line that starts with a Fluent identifier, an optional leading
-// -, then spaces or tabs and =, as a message or term line does; a .properties file a line whose
-// first character other than space, tab, or form feed is not # or !, and a .dtd file an
-// <!ENTITY outside comments, where a comment with no --> runs to the end of the file. The
-// extension ignores letter case. A file with any other extension, or none, counts.
-function holdsMessage(name: string, text: string): boolean {
-  const body = text.replace(/^﻿/, "");
-  switch (/\.([^./]*)$/.exec(name)?.[1].toLowerCase()) {
-    case "ftl":
-      return FLUENT_ENTRY.test(body);
-    case "properties":
-      return body.split(/\r\n|\r|\n/).some((line) => !["#", "!", undefined].includes(/[^ \t\f]/.exec(line)?.[0]));
-    case "dtd":
-      return body.replace(/<!--[\s\S]*?(?:-->|$)/g, "").includes("<!ENTITY");
-    default:
-      return true;
-  }
-}
+// The number of messages in the text of a locale file, by the file's extension, whose letter
+// case does not count. The text comes from strFromU8, whose TextDecoder drops a byte-order
+// mark at its start. An .ftl file counts each line
+// that starts with a Fluent identifier, an optional leading -, then spaces or tabs and =, as
+// a message or term line does; a .properties file each line whose first character other
+// than space, tab, or form feed is not # or !, and a .dtd file each <!ENTITY outside
+// comments, where a comment with no --> runs to the end of the file.
+const MESSAGE_COUNTERS = new Map<string, (text: string) => number>([
+  ["ftl", (text) => text.match(FLUENT_ENTRY)?.length ?? 0],
+  ["properties", (text) => text.split(/\r\n|\r|\n/).filter((line) => !["#", "!", undefined].includes(/[^ \t\f]/.exec(line)?.[0])).length],
+  ["dtd", (text) => text.replace(/<!--[\s\S]*?(?:-->|$)/g, "").split("<!ENTITY").length - 1],
+]);
 
 // The smallest central-directory header: its fixed part, with no name, extra field, or comment.
 const CENTRAL_HEADER_MIN_BYTES = 46;

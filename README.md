@@ -101,15 +101,19 @@ against a saved copy of the schema, fetch it again after such a change.
 Each `upstream` block has a `languages` list, such as `["en-US", "zh-CN"]`.
 It holds the language tags of the locale folders in the plugin's XPI, the
 one whose manifest the index read. A locale folder is `locale/<tag>/` or
-`chrome/locale/<tag>/` with at least one file in it that holds a message.
-In an `.ftl` file, a message is a Fluent message or term line, such as
-`hello = Hello`. In a `.properties` file, it is a line that is not blank
-and not a `#` or `!` comment. In a `.dtd` file, it is an `<!ENTITY` outside
-`<!-- -->` comments. A file of any other type counts. So a folder whose
-files hold only comments, as some plugins ship for each language that
-Zotero supports, adds no language. The build inflates at most about 9 MiB
-of locale files from each XPI. A file that it does not read, or cannot
-inflate, counts as holding a message. The build writes each tag in its
+`chrome/locale/<tag>/`. The build counts the messages in the files of each
+tag's folders. In an `.ftl` file, each Fluent message or term line, such as
+`hello = Hello`, is a message. In a `.properties` file, each line that is
+not blank and not a `#` or `!` comment is a message. In a `.dtd` file, each
+`<!ENTITY` outside `<!-- -->` comments is a message. If a tag's count is at
+least 1 and at least half the largest count among the XPI's tags, the list
+keeps the tag. So a folder whose files hold only comments, as some plugins
+ship for each language that Zotero supports, adds no language. Neither does
+a translation with under half the messages of the fullest one. A tag with a
+file of any other type is kept whatever its count. The build inflates at
+most about 9 MiB of locale files from each XPI. A tag with a file that the
+build does not read, or cannot inflate, is kept whatever its count too.
+Such a file adds no messages to any count. The build writes each tag in its
 standard form, so `zh_CN` becomes `zh-CN`, and sorts the list. It
 leaves out a folder whose name does not have the form of a language tag, and
 the tag `und` (undetermined). It also leaves out a tag whose language has no
@@ -117,8 +121,9 @@ English name in the `Intl` data of the Node.js that runs the build. So a
 folder such as `locale/img/` or `locale/js/` adds no language. It does not
 check the script, region, or variant of a tag, so `en-XX` stays. A
 `languages` override value is not checked this way. The list says which
-languages a plugin ships interface text for. It does not say whether a
-translation is complete. A plugin that writes
+languages a plugin ships interface text for. A listed language can still be
+incomplete, since a tag with half the fullest tag's messages stays. A
+plugin that writes
 its text straight into its code ships no locale folders, so its list is
 empty. A `languages` override in its `index.json` can record its
 languages in the record's `overrides` block, as "Plugin entries" says.
@@ -244,12 +249,13 @@ host, and what it unzips from the XPI:
   with `xpi-unreadable`. The command inflates 16 KiB of that data at a time
   and stops after the first 16 KiB whose output passes that size.
 - A file in a locale folder fails nothing. The command inflates the whole
-  file, 1 KiB of input at a time, and then looks for a message. For each
+  file, 1 KiB of input at a time, and then counts its messages. For each
   file it counts the largest of the declared size, the compressed size, and
   the output. It does not inflate a
   locale file that takes that count for the XPI past 8 MiB. One file that
   inflates past its declared size can add about 1 MiB more. A locale file
-  over 1 MiB, past that count, or not readable counts as holding a message.
+  over 1 MiB, past that count, or not readable keeps its language in the
+  list.
 
 Before the command requests the XPI, the `update.json`, or a redirect target,
 it checks the host. The read fails with `host-refused` for `localhost` and

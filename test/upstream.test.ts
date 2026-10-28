@@ -130,6 +130,10 @@ describe("readUpstream", () => {
   // A file of each type that holds one message.
   const FTL = "hello = Hallo\n";
   const DTD = '<!ENTITY hello "Hallo">\n';
+  // An .ftl and a .dtd file that hold `count` messages.
+  const lines = (count: number, line: (i: number) => string) => Array.from({ length: count }, (_, i) => line(i)).join("");
+  const ftl = (count: number) => lines(count, (i) => `m${i} = Hallo\n`);
+  const dtd = (count: number) => lines(count, (i) => `<!ENTITY m${i} "Hallo">\n`);
 
   test.each<[string, Record<string, string>, string[]]>([
     ["two folders under locale/, in code-unit order", { "locale/zh-CN/a.ftl": FTL, "locale/en-US/a.ftl": FTL }, ["en-US", "zh-CN"]],
@@ -190,6 +194,42 @@ describe("readUpstream", () => {
     ["a folder with a comment-only file and a file with a message", { "locale/de/a.ftl": "# Comment\n", "locale/de/b.ftl": FTL }, ["de"]],
     ["one tag when either of its folders holds a message", { "locale/zh_CN/a.ftl": "# Comment\n", "chrome/locale/zh-CN/b.ftl": FTL }, ["zh-CN"]],
     ["no tag when none of its folders holds a message", { "locale/zh_CN/a.ftl": "# Comment\n", "chrome/locale/zh-CN/b.ftl": "# Comment\n" }, []],
+    ["no tag with under half the fullest tag's messages", { "locale/en-US/a.ftl": ftl(10), "locale/zh-CN/a.ftl": ftl(4) }, ["en-US"]],
+    ["a tag with half the fullest tag's messages", { "locale/en-US/a.ftl": ftl(10), "locale/zh-CN/a.ftl": ftl(5) }, ["en-US", "zh-CN"]],
+    ["no tag with under half of an odd count", { "locale/en-US/a.ftl": ftl(9), "locale/zh-CN/a.ftl": ftl(4) }, ["en-US"]],
+    [
+      "a .properties folder counted without its comments and blank lines",
+      {
+        "locale/en-US/a.ftl": ftl(5),
+        "locale/fr/a.properties": `# Comment\n${lines(10, (i) => `m${i}=Bonjour\n! Comment\n\n`)}`,
+      },
+      ["en-US", "fr"],
+    ],
+    [
+      "a .properties folder with half the fullest tag's messages",
+      { "locale/en-US/a.ftl": ftl(20), "locale/fr/a.properties": `# Comment\n${lines(10, (i) => `m${i}=Bonjour\n! Comment\n\n`)}` },
+      ["en-US", "fr"],
+    ],
+    [
+      "a .dtd folder counted without the entity in a comment",
+      { "locale/en-US/a.ftl": ftl(5), "locale/de/a.dtd": `${dtd(10)}<!-- <!ENTITY old "Alt"> -->\n` },
+      ["de", "en-US"],
+    ],
+    [
+      "a .dtd folder with half the fullest tag's messages",
+      { "locale/en-US/a.ftl": ftl(20), "locale/de/a.dtd": `${dtd(10)}<!-- <!ENTITY old "Alt"> -->\n` },
+      ["de", "en-US"],
+    ],
+    [
+      "a tag kept by the sum of its two folders",
+      { "locale/en-US/a.ftl": ftl(10), "locale/zh-CN/a.ftl": ftl(3), "chrome/locale/zh_CN/b.ftl": ftl(2) },
+      ["en-US", "zh-CN"],
+    ],
+    [
+      "a tag counted over its .ftl and .dtd files",
+      { "locale/en-US/a.ftl": ftl(10), "locale/de/a.ftl": ftl(3), "locale/de/b.dtd": dtd(2) },
+      ["de", "en-US"],
+    ],
   ])("lists %s as the languages", async (_name, files, languages) => {
     const { result } = await read((r) => Object.assign(r[XPI].xpi!, files));
     expect(result.ok && result.facts.languages).toEqual(languages);
@@ -230,6 +270,40 @@ describe("readUpstream", () => {
       }),
     );
     expect(result.ok && result.facts.languages).toEqual(languages);
+  });
+
+  const DECLARED_OVER_1_MIB = { compression: 8, originalSize: 1_048_577 };
+  const BROKEN = { compression: 8, originalSize: COMMENT.length };
+
+  test.each<[string, number, string, Uint8Array, { compression?: number; originalSize?: number }]>([
+    ["of another type", 0, "icon.png", COMMENT, {}],
+    ["of another type", 1, "icon.png", COMMENT, {}],
+    ["over 1 MiB", 0, "x.ftl", DEFLATED_COMMENT, DECLARED_OVER_1_MIB],
+    ["over 1 MiB", 1, "x.ftl", DEFLATED_COMMENT, DECLARED_OVER_1_MIB],
+    ["that fails to inflate", 0, "x.ftl", BROKEN_COMMENT, BROKEN],
+    ["that fails to inflate", 1, "x.ftl", BROKEN_COMMENT, BROKEN],
+  ])("keeps a tag with a file %s beside %i counted messages", async (_name, count, file, data, fields) => {
+    const { result } = await readXpi((json) => {
+      const files = { "manifest.json": json, "locale/en-US/a.ftl": strToU8(ftl(10)), "locale/de/a.ftl": strToU8(ftl(count)) };
+      const zip = zipSync({ ...files, [`locale/de/${file}`]: [data, { level: 0 }] });
+      return editHeader(zip, `locale/de/${file}`, (view, header) => {
+        if (fields.compression !== undefined) view.setUint16(header + 10, fields.compression, true);
+        if (fields.originalSize !== undefined) view.setUint32(header + 24, fields.originalSize, true);
+      });
+    });
+    expect(result.ok && result.facts.languages).toEqual(["de", "en-US"]);
+  });
+
+  test("counts no message in a kept tag's file of another type", async () => {
+    const { result } = await read((r) =>
+      Object.assign(r[XPI].xpi!, {
+        "locale/en-US/a.json": lines(100, (i) => `m${i} = Hallo\n`),
+        "locale/en-US/b.ftl": ftl(1),
+        "locale/fr/a.ftl": ftl(4),
+        "locale/de/a.ftl": ftl(1),
+      }),
+    );
+    expect(result.ok && result.facts.languages).toEqual(["en-US", "fr"]);
   });
 
   test("keeps the folders whose files would take the inflated total past 8 MiB", async () => {
