@@ -102,7 +102,7 @@ and `mul`, which name no one interface language.
       copy the pattern into both schemas, and update the comments on
       `LANGUAGE_TAG` and `localeLanguages`. See the new cases and the copy
       test pass.
-- [ ] T3: Add `zxx` and `en-US, MUL` to the refused values at
+- [x] T3: Add `zxx` and `en-US, MUL` to the refused values at
       `test/check.test.ts:205`. They pass once T2 lands, so first see them
       fail on a copy of the old schema (lesson M010: copy, then restore).
 - [ ] T4: Update README.md, cairn/DESIGN.md (plugin-page paragraph near
@@ -131,6 +131,7 @@ and `mul`, which name no one interface language.
 - 2026-10-28: implement started; branch m036-empty-languages-line cut from main at 7025717.
 - 2026-10-28: T1 done: the two empty-case rows failed with "None declared", then passed after `languagesText` changed; pnpm test 855 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: T2 done: on the old reader the AC3 case got [mul, mul-Latn, zxx, zxx-US], so the zxx and mul counts pushed en-US out, and the pattern test failed on zxx; the `und` lookahead now also refuses zxx and mul, copied into both schemas by a string replace (5 sites); pnpm test 858 passed, 1 skipped; pnpm check 0 problems.
+- 2026-10-28: T3 done: with main's index schema copied in, the `zxx` and `en-US, MUL` cases failed; with the new schema restored from a copy they passed; pnpm test 860 passed, 1 skipped; pnpm check 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->
