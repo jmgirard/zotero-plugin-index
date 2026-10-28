@@ -101,7 +101,7 @@ canceled" and "Answer report issues left open".
       `example/.alpha`.
 - [x] T3: Update README.md (the three sentences AC5 names), CHANGELOG.md, and
       the cairn/DESIGN.md handoff paragraph. Keep lines near 76 columns.
-- [ ] T4: Run the verify slot: `npx -y pnpm@12.15.0 test` and
+- [x] T4: Run the verify slot: `npx -y pnpm@12.15.0 test` and
       `npx -y pnpm@12.15.0 check`.
 
 ## Work log
@@ -119,6 +119,7 @@ canceled" and "Answer report issues left open".
 - 2026-10-28: T1 done — `readHandoff` takes `refCheckMs` and returns `check-failed` with "checking the branch name of <repo> threw: <message>"; `withShim` moved to file scope in `test/propose.test.ts`; the 3 new tests failed on main by the 3 expected throws and pass; pnpm test 880 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: T2 done — `propose-cli.ts` gives an issue run a `failed` outcome with `unexpected-error` and prefixes a discover run's message with "could not check the handoff: "; 2 CLI tests and 1 issue-run refusal case in `test/handoff.test.ts`; without the CLI change the issue test got the "read step left no handoff" comment and the discover test lacked the prefix; pnpm test 883 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: T3 done — README "Pull requests from the bot" and "Proposing a plugin with an issue", CHANGELOG Unreleased, and the DESIGN handoff paragraph updated (rewrapped to 80 columns); the exit-2 `readHandoff` test now uses the default limit, since under load its shim passed the 300 ms limit; full runs under a load average near 8 (another session's R tests) failed timing tests in turn (`registry-schema` cached copy, pnpm check limit), which pass alone (30 of 30 in the two files).
+- 2026-10-28: T4 done — pnpm test 883 passed, 1 skipped (load average 7.6); pnpm check 0 problems; claim audit reader running.
 
 ## Decisions
 
