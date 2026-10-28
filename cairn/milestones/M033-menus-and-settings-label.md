@@ -21,10 +21,10 @@ A site visitor reads the languages that a plugin page lists as the languages of 
 
 ## Acceptance criteria
 
-- [ ] AC1: Each plugin page that shows a languages line labels it `Menus and settings in:` in place of `Interface languages:`. The line keeps the same `<span data-fact="languages">` and the same text in it: the language names, or "None declared". In `test/site.test.ts`, a test asserts the new label on a built page. A test also reads every page under the fixture build's `plugins/` directory and finds `Interface languages:` in none of them.
-- [ ] AC2: The text of the home page menu's `<label for="language">` reads `Menus and settings in` in place of `Interface language`. In `test/site.test.ts`, the built home page's menu test asserts the new label.
-- [ ] AC3: README.md and CHANGELOG.md hold no `Interface language` label. A case-sensitive search of each file, joined into one line with runs of spaces squeezed, finds no match. README's home-menu and plugin-page paragraphs name the label `Menus and settings in`. README's plugin-page paragraph says that the description comes from the plugin's manifest or from an index override, so it can be in another language than the languages line names.
-- [ ] AC4: `pnpm test` and `pnpm check` pass.
+- [x] AC1: Each plugin page that shows a languages line labels it `Menus and settings in:` in place of `Interface languages:`. The line keeps the same `<span data-fact="languages">` and the same text in it: the language names, or "None declared". In `test/site.test.ts`, a test asserts the new label on a built page. A test also reads every page under the fixture build's `plugins/` directory and finds `Interface languages:` in none of them.
+- [x] AC2: The text of the home page menu's `<label for="language">` reads `Menus and settings in` in place of `Interface language`. In `test/site.test.ts`, the built home page's menu test asserts the new label.
+- [x] AC3: README.md and CHANGELOG.md hold no `Interface language` label. A case-sensitive search of each file, joined into one line with runs of spaces squeezed, finds no match. README's home-menu and plugin-page paragraphs name the label `Menus and settings in`. README's plugin-page paragraph says that the description comes from the plugin's manifest or from an index override, so it can be in another language than the languages line names.
+- [x] AC4: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -65,3 +65,10 @@ A site visitor reads the languages that a plugin page lists as the languages of 
 ## Decisions
 
 ## Review
+
+- 2026-10-28 AC1: `vitest run test/site.test.ts --reporter=verbose` passes "labels the languages fact as menus and settings" (asserts `<p class="languages">Menus and settings in: <span data-fact="languages">`) and "leaves the old languages label off every plugin page" (reads every `.html` under the built `plugins/`, asserts the count equals the fixture's ids, and finds no `Interface languages:`); the "shows the interface languages" table still passes for its 6 cases, so the span and its text are unchanged. At implement both failed on the planted old label.
+- 2026-10-28 AC2: the same run passes "holds a hidden language menu with one option for each subtag", whose pattern requires `<label for="language">Menus and settings in</label>` in the built home page; it failed on the planted old label at implement.
+- 2026-10-28 AC3: the joined, space-squeezed, case-sensitive search for `Interface language` finds 0 matches in README.md and 0 in CHANGELOG.md. The joined README holds `The home page has a "Menus and settings in" menu` (home-menu paragraph), `and a "Menus and settings in" line` (plugin-page paragraph), and in that paragraph `The description comes from the plugin's manifest or from an index override, so it can be in another language than the languages line names`.
+- 2026-10-28 AC4: `npx -y pnpm@12.15.0 test` — 17 files, 839 passed, 1 skipped (the case-sensitive-volume case, LESSONS M031); `npx -y pnpm@12.15.0 check` — 37 entries, 0 problems.
+- 2026-10-28 gate: `cairn_validate.py` all checks passed; no principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
