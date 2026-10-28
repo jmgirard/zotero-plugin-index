@@ -74,7 +74,7 @@ const { plugins } = loadData();
   import { chosenValue, filterHref, filterStatus, rowShows } from "../../../src/site/home-filter.ts";
 
   // The menu, the buttons, and the status line are hidden in the HTML, so a page without
-  // JavaScript shows every row and neither filter.
+  // JavaScript shows every row, neither filter, and no status line.
   const select = document.querySelector<HTMLSelectElement>("select[data-language-filter]");
   const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-version-filter] button")];
   const status = document.querySelector<HTMLElement>("[data-filter-status]");

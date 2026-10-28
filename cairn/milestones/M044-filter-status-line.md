@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M044: Say how many plugins the filters show
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -126,6 +126,8 @@ plugins" button in the line: not chosen at the plan question set.
 - 2026-10-28: T3 done: README paragraph after the version buttons, CHANGELOG entry at the end of `## Unreleased`, DESIGN home page text and `home-filter.ts` list. Joined-copy search: each of README and CHANGELOG holds each of the two texts once; DESIGN names `filterStatus`. No added prose line over 80 columns. The simple-english hook flags the README sentence ending in "Showing N of M plugins." as long because it does not split after a period inside quotes; the sentence has 16 words, so it stays. The CSS comment in `Base.astro` was reworded to state only what the rule does.
 - 2026-10-28: T4 hand check (browser pane, `python3 -m http.server` on a site built at 529e8a1, deployed `v1/plugins.json` downloaded 2026-10-28, 42 rows): no parameter → line not hidden, text "", 42 shown, margin 0px; `?language=zh` → "Showing 27 of 42 plugins.", 27 rows not hidden; `?zotero=7` → "Showing 25 of 42 plugins.", 25; `?language=de&zotero=10` → "Showing 8 of 42 plugins.", 8; `?language=xx` → address cleared, text ""; menu set to ja → "Showing 5 of 42 plugins.", 5; then button 8 → same, 5; then All languages and Any version → "". The deployed data has no language and major pair that hides every row, so per AC3 the fixture build (`test/fixtures/site/plugins.json`, 9 rows) was used: `?language=es&zotero=10` → "No plugins match these filters.", 0 rows shown, margin 16px. `DOMParser` on the page: the line's next sibling is `ul.plugins`.
 - 2026-10-28: T5 done at 529e8a1 (also covers T3's files): `pnpm test` 19 files, 941 passed, 1 skipped; `pnpm check` 42 entries, 0 problems.
+- 2026-10-28: claim audit: 33 claims read, 2 corrected — README.md, CHANGELOG.md (M now "the number that the page lists, shown or not"), site/src/pages/index.astro (the no-JavaScript comment names the status line); the same reader re-read both and found them true. Left as is: the docs do not mention the singular "plugin" when M is 1, since the index lists more than one plugin. Not fixed here (text outside this branch, and ROADMAP is at 59 of 60 lines): README line 46 says an unknown `language` parameter shows every plugin, but not that the page removes the parameter, as the `zotero` paragraph says. Review can dispose of it.
+- 2026-10-28: after the claim audit fixes: `pnpm test` 941 passed, 1 skipped; `pnpm check` 0 problems. Status set to review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
