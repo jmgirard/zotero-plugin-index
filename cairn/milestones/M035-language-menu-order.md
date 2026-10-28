@@ -96,6 +96,7 @@ home list before it paints" and "Test the home page script in a browser".
 - 2026-10-28: T4 done: `pnpm test` 855 passed, 1 skipped; `pnpm check` 37 entries, 0 problems. The local `dist/v1/plugins.json` predates the languages field, so the site was built from the deployed `v1/plugins.json` (38 pages); its menu reads All languages, English (35), Chinese (27), Italian (8), German (6), then on to the 44 count-sorted options; the browser pane showed that order, and picking Italian showed 8 rows.
 - 2026-10-28: claim audit: 9 claims read, 0 corrected — src/site/languages.ts, test/language.test.ts, test/site.test.ts, README.md, CHANGELOG.md; its optional "After 'All languages'" lead-in was not taken, since README describes that option on its own.
 - 2026-10-28: implement complete; status review.
+- 2026-10-28: step-7 approval: m035-language-menu-order approved for merge
 
 ## Decisions
 
