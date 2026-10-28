@@ -1,0 +1,8 @@
+{
+  "id": "zenotes@alefa.net",
+  "name": "Ze Notes",
+  "description": "Advanced notes manager",
+  "homepage": "https://github.com/frianasoa/zenotes",
+  "repoUrl": "https://github.com/frianasoa/Ze-Notes",
+  "updateUrl": "https://github.com/frianasoa/zenotes/releases/download/release/zenotes-update.json"
+}
