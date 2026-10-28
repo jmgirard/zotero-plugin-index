@@ -135,6 +135,7 @@ plugin read and is not changed.
 - 2026-10-28: claim audit corrections: the `isReleaseUrl` comment no longer says GitHub's file service answers every such URL; README and CHANGELOG state that the rule counts any `github.com` URL whose third path part is `releases`; the CHANGELOG's 403 sentence no longer reads as if GitHub always sends one. Re-read by the same reader pending.
 - 2026-10-28: claim audit: 31 claims read, 3 corrected — src/upstream/reader.ts, README.md, CHANGELOG.md; the same reader's one re-read found all three hold.
 - 2026-10-28: implement done; status review.
+- 2026-10-28: step-7 approval: m045-more-build-level-answers approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
