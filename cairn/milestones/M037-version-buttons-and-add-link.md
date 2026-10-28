@@ -36,7 +36,7 @@ counts, see work log). Script on the plugin pages: none (D-014).
 
 ## Acceptance criteria
 
-- [ ] AC1: Each row of the home list carries a `data-zotero` attribute: the
+- [x] AC1: Each row of the home list carries a `data-zotero` attribute: the
       majors of `ZOTERO_MAJORS` for which `majorSupport` gives `all` or
       `some`, in `ZOTERO_MAJORS` order, joined by single spaces, and
       `data-zotero=""` when no major gives either. A test in
@@ -44,7 +44,7 @@ counts, see work log). Script on the plugin pages: none (D-014).
       on the home page built from the site fixture against values written
       out by hand for every fixture row, among them a row whose pills are
       all `none`.
-- [ ] AC2: The home page HTML holds a `<div class="version-filter" hidden>`
+- [x] AC2: The home page HTML holds a `<div class="version-filter" hidden>`
       that holds a `<span>` reading "Declares Zotero" and a
       `<div role="group">` whose `aria-labelledby` names that span's `id`.
       The group holds one `<button type="button">` reading "Any version"
@@ -52,7 +52,7 @@ counts, see work log). Script on the plugin pages: none (D-014).
       that order, reading the major, with `aria-pressed="false"`, and no
       other buttons. The home page holds exactly one `<script>` element. A
       test in `test/site.test.ts` matches that markup.
-- [ ] AC3: Functions in `src/site/` decide which rows show and what the
+- [x] AC3: Functions in `src/site/` decide which rows show and what the
       address says, and Vitest tests cover each of these cases: a row shows
       if and only if both the language value and the version value pass it;
       the version value "" or a value no button has passes every row; a
@@ -63,7 +63,7 @@ counts, see work log). Script on the plugin pages: none (D-014).
       `zotero=<major>` in the address, choosing "" or holding a `zotero`
       value no button has removes the parameter, and in each case a
       `language` parameter keeps its value.
-- [ ] AC4: In the browser pane, on a site that `pnpm site` builds from one
+- [x] AC4: In the browser pane, on a site that `pnpm site` builds from one
       fetched copy of the deployed `v1/plugins.json`, for each of the five
       buttons, once with the language menu at "All languages" and once at a
       language whose plugins include one that declares the pressed major and
@@ -76,16 +76,16 @@ counts, see work log). Script on the plugin pages: none (D-014).
       the language menu while a major is pressed keeps `zotero=<major>` in
       the address and both filters on the rows, and opening the page at an
       address with `zotero=8` shows the "8" button pressed and its rows.
-- [ ] AC5: The home page's intro holds a link reading "Add a plugin" whose
+- [x] AC5: The home page's intro holds a link reading "Add a plugin" whose
       href is
       `https://github.com/jmgirard/zotero-plugin-index/issues/new?template=add-plugin.yml`.
       A test in `test/site.test.ts` checks the link and that
       `.github/ISSUE_TEMPLATE/` holds the file its `template` value names.
-- [ ] AC6: `README.md` describes the version buttons (what a pressed button
+- [x] AC6: `README.md` describes the version buttons (what a pressed button
       shows, the `zotero` parameter, and that without JavaScript the page
       shows no buttons and every plugin) and the "Add a plugin" link, and
       `CHANGELOG.md`'s Unreleased section has one entry for both.
-- [ ] AC7: `pnpm test` and `pnpm check` pass.
+- [x] AC7: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -160,3 +160,14 @@ counts, see work log). Script on the plugin pages: none (D-014).
 ## Decisions
 
 ## Review
+
+Evidence at 153c2c1, 2026-10-28; `pnpm test` 883 passed, 1 skipped; `pnpm check` 42 entries, 0 problems.
+
+- AC1: `test/site.test.ts` "gives each row the Zotero majors it declares all or part of" passed; it matches `data-plugin` and `data-zotero` of all 9 fixture rows against hand-written values, including `zotero6-plugin@example.org` (pills all none) as `""`.
+- AC2: "holds hidden version buttons, Any version pressed, then one for each major" passed (wrapper `div.version-filter hidden`, span id equal to the group's `aria-labelledby`, Any version `aria-pressed="true"` then 7, 8, 9, 10 `aria-pressed="false"`, nothing else in the group); "has a script on the home page only" passed with exactly one `<script` on the home page. DOMParser of the served page (T6): all 5 buttons inside the hidden wrapper.
+- AC3: `test/home-filter.test.ts` 31 tests passed: `rowShows` true only when both filters pass (4 combinations); version "" and an unknown value pass every row; a major passes a listing row and fails `""` and other-major rows, 10 among them; `chosenValue` keeps a button's value and gives "" for an unknown value or none; `filterHref` sets `zotero=<major>`, removes it for "" with a major or an unknown value held, and keeps `language` in each.
+- AC4: re-run at 153c2c1 in the browser pane on a site built from the fetched deployed copy (generatedAt 2026-10-28T02:03:27.093Z, 42 plugins); ids collected by script and compared with ids from `majorSupport` and `rowLanguages` over that copy. All 10 cases matched exactly (All languages 42/26/31/34/38; `zh`, which mixes declaring and not declaring every major, 28/17/20/23/25), one button pressed each time, `zotero` absent for Any version and `zotero=<major>` otherwise. Changing the language to All and to `zh` while 8 was pressed kept `zotero=8` and matched the expected ids; opening `?zotero=8` showed 8 pressed and its 31 rows.
+- AC5: "links the intro to the Add a plugin form" passed: the intro's link reading "Add a plugin" has href `https://github.com/jmgirard/zotero-plugin-index/issues/new?template=add-plugin.yml`, and `.github/ISSUE_TEMPLATE/add-plugin.yml` exists.
+- AC6: joined-text search: README holds the "Declares Zotero" paragraph (all-or-part rule, `zotero` query parameter, "without JavaScript the home page shows no buttons and lists every plugin") and the intro-link paragraph; CHANGELOG Unreleased holds one new entry naming the buttons, `?zotero=`, and the "Add a plugin" issue form.
+- AC7: `pnpm test` 883 passed, 1 skipped (18 files); `pnpm check` 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed (exit 0); no principle changed, so no `cairn_impact`; the generic profile names no toolchain checks.
