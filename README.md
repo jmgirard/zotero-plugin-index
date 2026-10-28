@@ -515,9 +515,9 @@ the mark, in place of "is not valid JSON". Save such a file as UTF-8
 without the mark. Besides `index-schema`, two rules check the overrides in
 `index.json`:
 
-- `reason-not-blank`: a reason must hold a character other than whitespace
-  and Unicode format characters. Most format characters, such as U+200B
-  (zero width space), print nothing.
+- `reason-not-blank`: a reason must hold a character other than whitespace,
+  as JavaScript's `\s` defines it, and Unicode format characters. Most
+  format characters, such as U+200B (zero width space), print nothing.
 - `unique-override`: two overrides must not have the same `field` and
   `version`. An override with no `version` repeats only another override
   with no `version`. The line names the index of the repeat and the index

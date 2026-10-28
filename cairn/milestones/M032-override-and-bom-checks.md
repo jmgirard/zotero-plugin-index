@@ -69,6 +69,7 @@
 - 2026-10-28: resumed by /milestone-implement for review return 1; added T6 (minor amendment) and mapped AC1 → T1, T6.
 - 2026-10-28: the Edit tool writes a `\u` escape in new text as the raw character, so the escapes went in by a short Python replace, checked by a count (0 raw U+200B, U+200D, U+FEFF left; escapes at `check.ts:226` and `check.test.ts:177,279,286,290`).
 - 2026-10-28: T6 done: escapes in place; `unique-override` quotes field and version with `JSON.stringify` (new test: a version "1\nok: forged" stays escaped on one line; planting the old unquoted form turned it red, restored from a copy); "names the version it repeats" compares the whole list; the mark-inside-a-string case calls `checkTree`; CHANGELOG first bullet, README "Besides `index-schema`, two rules", and DESIGN "Entry checks" updated. pnpm test 838 passed, 1 skipped; pnpm check 0 problems; cairn_validate passes.
+- 2026-10-28: claim audit: 9 claims read, 1 corrected — CHANGELOG.md, README.md (T6 lines, 623fa44; a fresh Opus reader): "whitespace" now says "as JavaScript's `\s` defines it", since `\s` leaves out U+0085; the same reader re-read it once: holds.
 - 2026-10-28: status review; handed to /milestone-review.
 
 ## Decisions
