@@ -48,7 +48,12 @@ is left, the line reads "Unknown (no translations found)" (M036). The home
 page's "Menus and settings in" menu filters the list by language subtag,
 run by the site's one script (D-014, M024, M033). The menu lists the
 languages with the most plugins first, and languages with the same number
-of plugins in code-unit order of their English names (M035).
+of plugins in code-unit order of their English names (M035). The home
+page's "Declares Zotero" buttons, "Any version" and one per major of
+`ZOTERO_MAJORS`, filter the list to the plugins whose pill for the pressed
+major is all or part, one major at a time, together with the menu; the
+same script runs them and keeps the choice in `?zotero=` (D-019, M037).
+The home intro links to the "Add a plugin" issue form (M037).
 The page shows the name, the description, the version pills, the declared
 range, the "Menus and settings in" line (M024, M033), the user reports on
 the release the index read with a "Works" and a "Broken" link (M021), and
@@ -218,9 +223,12 @@ exception is a report that is abuse.
   that the templates use, `majorSupport` and `ZOTERO_MAJORS` among them, and
   `src/site/description.ts` holds `shownDescription`.
   `src/site/languages.ts` holds the applied languages, their names, and the
-  menu options. `src/site/language-filter.ts` holds `rowShows`, `menuValue`,
-  and `filterHref`, which the home page's script imports. Added M007; pills
-  and descriptions M015; languages M024.
+  menu options. `src/site/home-filter.ts` holds `passes`, `rowShows`,
+  `chosenValue`, and `filterHref`, which the home page's script imports for
+  the language menu and the version buttons (renamed from
+  `language-filter.ts`, M037); `rowMajors` in `version.ts` gives each row's
+  `data-zotero`. Added M007; pills and descriptions M015; languages M024;
+  version buttons M037.
 - Reports (`src/reports/`): `parseReport(body, labels, ids)` reads a report
   issue's plugin id, plugin version, Zotero major, and verdict, or names the
   first problem. `pnpm report-issue` reads the issue that `ISSUE_NUMBER`
@@ -479,8 +487,9 @@ reused._
   one Zotero major that range covers. The tests and the templates (through
   `site/src/data.ts` and `site/src/components/Support.astro`) import it. The
   pages carried no script from M015. Since M024 the home page carries one,
-  the language menu, which Astro inlines as a `type="module"` script; the
-  other pages carry none (D-014). The templates take the Pages path
+  for the language menu and, since M037, the version buttons, which Astro
+  inlines as a `type="module"` script; the other pages carry none (D-014,
+  D-019). The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
   Astro's `import.meta.env.BASE_URL`. `build.yml` runs `pnpm site` after the
   build, so a failed site build also deploys nothing. `tsconfig.json` includes

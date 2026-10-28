@@ -47,6 +47,23 @@ can link to the filtered list. If the parameter names no language in the
 menu, the page shows every plugin. A script runs the menu. Without
 JavaScript, the home page shows no menu and lists every plugin.
 
+The home page also has "Declares Zotero" buttons: "Any version" and one
+button for each Zotero major from 7 to 10. If you press a major, the list
+shows only the plugins whose declared range covers all or part of that
+version. These are the plugins with a ✓ or ◐ pill for it. A plugin with
+no declared range, or one that the last build failed to read, does not
+show. The
+buttons and the language menu work together: the list shows the plugins
+that pass both. "Any version" shows every plugin that the language menu
+shows. The page keeps your choice in the `zotero` query parameter of its
+address, such as `?zotero=8`. If the parameter names no button, the page
+acts as if "Any version" is pressed and removes the parameter. The script that runs the menu also runs the buttons, so
+without JavaScript the home page shows no buttons and lists every plugin.
+
+The home page intro links to the "Add a plugin" issue form, which
+"Proposing a plugin with an issue" describes. The form needs a GitHub
+account.
+
 Each plugin has its own page. The page shows the name, the description, the
 pills, the declared range, and a "Menus and settings in" line. That line
 names the languages of the `languages` list that "Using the data"

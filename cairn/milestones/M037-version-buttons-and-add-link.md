@@ -121,7 +121,7 @@ counts, see work log). Script on the plugin pages: none (D-014).
 - [x] T4: Add the "Add a plugin" link to the home intro, with `{" "}` at
       line ends where text meets an element (LESSONS M021); site test for
       the href and the template file.
-- [ ] T5: README home page section (buttons, parameter, no-JavaScript
+- [x] T5: README home page section (buttons, parameter, no-JavaScript
       fallback, link), one CHANGELOG Unreleased entry, DESIGN Contract
       boundary and Architecture (the one script now runs both filters).
       Wrap prose near 76 columns and list long added lines (LESSONS M036).
@@ -152,6 +152,7 @@ counts, see work log). Script on the plugin pages: none (D-014).
 - 2026-10-28: re-audit: AC2 (full) — nothing blocking; notes that the test also pins `value="<major>"` and the span id's uniqueness is unchecked; no wording change.
 - 2026-10-28: T3 done — hidden `div.version-filter` with span label and `role="group"` buttons after the language menu; the one script now reads `language` and `zotero`, sets `aria-pressed`, filters rows with `rowShows`, replaces the address on button press and menu change, re-reads on load and `popstate`, and unhides both filters; pressed and focus styles with light and dark tokens in `Base.astro`; site tests for the markup and one `<script>`. "Any version" has no `value` attribute, so its value is "" without Astro's bare-attribute rule.
 - 2026-10-28: T4 done — `ADD_PLUGIN_HREF` in `site/src/data.ts`; intro sentence "Is a plugin missing? Add a plugin with a GitHub issue form, which needs a GitHub account."; site test for the href and the template file; `pnpm test` 883 passed.
+- 2026-10-28: T5 done — README paragraphs on the buttons (all-or-part rule, no-range and failed rows hidden, both filters together, `?zotero=`, unknown value removed, no-JavaScript fallback) and the intro link; one CHANGELOG Unreleased entry; DESIGN Contract boundary, Function Families (`home-filter.ts`, `rowMajors`), and Architecture (one script, D-019). The simple-english hook flags 3 older README and CHANGELOG lines this branch did not touch; left as they are.
 
 ## Decisions
 
