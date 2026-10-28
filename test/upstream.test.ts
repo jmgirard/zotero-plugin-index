@@ -130,6 +130,10 @@ describe("readUpstream", () => {
   // A file of each type that holds one message.
   const FTL = "hello = Hallo\n";
   const DTD = '<!ENTITY hello "Hallo">\n';
+  // A file of each type that holds `count` messages.
+  const lines = (count: number, line: (i: number) => string) => Array.from({ length: count }, (_, i) => line(i)).join("");
+  const ftl = (count: number) => lines(count, (i) => `m${i} = Hallo\n`);
+  const dtd = (count: number) => lines(count, (i) => `<!ENTITY m${i} "Hallo">\n`);
 
   test.each<[string, Record<string, string>, string[]]>([
     ["two folders under locale/, in code-unit order", { "locale/zh-CN/a.ftl": FTL, "locale/en-US/a.ftl": FTL }, ["en-US", "zh-CN"]],
@@ -190,6 +194,32 @@ describe("readUpstream", () => {
     ["a folder with a comment-only file and a file with a message", { "locale/de/a.ftl": "# Comment\n", "locale/de/b.ftl": FTL }, ["de"]],
     ["one tag when either of its folders holds a message", { "locale/zh_CN/a.ftl": "# Comment\n", "chrome/locale/zh-CN/b.ftl": FTL }, ["zh-CN"]],
     ["no tag when none of its folders holds a message", { "locale/zh_CN/a.ftl": "# Comment\n", "chrome/locale/zh-CN/b.ftl": "# Comment\n" }, []],
+    ["no tag with under half the fullest tag's messages", { "locale/en-US/a.ftl": ftl(10), "locale/zh-CN/a.ftl": ftl(4) }, ["en-US"]],
+    ["a tag with half the fullest tag's messages", { "locale/en-US/a.ftl": ftl(10), "locale/zh-CN/a.ftl": ftl(5) }, ["en-US", "zh-CN"]],
+    ["no tag with under half of an odd count", { "locale/en-US/a.ftl": ftl(9), "locale/zh-CN/a.ftl": ftl(4) }, ["en-US"]],
+    [
+      "a .properties folder counted without its comments and blank lines",
+      {
+        "locale/en-US/a.ftl": ftl(5),
+        "locale/fr/a.properties": `# Comment\n${lines(10, (i) => `m${i}=Bonjour\n! Comment\n\n`)}`,
+      },
+      ["en-US", "fr"],
+    ],
+    [
+      "a .dtd folder counted without the entity in a comment",
+      { "locale/en-US/a.ftl": ftl(5), "locale/de/a.dtd": `${dtd(10)}<!-- <!ENTITY old "Alt"> -->\n` },
+      ["de", "en-US"],
+    ],
+    [
+      "a tag kept by the sum of its two folders",
+      { "locale/en-US/a.ftl": ftl(10), "locale/zh-CN/a.ftl": ftl(3), "chrome/locale/zh_CN/b.ftl": ftl(2) },
+      ["en-US", "zh-CN"],
+    ],
+    [
+      "a tag counted over its .ftl and .dtd files",
+      { "locale/en-US/a.ftl": ftl(10), "locale/de/a.ftl": ftl(3), "locale/de/b.dtd": dtd(2) },
+      ["de", "en-US"],
+    ],
   ])("lists %s as the languages", async (_name, files, languages) => {
     const { result } = await read((r) => Object.assign(r[XPI].xpi!, files));
     expect(result.ok && result.facts.languages).toEqual(languages);
