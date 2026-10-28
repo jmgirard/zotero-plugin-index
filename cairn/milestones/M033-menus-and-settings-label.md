@@ -50,6 +50,7 @@ A site visitor reads the languages that a plugin page lists as the languages of 
 - 2026-10-28: collision: extends done M023 and M024 (the languages line and menu). D-014 covers the menu script and is untouched, since the options are still written at build. Candidate rows on languages ("Drop zxx and mul from the languages", "Drop locale folders that copy another") stay as they are. Inbox: 0 open issues, 1 open bot discovery PR (#57) with no overlap.
 - 2026-10-28: plan gate chose the label "Menus and settings in" over "Translated into" and over a note line under the old label, because it names what the list holds for a plugin with English only too; falsified by visitors who still read the list as the description's language.
 - 2026-10-28: criteria audit (full): AC1 now reads every built plugin page for the old label, not one page; AC3 states the label's absence as the promise and the joined search as its check, and names both README paragraphs. AC2 and AC4 had no finding.
+- 2026-10-28: criteria re-audit (full) on the final wording: no finding.
 
 ## Decisions
 
