@@ -32,18 +32,20 @@ the repository archived (when GitHub's response says), repository age, the
 release the index read and whether it is a prerelease (corrected M014),
 release count, open issues, the host of the `update.json` file, the
 counted user reports on the release the index read (M021), and the
-interface languages (M024).
+languages of the plugin's menus and settings (M024).
 The data also carries the interface languages that the read XPI's locale
 folders name (M023), counting a folder only when one of its files holds a
 message, judged by file type (M027). They say which languages a plugin
-ships interface text for, not whether a translation is complete. A
+ships menu and settings text for, not whether a translation is complete,
+and not the language of the description, which is the author's own text. A
 `languages` override records them for a plugin whose list is wrong or
-empty. Each plugin page shows them by name, outside the Details section,
-and the home page's language menu filters the list by language subtag,
-run by the site's one script (D-014, M024).
+empty. Each plugin page shows them by name in a "Menus and settings in"
+line, outside the Details section, and the home page's "Menus and settings
+in" menu filters the list by language subtag, run by the site's one script
+(D-014, M024, M033).
 The page shows the name, the description, the version pills, the declared
-range, the interface languages (M024), the user reports on the release the
-index read with a "Works" and a "Broken" link (M021), and the repository
+range, the "Menus and settings in" line (M024, M033), the user reports on
+the release the index read with a "Works" and a "Broken" link (M021), and the repository
 and releases links first. The other facts sit in a closed "Details"
 section (M015). The home list marks an
 archived plugin with "(archived)" after its name, and the data carries the

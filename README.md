@@ -34,10 +34,10 @@ description only repeats the name. For example, "Zotero Plugin for OCR" only rep
 that the index read replaces the manifest description. The name check does
 not apply to an override.
 
-The home page has an "Interface language" menu. It lists each language that
-at least one plugin ships interface text for, with the number of those
-plugins, such as "Chinese (2)". If you pick a language, the list shows only
-the plugins whose interface languages include it. The menu groups the
+The home page has a "Menus and settings in" menu. It lists each language
+that at least one plugin ships menu and settings text in, with the number of
+those plugins, such as "Chinese (2)". If you pick a language, the list shows
+only the plugins whose menus and settings come in it. The menu groups the
 regional forms of a language, so a plugin with `zh-CN` or `zh-TW` counts
 under Chinese. "All languages" shows every plugin. The page keeps your
 choice in the `language` query parameter of its address, such as
@@ -47,16 +47,18 @@ menu. Without JavaScript, the home page shows no menu and lists every
 plugin.
 
 Each plugin has its own page. The page shows the name, the description, the
-pills, the declared range, and the interface languages. It also shows the
-user reports and links to the repository and its releases. The interface
-languages come from the `languages` list that "Using the data" describes. If
+pills, the declared range, and a "Menus and settings in" line. That line
+names the languages of the plugin's own menus and settings. The description is the
+author's own text, so it can be in another language than the menus. The page
+also shows the user reports and links to the repository and its releases.
+The languages come from the `languages` list that "Using the data" describes. If
 a `languages` override applies to the plugin version that the index read,
 the override replaces that list. If no language is left, the page shows
 "None declared". A closed "Details" section follows. It holds the plugin id,
 facts about the repository and its releases, and the overrides of the index
 for the plugin.
 If the last build failed to read a plugin, its page shows the failure in place
-of the pills. That page has no interface languages line.
+of the pills. That page has no "Menus and settings in" line.
 
 The user reports part of a page names the plugin version that the index
 read. For each Zotero major with a counted report, it shows the number of
