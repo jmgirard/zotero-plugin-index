@@ -231,4 +231,27 @@ Evidence gathered 2026-10-28 on branch head a81d17f; `git diff 471d7f2..HEAD` ou
 - AC5 (pass 2): the order test and the five schema tests pass; README "Using the data" still says to fetch the schema again.
 - AC6 (pass 2): the start-test line test and the absent-line tests for a read record and a failed record pass.
 - AC7 (pass 2): the CHANGELOG entry and the DESIGN Data sources, Contract boundary, and Known issues text stand; verify clean.
+- Gate (pass 2): `cairn_validate.py` all checks passed; no IP/GP changed.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1 (pass 2): README "Using the data" says plugin code can rewrite only its own job's results, while DESIGN names a leftover process uploading under another tested job's artifact name — fix now: README widened, fixed 568d5bc
+- diff-bug #2 (pass 2): an ENOENT from listing an inner artifact directory reads as "no results directory", and D-024's "only when" list omits the listing and write failures — reject in part, edge: the inner ENOENT needs a directory that download-artifact made to vanish between two `readdir` calls in the site job, which runs no plugin code; the D-024 list — fix now: D-025 corrects it, fixed 568d5bc
+- diff-bug #3 (pass 2): the CLI's data-unreadable, schema-rejects, `write-failed`, and listing-failure exits have no test — fix now (the listing failure now prints a message instead of a stack trace), fixed 568d5bc
+- diff-bug #4 (pass 2): `readEntry`'s failed-read branch has no test — fix now: a mode-000 file, skipped for root, fixed 568d5bc
+- diff-bug #5 (pass 2): no test asserts the `::warning::` line — fix now: `summaryLines` in `start-tests.ts`, asserted after the limit cut and absent in the CLI run, fixed 568d5bc
+- diff-bug #6 (pass 2): `--tested` values are not checked — fix now: each must be a version, else the usage, fixed 568d5bc
+- diff-bug #7 (pass 2): no limit on the entries an artifact holds — reject, edge: only an artifact of millions of files, which the start-test job's 40-minute upload could not finish, makes the site job slow enough to time out, and the effect is slow running
+- diff-bug #8 (pass 2): `pnpm build --plan --out dist` takes `--out` as the plan file — reject, edge: an option given with no value before another option, as `--out` already accepted on main; the build then stops on an entry tree with no entries
+- diff-bug #9a (pass 2): `test/upstream.test.ts` checks `xpi.sha256` only by shape — reject, false: no exact check precedes it in that test, and `test/build.test.ts` pins the hash to the served bytes
+- diff-bug #9b (pass 2): `start-results-` and `start-results-99` run one code path — fix now: one case dropped, fixed 568d5bc
+- diff-bug #9c (pass 2): an `indexOf > -1` check follows the exact `fact` check in the site test — fix now: removed, fixed 568d5bc
+- diff-bug #9d (pass 2): a test comment restates its assertion — fix now: removed, fixed 568d5bc
+- blame-history #1 (pass 2): the listing-failure exit contradicts D-024's list — fix now: D-025, with diff-bug #2, fixed 568d5bc
+- blame-history #2 (pass 2): `downloadXpi` fails an HTTP error without D-022's build-level mark — reject, false: no caller reads a build-level mark from it, since `pnpm start-tests` records no failure class and the build never calls it
+- blame-history #3 (pass 2): the site job's 15-minute limit is unrecorded — fix now: a comment with the measured 20 s and what a timeout does, fixed 568d5bc
+- prior-review #1 (pass 2): README line 128 is still 111 characters — fix now: rewrapped, fixed 568d5bc
+- prior-review #2 (pass 2): DESIGN lines 190, 555, 587, 612 are joined prose — fix now: rewrapped, with the joins the rewrap made, fixed 568d5bc
+- prior-review #3 (pass 2): "waits 3 seconds" in the page and docs is not tied to `SETTLE_MS` — fix now: the site test asserts `SETTLE_MS = 3000` in the reporter, fixed 568d5bc
+- ripple #1 (pass 2): README's list of deploy-withholding faults omits the plan write and `pnpm add-start-results` — fix now, fixed 568d5bc
+- ripple #2 (pass 2): DESIGN's data build exit list omits the plan write — fix now, fixed 568d5bc
+- Verify after the pass-2 fixes: `pnpm test` 1029 passed, 6 skipped; `pnpm check` 42 entries, 0 problems; Ruby parses `build.yml`. Pass 2 found no floor-qualifying finding: none shows a criterion failing, and the fixed ones are tests, docs, and input checks.
 
