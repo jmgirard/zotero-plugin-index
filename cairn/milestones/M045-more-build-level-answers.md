@@ -154,16 +154,16 @@ Evidence gathered 2026-10-28 at 7719dc9; main not moved since the cut (ae2d888).
 - diff-bug #2: AC2's nine rows include pairs that run the same `isReleaseUrl` branch (`releases/latest/download` beside the direct release URL; raw host beside direct asset URL; the two redirect-to-asset rows) — reject (planned change): AC2 names each row, and the direct asset row is the one that tells the chain rule from the rejected host list.
 - diff-bug #3: the two new `test/issue.test.ts` rows run the same `issue.ts:104` branch as the existing 429/503/403 rows — reject (false): they test the CHANGELOG claim the change adds, end to end, and both failed with main's reader.
 - diff-bug #4: the test comment above the 403 rows restated `isReleaseUrl` and the row names — fix now: trimmed to the one fact the code shows less directly (any hop counts), fixed 96228ac.
-- prior-review #1: README "pnpm discover" state paragraph (lines 329-331) and DESIGN discovery text (387-388) said only a 429 or 5xx download answer goes unrecorded; a release-URL 403 now also does (`discover.ts:214`) — fix now: both name the 403 case.
-- prior-review #2: `test/discover.test.ts`'s M026 state table had no release-URL 403 row — fix now: rows for an XPI 403 at a release URL (not kept) and an update.json 403 at a raw URL (kept); with main's reader the first failed and the second passed.
+- prior-review #1: README "pnpm discover" state paragraph (lines 329-331) and DESIGN discovery text (387-388) said only a 429 or 5xx download answer goes unrecorded; a release-URL 403 now also does (`discover.ts:214`) — fix now: both name the 403 case, fixed 2c32c4c.
+- prior-review #2: `test/discover.test.ts`'s M026 state table had no release-URL 403 row — fix now: rows for an XPI 403 at a release URL (not kept) and an update.json 403 at a raw URL (kept); with main's reader the first failed and the second passed, fixed 2c32c4c.
 - prior-review #3: the `isReleaseUrl` comment and the CHANGELOG say such a 403 is GitHub's, but the code checks the requested hops, not the answering host — reject (planned change): D-022 chose the hop rule; the claim audit read both texts against the code.
 - ripple #1: candidate row "Count more GitHub answers as build-level" (ROADMAP line 18) describes the fixed problem — reject (planned change): post-merge hygiene graduates the row.
 - ripple #2: `send` (POST/PATCH, `reader.ts:377`) leaves a non-JSON 2xx body plugin-level while README's list says a GitHub API answer — reject (false): the list defines build-level failures of a plugin read in the build, and no plugin read calls `send`; Scope Out names it.
-- ripple #3, #4: the README and DESIGN state paragraphs — fix now, as prior-review #1.
+- ripple #3, #4: the README and DESIGN state paragraphs — fix now, as prior-review #1, fixed 2c32c4c.
 - ripple #5: `discover.ts:22-24` names 429 or 5xx as the build-level example — reject (false): "such as" keeps the comment true.
-- ripple #6: the M026 test table and its comment — fix now, as prior-review #2; the comment names the 403 case.
-- ripple #7, #8: candidate rows "Drop stale state records on a reread" and "Stop rereading hosts that keep failing" list the unrecorded answers without the release-URL 403 — fix now: both corrected in place (corrected M045).
-- blame-history #1: the stale README and DESIGN state text, against M026's "a 404, 403, or other download answer stays recorded" — fix now, as prior-review #1; D-022 records the reread cost.
+- ripple #6: the M026 test table and its comment — fix now, as prior-review #2; the comment names the 403 case, fixed 2c32c4c.
+- ripple #7, #8: candidate rows "Drop stale state records on a reread" and "Stop rereading hosts that keep failing" list the unrecorded answers without the release-URL 403 — fix now: both corrected in place (corrected M045), fixed 2c32c4c.
+- blame-history #1: the stale README and DESIGN state text, against M026's "a 404, 403, or other download answer stays recorded" — fix now, as prior-review #1, fixed 2c32c4c; D-022 records the reread cost.
 - blame-history #2: `send` keeps a non-JSON 2xx body plugin-level — reject (planned change): Scope Out names `send`, and no caller of `send` reads the mark.
 - blame-history #3: a non-JSON repo body now leaves an "Add a plugin" issue open instead of closing it — reject (planned change): Scope In and the CHANGELOG entry name this effect for both cases.
 - blame-history #4: the release flag stays set across hops, so a 403 from a non-GitHub host after a release redirect counts — reject (planned change): D-022's chain rule.
