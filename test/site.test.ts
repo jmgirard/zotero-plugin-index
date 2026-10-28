@@ -417,6 +417,25 @@ describe("the home page", () => {
       ["min-only-plugin@example.org", "zh"],
       ["locale-plugin@example.org", "es pt"],
       ["_x-y+z.w@{v}", ""],
+      ["zotero6-plugin@example.org", ""],
+    ]);
+  });
+
+  test("gives each row the Zotero majors it declares all or part of", () => {
+    const rows = [...home().matchAll(/<li class="plugin"[^>]*>/g)].map(([tag]) => [
+      /\sdata-plugin="([^"]*)"/.exec(tag)?.[1],
+      /\sdata-zotero="([^"]*)"/.exec(tag)?.[1],
+    ]);
+    expect(rows).toEqual([
+      ["broken-plugin@example.org", ""],
+      ["first-plugin@example.org", "7 8"],
+      ["old-plugin@example.org", "7"],
+      ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "9"],
+      ["no-range-plugin@example.org", ""],
+      ["min-only-plugin@example.org", "8 9 10"],
+      ["locale-plugin@example.org", "7 8 9"],
+      ["_x-y+z.w@{v}", ""],
+      ["zotero6-plugin@example.org", ""],
     ]);
   });
 

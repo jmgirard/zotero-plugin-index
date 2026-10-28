@@ -1,7 +1,15 @@
 ---
 import Support from "../components/Support.astro";
 import Base from "../layouts/Base.astro";
-import { displayName, languageOptions, loadData, pluginHref, rowLanguagesAttribute, shownDescription } from "../data.ts";
+import {
+  displayName,
+  languageOptions,
+  loadData,
+  pluginHref,
+  rowLanguagesAttribute,
+  rowMajorsAttribute,
+  shownDescription,
+} from "../data.ts";
 
 const { plugins } = loadData();
 ---
@@ -24,7 +32,12 @@ const { plugins } = loadData();
       plugins.map((record) => {
         const description = shownDescription(record);
         return (
-          <li class="plugin" data-plugin={record.id} data-languages={rowLanguagesAttribute(record)}>
+          <li
+            class="plugin"
+            data-plugin={record.id}
+            data-languages={rowLanguagesAttribute(record)}
+            data-zotero={rowMajorsAttribute(record)}
+          >
             <p class="plugin-name">
               <a href={pluginHref(record.id)}>{displayName(record)}</a>
               {record.upstream?.archived === true && <span data-archived>(archived)</span>}

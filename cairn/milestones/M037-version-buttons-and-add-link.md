@@ -2,14 +2,14 @@
      section ownership". A phase skill never rewrites another phase's section. -->
 # M037: Filter by Zotero version and link the add form
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — site visitors see and use the buttons and the link
-- **Branch/PR:** —
+- **Branch/PR:** m037-version-buttons-and-add-link
 
 ## Goal
 
@@ -99,7 +99,7 @@ counts, see work log). Script on the plugin pages: none (D-014).
 
 ## Tasks
 
-- [ ] T1: Add `rowMajors` (or a like name) beside `majorSupport` in
+- [x] T1: Add `rowMajors` (or a like name) beside `majorSupport` in
       `src/site/version.ts` and an attribute wrapper in `site/src/data.ts`
       that passes `new String("")` for an empty value, as
       `rowLanguagesAttribute` does (LESSONS M024). Add a fixture record whose
@@ -144,6 +144,8 @@ counts, see work log). Script on the plugin pages: none (D-014).
 - 2026-10-28: plan gate chose replacing the address on a button press over adding a history entry because the language menu replaces it and Back then leaves the page for both; falsified by visitors or the maintainer expecting Back to undo a filter press.
 - 2026-10-28: plan gate chose one script for both filters over a second script because D-014 keeps the site at one script and both filters act on the same rows; falsified by the script growing past what one module can test through pure functions.
 - 2026-10-28: plan gate chose buttons with no counts over counts like the language menu's because a count that ignores the chosen language misleads beside a filtered list; falsified by visitors asking how many plugins declare a version.
+- 2026-10-28: implement started on branch m037-version-buttons-and-add-link.
+- 2026-10-28: T1 done — `rowMajors` in `src/site/version.ts`, `rowMajorsAttribute` in `site/src/data.ts` sharing an `attributeValue` helper with `rowLanguagesAttribute`, fixture record `zotero6-plugin@example.org` (range 6.0 to 6.*, all pills none), site test with hand-written values for all 9 rows; `pnpm test` 863 passed, `pnpm check` 0 problems.
 
 ## Decisions
 

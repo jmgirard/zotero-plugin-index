@@ -196,6 +196,29 @@
         "message": "no release of example/punctuation-plugin has an .xpi asset"
       },
       "overrides": []
+    },
+    {
+      "id": "zotero6-plugin@example.org",
+      "repoUrl": "https://github.com/example/zotero6-plugin",
+      "upstream": {
+        "id": "zotero6-plugin@example.org",
+        "name": "Zotero 6 Plugin",
+        "version": "1.0.0",
+        "strictMinVersion": "6.0",
+        "strictMaxVersion": "6.*",
+        "updateUrl": "https://github.com/example/zotero6-plugin/releases/download/release/update.json",
+        "updateHost": "github.com",
+        "repoUrl": "https://github.com/example/zotero6-plugin",
+        "repoCreatedAt": "2022-03-01T12:00:00Z",
+        "openIssues": 0,
+        "releaseCount": 1,
+        "latestReleaseDate": "2023-01-15T00:00:00Z",
+        "prerelease": false,
+        "archived": false,
+        "languages": []
+      },
+      "reports": [],
+      "overrides": []
     }
   ]
 }
