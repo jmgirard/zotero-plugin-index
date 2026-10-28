@@ -300,8 +300,8 @@ describe("the plugin page", () => {
 
   test.each([
     ["three upstream tags", "first-plugin@example.org", "English (United States), Spanish, Chinese (China)"],
-    ["an empty upstream list", "old-plugin@example.org", "None declared"],
-    ["no languages field", "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "None declared"],
+    ["an empty upstream list", "old-plugin@example.org", "Unknown (no translations found)"],
+    ["no languages field", "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "Unknown (no translations found)"],
     ["an override for every version, in its own order", "no-range-plugin@example.org", "French, German"],
     ["an override for another version only", "min-only-plugin@example.org", "Chinese (China), Chinese (Taiwan)"],
     ["an override for the version read beside one for every version", "locale-plugin@example.org", "Portuguese (Brazil), Spanish (Latin America)"],

@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M036: Reword the empty languages line
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — the plugin pages, the published `languages` data, and both published schemas change   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m036-empty-languages-line   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -93,7 +93,7 @@ and `mul`, which name no one interface language.
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
 
-- [ ] T1: Change the two empty-case rows at `test/site.test.ts:303-304` to
+- [x] T1: Change the two empty-case rows at `test/site.test.ts:303-304` to
       the new text and see them fail. Change `languagesText` and its
       comment at `site/src/data.ts:42-45`, then see them pass.
 - [ ] T2: Add the AC3 and AC4 cases to `test/upstream.test.ts` and see them
@@ -128,6 +128,8 @@ and `mul`, which name no one interface language.
 - 2026-10-28: plan gate chose to refuse zxx and mul in the reader and both schemas over the reader alone, at the user's choice, so that overrides and data agree; falsified by a plugin author who means a mul folder as a real language list.
 - 2026-10-28: plan chose the `LANGUAGE_TAG` lookahead over a separate test in `localeLanguages` because the schemas copy that pattern, so one rule serves the reader and the schemas; falsified by a need to let overrides hold codes the reader skips.
 - 2026-10-28: question set: neighbor rows — the user named "Drop zxx and mul from the languages" as the one neighbor; "Label cut reads on plugin pages" stays a candidate row.
+- 2026-10-28: implement started; branch m036-empty-languages-line cut from main at 7025717.
+- 2026-10-28: T1 done: the two empty-case rows failed with "None declared", then passed after `languagesText` changed; pnpm test 855 passed, 1 skipped; pnpm check 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local -->
