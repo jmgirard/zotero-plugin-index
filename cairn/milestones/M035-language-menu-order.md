@@ -1,6 +1,6 @@
 # M035: Sort the language menu by count
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -94,6 +94,8 @@ home list before it paints" and "Test the home page script in a browser".
 - 2026-10-28: T2 done: the fixture's first-plugin gained `es`, so Chinese and Spanish have 2 plugins and Spanish sorts after English (1); the menu test expects that list and failed only on the old sort; the row and plugin-page tests follow the fixture; `pnpm test` 855 passed, 1 skipped; `pnpm check` 0 problems.
 - 2026-10-28: T3 done: README and the Unreleased CHANGELOG menu entry state the order, matching the T2 menu test's list; joined-copy searches of README, CHANGELOG, DESIGN, and a grep of src, site/src, and test found no other order text; the simple-english hook flagged README lines 100 and 436 and CHANGELOG line 172, which this branch did not write, so they stay.
 - 2026-10-28: T4 done: `pnpm test` 855 passed, 1 skipped; `pnpm check` 37 entries, 0 problems. The local `dist/v1/plugins.json` predates the languages field, so the site was built from the deployed `v1/plugins.json` (38 pages); its menu reads All languages, English (35), Chinese (27), Italian (8), German (6), then on to the 44 count-sorted options; the browser pane showed that order, and picking Italian showed 8 rows.
+- 2026-10-28: claim audit: 9 claims read, 0 corrected — src/site/languages.ts, test/language.test.ts, test/site.test.ts, README.md, CHANGELOG.md; its optional "After 'All languages'" lead-in was not taken, since README describes that option on its own.
+- 2026-10-28: implement complete; status review.
 
 ## Decisions
 
