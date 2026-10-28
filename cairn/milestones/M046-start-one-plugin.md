@@ -167,3 +167,5 @@ spawned: diff-bug, blame-history, prior-review, ripple
 - ripple #7: the candidate row says the CI job installs listed plugins — reject (false): the row states the series' target, and M047 graduates it.
 
 Re-verification after the fixes, at cc8518a, 2026-10-28: AC1 `test/start-test.test.ts` 22 passed (each failure name, and the four `xpi-unreadable`/`no-manifest` causes by message); AC3 plants rerun: without the group kill both AC3 tests fail on the live pid list, without the temp removal both fail on the profile's directory; real Zotero 10.0.6 on macOS: 5 fixtures passed, `start-error-async` included; AC4 full `pnpm test` 981 passed, 6 skipped, `pnpm check` 42 entries, 0 problems.
+AC2 re-verification: CI run 40766600665 on eb493dc (the branch's last code-bearing commit): `check` and `start-test` success; Zotero 10.0.6 hash OK; started, start-error, start-error-async (start-error), not-installed, and timed-out each got its result.
+Snapshot files: none changed. Open PRs by the operator: 0, under the feature cap of 1.
