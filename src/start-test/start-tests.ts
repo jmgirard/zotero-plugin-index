@@ -19,7 +19,8 @@ export const START_TESTS_LIMIT_MS = 20 * 60 * 1000;
 // The `pnpm start-test` command, which runs each start in its own process.
 const START_TEST_CLI = join(dirname(fileURLToPath(import.meta.url)), "cli.ts");
 
-const RESULT_NAMES: StartResultName[] = ["started", "start-error", "not-installed", "timed-out"];
+// The four results of `pnpm start-test`.
+export const RESULT_NAMES: StartResultName[] = ["started", "start-error", "not-installed", "timed-out"];
 
 // One start's result, with the entry id of the plan item it started.
 export interface PlannedStart extends StartResult {

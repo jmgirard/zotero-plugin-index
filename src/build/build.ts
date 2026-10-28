@@ -5,6 +5,7 @@ import indexSchema from "../../schemas/index.v1.schema.json" with { type: "json"
 import pluginsSchema from "../../schemas/plugins.v1.schema.json" with { type: "json" };
 import { listEntries } from "../check/check.ts";
 import { countReports, type ReportCount } from "../reports/count.ts";
+import type { StartResultName } from "../start-test/start-test.ts";
 import { type Fetch, githubClient, ReadFailure, readUpstream, type UpstreamFacts, type XpiRead } from "../upstream/reader.ts";
 import { duration, READ_LIMIT_MS, withinLimit } from "../upstream/time-limit.ts";
 
@@ -23,8 +24,16 @@ export interface PluginRecord {
   // The counted user reports on the version in upstream, by Zotero major. Every record with
   // upstream that the build writes has it; data written before reports existed has none.
   reports?: ReportCount[];
+  // Whether the version in upstream started in each tested Zotero release that its manifest
+  // range covers, ordered by Zotero version. `pnpm add-start-results` adds it after the build.
+  startTests?: StartTestRecord[];
   failure?: { name: string; message: string };
   overrides: Override[];
+}
+
+export interface StartTestRecord {
+  zotero: string;
+  result: StartResultName;
 }
 
 export interface PluginsFile {

@@ -116,7 +116,7 @@ issues entry records this limit.
 - [x] T2: Write `pnpm start-tests` in `src/start-test/`. Read the plan,
       pick the entries by range, download and check each XPI, run each
       start, and apply the total limit. Test with the shim binary of M046.
-- [ ] T3: Write `pnpm add-start-results`. Read every results file as
+- [x] T3: Write `pnpm add-start-results`. Read every results file as
       untrusted, keep only matching results, order them, and write the
       data. Add `startTests` to `schemas/plugins.v1.schema.json`. Test each
       drop case, the order, and the schema check.
@@ -152,6 +152,8 @@ issues entry records this limit.
 - 2026-10-28: T1 done: `readUpstream` returns `xpi: { url, sha256 }` beside the facts (the asset URL before redirects, the hash of the bytes read); `buildData` returns `plan`, one item per record with upstream; `pnpm build --plan <file>` writes it. Tests: plan against hashes of the served bytes, plan file, no plan without the option; a planted wrong hash failed the plan test. Verify clean (984 passed, 42 entries checked).
 - 2026-10-28: T2 choice: `startTests` runs each start as its own `node src/start-test/cli.ts` process, the script `pnpm start-test` names, with no pnpm in between; any nonzero exit, follow-up (5)'s failures included, records no result. The reader exports `downloadXpi` (host check, redirects, 50 MiB cap), called under the 3-minute read limit.
 - 2026-10-28: T2 done: `pnpm start-tests --plan --zotero --out` in `src/start-test/start-tests.ts` and `start-tests-cli.ts` writes a JSON array of `{ entry, id, version, zotero, result }`. 8 tests with a 10.0.6 shim: 7 ranges (below, above, inside, no min, no max, max 10.*, min 10.0.6), hash mismatch, 404 and a refused host, reporter-not-started, the total-limit cut, and the CLI. Planted defects (min compared with `<`, no hash check) each failed their test. Verify clean (992 passed).
+- 2026-10-28: T3 choices: the results directory holds one subdirectory per artifact, as download-artifact writes them, and each file in `start-results-<zotero>/` is a results file whose items must carry that version; duplicates count among results that pass the other checks; a missing results directory adds nothing and exits 0; existing `startTests` in the data are replaced.
+- 2026-10-28: T3 done: `pnpm add-start-results` (`src/start-test/add-results.ts`, `add-results-cli.ts`) and the optional `startTests` field (`minItems: 1`, `startTest` definition) in the v1 schema. 8 tests: one kept result and each drop case, a directory with no version, order by `compareVersions` with no empty list, the schema's three refusals, and the CLI writing in place. Planted string sort and no duplicate check each failed their test. Verify clean (1000 passed).
 
 ## Decisions
 
