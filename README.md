@@ -249,7 +249,7 @@ host, and what it unzips from the XPI:
   with `xpi-unreadable`. The command inflates 16 KiB of that data at a time
   and stops after the first 16 KiB whose output passes that size.
 - A file in a locale folder fails nothing. The command inflates the whole
-  file, 1 KiB of input at a time, and then looks for a message. For each
+  file, 1 KiB of input at a time, and then counts its messages. For each
   file it counts the largest of the declared size, the compressed size, and
   the output. It does not inflate a
   locale file that takes that count for the XPI past 8 MiB. One file that

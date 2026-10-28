@@ -206,8 +206,18 @@ describe("readUpstream", () => {
       ["en-US", "fr"],
     ],
     [
+      "a .properties folder with half the fullest tag's messages",
+      { "locale/en-US/a.ftl": ftl(20), "locale/fr/a.properties": `# Comment\n${lines(10, (i) => `m${i}=Bonjour\n! Comment\n\n`)}` },
+      ["en-US", "fr"],
+    ],
+    [
       "a .dtd folder counted without the entity in a comment",
       { "locale/en-US/a.ftl": ftl(5), "locale/de/a.dtd": `${dtd(10)}<!-- <!ENTITY old "Alt"> -->\n` },
+      ["de", "en-US"],
+    ],
+    [
+      "a .dtd folder with half the fullest tag's messages",
+      { "locale/en-US/a.ftl": ftl(20), "locale/de/a.dtd": `${dtd(10)}<!-- <!ENTITY old "Alt"> -->\n` },
       ["de", "en-US"],
     ],
     [

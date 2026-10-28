@@ -211,7 +211,7 @@ type ReleaseFacts = Pick<
   | "languages"
 > & { release: ReleaseJson };
 
-// Reads the manifest and the language tags of the locale folders that hold a message in one
+// Reads the manifest and the language tags of the locale folders (see localeLanguages) in one
 // release's XPI, and checks the update.json the manifest names.
 async function readRelease(download: Download, release: ReleaseJson, xpi: { browser_download_url: string }): Promise<ReleaseFacts> {
   const { manifest, messages, languages } = await readManifest(download, xpi.browser_download_url, release.tag_name);
@@ -597,7 +597,7 @@ function localeLanguages(zip: Uint8Array): string[] {
           (length) => (output += length),
         );
         if (data.length !== entry.originalSize) kept.add(tag);
-        else counts.set(tag, count + counter(strFromU8(data).replace(BYTE_ORDER_MARK, "")));
+        else counts.set(tag, count + counter(strFromU8(data)));
       } finally {
         inflated += Math.max(bytes, output);
       }
@@ -613,11 +613,11 @@ function localeLanguages(zip: Uint8Array): string[] {
     .sort();
 }
 
-const BYTE_ORDER_MARK = /^\uFEFF/;
 const FLUENT_ENTRY = /^-?[A-Za-z][A-Za-z0-9_-]*[ \t]*=/gm;
 
-// The number of messages in the text of a locale file, after a byte-order mark at its start,
-// by the file's extension, whose letter case does not count. An .ftl file counts each line
+// The number of messages in the text of a locale file, by the file's extension, whose letter
+// case does not count. The text comes from strFromU8, whose TextDecoder drops a byte-order
+// mark at its start. An .ftl file counts each line
 // that starts with a Fluent identifier, an optional leading -, then spaces or tabs and =, as
 // a message or term line does; a .properties file each line whose first character other
 // than space, tab, or form feed is not # or !, and a .dtd file each <!ENTITY outside

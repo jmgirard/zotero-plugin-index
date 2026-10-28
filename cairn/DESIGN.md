@@ -36,7 +36,8 @@ languages of the plugin's menus and settings (M024).
 The data also carries the interface languages that the read XPI's locale
 folders name (M023), keeping a tag only when its files hold at least one
 message, judged by file type (M027), and at least half as many messages as
-the fullest tag (M034). They say which languages a plugin ships menu and
+the fullest tag (M034), or when one of its files is a file the reader does
+not count. They say which languages a plugin ships menu and
 settings text for. A listed language can still be incomplete, since a tag
 with half the fullest tag's messages stays. They do not say the language
 of the description, which comes from the manifest or
@@ -105,8 +106,9 @@ shows each one separately.
    the names of that XPI's locale folders whose language has an English
    name in the build's Node.js `Intl` data and whose files, judged by type,
    hold at least one message and at least half as many as the fullest
-   tag's (M023, M025, M027, M034), so a listed language can still be
-   incomplete, and the `update.json`
+   tag's, or hold a file that the reader does not count (M023, M025,
+   M027, M034), so a listed language can still be incomplete, and the
+   `update.json`
    that the manifest names (corrected M002, M014). A
    stable release is one that GitHub does not mark as a prerelease. If no
    stable release has an `.xpi` file, the bot reads the newest release that
@@ -322,9 +324,10 @@ reused._
   the files declare. So each XPI takes up to three walks over the claimed
   count: for `manifest.json`, the default locale's `messages.json`, and the
   locale folders. A
-  tag counts when it matches `LANGUAGE_TAG` and its language subtag has an
-  English name in the build's Node.js `Intl` data (`Intl.DisplayNames` with
-  `fallback: "none"`), so a node upgrade can change which rare codes count.
+  folder name is a tag when it matches `LANGUAGE_TAG` and its language
+  subtag has an English name in the build's Node.js `Intl` data
+  (`Intl.DisplayNames` with `fallback: "none"`), so a node upgrade can
+  change which rare codes are tags.
   Both schemas copy that pattern into their `languages` patterns, and a test
   checks the copies (M023, M025).
 - `src/discover/` pages through GitHub's repository search for each topic
