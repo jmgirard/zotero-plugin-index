@@ -176,8 +176,9 @@ async function checkEntry(dir: string, entry: string, validators: Validators): P
       const earlier = first.get(key);
       if (earlier === undefined) first.set(key, i);
       else {
-        const which = version === undefined ? "no version" : `version "${version}"`;
-        add("unique-override", `overrides[${i}] has the same field "${field}" and ${which} as overrides[${earlier}]`);
+        // Quoted as JSON, so a newline in a version cannot print a line of its own.
+        const which = version === undefined ? "no version" : `version ${JSON.stringify(version)}`;
+        add("unique-override", `overrides[${i}] has the same field ${JSON.stringify(field)} and ${which} as overrides[${earlier}]`);
       }
     });
   }
@@ -222,7 +223,7 @@ async function readJson(path: string): Promise<JsonRead> {
     return { missing: false, readError: (error as Error).message };
   }
   // The utf8 read keeps a leading byte-order mark, and JSON.parse refuses it.
-  if (text.startsWith("﻿")) return { missing: false, bom: true };
+  if (text.startsWith("\uFEFF")) return { missing: false, bom: true };
   try {
     return { missing: false, value: JSON.parse(text) };
   } catch (error) {

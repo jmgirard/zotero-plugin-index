@@ -1,6 +1,6 @@
 # M032: Catch blank reasons, repeat overrides, and BOMs
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -29,7 +29,7 @@
 
 ## Coverage
 
-- AC1 → T1
+- AC1 → T1, T6
 - AC2 → T2
 - AC3 → T3
 - AC4 → T4
@@ -42,6 +42,8 @@
 - [x] T3: In `readJson` (`src/check/check.ts:137`), test for a leading U+FEFF before `JSON.parse` and return a byte-order-mark error that `checkEntry` reports under the file's schema rule. Leave the build's own read (`src/build/build.ts:208`) as it is, since `pnpm check` runs before the build. Add the AC3 cases.
 - [x] T4: Update README "Checking entries" and CHANGELOG Unreleased. Search a joined copy of README for each phrase (LESSONS M018).
 - [x] T5: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` (LESSONS M001). Plant each changed rule's defect from a copy of the file and restore from the copy (LESSONS M010).
+
+- [x] T6: Review return 1. Write U+200B, U+200D, and U+FEFF as `\u` escapes in `test/check.test.ts` and `src/check/check.ts`. Quote `field` and `version` in the `unique-override` message with `JSON.stringify`. In "names the version it repeats", compare the whole findings list. Move the mark-inside-a-string case to `checkTree`. Update the first `pnpm check` bullet of CHANGELOG, README's "Two more rules" sentence, and DESIGN "Entry checks".
 
 ## Work log
 
@@ -64,6 +66,10 @@
 - 2026-10-28: claim audit: 27 claims read, 5 corrected — README.md, CHANGELOG.md, src/check/check.ts. The reason "must hold a character" (not "contain text") other than whitespace and format characters; "Two more rules" (index-schema also checks overrides); "Most format characters" print nothing (U+0600 and U+00AD show a glyph); the site "never applies the repeat" in place of "applies only the first" (`usedOverride` prefers a versioned override and reads no `homepage`), in README, CHANGELOG, and the check.ts comment. The same Opus reader re-read the five once: all hold. pnpm test 837 passed, 1 skipped; pnpm check 0 problems.
 - 2026-10-28: status review; handed to /milestone-review.
 - 2026-10-28: review return 1: AC1 fails as written: `test/check.test.ts` holds raw U+200B and U+200D (and raw U+FEFF, as does `src/check/check.ts:225`) where AC1 asks for the escape in the test source. Fix with the return, as review fix-now items: quote `field` and `version` in `unique-override` messages with `JSON.stringify`; `toEqual` the whole list in "names the version it repeats"; move the mark-inside-a-string case to `checkTree`; CHANGELOG first `pnpm check` bullet ("contains text"); name `index-schema` in README's "Two more rules" sentence; add the new rules to DESIGN "Entry checks". Status in-progress.
+- 2026-10-28: resumed by /milestone-implement for review return 1; added T6 (minor amendment) and mapped AC1 → T1, T6.
+- 2026-10-28: the Edit tool writes a `\u` escape in new text as the raw character, so the escapes went in by a short Python replace, checked by a count (0 raw U+200B, U+200D, U+FEFF left; escapes at `check.ts:226` and `check.test.ts:177,279,286,290`).
+- 2026-10-28: T6 done: escapes in place; `unique-override` quotes field and version with `JSON.stringify` (new test: a version "1\nok: forged" stays escaped on one line; planting the old unquoted form turned it red, restored from a copy); "names the version it repeats" compares the whole list; the mark-inside-a-string case calls `checkTree`; CHANGELOG first bullet, README "Besides `index-schema`, two rules", and DESIGN "Entry checks" updated. pnpm test 838 passed, 1 skipped; pnpm check 0 problems; cairn_validate passes.
+- 2026-10-28: status review; handed to /milestone-review.
 
 ## Decisions
 

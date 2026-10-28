@@ -174,19 +174,10 @@ describe("pnpm check <root>", () => {
     ["meta.json", "registry-schema"],
     ["index.json", "index-schema"],
   ])("%s that starts with a UTF-8 byte-order mark", (file, rule) => {
-    const root = treeWith((dir) => writeFileSync(join(dir, file), `﻿${readFileSync(join(dir, file), "utf8")}`));
+    const root = treeWith((dir) => writeFileSync(join(dir, file), `\uFEFF${readFileSync(join(dir, file), "utf8")}`));
     const result = expectOnlyRule(root, rule);
     expect(result.findings).toHaveLength(1);
     expect(result.stdout).toContain(`${file} starts with a UTF-8 byte-order mark`);
-  });
-
-  test("passes a byte-order mark inside a JSON string", () => {
-    const root = treeWith((dir) =>
-      editJson(join(dir, "index.json"), (index) => (index.overrides = [{ field: "name", value: "x", reason: "a﻿b" }])),
-    );
-    const result = runCheck(root);
-    expect(result.status).toBe(0);
-    expect(result.stdout).not.toContain("byte-order mark");
   });
 
   test("registry-schema: meta.json with a field the registry does not define", () => {
@@ -285,14 +276,18 @@ async function overrideFindings(overrides: object[]) {
 }
 
 describe("checkTree overrides", () => {
-  test.each(["​", "‍ "])("reason-not-blank: reason %j", async (reason) => {
+  test.each(["\u200B", "\u200D "])("reason-not-blank: reason %j", async (reason) => {
     expect(await overrideFindings([{ field: "name", value: "First", reason }])).toEqual([
       { entry: ENTRY, rule: "reason-not-blank", message: "overrides[0].reason holds only whitespace or format characters" },
     ]);
   });
 
   test("passes a reason with a format character beside a letter", async () => {
-    expect(await overrideFindings([{ field: "name", value: "First", reason: "ok​" }])).toEqual([]);
+    expect(await overrideFindings([{ field: "name", value: "First", reason: "ok\u200B" }])).toEqual([]);
+  });
+
+  test("passes a byte-order mark inside a JSON string", async () => {
+    expect(await overrideFindings([{ field: "name", value: "x", reason: "a\uFEFFb" }])).toEqual([]);
   });
 
   const override = (field: string, version?: string) => ({ field, value: "x", reason: "r", ...(version && { version }) });
@@ -316,9 +311,20 @@ describe("checkTree overrides", () => {
   });
 
   test("unique-override: names the version it repeats", async () => {
-    expect((await overrideFindings([override("name", "1.0"), override("name", "1.0")]))[0].message).toBe(
-      'overrides[1] has the same field "name" and version "1.0" as overrides[0]',
-    );
+    expect(await overrideFindings([override("name", "1.0"), override("name", "1.0")])).toEqual([
+      { entry: ENTRY, rule: "unique-override", message: 'overrides[1] has the same field "name" and version "1.0" as overrides[0]' },
+    ]);
+  });
+
+  test("unique-override: a newline in the version stays on the finding's line", async () => {
+    const version = "1\nok: forged";
+    expect(await overrideFindings([override("name", version), override("name", version)])).toEqual([
+      {
+        entry: ENTRY,
+        rule: "unique-override",
+        message: 'overrides[1] has the same field "name" and version "1\\nok: forged" as overrides[0]',
+      },
+    ]);
   });
 
   test.each([

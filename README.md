@@ -512,8 +512,8 @@ In each entry, the rule `registry-schema` checks `meta.json` against the
 registry schema, and `index-schema` checks `index.json` against its schema.
 A file can start with a UTF-8 byte-order mark (U+FEFF). Then the line names
 the mark, in place of "is not valid JSON". Save such a file as UTF-8
-without the mark. Two more rules check the
-overrides in `index.json`:
+without the mark. Besides `index-schema`, two rules check the overrides in
+`index.json`:
 
 - `reason-not-blank`: a reason must hold a character other than whitespace
   and Unicode format characters. Most format characters, such as U+200B
