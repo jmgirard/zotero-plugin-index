@@ -21,3 +21,33 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
       - run: pnpm check
+
+  # Starts a real Zotero for Linux with each fixture plugin of test/fixtures/start through
+  # `pnpm start-test`. The `check` job skips that test file, since it sets no ZOTERO_BIN.
+  start-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ZOTERO_VERSION: "10.0.6"
+      # The SHA-256 of Zotero-10.0.6_linux-x86_64.tar.xz from download.zotero.org.
+      ZOTERO_SHA256: 246c2574a9ac526abeaf3027ffd22fc45536a5ab25f227bb1df932fca9cedd63
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # xvfb gives Zotero a display. zotero-plugin-scaffold installs the two libraries for
+      # Zotero on Ubuntu 24.04, which ubuntu-latest is.
+      - run: sudo apt-get update && sudo apt-get install -y xvfb libasound2t64 libdbus-glib-1-2
+      - name: Download Zotero
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/zotero.tar.xz" \
+            "https://download.zotero.org/client/release/$ZOTERO_VERSION/Zotero-${ZOTERO_VERSION}_linux-x86_64.tar.xz"
+          echo "$ZOTERO_SHA256  $RUNNER_TEMP/zotero.tar.xz" | sha256sum --check
+          tar -xJf "$RUNNER_TEMP/zotero.tar.xz" -C "$RUNNER_TEMP"
+      - run: xvfb-run --auto-servernum pnpm exec vitest run test/start-test-zotero.test.ts --reporter=verbose
+        env:
+          ZOTERO_BIN: ${{ runner.temp }}/Zotero_linux-x86_64/zotero
