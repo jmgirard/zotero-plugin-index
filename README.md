@@ -458,8 +458,8 @@ error, `unexpected-error`. Examples are a git that cannot start and a
 branch-name check stopped at 30 seconds. "Finding new plugins" gives both
 time limits. The bot can fail to read `plugins/`, its own pull requests, or
 the default branch, or the push or the pull request can fail. The git and
-`pnpm check` limits of "Pull requests from the bot" also apply. The first
-job can also fail and leave no handoff. In the second job, `pnpm propose`
+`pnpm check` limits of "Pull requests from the bot" also apply. The read
+job can also fail and leave no handoff. In the write job, `pnpm propose`
 checks the branch name again, and that check can also stop with an error,
 `unexpected-error`: git cannot start, git ends with any result other than
 exit status 1, or the check passes its 30-second limit.
@@ -521,9 +521,9 @@ and `broken`. If the repository has no such label, GitHub does not add it.
 
 When an issue with the label `report` opens, the `Answer a report` workflow
 runs `pnpm report-issue` with the issue number in `ISSUE_NUMBER`. The
-command reads the issue's body and labels from the GitHub API, and the entry
-directories under `plugins/`. If all of these hold, the bot takes the
-report:
+command reads the issue's body, labels, and comments from the GitHub API,
+and the entry directories under `plugins/`. If all of these hold, the bot
+takes the report:
 
 - Each of the three fields has a value.
 - The plugin id is the name of an entry directory under `plugins/`.

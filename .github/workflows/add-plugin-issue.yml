@@ -19,9 +19,10 @@ permissions: {}
 # The group that `Discover plugins` uses, so a run here and a discover run never push
 # the same branch at once. A group holds one running and one pending run, so a newer
 # run, a sweep included, cancels a pending one, and that run's issue gets no answer
-# until a later sweep.
+# until a later sweep. A dispatch from another branch or a tag runs no job, so it takes
+# a group of its own and cancels nothing.
 concurrency:
-  group: discover
+  group: ${{ github.event_name == 'workflow_dispatch' && github.ref != format('refs/heads/{0}', github.event.repository.default_branch) && format('add-plugin-skipped-{0}', github.run_id) || 'discover' }}
   cancel-in-progress: false
 
 jobs:
@@ -29,7 +30,7 @@ jobs:
     # Issues opened from .github/ISSUE_TEMPLATE/add-plugin.yml carry the label
     # `add-plugin`. A user with write access can also set it when they open an issue. A
     # sweep runs on the schedule, or dispatched from the default branch.
-    if: (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'add-plugin')) || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch)
+    if: (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'add-plugin')) || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     cache-mode: none
@@ -126,7 +127,10 @@ jobs:
     # was skipped, which is every run with no issue.
     if: always() && needs.read.result != 'skipped'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Each of up to 3 issues can take about 26 minutes in `pnpm propose`: for one entry,
+    # `propose` in src/discover/propose.ts runs 10 git processes, each stopped at 2
+    # minutes, then `pnpm check`, stopped at 5, after a 30-second branch-name check.
+    timeout-minutes: 90
     # This job comments on and closes issues, so it restores and saves no Actions cache.
     cache-mode: none
     permissions:

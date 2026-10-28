@@ -381,12 +381,16 @@ reused._
   A failed search ends the run before any read and leaves the state file as
   it was. The report names, for each entry written, its version and declared
   range (M008).
-- Each bot workflow that reads plugin repos runs in two jobs (M011). The
+- Each bot workflow that reads plugin repos splits the work into a read job
+  and a write job (M011); `add-plugin-issue.yml` adds a `pick` job before
+  them that reads no plugin repo (M040). The
   report workflow reads no plugin repo and runs in one job (M020). The read
   job has only read permissions and a checkout with
   `persist-credentials: false`. It reads the
   repos that anyone can name and leaves a handoff as an artifact:
-  `plan.json` and `entries/<id>/` (`src/discover/handoff.ts`). The write job
+  `plan.json` and `entries/<id>/` (`src/discover/handoff.ts`), in
+  `add-plugin-issue.yml` one such directory `handoff/<issue>/` per issue
+  (M040). The write job
   holds the write permissions, runs only `pnpm install` and `pnpm propose`,
   and reads no plugin repo. Neither job uses the dependency cache.
   `readHandoff` treats the handoff as untrusted: it checks `plan.json`

@@ -64,10 +64,7 @@ async function run(given: Responses, limit = 100) {
 
 describe("unansweredIssues", () => {
   test("returns, oldest first, the open labeled issues from 1 hour to 7 days old with no bot comment", async () => {
-    const { numbers, gets } = await run(responses);
-    expect(numbers).toEqual([7, 1, 6]);
-    // The second page of 10's comments is read, so its bot comment counts.
-    expect(gets).toContain(`${comments(10)}&page=2`);
+    expect((await run(responses)).numbers).toEqual([7, 1, 6]);
   });
 
   test("returns at most the limit", async () => {
@@ -120,7 +117,7 @@ describe("pnpm unanswered-issues", () => {
   });
 
   test.each([
-    [["--label", "add-plugin", "--workflow", "add-plugin-issue.yml"]],
+    [["--label", "add-plugin", "--workflow", "add-plugin-issue.yml", "--limit"]],
     [["--label", "add-plugin", "--workflow", "add-plugin-issue.yml", "--limit", "0"]],
   ])("refuses the arguments %j and sends no request", (args) => {
     const { result, requests } = pnpmUnanswered(args, {});

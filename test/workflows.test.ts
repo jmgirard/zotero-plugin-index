@@ -102,7 +102,7 @@ describe("report-issue.yml", () => {
     expect(triggers(report)).toBe('issues:\n    types: [opened]\n  schedule:\n    - cron: "13 3 * * *"\n  workflow_dispatch:');
     expect(report.slice(report.indexOf("\njobs:\n")).match(/^ {2}[\w-]+:$/gm)).toEqual(["  answer:"]);
     expect(answer.match(/^ {4}if:.*$/gm)).toEqual([
-      "    if: (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'report')) || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch)",
+      "    if: (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'report')) || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch))",
     ]);
   });
 
@@ -116,11 +116,12 @@ describe("report-issue.yml", () => {
     expect(cacheLines(report)).toEqual([]);
   });
 
-  // A report run's own group shares it with no other run; the sweeps share one group.
+  // A report run's own group shares it with no other run; the sweeps share one group, and
+  // a dispatch from another ref, which runs no job, takes a group of its own.
   test("puts each report run in a group of its own and the sweeps in one group", () => {
     expect(report.split("\n").filter((line) => !line.trimStart().startsWith("#") && /concurrency\s*:/.test(line))).toEqual(["concurrency:"]);
-    expect(report).toMatch(
-      /^concurrency:\n {2}group: \$\{\{ github\.event_name == 'issues' && format\('report-\{0\}', github\.run_id\) \|\| 'report-sweep' \}\}\n {2}cancel-in-progress: false\n/m,
+    expect(report).toContain(
+      "\nconcurrency:\n  group: ${{ github.event_name == 'issues' && format('report-{0}', github.run_id) || github.event_name == 'workflow_dispatch' && github.ref != format('refs/heads/{0}', github.event.repository.default_branch) && format('report-skipped-{0}', github.run_id) || 'report-sweep' }}\n  cancel-in-progress: false\n",
     );
   });
 
@@ -165,10 +166,12 @@ describe("add-plugin-issue.yml", () => {
 
   test("runs on opened issues, daily, and on dispatch, in the discover group, and its pick job for the label add-plugin or a sweep from the default branch", () => {
     expect(triggers(add)).toBe('issues:\n    types: [opened]\n  schedule:\n    - cron: "43 2 * * *"\n  workflow_dispatch:');
-    expect(add).toMatch(/^concurrency:\n {2}group: discover\n {2}cancel-in-progress: false\n/m);
+    expect(add).toContain(
+      "\nconcurrency:\n  group: ${{ github.event_name == 'workflow_dispatch' && github.ref != format('refs/heads/{0}', github.event.repository.default_branch) && format('add-plugin-skipped-{0}', github.run_id) || 'discover' }}\n  cancel-in-progress: false\n",
+    );
     expect(add.slice(add.indexOf("\njobs:\n")).match(/^ {2}[\w-]+:$/gm)).toEqual(["  pick:", "  read:", "  write:"]);
     expect(pick.match(/^ {4}if:.*$/gm)).toEqual([
-      "    if: (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'add-plugin')) || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch)",
+      "    if: (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'add-plugin')) || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch))",
     ]);
   });
 
