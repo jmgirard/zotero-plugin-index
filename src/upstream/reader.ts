@@ -29,7 +29,8 @@ export interface UpstreamFacts {
   // GitHub's archived flag, left out when the repo response has no boolean.
   archived?: boolean;
   // The language tags of the locale folders in the XPI whose manifest was read, each with a
-  // language that has an English name in the build's Node.js Intl data and with either at
+  // language other than und, zxx, and mul that has an English name in the build's Node.js
+  // Intl data (see LANGUAGE_TAG), and with either at
   // least one message and at least half the messages of the fullest tag, or a file that is
   // not counted (see localeLanguages). The reader always sets it;
   // records written before it existed have none.
@@ -540,13 +541,12 @@ const LOCALE_INFLATE_CHUNK_BYTES = 1024;
 // The language tags of the locale folders in the zip, the <tag> of an entry name
 // locale/<tag>/<file> or chrome/locale/<tag>/<file>. A "_" in <tag> reads as "-". A <tag>
 // that is not LANGUAGE_TAG, such as zxx or mul, is left out before any of its files counts,
-// and so is one whose language subtag has no English
-// name in the Node.js Intl data, such as img or js; its script, region, and variant are not
-// checked. A tag's count is the sum of the messages in the files of its folders (see
-// MESSAGE_COUNTERS). A tag is kept when its count is at least 1 and twice its count is at
-// least the largest count among the zip's tags, so a translation with under half the
-// messages of the fullest one is left out. Each tag is in the form Intl.getCanonicalLocales
-// returns, once, in code-unit order.
+// and so is one whose language subtag has no English name in the Node.js Intl data, such as
+// img or js; its script, region, and variant are not checked. A tag's count is the sum of
+// the messages in the files of its folders (see MESSAGE_COUNTERS). A tag is kept when its
+// count is at least 1 and twice its count is at least the largest count among the zip's
+// tags, so a translation with under half the messages of the fullest one is left out. Each
+// tag is in the form Intl.getCanonicalLocales returns, once, in code-unit order.
 // It reads the zip one header at a time, in one walk, and inflates each file from the header
 // it is on, so it keeps no list of the zip's entries. A tag is kept whatever its count when
 // one of its files is of another type, which it does not inflate, or is a file it does not
