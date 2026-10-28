@@ -92,12 +92,12 @@ works is not planned, because a start is the whole claim.
       the test zips into XPIs. Write `test/start-test-zotero.test.ts`. If
       `ZOTERO_BIN` is set, it runs the fixtures against that binary.
       Otherwise it skips.
-- [ ] T5: Add the `ci.yml` job `start-test`. It downloads Zotero 10.0.6
+- [x] T5: Add the `ci.yml` job `start-test`. It downloads Zotero 10.0.6
       for Linux from `download.zotero.org` and compares its SHA-256 with a
       value in the workflow. It installs the Ubuntu packages that Zotero
       needs. It runs `test/start-test-zotero.test.ts` under `xvfb-run` with
       `ZOTERO_BIN` set. Parse the workflow with Ruby's YAML before the push.
-- [ ] T6: Run the `verify` slot, and fix what fails.
+- [x] T6: Run the `verify` slot, and fix what fails.
 
 ## Work log
 
@@ -115,6 +115,10 @@ works is not planned, because a start is the whole claim.
 - 2026-10-28: substantive amendment: Scope now says that the reporter plugin installs the XPI from its file after Zotero's main window is ready, not that the command puts the XPI in the profile. On the local macOS Zotero 10.0.6, a plugin loaded from the profile whose id sorts after the reporter's threw with no console message left by the time the reporter read the console, and a listener added at the reporter's start did not see it either. With install after start, both id orders gave start-error. The criteria are unchanged, and the deliverable the user sees is unchanged.
 - 2026-10-28: T1 decision: the manifest read uses fflate's `unzipSync` with a filter for `manifest.json` of at most 1 MiB, not the reader's private zip helpers, which take a download and a release tag. The Zotero version comes from `app/application.ini` beside the binary (Linux) or `../Resources/app/application.ini` (macOS), since `zotero --version` prints the Firefox version (140.17.0esr). Two named failures beyond AC1's three: `zotero-version-unknown`, `no-manifest`, and `zotero-exited` (Zotero exits with no report). Time limit 90 s, `--limit` in seconds.
 - 2026-10-28: T1–T4 done: `src/start-test/start-test.ts`, `cli.ts`, `reporter/`, four fixtures, `test/start-test.test.ts` (12 tests) and `test/start-test-zotero.test.ts`. Plants: without the group kill both AC3 tests fail on the live pid list; without the temp removal both fail on the profile's directory. Local Zotero 10.0.6 on macOS with `MOZ_HEADLESS=1`: the 4 fixtures got their 4 results.
+- 2026-10-28: correction to the T1 decision line: it names three failures beyond AC1's three, not two.
+- 2026-10-28: T5 done: `ci.yml` job `start-test` downloads Zotero 10.0.6 for Linux, checks SHA-256 246c2574…dd63 (read from one download on 2026-10-28), apt-installs xvfb, libasound2t64, and libdbus-glib-1-2, and runs the real-Zotero test under `xvfb-run`. Ruby YAML parse clean. CI run 40763793696 on 0878eff: `check` and `start-test` both success.
+- 2026-10-28: T6 done: the first full `pnpm test` at load average 11 to 14 failed the timed-out shim test (the node shim had not written its pid file within the 2 s limit) and the registry-schema cached-copy case (lesson M038). The shim is now a `sh` script and that test's limit 5 s. Plants rerun: both AC3 tests fail without the group kill and without the temp removal. Full `pnpm test`: 971 passed, 5 skipped; `pnpm check`: 42 entries, 0 problems.
+- 2026-10-28: claim audit: not owed — internal tier.
 
 ## Decisions
 

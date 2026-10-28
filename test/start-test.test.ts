@@ -26,6 +26,7 @@ function tempDir(): string {
 // records its own pid, its child's pid, and the -profile path in <dir>/seen.json, then acts
 // by its mode: "report" writes the given report and keeps running, "hang" never reports,
 // and "exit" exits at once. "report" and "hang" start a child that sleeps for 10 minutes.
+// A sh script, since it starts in milliseconds even on a loaded machine.
 type ShimMode = { mode: "report"; report: object } | { mode: "hang" } | { mode: "exit" };
 
 function shim(mode: ShimMode): { binary: string; seen: string } {
@@ -34,20 +35,16 @@ function shim(mode: ShimMode): { binary: string; seen: string } {
   writeFileSync(join(dir, "app", "application.ini"), "[App]\nVendor=Zotero\nName=Zotero\nVersion=10.0.6\n");
   const seen = join(dir, "seen.json");
   const binary = join(dir, "zotero");
-  writeFileSync(
-    binary,
-    `#!/usr/bin/env node
-const { spawn } = require("node:child_process");
-const { writeFileSync } = require("node:fs");
-const mode = ${JSON.stringify(mode)};
-if (mode.mode === "exit") process.exit(0);
-const child = spawn("sleep", ["600"], { stdio: "ignore" });
-const profile = process.argv[process.argv.indexOf("-profile") + 1];
-writeFileSync(${JSON.stringify(seen)}, JSON.stringify({ pids: [process.pid, child.pid], profile }));
-if (mode.mode === "report") writeFileSync(process.env.START_TEST_REPORT, JSON.stringify(mode.report));
-setInterval(() => {}, 1000);
-`,
-  );
+  const quote = (text: string) => `'${text.replaceAll("'", "'\\''")}'`;
+  const lines = ["#!/bin/sh"];
+  if (mode.mode === "exit") lines.push("exit 0");
+  else {
+    // The command passes -no-remote -profile <dir>, so the profile is $3.
+    lines.push("sleep 600 &", `printf '{"pids":[%s,%s],"profile":"%s"}' "$$" "$!" "$3" > ${quote(seen)}`);
+    if (mode.mode === "report") lines.push(`printf '%s' ${quote(JSON.stringify(mode.report))} > "$START_TEST_REPORT"`);
+    lines.push("wait");
+  }
+  writeFileSync(binary, `${lines.join("\n")}\n`);
   chmodSync(binary, 0o755);
   return { binary, seen };
 }
@@ -103,7 +100,7 @@ describe("pnpm start-test", () => {
 
   test("writes timed-out, and leaves no process of the group and no temp directory, when no report comes", async () => {
     const { binary, seen } = shim({ mode: "hang" });
-    const cli = await startTestCli({ zotero: binary, xpi: fixtureXpi("started", tempDir()), limit: 2 });
+    const cli = await startTestCli({ zotero: binary, xpi: fixtureXpi("started", tempDir()), limit: 5 });
     expect(cli.code).toBe(0);
     expect(JSON.parse(readFileSync(cli.out, "utf8")).result).toBe("timed-out");
     const { pids, profile } = JSON.parse(readFileSync(seen, "utf8"));
