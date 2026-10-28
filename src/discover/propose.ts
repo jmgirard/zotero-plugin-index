@@ -334,7 +334,7 @@ export async function propose(options: ProposeOptions): Promise<{ proposed: Prop
 // version, so with this cut the body stays far below GitHub's limit of 65,536 characters.
 // A test in test/propose.test.ts builds a body near the longest the schema allows and
 // checks its length.
-export const CHECK_OUTPUT_MAX = 10_000;
+const CHECK_OUTPUT_MAX = 10_000;
 
 // The pull request body. The manifest's values and the check output are in code spans
 // and a code block, so text in them cannot mention a GitHub user. With `issue`, the body
@@ -345,7 +345,9 @@ export function body(entry: Written, checked: { status: number; output: string }
   const trimmed = checked.output.trimEnd();
   const chars = [...trimmed];
   const cut = chars.length > CHECK_OUTPUT_MAX;
-  const output = cut ? chars.slice(0, CHECK_OUTPUT_MAX).join("") : trimmed;
+  // The cut text is trimmed again, so a cut at a line break leaves no blank line before
+  // the closing fence.
+  const output = cut ? chars.slice(0, CHECK_OUTPUT_MAX).join("").trimEnd() : trimmed;
   const fence = "`".repeat(Math.max(3, ...[...output.matchAll(/`+/g)].map(([run]) => run.length + 1)));
   const found = issue === undefined ? `found ${entry.repoUrl} by its GitHub topic` : `read ${entry.repoUrl} from issue #${issue}`;
   return [
