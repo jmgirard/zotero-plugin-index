@@ -1,0 +1,11 @@
+# M036: Reword the empty languages line
+
+**Status:** done (2026-10-28, PR #69 https://github.com/jmgirard/zotero-plugin-index/pull/69)
+
+**Goal:** A plugin page with an empty languages list says that the index found no translations, and the languages data and schemas leave out the codes `zxx` and `mul`, which name no one interface language.
+
+**Outcome:** `languagesText` in `site/src/data.ts` shows "Unknown (no translations found)" in place of "None declared" for an empty applied list. `LANGUAGE_TAG` in `src/upstream/reader.ts` refuses a language subtag of `und`, `zxx`, or `mul` in any letter case, so `localeLanguages` skips such a folder at its `WHOLE_TAG` test, before any count or inflate; before, a large `zxx` folder could set the largest count and drop a real translation. Both v1 schemas copy the pattern (five sites), so `pnpm check` refuses a `languages` override holding those codes. README, the Unreleased CHANGELOG languages entry, DESIGN, the schema's `languages` description, and the reader comments state the rules. Absorbed rows "Reword the empty languages line" (M033) and "Drop zxx and mul from the languages" (M025).
+
+**Decisions:** D-018 (the v1 languages patterns refuse zxx and mul, narrowing schema v1). The plan chose "Unknown (no translations found)" over "None found", and the `LANGUAGE_TAG` lookahead over a separate test in the walk (work log).
+
+**Review:** All 6 criteria verified; the new reader test failed on the old reader with [mul, mul-Latn, zxx, zxx-US], and the override cases failed against main's index schema. Criteria audit at plan: 5 findings, all fixed. Claim audit at implement: 16 claims, 1 corrected. Four-lens review: 19 findings; 9 fixed in `2df3797` (stale English-name-only text in the schema description, DESIGN, and a reader comment; "the tags" wording; DESIGN's v1 change rule; rewraps); 1 follow-up (the "Shorten the languages override error" row's pattern length, corrected at hygiene); 8 rejected (planned probes, accurate test title, archives are history, intended changes); 1 noted. CI green; squash-merged as `cf4a069`. Lessons: 6 marked used M036; 1 captured (an Edit ending mid-line joins lines); 2026-10-25 (M002, used M023) on plugin-template manifests evicted by rank.
