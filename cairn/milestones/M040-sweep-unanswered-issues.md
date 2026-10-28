@@ -1,6 +1,6 @@
 # M040: Answer issues that no bot run answered
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -37,7 +37,7 @@ A daily run answers each open "Add a plugin" or report issue that no bot run ans
 - AC4 → T4, T5
 - AC5 → T4
 - AC6 → T3, T5
-- AC7 → T6
+- AC7 → T6, T7
 
 ## Tasks
 
@@ -47,6 +47,7 @@ A daily run answers each open "Add a plugin" or report issue that no bot run ans
 - [x] T4: Make `pnpm discover-issue` read the body with `githubClient(fetch).json` for `ISSUE_NUMBER` (`src/discover/issue-cli.ts`, `issueRead`), mapping a failed read to `failed`. Add `body` to `PullJson` and keep each open bot pull request's `Closes` numbers in `botPulls` (`src/discover/propose.ts:187`), sharing the parser `closesLines` (`src/discover/close-issue.ts:90`), and use them in `issueAnswer`'s `known`. Add the AC4 body-read and AC5 tests to `test/issue.test.ts` and `test/handoff.test.ts`.
 - [x] T5: Rework `add-plugin-issue.yml`: `schedule` (daily, 02:43 UTC, 12 hours from `Discover plugins`) and `workflow_dispatch`; the `pick` job; read and write jobs that loop over the numbers in a shell loop reading them from `env:`, with one handoff directory for each number in one artifact, `cache-mode: none`, and 30-minute timeouts. Add an `add-plugin-issue.yml` block to `test/workflows.test.ts`.
 - [x] T6: Update README, CHANGELOG `## Unreleased`, and DESIGN (Data sources, Function Families, Architecture) from same-session reads of the code, wrapped near 76 columns. Run `pnpm test` and `pnpm check`.
+- [x] T7: (review return 1) Add to the CHANGELOG sweep bullet that a pending sweep can itself be canceled, that a later sweep can answer a canceled run's issue while it is at most 7 days old, at most 3 a sweep, oldest first, and that a rerun of the write job answers each issue of its batch again; add to DESIGN's `add-plugin-issue.yml` Architecture bullet that an issue with any bot comment stays for a maintainer, that a pending sweep can be canceled, and that a write-job rerun answers its batch again. Run `pnpm test` and `pnpm check`.
 
 ## Work log
 
@@ -75,6 +76,7 @@ A daily run answers each open "Add a plugin" or report issue that no bot run ans
 - 2026-10-28: claim audit: 110 claims read, 5 corrected — README.md (two "a later sweep answers" sentences narrowed to "can answer", with the 1-hour bound), cairn/DESIGN.md (the add-plugin cancel sentence narrowed to the 7-day and 3-oldest bounds; the workflow-test bullet names the three allowed event uses), src/discover/propose.ts (the `closesLines` fence comment allows whitespace). AC7's "is answered by a later sweep while it is under 7 days old, up to 3 issues a day" is met by the narrowed "can answer … while it is at most 7 days old. Each sweep answers at most 3 issues" with the daily schedule; no criterion text changed. Two comment and DESIGN lines joined by earlier edits were rewrapped.
 - 2026-10-28: implement done: T1–T6 checked, `pnpm test` and `pnpm check` clean; status set to review.
 - 2026-10-28: review return 1: AC7 — CHANGELOG lacks that a pending sweep can be canceled, that a later sweep answers a canceled run's issue while it is at most 7 days old, 3 a sweep, oldest first, and that a write-job rerun answers its batch again; DESIGN lacks that an issue with any bot comment stays for a maintainer, that a pending sweep can be canceled, and that a write-job rerun answers its batch again. AC1–AC6 verified and ticked.
+- 2026-10-28: T7 added for review return 1 (minor amendment; Coverage AC7 → T6, T7) and done: the CHANGELOG sweep bullet and DESIGN's `add-plugin-issue.yml` bullet gained the missing AC7 items; a joined-text check of each file finds each item. `pnpm test` 921 passed, `pnpm check` clean; status set to review.
 
 ## Decisions
 

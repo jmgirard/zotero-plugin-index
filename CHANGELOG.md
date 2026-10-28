@@ -284,7 +284,11 @@
   sweep takes, and `pnpm report-issue --sweep` answers the report issues. An
   issue with any bot comment stays for a maintainer. A sweep run that finds
   no issue still takes its place in the concurrency group. So it can cancel
-  a pending `Discover plugins` run or a pending issue run.
+  a pending `Discover plugins` run or a pending issue run, and a newer run
+  can cancel a pending sweep. A later sweep can answer the issue of a
+  canceled run while it is at most 7 days old. Each sweep of "Add a plugin"
+  issues answers at most 3, oldest first. A rerun of the write job of
+  `Add a plugin from an issue` answers each issue of its run again.
 - `pnpm discover-issue` reads the issue body from the GitHub API for
   `ISSUE_NUMBER`. It no longer reads the `ISSUE_BODY` environment variable.
   If the read fails, the bot comments `The bot could not finish` with the

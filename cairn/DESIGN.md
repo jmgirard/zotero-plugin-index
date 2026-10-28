@@ -453,9 +453,12 @@ reused._
   each number passed only through `env:` (`ISSUES`, then `ISSUE_NUMBER`),
   and each fails at the end when one of its runs fails. All three jobs set
   `cache-mode: none`. A sweep run takes its place in the group even when it
-  picks no issue, so it can cancel a pending discover or issue run; a later
-  sweep can answer that issue while it is at most 7 days old and among the
-  3 oldest unanswered issues. Its write job holds `contents`,
+  picks no issue, so it can cancel a pending discover or issue run, and a
+  newer run can cancel a pending sweep; a later sweep can answer that issue
+  while it is at most 7 days old and among the 3 oldest unanswered issues.
+  An issue with any bot comment, such as "The bot could not finish", stays
+  for a maintainer. A rerun of the write job answers each issue of its run
+  again. Its write job holds `contents`,
   `pull-requests`, and `issues` write, and it also runs when the read job
   failed, not when it was skipped; its download step may fail. In
   `src/discover/issue.ts`, `issueRead` reads the body from the API and
