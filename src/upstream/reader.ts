@@ -502,6 +502,25 @@ function downloader(fetch: Fetch, lookup: Lookup, signal?: AbortSignal): Downloa
   };
 }
 
+// Downloads one XPI with the reads' host check and redirect rules, and returns its bytes.
+// It throws a ReadFailure: xpi-unreadable for an HTTP error answer, xpi-too-large past
+// XPI_MAX_BYTES, and the reads' failures for a refused host or a failed request, which
+// include the abort of `signal`. `pnpm start-tests` downloads the XPI that the build read
+// with it.
+export async function downloadXpi(
+  url: string,
+  fetch: Fetch,
+  { lookup = systemLookup, signal }: { lookup?: Lookup; signal?: AbortSignal } = {},
+): Promise<Uint8Array> {
+  if (signal) {
+    fetch = boundFetch(fetch, signal);
+    lookup = boundLookup(lookup, signal);
+  }
+  const { response } = await downloader(fetch, lookup, signal)(url);
+  if (!response.ok) fail("xpi-unreadable", `the XPI at ${url} returned HTTP ${response.status}`);
+  return readCapped(response, url, XPI_MAX_BYTES, () => fail("xpi-too-large", `the XPI at ${url} is larger than ${XPI_MAX_BYTES} bytes`));
+}
+
 // The bytes of the XPI's manifest.json, or undefined when it holds none. It fails when the
 // zip claims more entries than its bytes can hold, holds more than one manifest.json, or
 // holds one over UNZIPPED_MAX_BYTES or one that inflates past its declared size.

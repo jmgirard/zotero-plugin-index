@@ -113,7 +113,7 @@ issues entry records this limit.
 - [x] T1: Add `--plan` to `pnpm build` in `src/build/`. Keep the XPI URL
       that the reader read and the SHA-256 of its bytes. If the option is
       set, write the plan. Test both cases.
-- [ ] T2: Write `pnpm start-tests` in `src/start-test/`. Read the plan,
+- [x] T2: Write `pnpm start-tests` in `src/start-test/`. Read the plan,
       pick the entries by range, download and check each XPI, run each
       start, and apply the total limit. Test with the shim binary of M046.
 - [ ] T3: Write `pnpm add-start-results`. Read every results file as
@@ -148,9 +148,10 @@ issues entry records this limit.
 - 2026-10-28: plan gate chose start-test jobs inside `build.yml` over a separate workflow whose results a later build reads, because the results then match the release read that day and need no cross-run read; falsified by the start tests pushing the daily run past its time limits.
 - 2026-10-28: plan gate chose the manifest's own range over the range with overrides applied, because Zotero installs by the manifest; falsified by Zotero installing a plugin outside its manifest range.
 - 2026-10-28: follow-ups from the M046 review: (1) give the `build.yml` start-test job's checkout `persist-credentials: false` beside `permissions: {}`; (2) the page and README text name the reporter's 3 s wait after install, since an async startup that rejects later counts as started; (3) README needs a `pnpm start-test` section and a note in "Running the tests" that the real-Zotero test runs only with `ZOTERO_BIN` set; (4) DESIGN's ci.yml sentence (line 511 at 2026-10-28) and Function Families need the start-test job and command; (5) `pnpm start-test` now fails, never times out, when the reporter never starts or fails (`reporter-not-started`, `reporter-failed`), so `start-tests` must record no result for those.
-
 - 2026-10-28: implement started on branch m047-show-start-tests.
 - 2026-10-28: T1 done: `readUpstream` returns `xpi: { url, sha256 }` beside the facts (the asset URL before redirects, the hash of the bytes read); `buildData` returns `plan`, one item per record with upstream; `pnpm build --plan <file>` writes it. Tests: plan against hashes of the served bytes, plan file, no plan without the option; a planted wrong hash failed the plan test. Verify clean (984 passed, 42 entries checked).
+- 2026-10-28: T2 choice: `startTests` runs each start as its own `node src/start-test/cli.ts` process, the script `pnpm start-test` names, with no pnpm in between; any nonzero exit, follow-up (5)'s failures included, records no result. The reader exports `downloadXpi` (host check, redirects, 50 MiB cap), called under the 3-minute read limit.
+- 2026-10-28: T2 done: `pnpm start-tests --plan --zotero --out` in `src/start-test/start-tests.ts` and `start-tests-cli.ts` writes a JSON array of `{ entry, id, version, zotero, result }`. 8 tests with a 10.0.6 shim: 7 ranges (below, above, inside, no min, no max, max 10.*, min 10.0.6), hash mismatch, 404 and a refused host, reporter-not-started, the total-limit cut, and the CLI. Planted defects (min compared with `<`, no hash check) each failed their test. Verify clean (992 passed).
 
 ## Decisions
 

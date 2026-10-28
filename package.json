@@ -19,6 +19,7 @@
     "report-issue": "node src/reports/issue-cli.ts",
     "site": "node src/site/cli.ts",
     "start-test": "node src/start-test/cli.ts",
+    "start-tests": "node src/start-test/start-tests-cli.ts",
     "unanswered-issues": "node src/issues/cli.ts",
     "test": "tsc --noEmit && vitest run"
   },
