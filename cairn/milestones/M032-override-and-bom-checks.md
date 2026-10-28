@@ -117,3 +117,17 @@
 - AC4 (pass 2): README "Checking entries" still names `reason-not-blank`, `unique-override`, and the byte-order mark (now "Besides `index-schema`, two rules" and the `\s` gloss); the CHANGELOG Unreleased entry is unchanged in substance.
 - AC5 (pass 2): pnpm test 17 files, 838 passed, 1 skipped; pnpm check 37 entries, 0 problems, exit 0.
 - Gate (pass 2): `cairn_validate.py` all checks passed; no principle changed; generic profile adds no checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1 (pass 2): the `\s` gloss reached 2 of 5 places; README's `reason` item, the new CHANGELOG entry, and DESIGN "Entry checks" still say plain "whitespace", which U+0085 passes — fix now, fixed 6d8841f; the message "holds only whitespace or format characters" stays — reject, planned change: AC1 states that message
+- diff-bug #2 (pass 2): no test passes a field that needs quoting, so a revert to `field "${field}"` stays green — fix now (newline-in-field test; planting the unquoted form turned it red, restored from a copy), fixed 6d8841f
+- diff-bug #3 (pass 2): "names the version it repeats" runs the same path as the newline-in-version test — fix now (removed), fixed 6d8841f
+- diff-bug #4 (pass 2): the U+200B case is covered by U+200D plus a space — reject, planned change: AC1 names both inputs
+- diff-bug #5 (pass 2): "three name overrides name the first" drops `entry` — fix now (whole-list `toEqual`), fixed 6d8841f
+- diff-bug #6 (pass 2): `%j` titles print invisible characters, and the mark case sits under "checkTree overrides" — fix now (named cases; describe renamed "checkTree"), fixed 6d8841f
+- diff-bug #7 (pass 2): README does not say versions match exactly — fix now ("Versions must match exactly, so `1.0` and `1.0.0` do not repeat each other"), fixed 6d8841f
+- blame-history #1 (pass 2): the upstream reader's `strFromU8` drops a manifest's byte-order mark while `pnpm check` refuses one in entry files — reject, planned change: the plan gate chose refusing over stripping for entry files, which the build and registry parse raw
+- prior-review #1 (pass 2): "Most format characters print nothing" kept — reject, false: that is the claim audit's corrected wording (the earlier text was "A format character … prints nothing")
+- prior-review #2 (pass 2): the `\s` gloss missing in README's `reason` item and DESIGN — fix now, same as diff-bug #1, fixed 6d8841f
+- ripple #1 (pass 2): the same gloss gap, plus the message string — fix now and reject, same as diff-bug #1
+- ripple #2 (pass 2): the first CHANGELOG `pnpm check` bullet does not list the new rules — reject, planned change: AC4 asks for one entry for this change, which lists them
+- Pass 2 after fixes: pnpm test 838 passed, 1 skipped; pnpm check 0 problems; 0 raw U+200B, U+200D, U+FEFF in the touched files.
