@@ -44,14 +44,14 @@ counts, see work log). Script on the plugin pages: none (D-014).
       on the home page built from the site fixture against values written
       out by hand for every fixture row, among them a row whose pills are
       all `none`.
-- [ ] AC2: The home page HTML holds a `<p class="version-filter" hidden>`
-      holding a `<div role="group">` whose `aria-labelledby` names an
-      element reading "Declares Zotero", and in the group one
-      `<button type="button">` reading "Any version" with
-      `aria-pressed="true"`, then one per entry of `ZOTERO_MAJORS`, in that
-      order, reading the major, with `aria-pressed="false"`. The home page
-      holds one `<script>` element. A test in `test/site.test.ts` matches
-      that markup.
+- [ ] AC2: The home page HTML holds a `<div class="version-filter" hidden>`
+      that holds a `<span>` reading "Declares Zotero" and a
+      `<div role="group">` whose `aria-labelledby` names that span's `id`.
+      The group holds one `<button type="button">` reading "Any version"
+      with `aria-pressed="true"`, then one per entry of `ZOTERO_MAJORS`, in
+      that order, reading the major, with `aria-pressed="false"`, and no
+      other buttons. The home page holds exactly one `<script>` element. A
+      test in `test/site.test.ts` matches that markup.
 - [ ] AC3: Functions in `src/site/` decide which rows show and what the
       address says, and Vitest tests cover each of these cases: a row shows
       if and only if both the language value and the version value pass it;
@@ -111,14 +111,14 @@ counts, see work log). Script on the plugin pages: none (D-014).
       script's imports plain TypeScript with no imports): row test, `zotero`
       parameter read, address write that keeps other parameters. Tests for
       each AC3 case.
-- [ ] T3: Add the hidden button group after the language menu in
+- [x] T3: Add the hidden button group after the language menu in
       `index.astro`; extend the one script to read `?zotero=`, set
       `aria-pressed`, filter rows by both values on button press, menu
       change, load, and `popstate`, replace the address, and unhide the
       group. Pressed and focus styles in `Base.astro` for light and dark.
       Site tests for the markup and the one `<script>`; match attribute
       forms, not bare strings (LESSONS M007).
-- [ ] T4: Add the "Add a plugin" link to the home intro, with `{" "}` at
+- [x] T4: Add the "Add a plugin" link to the home intro, with `{" "}` at
       line ends where text meets an element (LESSONS M021); site test for
       the href and the template file.
 - [ ] T5: README home page section (buttons, parameter, no-JavaScript
@@ -147,6 +147,11 @@ counts, see work log). Script on the plugin pages: none (D-014).
 - 2026-10-28: implement started on branch m037-version-buttons-and-add-link.
 - 2026-10-28: T1 done — `rowMajors` in `src/site/version.ts`, `rowMajorsAttribute` in `site/src/data.ts` sharing an `attributeValue` helper with `rowLanguagesAttribute`, fixture record `zotero6-plugin@example.org` (range 6.0 to 6.*, all pills none), site test with hand-written values for all 9 rows; `pnpm test` 863 passed, `pnpm check` 0 problems.
 - 2026-10-28: T2 done — renamed `src/site/language-filter.ts` to `home-filter.ts` (one module for both filters) with `passes`, `rowShows` (both filters), `chosenValue` (was `menuValue`), and `filterHref(href, name, value)`; tests moved to `test/home-filter.test.ts`; the script uses the new names for the language menu. Planted `||` for `&&` in `rowShows` (2 tests red) and a substring match in `passes` (1 red), both restored; `pnpm test` 881 passed.
+- 2026-10-28: substantive amendment: AC2's wrapper changes from `<p class="version-filter" hidden>` to `<div class="version-filter" hidden>`, because a `<div>` cannot sit inside a `<p>` (the parser closes the `<p>`, so the group would show without JavaScript); the label is pinned as a `<span>` inside the wrapper whose `id` the group's `aria-labelledby` names, "no other buttons" and "exactly one `<script>`" added. Wording only; the user sees the same buttons.
+- 2026-10-28: re-audit: AC2 (full) — the `<p>`-to-`<div>` wording left the label's place and element open (it could sit outside the hidden wrapper) and did not rule out extra buttons; both fixed in the wording above; a regex test cannot see browser parsing, left to the T6 hand check.
+- 2026-10-28: re-audit: AC2 (full) — nothing blocking; notes that the test also pins `value="<major>"` and the span id's uniqueness is unchecked; no wording change.
+- 2026-10-28: T3 done — hidden `div.version-filter` with span label and `role="group"` buttons after the language menu; the one script now reads `language` and `zotero`, sets `aria-pressed`, filters rows with `rowShows`, replaces the address on button press and menu change, re-reads on load and `popstate`, and unhides both filters; pressed and focus styles with light and dark tokens in `Base.astro`; site tests for the markup and one `<script>`. "Any version" has no `value` attribute, so its value is "" without Astro's bare-attribute rule.
+- 2026-10-28: T4 done — `ADD_PLUGIN_HREF` in `site/src/data.ts`; intro sentence "Is a plugin missing? Add a plugin with a GitHub issue form, which needs a GitHub account."; site test for the href and the template file; `pnpm test` 883 passed.
 
 ## Decisions
 

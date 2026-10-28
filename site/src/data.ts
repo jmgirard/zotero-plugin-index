@@ -87,6 +87,9 @@ export function overrideUsed(record: PluginRecord, override: Override): boolean 
 // The index repo's page for a new issue, where the report forms live.
 const NEW_ISSUE = "https://github.com/jmgirard/zotero-plugin-index/issues/new";
 
+// The new-issue page with the add-plugin.yml form, which proposes a plugin for the index.
+export const ADD_PLUGIN_HREF = `${NEW_ISSUE}?template=add-plugin.yml`;
+
 // The new-issue page with the works.yml or broken.yml form, its plugin and version fields
 // filled in with the record's id and the version the index read.
 export function reportHref(record: PluginRecord, verdict: "works" | "broken"): string {
