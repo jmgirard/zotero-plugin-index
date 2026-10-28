@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-28 (M040 done and archived; 2 rows narrowed, 1 adde
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M041 | Fail the build when report fields go missing | planned | — | normal | milestones/M041-fail-missing-report-fields.md |
+| M041 | Fail the build when report fields go missing | in-progress | — | normal | milestones/M041-fail-missing-report-fields.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates

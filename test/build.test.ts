@@ -258,6 +258,47 @@ describe("pnpm build and the report issues", () => {
     expect(existsSync(join(out, "v1", "plugins.json"))).toBe(false);
     expect(urls.every((u) => u.includes("/issues?"))).toBe(true);
   });
+
+  // `recorded` with the issue list at `url` changed by `change`.
+  function changedList(recorded: Responses, url: string, change: (items: Record<string, unknown>[]) => void): Responses {
+    const items = structuredClone((recorded[url] as { json: Record<string, unknown>[] }).json);
+    change(items);
+    return { ...recorded, [url]: { ...recorded[url], json: items } };
+  }
+
+  test.each([
+    ["the first item of the first page", ISSUES, (items: Record<string, unknown>[]) => delete items[0].closed_by, "issue #41"],
+    ["an item of the second page", ISSUES_PAGE_2, (items: Record<string, unknown>[]) => delete items[1].closed_by, "issue #38"],
+    [
+      "an item with no numeric number after a valid item",
+      ISSUES,
+      (items: Record<string, unknown>[]) => {
+        delete items[1].closed_by;
+        items[1].number = "40";
+      },
+      "an issue",
+    ],
+  ])("stops before any plugin read when %s has no closed_by key", (_, url, change, which) => {
+    const { result, out, urls } = loggedBuild(changedList(responses(), url, change));
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(`cannot read the report issues: ${which} in the list has no closed_by field`);
+    expect(existsSync(join(out, "v1", "plugins.json"))).toBe(false);
+    expect(urls.every((u) => u.includes("/issues?"))).toBe(true);
+  });
+
+  test.each([
+    ["an issue whose closed_by is null", (items: Record<string, unknown>[]) => (items[0].closed_by = null)],
+    [
+      "a pull request with no closed_by key",
+      (items: Record<string, unknown>[]) => items.push({ number: 42, pull_request: { url: "https://api.github.com/x" } }),
+    ],
+    ["an item that is not an object", (items: Record<string, unknown>[]) => items.push(null as never, "x" as never)],
+  ])("builds when the list holds %s", (_, change) => {
+    const { result, out } = loggedBuild(changedList(responses(), ISSUES, change));
+    expect(result.stderr).not.toContain("cannot read the report issues");
+    expect(result.status).toBe(0);
+    expect(existsSync(join(out, "v1", "plugins.json"))).toBe(true);
+  });
 });
 
 describe("pnpm build", () => {

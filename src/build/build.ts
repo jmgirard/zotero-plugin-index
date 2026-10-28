@@ -98,6 +98,15 @@ export async function buildData(
     const name = error instanceof ReadFailure ? `${error.failure}: ` : "";
     return { ok: false, problems: [`cannot read the report issues: ${name}${(error as Error).message}`] };
   }
+  // An issue with no closed_by key cannot be counted, so the counts cannot be read. An
+  // item that is not an object, or a pull request, is left for countReports to drop.
+  const unclosed = issues.find(
+    (item) => typeof item === "object" && item !== null && !("pull_request" in item) && !("closed_by" in item),
+  ) as { number?: unknown } | undefined;
+  if (unclosed) {
+    const which = typeof unclosed.number === "number" ? `issue #${unclosed.number}` : "an issue";
+    return { ok: false, problems: [`cannot read the report issues: ${which} in the list has no closed_by field`] };
+  }
 
   const records: PluginRecord[] = [];
   const buildLevel: string[] = [];

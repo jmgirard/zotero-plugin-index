@@ -1,13 +1,13 @@
 # M041: Fail the build when report fields go missing
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the change decides whether the daily build deploys the published report counts
-- **Branch/PR:** —
+- **Branch/PR:** m041-fail-missing-report-fields
 
 ## Goal
 
@@ -35,7 +35,7 @@ The daily build withholds the deploy, instead of publishing report counts of zer
 
 ## Tasks
 
-- [ ] T1: In `buildData` (`src/build/build.ts:90`), after `githubClient(fetch).pages(list)`, return the AC1 problem for the first object item with no `pull_request` and no `closed_by` key (test `typeof item === "object" && item !== null` before `"closed_by" in item`), before any plugin read. Add the AC1 tests to the "pnpm build and the report issues" block of `test/build.test.ts`, with the item on page 1, on `ISSUES_PAGE_2`, and after a valid item with no numeric `number`.
+- [x] T1: In `buildData` (`src/build/build.ts:90`), after `githubClient(fetch).pages(list)`, return the AC1 problem for the first object item with no `pull_request` and no `closed_by` key (test `typeof item === "object" && item !== null` before `"closed_by" in item`), before any plugin read. Add the AC1 tests to the "pnpm build and the report issues" block of `test/build.test.ts`, with the item on page 1, on `ISSUES_PAGE_2`, and after a valid item with no numeric `number`.
 - [ ] T2: Read `https://api.github.com/repos/${indexRepo}/labels/report` (the literal origin, as the list URL writes it) with `githubClient(fetch).json` before the list, inside the same `try`, so a failure takes the present `cannot read the report issues:` path. Add a shared `LABEL` constant and record it wherever `[ISSUES]` is recorded: the `responses()` fixture and the direct `buildData` recordings near `test/build.test.ts:420` and `:463`; record the `example/fork` label URL in the `GITHUB_REPOSITORY` test near line 225. Update the URL-order expectations (`urls.slice(0, 2)`, `urls[0]` near line 235, `urls.every(... "/issues?")`), and add the AC2 tests.
 - [ ] T3: Update README "Building the data" (the exit-1 list near line 682), DESIGN.md (the `pnpm build` passages near lines 225 and 507), and a CHANGELOG `## Unreleased` entry, written from same-session reads of the T1 and T2 code, wrapped near 76 columns.
 - [ ] T4: Run `pnpm test` and `pnpm check`. Run `pnpm build --out <tmp>` once against the live API with `GITHUB_TOKEN` set from `gh auth token`, and confirm that it writes the data file and prints no `cannot read the report issues:` line (the exit status can be 1 for plugin read failures).
@@ -53,6 +53,8 @@ The daily build withholds the deploy, instead of publishing report counts of zer
 - 2026-10-28: the `works` and `broken` label gap, found while vetting, went into the absorbed row as its remainder instead of a new row, and the done M040 row was pruned (archive kept), since ROADMAP.md stood at 59 of its 60 lines (Scope Out).
 - 2026-10-28: criteria audit (full mode, fresh Opus reader), 7 findings, all taken: AC1 narrowed to object items, with items that are not objects left building as today; AC1 names the first offending item and adds a probe with no numeric `number` after a valid item; T2 names every recording that needs the label URL and writes the literal origin, since `build.ts` has no `API`; AC2 states that any 2xx JSON answer counts as present; AC3 keeps README's "cannot read the report issues" sentence as written; T4 sets `GITHUB_TOKEN` and checks for the issue-read line, not the exit status. No D-entry blocks a criterion.
 - 2026-10-28: lessons used: 2026-10-25 (M001), 2026-10-28 (M038), 2026-10-26 (M018), 2026-10-28 (M036).
+- 2026-10-28: implement started on branch m041-fail-missing-report-fields.
+- 2026-10-28: T1 done: `buildData` returns "cannot read the report issues: issue #N in the list has no closed_by field" ("an issue" when `number` is not a number) for the first object item with no `pull_request` and no `closed_by` key; the 3 stop tests failed with exit 0 before the change; 6 new tests pass; `pnpm test` 927 passed, 1 skipped; `pnpm check` clean.
 
 ## Decisions
 
