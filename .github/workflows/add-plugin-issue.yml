@@ -4,9 +4,9 @@ on:
   issues:
     types: [opened]
   # A daily sweep answers the "Add a plugin" issues that no run answered, such as one
-  # whose run failed before its comment, or that GitHub canceled because 100 runs were
-  # already waiting in the group. 02:43 UTC is 12 hours from `Discover plugins`, so a
-  # sweep seldom waits for a discover run in the group.
+  # whose run failed before its comment, or whose run GitHub canceled because 100 runs
+  # were already waiting in the group. 02:43 UTC is 12 hours from `Discover plugins`,
+  # so a sweep seldom waits for a discover run in the group.
   schedule:
     - cron: "43 2 * * *"
   workflow_dispatch:
@@ -19,7 +19,8 @@ permissions: {}
 
 # The group that `Discover plugins` uses, so a run here and a discover run never push
 # the same branch at once. With `queue: max`, up to 100 runs wait in the group and run
-# in turn; GitHub cancels runs past that, and a later sweep answers such a run's issue.
+# in turn; GitHub cancels runs past that, and a later sweep can answer such a run's
+# issue while it is at most 7 days old.
 # A run whose pick job skips, for an issue without the label `add-plugin` or a dispatch
 # from another branch or a tag, takes a group of its own and waits for no run.
 concurrency:
