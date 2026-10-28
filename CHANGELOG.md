@@ -65,7 +65,9 @@
   new entry that passes the inclusion bar, at most 5 for each daily run. A
   run started by hand can set another limit. Each pull
   request body gives the repository URL, the plugin version, the declared
-  Zotero range, and the result of `pnpm check` on the entry. If a bot pull
+  Zotero range, and the result of `pnpm check` on the entry. If the output
+  of `pnpm check` is longer than 10,000 characters, the body quotes only its
+  first 10,000 characters and says that the output is cut. If a bot pull
   request is closed without a merge, the bot does not propose that
   repository again. `pnpm discover` runs the same search by hand and writes
   the new entries to disk, with no pull request. Anyone can also propose a
