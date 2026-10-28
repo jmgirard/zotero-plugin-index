@@ -7,6 +7,8 @@ _Last hygiene check: 2026-10-28 (M032 done and archived; row "Catch stray and un
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
+| M033 | Label the languages as menus and settings | planned | — | normal | milestones/M033-menus-and-settings-label.md |
+| M034 | Skip translations under half done | planned | — | normal | milestones/M034-half-done-translations.md |
 | M032 | Catch blank reasons, repeat overrides, and BOMs | done | — | normal | milestones/archive/M032-override-and-bom-checks.md |
 | M031 | Refuse unsafe entry names | done | — | normal | milestones/archive/M031-safe-entry-names.md |
 | M030 | Bound the discover run's time | done | M029 | normal | milestones/archive/M030-discover-time-limits.md |
