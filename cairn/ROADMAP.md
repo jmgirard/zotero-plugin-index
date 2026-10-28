@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-28 (M037 done and archived; 2 rows widened, 1 added
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M038 | Answer issues when the recheck fails | planned | — | normal | milestones/M038-answer-recheck-failures.md |
+| M038 | Answer issues when the recheck fails | in-progress | — | normal | milestones/M038-answer-recheck-failures.md |
 | M037 | Filter by Zotero version and link the add form | done | — | normal | milestones/archive/M037-version-buttons-and-add-link.md |
 | M036 | Reword the empty languages line | done | — | normal | milestones/archive/M036-empty-languages-line.md |
 | M035 | Sort the language menu by count | done | — | normal | milestones/archive/M035-language-menu-order.md |

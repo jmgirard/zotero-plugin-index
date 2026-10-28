@@ -108,14 +108,16 @@ export async function writePlan(dir: string, plan: Plan): Promise<void> {
 
 export const entriesDir = (dir: string) => join(dir, ENTRIES_DIR);
 
+// `check-failed` is not a refusal: the branch-name check could not run or passed its
+// time limit, which says nothing about the handoff.
 export type HandoffRead =
   | { ok: true; plan: Plan; dirs: Map<string, string> }
-  | { ok: false; refusal: "no-handoff" | "handoff-refused"; message: string };
+  | { ok: false; refusal: "no-handoff" | "handoff-refused" | "check-failed"; message: string };
 
 // Reads and checks the handoff in `dir`. `kind` is the kind of run the write job does,
 // and `limit` the most entries a discover handoff may hold. `dirs` maps each planned
 // entry's id to its directory.
-export async function readHandoff(dir: string, kind: Plan["kind"], limit: number): Promise<HandoffRead> {
+export async function readHandoff(dir: string, kind: Plan["kind"], limit: number, refCheckMs = REF_CHECK_LIMIT_MS): Promise<HandoffRead> {
   const refuse = (message: string): HandoffRead => ({ ok: false, refusal: "handoff-refused", message });
   let planText: string;
   try {
@@ -146,7 +148,12 @@ export async function readHandoff(dir: string, kind: Plan["kind"], limit: number
   const repos: string[] = [];
   if (checked.kind === "issue" && checked.outcome === "known") repos.push(checked.repo);
   for (const entry of entries) {
-    const problem = await entryProblem(entry);
+    let problem: string | undefined;
+    try {
+      problem = await entryProblem(entry, refCheckMs);
+    } catch (error) {
+      return { ok: false, refusal: "check-failed", message: `checking the branch name of ${entry.repo} threw: ${(error as Error).message}` };
+    }
     if (problem) return refuse(problem);
     repos.push(entry.repo);
   }

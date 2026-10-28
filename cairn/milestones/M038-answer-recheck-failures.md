@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M038: Answer issues when the recheck fails
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the person who opens an "Add a plugin" issue sees the bot's comment
-- **Branch/PR:** —
+- **Branch/PR:** m038-answer-recheck-failures
 
 ## Goal
 
@@ -85,7 +85,7 @@ canceled" and "Answer report issues left open".
 
 ## Tasks
 
-- [ ] T1: In `src/discover/handoff.ts`, give `readHandoff` an optional
+- [x] T1: In `src/discover/handoff.ts`, give `readHandoff` an optional
       `refCheckMs` (default `REF_CHECK_LIMIT_MS`) that it passes to
       `entryProblem`. Catch a throw from `entryProblem` and return the new
       `HandoffRead` failure `refusal: "check-failed"`. Add in-process tests in
@@ -115,6 +115,8 @@ canceled" and "Answer report issues left open".
 - 2026-10-28: criteria audit (full mode, fresh Opus reader): 9 findings, all taken — AC1 names three throw forms (time limit, exit other than 1, no git) and the `check-failed` result, not a test file; AC2 and AC3 match the shim's stderr line, since `code()` collapses whitespace and a non-1 exit message holds no status; AC4 binds code behavior and adds the `example/.alpha` issue-run case; AC5 says "cannot run" and rewords the DESIGN sentence and two README sentences that would go stale.
 - 2026-10-28: plan gate chose a `check-failed` result from `readHandoff` over a try/catch around `readHandoff` in `propose-cli.ts`, because the time-limit throw then gets an in-process test with a short `refCheckMs`; falsified by a throw from `readHandoff` outside `entryProblem` that reaches the CLI uncaught in a real run.
 - 2026-10-28: lessons used: 2026-10-25 (M001), 2026-10-27 (M030, `exec sleep 600` git shim), 2026-10-27 (M022, empty PATH), 2026-10-26 (M018), 2026-10-28 (M036), 2026-10-27 (M027).
+- 2026-10-28: implement started on branch m038-answer-recheck-failures, cut from main at dee9810.
+- 2026-10-28: T1 done — `readHandoff` takes `refCheckMs` and returns `check-failed` with "checking the branch name of <repo> threw: <message>"; `withShim` moved to file scope in `test/propose.test.ts`; the 3 new tests failed on main by the 3 expected throws and pass; pnpm test 880 passed, 1 skipped; pnpm check 0 problems.
 
 ## Decisions
 
