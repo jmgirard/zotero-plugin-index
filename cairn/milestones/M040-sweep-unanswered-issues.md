@@ -96,3 +96,44 @@ Pass 2, 2026-10-28, at b9b4fa7 (default branch not moved).
 
 - AC7 evidence: a joined-text check of each file's added lines (`git diff main...HEAD`) finds in README, CHANGELOG, and DESIGN each: the times (02:43 and 03:13 UTC, daily) and the dispatch from the default branch (DESIGN: "on dispatch from the default branch"); the AC1 conditions (1 hour, 7 days, no `github-actions[bot]` comment, the 100 newest runs or "has not finished"); the limits (3 and 20); "stays for a maintainer"; a sweep canceling a pending `Discover plugins` or issue run; "cancel a pending sweep"; a later sweep answering a canceled run's issue while it is at most 7 days old, 3 a sweep, oldest first; and "answers each issue of its run again". T7's `pnpm test` (921 passed) and `pnpm check` (clean) at b9b4fa7.
 - Consistency gate: `cairn_validate.py` exit 0, all checks passed; no DESIGN principle changed, so `cairn_impact` is skipped; the `generic` profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the close workflow can run while a write job answers an issue, so a pull request closed between `botPulls` and the post leaves the issue open under a "closes when that pull request merges" comment — follow-up, held by the row "Make close-issue safe on retry and races" (its "pull request closed before the issue run's comment lands")
+- diff-bug #2: a dispatch from another branch entered the `discover` or `report-sweep` group, so it could cancel a pending run and then run no job — fix now, fixed 276595a (such a dispatch takes a group of its own, `add-plugin-skipped-<run_id>` or `report-skipped-<run_id>`)
+- diff-bug #3: a hand-canceled sweep run still runs the write job (`always()`), which posts "could not finish" on up to 3 issues that later sweeps then skip — reject, planned change: the write job runs after a failed or canceled read as on main (M010, M019), and an issue with a bot comment stays for a maintainer by AC1 and Scope Out
+- diff-bug #4: the write job's 30-minute limit is below 3 issues' worst case, so the third issue can get no answer that run — fix now, fixed 276595a (90 minutes; counted 10 git processes per entry at 2 minutes, a 5-minute check, a 30-second branch-name check, about 26 minutes an issue)
+- diff-bug #5: a report sweep and a hand rerun of a failed report run can both read no bot comment and comment twice — follow-up, new row "Close the gaps in the issue sweeps"
+- diff-bug #6: a close-only rerun after the reporter edits a refused report into a valid one closes it as completed under the old refusal comment, so it counts (D-013) — follow-up, new row "Close the gaps in the issue sweeps"
+- diff-bug #7: a maintainer's own comment does not stop the sweep — reject, planned change: AC1 names only `github-actions[bot]` comments, and README says an issue with a bot comment stays for a maintainer
+- diff-bug #8: an unfinished run on the runs page blocks every sweep until it leaves the 100 newest — reject, false: each `issues` run's jobs stop at 10 to 90 minutes and GitHub ends a queued job after 24 hours, so the block lasts until that run completes, not until it leaves the page
+- diff-bug #9: if GitHub's pull request list lags, the second of two batch issues naming one repo can force-push the first's branch — follow-up, new row "Close the gaps in the issue sweeps" (the same lag can meet two issue runs one after the other on main)
+- diff-bug #10: the plan names no issue, so a read job someone took over could swap plans between issue folders; the `propose-cli.ts` comment "comes from the workflow's event" is stale — reject the swap, false as a new capability: such a read job can already write any plan for its issue on main, and the folder names come from the pick job's numbers; the comment fixed now, fixed 276595a
+- diff-bug #11: `github.ref_name == default_branch` passes a dispatch from a tag named like the default branch — fix now, fixed 276595a (both workflows compare `github.ref` with `refs/heads/<default>`); `discover.yml` keeps the old check, follow-up in the new row
+- diff-bug #12: `unanswered.ts` imports `REPORT_BOT` for add-plugin issues while `close-issue.ts` keeps `BOT_LOGIN` — reject, style
+- diff-bug (c)#1: `queued` and `in_progress` run one branch — reject, planned change: AC1 names both (criteria audit finding 8)
+- diff-bug (c)#2: `toContain(page=2)` after the exact `toEqual([7, 1, 6])` is a weaker check — fix now, fixed 276595a (removed; the exact list already fails if page 2 is unread)
+- diff-bug (c)#3: the three "throws when the read of %s fails" cases test the unchanged `githubClient` throw — reject, planned change: AC1 promises the throw for each read
+- diff-bug (c)#4: both CLI refusal cases hit one check — fix now, fixed 276595a (the first case now ends with a bare `--limit`, the missing-value branch)
+- diff-bug (c)#5: the HTTP 503 and 404 cases take one catch path — reject, planned change: AC4 names both (criteria audit finding 11)
+- diff-bug (c)#6: the fenced-block case tests `closesLines`, which moved unchanged — reject, planned change: AC5 names that case (criteria audit finding 9)
+- diff-bug (c)#7: the taken and refused "sends only the close" cases run one branch — reject, planned change: AC2 names both
+- blame-history #1: an issue whose body no longer parses closes as not planned while its own bot pull request stays open — follow-up, new row "Close the gaps in the issue sweeps"
+- blame-history #2: a transient issue-body read failure becomes a lasting "could not finish" answer — reject, planned change: AC4 makes a failed issue read the `failed` outcome
+- blame-history #3: report sweeps judge old reports against today's index — reject, planned change: a sweep answers late with `answerReport`, which reads the current entries (AC3)
+- blame-history #4: the M020 "no concurrency group" guard was rewritten — reject, false: the test now asserts the exact group expression, which gives each report run `report-<run_id>`, so no report run waits for or cancels another
+- blame-history #5: the sweep shares the `discover` group — reject, planned change: Scope Out and AC7 state the cancels
+- blame-history #6: three issues that keep failing to get a comment take every slot for up to 7 days — reject, planned change: the plan gate's 7-day bound and AC4's limit of 3
+- blame-history #7: a write-job rerun posts the comments again — reject, planned change: Scope Out
+- blame-history #8: the `REPORT_BOT` import couples the add-plugin sweep to the report module — reject, style
+- prior-review #1: up to three issues share one job time limit — fix now, fixed 276595a (as diff-bug #4)
+- prior-review #2: the daily sweep joins the `discover` group — reject, planned change: Scope Out and AC7
+- prior-review #3: an issue whose run dies before a comment is retried daily for 7 days and holds a slot — reject, planned change: the plan gate's age bounds
+- prior-review #4: an add-plugin write-job rerun posts a second comment — reject, planned change: Scope Out
+- prior-review #5: `closesLines`'s M022 gaps (a backtick info string, an HTML comment) now reach the own-pull-request answer — follow-up, held by the row "Make close-issue safe on retry and races"
+- prior-review #6: the report sweep caps answers but not reads — follow-up, new row "Close the gaps in the issue sweeps", which points at "Limit floods of report issues"
+- ripple #1: DESIGN "Each bot workflow that reads plugin repos runs in two jobs" — fix now, fixed 276595a
+- ripple #2: DESIGN's handoff layout omits `handoff/<issue>/` — fix now, fixed 276595a
+- ripple #3: the ROADMAP row "Bound the whole discover workflow's time" names "the 15-minute issue job" — fix now, fixed 276595a (corrected M040)
+- ripple #4: README "The first job … In the second job" in the three-job section — fix now, fixed 276595a
+- ripple #5: the row "Answer report issues left open" says a rerun "comments twice" — follow-up, narrowed by this review's hygiene
+- ripple #6: README says `pnpm report-issue` reads the body and labels, not the comments — fix now, fixed 276595a
+- After the fixes at 276595a: `pnpm test` 921 passed, 1 skipped; `pnpm check` clean; `ruby -ryaml` parses both workflows; `cairn_validate.py` clean; ROADMAP 59 lines, 17,974 bytes (M039's archived row pruned for the new row).
