@@ -131,6 +131,7 @@ M040 sweep stays, and it answers the issue of a run that GitHub cancels past
 - 2026-10-28: implement done; `pnpm test` 936 passed, 1 skipped; `pnpm check` 0 problems; status set to review.
 - 2026-10-28: review: AC1-AC6 evidence recorded and ticked; `cairn_validate` passed; generic profile adds no toolchain checks; four-lens review spawned, findings pending (checkpoint).
 - 2026-10-28: review: 22 findings settled (10 fix now, 5 follow-up, 7 reject; none shows a criterion failing or a load-bearing defect, so no return); fixes in 083c15d; after them `pnpm test` 936 passed, 1 skipped, `pnpm check` 0 problems, the AC4 grep's queue paragraphs still describe the queue, and added prose lines stay within 80 characters.
+- 2026-10-28: step-7 approval: m043-queue-discover-runs approved for merge
 
 ## Decisions
 
