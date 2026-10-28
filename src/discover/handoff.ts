@@ -39,7 +39,9 @@ export type IssueOutcome =
   | { outcome: "refused"; failure: string; message: string }
   // `failure` names the failure when the read of the repo stopped with a build-level
   // failure or threw, the entry could not be written to outDir (`entry-exists` there,
-  // `write-failed`), or the check of the drafted entry threw.
+  // `write-failed`), or the check of the drafted entry threw. The write step also
+  // answers with a `failed` outcome, `unexpected-error`, when `readHandoff` gives
+  // `check-failed`.
   | { outcome: "failed"; failure?: string; message: string };
 
 export type Plan = { kind: "discover"; entries: PlannedEntry[] } | ({ kind: "issue" } & IssueOutcome);
@@ -115,8 +117,9 @@ export type HandoffRead =
   | { ok: false; refusal: "no-handoff" | "handoff-refused" | "check-failed"; message: string };
 
 // Reads and checks the handoff in `dir`. `kind` is the kind of run the write job does,
-// and `limit` the most entries a discover handoff may hold. `dirs` maps each planned
-// entry's id to its directory.
+// `limit` the most entries a discover handoff may hold, and `refCheckMs` the time limit
+// of the branch-name check. `dirs` maps each planned entry's id to its directory. A
+// branch-name check that throws gives `check-failed`, never a throw.
 export async function readHandoff(dir: string, kind: Plan["kind"], limit: number, refCheckMs = REF_CHECK_LIMIT_MS): Promise<HandoffRead> {
   const refuse = (message: string): HandoffRead => ({ ok: false, refusal: "handoff-refused", message });
   let planText: string;
@@ -147,12 +150,15 @@ export async function readHandoff(dir: string, kind: Plan["kind"], limit: number
   if (entries.length > limit) return refuse(`the handoff holds ${entries.length} entries, more than the limit of ${limit}`);
   const repos: string[] = [];
   if (checked.kind === "issue" && checked.outcome === "known") repos.push(checked.repo);
+  // A branch-name check that throws is reported only after every other check passes, so
+  // a handoff that a check refuses is refused even when git is broken.
+  let checkFailed: string | undefined;
   for (const entry of entries) {
     let problem: string | undefined;
     try {
       problem = await entryProblem(entry, refCheckMs);
     } catch (error) {
-      return { ok: false, refusal: "check-failed", message: `checking the branch name of ${entry.repo} threw: ${(error as Error).message}` };
+      checkFailed ??= `checking the branch name of ${entry.repo} threw: ${(error as Error).message}`;
     }
     if (problem) return refuse(problem);
     repos.push(entry.repo);
@@ -182,6 +188,7 @@ export async function readHandoff(dir: string, kind: Plan["kind"], limit: number
     if (problem) return refuse(problem);
     dirs.set(id, entryDir);
   }
+  if (checkFailed) return { ok: false, refusal: "check-failed", message: checkFailed };
   return { ok: true, plan: checked, dirs };
 }
 

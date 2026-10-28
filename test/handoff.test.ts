@@ -150,7 +150,6 @@ describe("pnpm propose refuses a handoff it cannot trust, with no request and no
 });
 
 describe("pnpm propose when its branch-name check cannot run", () => {
-  // A git first on PATH whose check-ref-format prints a line and exits 2.
   function brokenGit(): Record<string, string> {
     const shims = tempDir();
     const realGit = spawnSync("sh", ["-c", "command -v git"], { encoding: "utf8" }).stdout.trim();
@@ -177,6 +176,16 @@ describe("pnpm propose when its branch-name check cannot run", () => {
     expect(result.stderr).toMatch(/^could not check the handoff: [^\n]*example\/alpha/);
     expect(result.stderr).toContain("shim: check-ref-format broke");
     expect(result.stderr).not.toMatch(/^\s+at /m);
+    expect(result.stderr).toContain("sent no request and pushed nothing");
+    expect(sent).toEqual([]);
+    expect(branches).toBe("");
+  });
+
+  test("an issue run still refuses, with no request, a handoff that another check refuses", () => {
+    const dir = handoff({ kind: "issue", outcome: "entry", entry: ALPHA }, [ALPHA.id, "beta@example.org"]);
+    const { result, sent, branches } = propose(dir, { ISSUE_NUMBER: "7", ...brokenGit() });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/^refused the handoff: .*holds "beta@example.org", which the plan does not name/s);
     expect(sent).toEqual([]);
     expect(branches).toBe("");
   });
