@@ -1,50 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { filterHref, menuValue, rowShows } from "../src/site/language-filter.ts";
 import { appliedLanguages, languageName, languageOptions, rowLanguages, type LanguageRecord } from "../src/site/languages.ts";
-
-const OPTIONS = ["", "de", "en", "zh"];
-
-describe("rowShows", () => {
-  test.each([
-    ["a subtag the row carries", "en zh", "zh", true],
-    ["All languages", "en zh", "", true],
-    ["a row with no subtags", "", "en", false],
-    ["en against a row that carries only ken", "ken", "en", false],
-    ["a row whose match is not its first subtag", "de en zh", "zh", true],
-    ["a value that no option has", "en", "xx", true],
-  ])("%s", (_, row, value, shows) => {
-    expect(rowShows(row, value, OPTIONS)).toBe(shows);
-  });
-});
-
-describe("menuValue", () => {
-  test.each([
-    ["an option's value", "zh", "zh"],
-    ["a value that no option has", "xx", ""],
-    ["no parameter", null, ""],
-  ])("selects %s", (_, asked, value) => {
-    expect(menuValue(asked, OPTIONS)).toBe(value);
-  });
-});
-
-describe("filterHref", () => {
-  const PAGE = "http://localhost:4321/zotero-plugin-index/";
-
-  test("sets the language parameter and keeps the path and the other parameters", () => {
-    expect(filterHref(`${PAGE}?a=1&language=en`, "zh")).toBe(`${PAGE}?a=1&language=zh`);
-  });
-
-  test("removes the language parameter for All languages", () => {
-    expect(filterHref(`${PAGE}?language=zh`, "")).toBe(PAGE);
-  });
-
-  test.each([
-    ["no language parameter", `${PAGE}?q=a%20b&a`, ""],
-    ["the language parameter already set", `${PAGE}?q=a%20b&language=zh`, "zh"],
-  ])("leaves an address with %s unchanged", (_, href, value) => {
-    expect(filterHref(href, value)).toBe(href);
-  });
-});
 
 function record(languages: string[] | undefined, overrides: LanguageRecord["overrides"] = []): LanguageRecord {
   return { upstream: { version: "2.0.0", ...(languages && { languages }) }, overrides };

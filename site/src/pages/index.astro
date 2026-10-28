@@ -52,7 +52,7 @@ const { plugins } = loadData();
 </Base>
 
 <script>
-  import { filterHref, menuValue, rowShows } from "../../../src/site/language-filter.ts";
+  import { chosenValue, filterHref, passes } from "../../../src/site/home-filter.ts";
 
   // The menu is hidden in the HTML, so a page without JavaScript shows every row and no menu.
   const select = document.querySelector<HTMLSelectElement>("select[data-language-filter]");
@@ -60,21 +60,21 @@ const { plugins } = loadData();
     const options = [...select.options].map((option) => option.value);
     const rows = [...document.querySelectorAll<HTMLElement>("li[data-languages]")];
     const show = () => {
-      for (const row of rows) row.hidden = !rowShows(row.dataset.languages ?? "", select.value, options);
+      for (const row of rows) row.hidden = !passes(row.dataset.languages ?? "", { value: select.value, options });
     };
     // Reads the parameter into the menu, on load and when Back or Forward changes the address
     // in the same page. A parameter that names no option leaves the address.
     const fromAddress = () => {
-      select.value = menuValue(new URL(location.href).searchParams.get("language"), options);
+      select.value = chosenValue(new URL(location.href).searchParams.get("language"), options);
       show();
-      const href = filterHref(location.href, select.value);
+      const href = filterHref(location.href, "language", select.value);
       if (href !== location.href) history.replaceState(null, "", href);
     };
     fromAddress();
     addEventListener("popstate", fromAddress);
     select.addEventListener("change", () => {
       show();
-      history.replaceState(null, "", filterHref(location.href, select.value));
+      history.replaceState(null, "", filterHref(location.href, "language", select.value));
     });
     select.closest("[hidden]")?.removeAttribute("hidden");
   }

@@ -106,7 +106,7 @@ counts, see work log). Script on the plugin pages: none (D-014).
       pills are all `none`. Write `data-zotero` on each row in
       `site/src/pages/index.astro`; test every row against hand-written
       values.
-- [ ] T2: Add the version filter functions to `src/site/` (extend
+- [x] T2: Add the version filter functions to `src/site/` (extend
       `language-filter.ts` or rename it to cover both filters, keeping the
       script's imports plain TypeScript with no imports): row test, `zotero`
       parameter read, address write that keeps other parameters. Tests for
@@ -146,6 +146,7 @@ counts, see work log). Script on the plugin pages: none (D-014).
 - 2026-10-28: plan gate chose buttons with no counts over counts like the language menu's because a count that ignores the chosen language misleads beside a filtered list; falsified by visitors asking how many plugins declare a version.
 - 2026-10-28: implement started on branch m037-version-buttons-and-add-link.
 - 2026-10-28: T1 done — `rowMajors` in `src/site/version.ts`, `rowMajorsAttribute` in `site/src/data.ts` sharing an `attributeValue` helper with `rowLanguagesAttribute`, fixture record `zotero6-plugin@example.org` (range 6.0 to 6.*, all pills none), site test with hand-written values for all 9 rows; `pnpm test` 863 passed, `pnpm check` 0 problems.
+- 2026-10-28: T2 done — renamed `src/site/language-filter.ts` to `home-filter.ts` (one module for both filters) with `passes`, `rowShows` (both filters), `chosenValue` (was `menuValue`), and `filterHref(href, name, value)`; tests moved to `test/home-filter.test.ts`; the script uses the new names for the language menu. Planted `||` for `&&` in `rowShows` (2 tests red) and a substring match in `passes` (1 red), both restored; `pnpm test` 881 passed.
 
 ## Decisions
 
