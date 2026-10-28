@@ -6,7 +6,7 @@ import { afterAll, describe, expect, test } from "vitest";
 import { entriesDir, readHandoff, writePlan } from "../src/discover/handoff.ts";
 import { issueAnswer, issueRead, parseIssueBody, URL_LABEL } from "../src/discover/issue.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
-import { checkout } from "./support/git-checkout.ts";
+import { checkout, pushFromClone } from "./support/git-checkout.ts";
 import { pluginRepo } from "./support/plugin-repo.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -71,10 +71,9 @@ async function runIssue(
   if (!checked.ok || checked.plan.kind !== "issue") throw new Error(`handoff refused: ${JSON.stringify(checked)}`);
   const { kind: _kind, ...read } = checked.plan;
   const result = await issueAnswer({
-    root,
     fetch,
     indexRepo: "example/index",
-    gitDir: options.gitDir ?? checkout(tempDir()).work,
+    gitDir: options.gitDir ?? checkout(tempDir(), options.root).work,
     check: async () => ({ status: 0, output: "checked 1 entries in x, 0 problems\n" }),
     issue: 7,
     read: { outcome: read, dir: read.outcome === "entry" ? checked.dirs.get(read.entry.id) : undefined },
@@ -514,13 +513,20 @@ describe("pnpm discover-issue --handoff then pnpm propose", () => {
 
 describe("the write step of an issue run", () => {
   // Runs only the write step for issue 7 on an outcome, as if a read step had left it.
-  async function answer(read: Parameters<typeof issueAnswer>[0]["read"], responses: Responses, root = tempDir()) {
+  // The checkout's main holds a copy of `plugins`, and then the `change` pushed to it.
+  async function answer(
+    read: Parameters<typeof issueAnswer>[0]["read"],
+    responses: Responses,
+    plugins?: string,
+    change?: { files: Record<string, string>; remove?: string[] },
+  ) {
     const { fetch, requests } = fixtureFetch(responses);
+    const { remote, work } = checkout(tempDir(), plugins);
+    if (change) pushFromClone(remote, tempDir(), change.files, change.remove);
     const result = await issueAnswer({
-      root,
       fetch,
       indexRepo: "example/index",
-      gitDir: checkout(tempDir()).work,
+      gitDir: work,
       check: async () => ({ status: 0, output: "" }),
       issue: 7,
       read,
@@ -531,7 +537,7 @@ describe("the write step of an issue run", () => {
     return { result, sent };
   }
 
-  test("answers as today, with no push, when an entry in the write step's checkout names the repo", async () => {
+  test("answers as today, with no push, when an entry at the fetched commit names the repo", async () => {
     const dir = tempDir();
     const { result, sent } = await answer(
       {
@@ -545,6 +551,46 @@ describe("the write step of an issue run", () => {
     expect(sent).toEqual([
       { method: "POST", url: COMMENTS, body: expect.stringContaining("plugins/second-plugin@example.org/") },
       { method: "PATCH", url: ISSUE, state: "closed", state_reason: "completed" },
+    ]);
+  });
+
+  // The read step's entry for example/<name>, with the id <name>@example.org.
+  const drafted = (name: string) => ({
+    outcome: { outcome: "entry" as const, entry: { repo: `example/${name}`, repoUrl: `https://github.com/example/${name}`, id: `${name}@example.org`, version: "1.0" } },
+    dir: tempDir(),
+  });
+
+  test("names the entry and closes the issue as completed when only main, after the checkout, holds an entry for the repo", async () => {
+    const { result, sent } = await answer(drafted("alpha"), { ...indexRepo, ...opened }, undefined, {
+      files: { "plugins/other@example.org/meta.json": JSON.stringify({ repoUrl: "https://github.com/Example/Alpha" }) },
+    });
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([
+      { method: "POST", url: COMMENTS, body: "The index already lists this repo in the entry `plugins/other@example.org/`." },
+      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "completed" },
+    ]);
+  });
+
+  test("refuses with entry-exists when only main, after the checkout, has the id in another letter case", async () => {
+    const { result, sent } = await answer(drafted("beta"), { ...indexRepo, ...opened }, undefined, {
+      files: { "plugins/Beta@Example.org/meta.json": JSON.stringify({ repoUrl: "https://github.com/example/unrelated" }) },
+    });
+    expect(result.status).toBe(0);
+    expect(sent).toEqual([
+      { method: "POST", url: COMMENTS, body: expect.stringContaining("`entry-exists`: ` the index already has an entry for the id beta@example.org `") },
+      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "not_planned" },
+    ]);
+  });
+
+  test("comments that the bot could not finish, with no failure name, and leaves the issue open when main has no plugins folder", async () => {
+    const { result, sent } = await answer(drafted("alpha"), { ...indexRepo, ...opened }, undefined, { files: {}, remove: ["plugins"] });
+    expect(result.status).toBe(1);
+    expect(sent).toEqual([
+      {
+        method: "POST",
+        url: COMMENTS,
+        body: expect.stringMatching(/^The bot could not finish, so this issue stays open for a maintainer\.\n\n` the default branch main at [0-9a-f]{40} has no plugins\/ folder `$/),
+      },
     ]);
   });
 

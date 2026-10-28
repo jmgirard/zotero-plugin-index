@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M042: Check the index at the push base
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — people who file "Add a plugin" issues read the bot's answer, and the maintainer reviews the bot's pull requests
-- **Branch/PR:** —
+- **Branch/PR:** m042-index-at-push-base
 
 ## Goal
 
@@ -86,7 +86,7 @@ workflow stays in row "Bound the whole discover workflow's time".
 
 ## Tasks
 
-- [ ] T1: In `src/discover/propose.ts`, move the git runner out of `propose`
+- [x] T1: In `src/discover/propose.ts`, move the git runner out of `propose`
       so the write paths share it, with its `gitMs` limit and token
       environment. Add a step that fetches the base and returns the commit
       (`FETCH_HEAD^{commit}`), and a reader of `plugins/` at a commit
@@ -95,7 +95,7 @@ workflow stays in row "Bound the whole discover workflow's time".
       `meta.json`) that returns the `repos` and `ids` shape of `indexed`
       and fails when the commit has no `plugins` tree. `propose` takes the
       base commit instead of fetching.
-- [ ] T2: `proposeHandoff` fetches first, reads the index at the fetched
+- [x] T2: `proposeHandoff` fetches first, reads the index at the fetched
       commit, then runs the `in-index` and `in-bot-pull` checks; a failed
       fetch or read fails every entry. Drop its `root` option and the CLI's
       `root` for it. Give the remote's `main` in `test/support/git-checkout.ts`
@@ -103,7 +103,7 @@ workflow stays in row "Bound the whole discover workflow's time".
       update the tests that relied on the fixture root. Add the AC1 and AC3
       discover tests, the AC1 ones with the entry pushed to the remote after
       the checkout was made.
-- [ ] T3: `issueAnswer` does the same after `botPulls` and `defaultBranch`,
+- [x] T3: `issueAnswer` does the same after `botPulls` and `defaultBranch`,
       before `known`; a failed fetch or read posts the "could not finish"
       comment. Drop its `root` option. Add the AC2 and AC3 issue tests.
 - [ ] T4: Update README (the three passages of AC4), DESIGN.md's write-step
@@ -124,6 +124,10 @@ workflow stays in row "Bound the whole discover workflow's time".
 - 2026-10-28: plan gate chose reading `plugins/` at the fetched commit with `git ls-tree` and `git cat-file` over the GitHub contents API at that commit, because git already holds the fetched objects and the API costs one request per entry from the shared budget; also over checking out the base in the working tree, which `propose` must leave unchanged; falsified by a run log where the git read of 42-plus entries passes the 2-minute git limit.
 - 2026-10-28: criteria audit (full mode, fresh Opus reader): 10 findings. Taken: AC1 names `gitDir` and `repoName`; id tests use a different letter case (AC1, AC2); AC1 binds each pushed commit's parent to the read commit; AC1 states that a failed fetch fails `in-bot-pull` entries too; AC2 takes AC1's rules; AC3 names no failure name for the issue comment and every entry failing; AC3 narrowed to "no `plugins` path" (a `plugins` file is not promised); AC4 adds `src/discover/` to the search and the two README failure passages. No finding on AC5 or on proportionality. T2 records the fixture changes the audit found (`test/support/git-checkout.ts` has no `plugins/`; `twoStep`'s default `gitDir` is no checkout).
 - 2026-10-28: ROADMAP reached its 60-line cap with the M042 row, so the plan pruned the archived M041 row, as M041's plan pruned M040's.
+- 2026-10-28: implement started on branch m042-index-at-push-base, cut from main at d51ad72.
+- 2026-10-28: T1–T3 done in one checkpoint, since T1 alone leaves the suite red. `fetchBase` (exported from `src/discover/propose.ts`) fetches, takes `FETCH_HEAD^{commit}`, and reads `plugins/` with one `git ls-tree -r -t -z` and one `git cat-file blob` per `meta.json`; `PushBase` carries branch, commit, and index into `propose`, so the pushed parent is the read commit. `proposeHandoff` returns before any fetch when the handoff has no entries, as `propose` did before. Choices: the missing-folder error reads "the default branch <name> at <sha> has no plugins/ folder"; a `cat-file` error is not caught (only a `meta.json` that is not JSON counts by id alone), so a git failure there fails the run rather than dropping a repo; `issueAnswer` keeps its order (pull requests, default branch, then the fetch).
+- 2026-10-28: minor amendment to T2: `twoStep`'s default `gitDir` stays a plain directory, because the test "names every entry as failed when the default branch cannot be fetched" depends on it; every other `twoStep` call already passes a checkout. `checkout()` in `test/support/git-checkout.ts` now commits `plugins/` (a copy of a given folder, or `.gitkeep`), and gains `pushFromClone` and `pushAll`; issue tests that read `TREE` get a checkout holding `TREE`.
+- 2026-10-28: the 5 new tests (3 issue, 2 discover) fail on main's code with `root` set to the checkout's `plugins/`: the discover case proposes alpha, beta, and gamma again, and the issue cases go on to the push instead of answering. Full `pnpm test` 934 passed, 1 skipped; `pnpm check` 42 entries, 0 problems.
 
 ## Decisions
 

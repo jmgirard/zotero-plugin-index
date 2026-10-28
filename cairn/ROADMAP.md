@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-28 (M041 done and archived; 1 row graduated, 1 adde
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M042 | Check the index at the push base | planned | — | normal | milestones/M042-index-at-push-base.md |
+| M042 | Check the index at the push base | in-progress | — | normal | milestones/M042-index-at-push-base.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
