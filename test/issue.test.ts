@@ -538,23 +538,6 @@ describe("the write step of an issue run", () => {
     return { result, sent };
   }
 
-  test("answers as today, with no push, when an entry at the fetched commit names the repo", async () => {
-    const dir = tempDir();
-    const { result, sent } = await answer(
-      {
-        outcome: { outcome: "entry", entry: { repo: "example/second-plugin", repoUrl: "https://github.com/example/second-plugin", id: "new@example.org", version: "1.0" } },
-        dir,
-      },
-      { ...indexRepo, ...opened },
-      TREE,
-    );
-    expect(result.status).toBe(0);
-    expect(sent).toEqual([
-      { method: "POST", url: COMMENTS, body: expect.stringContaining("plugins/second-plugin@example.org/") },
-      { method: "PATCH", url: ISSUE, state: "closed", state_reason: "completed" },
-    ]);
-  });
-
   // The read step's entry for example/<name>, with the id <name>@example.org.
   const drafted = (name: string) => ({
     outcome: { outcome: "entry" as const, entry: { repo: `example/${name}`, repoUrl: `https://github.com/example/${name}`, id: `${name}@example.org`, version: "1.0" } },

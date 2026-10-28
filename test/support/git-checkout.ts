@@ -9,7 +9,7 @@ export function git(cwd: string, ...args: string[]): string {
 }
 
 // Commits every change in the checkout `work` and pushes it to main.
-export function pushAll(work: string, message: string) {
+function pushAll(work: string, message: string) {
   git(work, "add", "--all");
   git(work, "-c", "user.name=test", "-c", "user.email=test@example.org", "-c", "commit.gpgsign=false", "commit", "--quiet", "-m", message);
   git(work, "push", "--quiet", "origin", "main");

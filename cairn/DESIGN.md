@@ -425,7 +425,7 @@ reused._
   `plugins/` at the fetched commit with `git ls-tree` and `git cat-file`,
   and the write step skips an entry that the pull requests or that index
   has; a fetched commit with no `plugins/` fails every entry (M042).
-  `propose` builds on that same commit. `propose` gives
+  `propose` builds on that same commit. `fetchBase` and `propose` give
   `git fetch` and `git push` the token as an
   `http.https://github.com/.extraheader` through `GIT_CONFIG_COUNT`, and
   `pnpmCheck` runs the check without `GITHUB_TOKEN`.

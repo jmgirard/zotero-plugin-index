@@ -122,6 +122,8 @@ export interface IssueAnswerOptions {
   gitDir: string;
   remote?: string;
   check: CheckRunner;
+  // The longest one git process may take.
+  gitMs?: number;
   // The issue's number, and the read step's outcome with the drafted entry's directory,
   // or undefined when the read step left no handoff.
   issue: number;

@@ -262,17 +262,33 @@ type Git = (args: string[], env?: Record<string, string>) => Promise<string>;
 
 // Runs git in `gitDir` and returns its trimmed output. A process that passes `ms` is
 // killed, and the error says so.
-function gitRunner(gitDir: string, ms: number): Git {
-  return async (args, env = {}) => {
+function gitRunner(gitDir: string, ms: number): Git & { bytes: (args: string[], input: string) => Promise<Buffer> } {
+  // Runs git with `input`, if any, on its stdin, and returns its output as bytes.
+  async function bytes(args: string[], input?: string, env: Record<string, string> = {}): Promise<Buffer> {
     try {
-      return (await run("git", args, { cwd: gitDir, env: { ...process.env, ...env }, timeout: ms })).stdout.trim();
+      const pending = run("git", args, {
+        cwd: gitDir,
+        env: { ...process.env, ...env },
+        timeout: ms,
+        maxBuffer: GIT_OUTPUT_MAX,
+        encoding: "buffer",
+      });
+      if (input !== undefined) pending.child.stdin?.end(input);
+      return (await pending).stdout;
     } catch (error) {
-      if ((error as { killed?: unknown }).killed) throw new Error(`git ${args[0]} passed its time limit of ${duration(ms)}`);
-      const { stderr } = error as { stderr?: string };
-      throw new Error(`git ${args[0]} failed: ${stderr?.trim() || (error as Error).message}`);
+      const { code, killed, stderr } = error as { code?: unknown; killed?: unknown; stderr?: Buffer };
+      if (code === "ERR_CHILD_PROCESS_STDIO_MAXBUFFER") throw new Error(`git ${args[0]} wrote more than ${GIT_OUTPUT_MAX} bytes`);
+      if (killed) throw new Error(`git ${args[0]} passed its time limit of ${duration(ms)}`);
+      throw new Error(`git ${args[0]} failed: ${stderr?.toString().trim() || (error as Error).message}`);
     }
-  };
+  }
+  const git: Git = async (args, env = {}) => (await bytes(args, undefined, env)).toString("utf8").trim();
+  return Object.assign(git, { bytes: (args: string[], input: string) => bytes(args, input) });
 }
+
+// The most output one git process may write. The index's ls-tree listing takes about 300
+// bytes for each entry.
+const GIT_OUTPUT_MAX = 64 * 1024 * 1024;
 
 // The fetch and the push reach the remote with the token, if one is set, as the header
 // that actions/checkout would store. It goes through git's environment configuration,
@@ -297,8 +313,8 @@ export interface PushBase {
 }
 
 // Fetches the default branch `base` from `remote` and reads the index at the fetched
-// commit. A commit with no plugins/ folder fails, so a missing folder is never read as an
-// empty index.
+// commit, with four git processes at most. A commit with no plugins/ folder fails, so a
+// missing folder is never read as an empty index.
 export async function fetchBase(options: { gitDir: string; remote?: string; base: string; gitMs?: number }): Promise<PushBase> {
   const { gitDir, remote = "origin", base, gitMs = GIT_LIMIT_MS } = options;
   const git = gitRunner(gitDir, gitMs);
@@ -309,23 +325,38 @@ export async function fetchBase(options: { gitDir: string; remote?: string; base
 
 // The index at `commit`, in the shape of `indexed`: each folder under plugins/ whose name
 // does not start with "." is an entry, and a meta.json in it that is JSON names its repo.
-async function indexAt(git: Git, branch: string, commit: string): Promise<PushBase["index"]> {
-  const top = await git(["ls-tree", "-z", commit, "--", "plugins"]);
-  if (!/^\d+ tree /.test(top)) throw new Error(`the default branch ${branch} at ${commit} has no plugins/ folder`);
+// Two git processes read it: one ls-tree, from the repo root whatever the checkout's
+// current folder, and one cat-file for every meta.json.
+async function indexAt(git: ReturnType<typeof gitRunner>, branch: string, commit: string): Promise<PushBase["index"]> {
   const repos = new Map<string, string>();
   const ids = new Set<string>();
-  const metas = new Map<string, string>();
-  for (const line of (await git(["ls-tree", "-r", "-t", "-z", `${commit}:plugins`])).split("\0")) {
-    const match = /^\d+ (tree|blob) ([0-9a-f]+)\t(.+)$/s.exec(line);
+  const metas: [string, string][] = [];
+  let folder = false;
+  for (const line of (await git(["ls-tree", "-r", "-t", "-z", "--full-tree", commit, "--", "plugins"])).split("\0")) {
+    const match = /^\d+ (\w+) ([0-9a-f]+)\tplugins(\/.+)?$/s.exec(line);
     if (!match) continue;
-    const [, type, object, path] = match;
+    const [, type, object, sub] = match;
+    if (!sub) {
+      folder = type === "tree";
+      continue;
+    }
+    const path = sub.slice(1);
     if (type === "tree" && !path.includes("/") && !path.startsWith(".")) ids.add(path.toLowerCase());
-    const meta = /^([^/]+)\/meta\.json$/.exec(path)?.[1];
-    if (type === "blob" && meta) metas.set(meta, object);
+    const name = /^([^/.][^/]*)\/meta\.json$/.exec(path)?.[1];
+    if (type === "blob" && name) metas.push([name, object]);
   }
-  for (const [name, object] of metas) {
-    if (!ids.has(name.toLowerCase())) continue;
-    const text = await git(["cat-file", "blob", object]);
+  if (!folder) throw new Error(`the default branch ${branch} at ${commit} has no plugins/ folder`);
+  if (metas.length === 0) return { repos, ids };
+  // Each object comes back as "<object> blob <size>", a newline, its bytes, and a newline.
+  const out = await git.bytes(["cat-file", "--batch"], metas.map(([, object]) => `${object}\n`).join(""));
+  let at = 0;
+  for (const [name] of metas) {
+    const end = out.indexOf(0x0a, at);
+    const header = out.subarray(at, end < 0 ? undefined : end).toString("utf8");
+    const size = Number(/^[0-9a-f]+ blob (\d+)$/.exec(header)?.[1] ?? Number.NaN);
+    if (end < 0 || !Number.isSafeInteger(size)) throw new Error(`git cat-file returned "${header}" for plugins/${name}/meta.json`);
+    const text = out.subarray(end + 1, end + 1 + size).toString("utf8");
+    at = end + 1 + size + 1;
     let meta: { repoUrl?: unknown } | null;
     try {
       meta = JSON.parse(text);

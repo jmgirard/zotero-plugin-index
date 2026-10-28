@@ -611,6 +611,7 @@ describe("the token", () => {
     }
     expect(git(remote, "for-each-ref", "--format=%(refname)", "refs/heads/discover")).toBe("refs/heads/discover/example/alpha");
     const calls = readFileSync(gitLog, "utf8");
+    expect(calls).toMatch(/^fetch --quiet origin main \| key=http\.https:\/\/github\.com\/\.extraheader$/m);
     expect(calls).toMatch(/^push --quiet --force origin \S+ \| key=http\.https:\/\/github\.com\/\.extraheader$/m);
     expect(calls).not.toContain(token);
     expect(calls).not.toContain(header);

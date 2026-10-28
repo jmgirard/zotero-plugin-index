@@ -462,11 +462,11 @@ already be in the output directory (`entry-exists`), or the write can fail
 (`write-failed`). The check of the written entry can also stop with an
 error, `unexpected-error`. Examples are a git that cannot start and a
 branch-name check stopped at 30 seconds. "Finding new plugins" gives both
-time limits. The bot can fail to read `plugins/`, its own pull requests, or
-the default branch. It can fail to fetch the default branch, or the fetched
-commit can have no `plugins/` folder. The push or the pull request can also
-fail. The git and
-`pnpm check` limits of "Pull requests from the bot" also apply. The read
+time limits. The bot can fail to read `plugins/` in its checkout, its own
+pull requests, or the default branch. It can fail to fetch the default
+branch, or the fetched commit can have no `plugins/` folder. The push or the
+pull request can also fail. The git and `pnpm check` limits of "Pull
+requests from the bot" also apply. The read
 job can also fail and leave no handoff. In the write job, `pnpm propose`
 checks the branch name again, and that check can also stop with an error,
 `unexpected-error`: git cannot start, git ends with any result other than
