@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-28 (M039 done and archived; 1 row narrowed and park
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M040 | Answer issues that no bot run answered | review | — | normal | milestones/M040-sweep-unanswered-issues.md |
+| M040 | Answer issues that no bot run answered | in-progress | — | normal | milestones/M040-sweep-unanswered-issues.md |
 | M039 | Cut the check output in bot pull requests | done | — | normal | milestones/archive/M039-cut-check-output.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
