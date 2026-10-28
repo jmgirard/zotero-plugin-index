@@ -223,7 +223,7 @@ describe("proposing pull requests", () => {
     expect(sent).not.toContain("a".repeat(10_001));
   });
 
-  test("the body cuts a check output by characters, so no emoji is split", () => {
+  test("the body cuts a check output by code points, so no surrogate pair is split", () => {
     const emoji = String.fromCodePoint(0x1f600);
     const sent = body(entry, { status: 1, output: emoji.repeat(10_001) });
     expect(sent).toContain(`\`\`\`\n${emoji.repeat(10_000)}\n\`\`\`\n\n${cutLine}\n`);
@@ -237,7 +237,7 @@ describe("proposing pull requests", () => {
     expect(sent).not.toContain("is cut to");
   });
 
-  test("the body stays within GitHub's 65,536 characters for the longest handoff values and check output", () => {
+  test("the body stays within GitHub's 65,536 characters for long handoff values and check output", () => {
     const ticks = "`".repeat(500);
     const long: Written = {
       ...entry,

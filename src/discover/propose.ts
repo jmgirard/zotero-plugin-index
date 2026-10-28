@@ -332,7 +332,8 @@ export async function propose(options: ProposeOptions): Promise<{ proposed: Prop
 // The most characters (code points) of the check output that a pull request body quotes.
 // The entry schema in handoff.ts allows at most 300 characters for the URL and 500 for each
 // version, so with this cut the body stays far below GitHub's limit of 65,536 characters.
-// A test in test/propose.test.ts builds the longest such body and checks its length.
+// A test in test/propose.test.ts builds a body near the longest the schema allows and
+// checks its length.
 export const CHECK_OUTPUT_MAX = 10_000;
 
 // The pull request body. The manifest's values and the check output are in code spans
