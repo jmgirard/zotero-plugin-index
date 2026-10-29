@@ -1,0 +1,8 @@
+{
+  "id": "site-metadata@barish.me",
+  "name": "Site Metadata",
+  "description": "Automatically fills metadata for websites based on your library.",
+  "homepage": "https://github.com/BarishNamazov/zotero-site-metadata",
+  "repoUrl": "https://github.com/BarishNamazov/zotero-site-metadata",
+  "updateUrl": "https://raw.githubusercontent.com/BarishNamazov/zotero-site-metadata/main/updates.json"
+}
