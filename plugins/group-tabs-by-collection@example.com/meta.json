@@ -1,0 +1,7 @@
+{
+  "id": "group-tabs-by-collection@example.com",
+  "name": "Group Tabs by Collection",
+  "description": "Chrome-style tab groups for Zotero. Auto-group by collection, or build ad-hoc groups by dragging items onto a chip.",
+  "repoUrl": "https://github.com/ppavlidis/group-tabs-by-collection",
+  "updateUrl": "https://raw.githubusercontent.com/ppavlidis/group-tabs-by-collection/main/updates.json"
+}
