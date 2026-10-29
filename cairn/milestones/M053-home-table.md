@@ -182,3 +182,55 @@ Evidence run 2026-10-29 on m053-home-table at 00da167, main unmoved at 9b7211b: 
 - AC6: "puts the top bar and the footer on every page" passed over all 13 built pages; the M049 size test ("takes each margin, padding, gap, corner radius, and font size ... from a custom property, 0, or auto") passed; "gives each listed token pair its contrast in the light scheme" and "in the dark scheme" passed, 17 pairs each (3 text tokens on 3 surfaces at 4.5:1, 3 status tokens on their own background and on --surface at 4.5:1, --faint and --none on --surface at 3:1); the "sets together", "redefines every hex", and report-button tests also passed.
 - AC7: rebuilt at 00da167 from the deployed data of 2026-10-29T15:00:32Z with xpiUrl added to its 56 read records (no deployed build carries xpiUrl yet), served as m053-live; in the browser pane's same-origin iframes the home page had scrollWidth 375 at clientWidth 375 and 1280 at 1280, 56 rows and 56 download links each; a planted 900 px div gave 916 at 375. Screenshots from T7: scratchpad m053-shots/home-375.jpg and home-1280.jpg.
 - AC8: README "The site" describes the table ("lists every plugin in one table"), the marks and start marks, the search box and `?q=`, the count, and the top bar; DESIGN's site paragraphs and site build bullet name the table, search box, and tokens in Base.astro; CHANGELOG line 391 under `## Unreleased` (the file's only section) holds the series entry for the new look, the table, and the search box; verify slot green as above.
+
+Consistency gate: `cairn_validate.py` exit 0 (one advisory: 8 ACs over the 7 tripwire, accepted at the plan); no principle changed, so no `cairn_impact` run; the generic profile names no toolchain checks. No changed snapshot files.
+
+spawned: diff-bug, blame-history, prior-review, ripple
+
+- diff-bug #1: `update` calls `history.replaceState` on every keystroke, which browsers rate-limit — fix now: typing writes the address once the visitor stops for 500 ms, fixed bc7d376
+- diff-bug #2: "shows the release month in UTC" cannot fail in UTC or west of it — fix now: the test build runs in America/New_York and a-cafe's release is 2026-07-01T00:30Z, fixed bc7d376
+- diff-bug #3: at 560 px or less descriptions are hidden but search still matches them — reject, planned change: the mockup chosen at the plan hides descriptions on phones, and AC4 matches descriptions
+- diff-bug #4: the fixture does not separate "newest by compareVersions" from "last match" — fix now: a third 8.x result (8.0.4) after 8.0.10, fixed bc7d376
+- diff-bug #5: the search's filter-on test is inline and a spaces-only count is untested — fix now: script test for a spaces-only query, fixed bc7d376
+- diff-bug #6: `scope="colgroup"` with no `<colgroup>`, name cell not a row header, no caption — fix now, fixed bc7d376
+- diff-bug #7: marks carry both a title and the same hidden text; language codes run together ("frde+3") — fix now for the codes (a space between), fixed bc7d376; the title stays, planned change: README promises hover text, as the M015 pills give
+- diff-bug #8: tests repeat code paths — fix now: removed the inner-spaces, bare-description, "1 plugin" no-filter, and URL round-trip cases, two of three combined-filter cases, and the `matching()` second oracle, fixed bc7d376; kept the `?q=` write and remove tests, which AC4 names, and the literal row checks, the fact the check-discrimination rule keeps independent of the artifact
+- diff-bug #9: weaker expectations after exact ones (Archived, data-support) — fix now, fixed bc7d376
+- diff-bug #10: `expect(PAIRS).toHaveLength(17)` checks the test's own list — fix now, fixed bc7d376
+- diff-bug #11: four test comments restate the code — fix now, fixed bc7d376
+- diff-bug #12: `homeScript` hand-builds a DOM, and button clicks never run — reject, planned change: AC4 asks for a check of the built script and a DOM library is a dependency change (D-004); the click gap goes to "Test the home page script in a browser" (corrected there)
+- diff-bug #13: `--text-l` and `--radius-pill` unused, mixed-case `#ececE8` — fix now, fixed bc7d376
+- diff-bug #14: DESIGN describes the count without its total — fix now, fixed bc7d376
+- diff-bug #15: "No plugins match these filters." keeps a period that the counts lack — reject, style
+- diff-bug #16: the note that the form needs a GitHub account left the pages — reject, planned change: Scope moves "Add a plugin" to the top bar, and README keeps the note
+- diff-bug #17: a hidden first row leaves the first shown row with a top border — fix now: `tr:not([hidden]) ~ tr`, fixed bc7d376
+- diff-bug #18: search keeps accents and newlines while the sort ignores accents — reject, planned change: AC4 fixes lowercasing as the match rule
+- diff-bug #19: `MARKS` defined twice — fix now: `SUPPORT_MARKS` in data.ts, fixed bc7d376
+- diff-bug #20: `<time datetime>` slices the timestamp while the month parses it in UTC — follow-up: item (3) of "Close three gaps in the release read"
+- blame-history #1: control edges at about 1.5:1 undo the M037 contrast fix — fix now: `--faint` edges and a 3:1 edge test, fixed bc7d376
+- blame-history #2: the "Languages" header undoes M033's "Menus and settings" wording — fix now, fixed bc7d376
+- blame-history #3: one cell holds both sources against "each source shows separately" — reject, planned change: AC2 gives the start result its own element, text, and legend line, and no combined verdict is computed
+- blame-history #4: home rows lost the "No declared range" text — fix now: the legend names "No mark: the plugin declares no range" (AC1 asks for no mark), fixed bc7d376
+- blame-history #5: narrow screens hide languages, dates, descriptions, and source links — reject, planned change: the mockup chosen at the plan, documented in README
+- blame-history #6: the count now always shows and is rewritten on each key — follow-up: item (3) of "Close gaps around the plugin count"; the always-on count is the planned mockup count
+- blame-history #7: the parked "Filter the home list before it paints" row meets its promotion condition — follow-up: step 9 hygiene removes `[parked]`
+- blame-history #8: home-facts deleted with no D-entry — reject, planned change: logged at T1; the per-cell tests replace the frozen M049 list
+- blame-history #9: the intro "starts the plugins in Zotero" overstates — fix now: "in the tested Zotero releases that its manifest's range covers", fixed bc7d376
+- blame-history #10: "Add a plugin" left the intro — reject, planned change (Scope: top bar)
+- blame-history #11: `replaceState` on every keystroke — fix now (as diff-bug #1), fixed bc7d376
+- blame-history #12: radius from `--space-1`, `MARKS` twice, name cell `td`, no caption — fix now: `--radius-xs`, shared marks, `th scope="row"`, caption, fixed bc7d376
+- prior-review #1: control edges fail 3:1, a regression of the M037 and M048 fixes — fix now (as blame-history #1), fixed bc7d376
+- prior-review #2: the parked flash row meets its condition — follow-up: step 9 hygiene (as blame-history #7)
+- prior-review #3: an empty languages cell has no meaning stated, where M036 settled "Unknown" — fix now: README says what an empty cell means, fixed bc7d376
+- prior-review #4: the legend `ul` has no list role, against M015's fix — fix now: `role="list"`, fixed bc7d376
+- prior-review #5: README's `language` sentence omits that the page removes the parameter (M044 item 4) — fix now with a script test, fixed bc7d376
+- prior-review #6: "Test the home page script in a browser" row is stale — fix now: row corrected, fixed bc7d376
+- ripple #1: "Close gaps around the filter line" names a removed status line and a moved README line — fix now: retitled "Close gaps around the plugin count", closed items removed, fixed bc7d376
+- ripple #2: the Safari row describes the M049 select styling — fix now (corrected M053), fixed bc7d376
+- ripple #3: home-filter.ts comments say "Any version" — fix now, fixed bc7d376
+- ripple #4: a test label says "Any version" — fix now, fixed bc7d376
+- ripple #5: DESIGN's import list for index.astro omits `majorSupport` — fix now, fixed bc7d376
+- ripple #6: version.ts comment speaks of pills for the home row — fix now, fixed bc7d376
+- ripple #7: the parked flash row speaks of a list — fix now: names the table and `?q=`, fixed bc7d376
+
+Return floor: no finding shows an acceptance criterion failing. The control edges and the per-key history call are defects in what the site does, judged not load-bearing (the controls stay labeled and usable, and filtering kept working), so they were fixed on the branch with no return. Totals: 32 fix now, 9 reject, 4 follow-up. After the fixes: `pnpm test` 1134 passed, 6 skipped; `pnpm check` 0 problems; 6 planted defects (edge token, per-key write, local-time month, last start result, `td` name cell, no space between codes) each turned tests red; width 375/375 and 1280/1280 on the rebuilt page; home page 16,851 bytes gzipped.
