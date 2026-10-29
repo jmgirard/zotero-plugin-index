@@ -119,6 +119,7 @@ is added to the report read (see the work log).
 - 2026-10-29: T5: `takeData` moves to the describe block; the 64 KiB test now reads the plain run's data file (asserting 1500 records, so the comparison is not two empty reads) and compares the timer run's file with it, `generatedAt` removed. Verify clean: 1067 passed, 6 skipped; `pnpm check` 0 problems.
 - 2026-10-29: status review.
 - 2026-10-29: claim audit for return 1: no second pass; cd244aa adds test code and one test comment ("The data file in `out` without its generatedAt …"), which the review lenses read in the full diff.
+- 2026-10-29: review fix-now ccec64c: the report read default moves from `READ_LIMIT_MS` to its own `REPORTS_LIMIT_MS` (also 3 minutes), a change to T2's stated default; the stall tests' limit goes from 200 to 1000 ms.
 
 ## Decisions
 
@@ -134,21 +135,22 @@ is added to the report read (see the work log).
 - spawned: diff-bug, blame-history, prior-review, ripple
 - diff-bug #1: the bare `stream.write("", cb)` in `src/build/cli.ts:86` has no error listener, so an EPIPE from a reader that closed the pipe (`pnpm build | head`) can end the command with exit 1 and a stack trace — reject, edge: only a closed stdout pipe reaches it, outside the documented use (the daily build and a terminal), and its effect is an error.
 - diff-bug #2: the 64 KiB test can fail only on macOS, since Node writes stdout pipes synchronously on Linux — reject, false: on Linux no output is left unwritten at exit, so there is no defect there to catch.
-- diff-bug #3: `src/upstream/time-limit.ts:1` calls `READ_LIMIT_MS` the limit of one plugin read, but it now also bounds the report read — fix now.
+- diff-bug #3: `src/upstream/time-limit.ts:1` calls `READ_LIMIT_MS` the limit of one plugin read, but it now also bounds the report read — fix now, fixed ccec64c (the report read takes its own `REPORTS_LIMIT_MS` in `build.ts`, so the comment holds).
 - diff-bug #4: CHANGELOG "Before, only each request, the label read and each page, …" reads awkwardly and its wrap is uneven — reject, style.
 - diff-bug #5: the 64 KiB test copies `pnpmBuild`'s env stripping — reject, style.
-- diff-bug #6: the 200 ms `reportsMs` in the stall table must also cover the label and page 1 reads, so a pause under load can cut the wrong URL — fix now.
+- diff-bug #6: the 200 ms `reportsMs` in the stall table must also cover the label and page 1 reads, so a pause under load can cut the wrong URL — fix now, fixed ccec64c (1000 ms).
 - diff-bug #7: no tests of unchanged behavior, no history comments; each table case has its own reason — noted.
 - blame-history #1: `cli.ts` replaces the `exitCode` line from 717e31d and its piped-output reason — reject, planned change (T3, D-027); the flush keeps the reason and the 64 KiB test guards it.
-- blame-history #2: `reportsMs` defaults to the plugin read constant, so a change to one changes the other — fix now (with diff-bug #3).
+- blame-history #2: `reportsMs` defaults to the plugin read constant, so a change to one changes the other — fix now (with diff-bug #3), fixed ccec64c.
 - blame-history #3: the `build.yml` comment does not state the worst-case margin — reject, style.
 - blame-history #4: `boundFetch` is now exported from the reader — reject, planned change (T2); the composition with `request()`'s timeout is correct.
 - blame-history #5: the M021 and M041 read code is kept unchanged — noted.
 - blame-history #6: README and CHANGELOG claims match the code — noted.
 - prior-review #1: the new command tests add wall-clock bounds (`< 30` s, a 2 s pause), the load sensitivity that M029, M030, and M038 reviews raised — reject, planned change: AC2 names the 30 s bound, and the runs took 0.5–2.9 s.
-- prior-review #2: `reportsMs: 200` repeats the short-limit pattern that M029 and M030 reviews fixed — fix now (with diff-bug #6).
+- prior-review #2: `reportsMs: 200` repeats the short-limit pattern that M029 and M030 reviews fixed — fix now (with diff-bug #6), fixed ccec64c.
 - prior-review #3: the diff reverses the documented `exitCode` choice — reject, planned change (as blame-history #1).
 - ripple #1: candidate row "Close gaps in the build time limits" still says the report read has no total limit and a lookup can hold the process open — fix now, at post-merge hygiene, which narrows the row to the read order gap that M051 holds.
 - ripple #2: candidate row "Bound the whole discover workflow's time" cites the build row for the pending-lookup gap — fix now, at post-merge hygiene, stating the discover gap in the row itself.
-- ripple #3: the `time-limit.ts` comment, as diff-bug #3 — fix now.
+- ripple #3: the `time-limit.ts` comment, as diff-bug #3 — fix now, fixed ccec64c.
+- Fix-now verify at ccec64c: 1067 passed, 6 skipped; `pnpm check` 56 entries, 0 problems.
 - ripple #4: twelve other CLIs keep "Set exitCode rather than calling exit()" — reject, false: those commands still set `exitCode`, so the comments hold for them.
