@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-29 (M049 done and archived; M046 row pruned; 8 less
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M050 | End the daily build within its time limits | review | — | normal | milestones/M050-bound-report-read.md |
+| M050 | End the daily build within its time limits | in-progress | — | normal | milestones/M050-bound-report-read.md |
 | M051 | Alternate the build's plugin read order by day | planned | M050 | normal | milestones/M051-alternate-read-order.md |
 | M049 | Give the whole site the card look | done | M048 | normal | milestones/archive/M049-site-wide-look.md |
 | M048 | Lay out the plugin pages in card sections | done | — | normal | milestones/archive/M048-plugin-page-sections.md |

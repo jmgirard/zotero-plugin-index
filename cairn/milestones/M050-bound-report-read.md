@@ -1,6 +1,6 @@
 # M050: End the daily build within its time limits
 
-- **Status:** review
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -33,7 +33,7 @@ is added to the report read (see the work log).
 
 ## Acceptance criteria
 
-- [ ] AC1: When the read of the `report` label and the report issue pages
+- [x] AC1: When the read of the `report` label and the report issue pages
       passes its limit, `buildData` returns `ok: false` with one problem
       that starts with `cannot read the report issues: ` and contains
       `passed its time limit of <duration>`, and it requests no URL outside
@@ -50,12 +50,12 @@ is added to the report read (see the work log).
       file that matches apart from `generatedAt`. The runs are one that
       writes the file, one that writes no file and exits 1, and one whose
       stdout is over 64 KiB and arrives whole.
-- [ ] AC3: README "Building the data" lists a label and report issue read
+- [x] AC3: README "Building the data" lists a label and report issue read
       that passes 3 minutes among the cases that write no data file, and
       says that this read counts toward the 18 minutes from the command's
       start. One CHANGELOG entry under Unreleased names the report read
       limit and the exit once the output has flushed.
-- [ ] AC4: The profile's `verify` slot is clean: `pnpm test` and
+- [x] AC4: The profile's `verify` slot is clean: `pnpm test` and
       `pnpm check` pass.
 
 ## Coverage
@@ -111,7 +111,15 @@ is added to the report read (see the work log).
 - 2026-10-29: claim audit: 19 claims read, 1 corrected — CHANGELOG.md ("only each page had a limit of 60 seconds" now names each request, the label read included); re-read by the same reader pending.
 - 2026-10-29: claim audit re-read: the corrected sentence is true against main's `request` (60 s per request) and main's build, which bounded only the plugin reads.
 - 2026-10-29: status review; all tasks checked, verify clean at 5ae561e (1067 passed, 6 skipped; `pnpm check` 0 problems); 623a9de changes CHANGELOG text only.
+- 2026-10-29: review return 1: AC2 — the 64 KiB test ("writes the whole stdout of over 64 KiB before it exits") does not compare the timer run's data file with the plain run's apart from `generatedAt`; add that comparison.
+- 2026-10-29: status in-progress for review return 1.
 
 ## Decisions
 
 ## Review
+
+- Pass 1, 2026-10-29, at 6de3fbe, main at c7d844d (not moved). Load average 5.05.
+- AC1 evidence: `vitest run test/build.test.ts -t "report read"` (verbose): the three "stops the report read at its limit and reads no plugin when …" cases (label stalls before headers, page 2 before headers, page 2 in body; 200 ms limit) and "names the default report read limit of 3 minutes" passed; each asserts the exact problem `cannot read the report issues: request-failed: GET <url> failed[ while reading the body]: the read passed its time limit of <duration>` and that every request is the label or an issue page.
+- AC2 evidence: the three "pnpm build with a timer still pending" tests passed (0.8 s, 0.6 s, 2.9 s). The 64 KiB test compares exit status and stdout but not the data file, so AC2's "a data file that matches apart from `generatedAt`" is unshown for that run: not ticked, review return 1.
+- AC3 evidence: README.md:718-720 says the label and report issue read counts toward the 18 minutes; README.md:769-771 lists a read that takes more than 3 minutes in all among the cases that write no data file; CHANGELOG.md:371-377 is one Unreleased entry naming the 3-minute report read limit and the exit once the output is written.
+- AC4 evidence: `pnpm test` at 6de3fbe: tsc clean, 22 files passed and 1 skipped, 1067 tests passed and 6 skipped; `pnpm check`: 56 entries, 0 problems.
