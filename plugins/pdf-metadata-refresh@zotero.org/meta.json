@@ -1,0 +1,7 @@
+{
+  "id": "pdf-metadata-refresh@zotero.org",
+  "name": "PDF Metadata Refresh",
+  "description": "Re-recognize existing Zotero items from their attached PDFs",
+  "repoUrl": "https://github.com/git-jiwon/zotero-pdf-metadata-refresh",
+  "updateUrl": "https://raw.githubusercontent.com/git-jiwon/zotero-pdf-metadata-refresh/main/updates.json"
+}
