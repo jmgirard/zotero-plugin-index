@@ -1,0 +1,7 @@
+{
+  "id": "style-personal@nebularaven.local",
+  "name": "Refolio",
+  "description": "Journal labels, literature graphs and library tools for Zotero",
+  "repoUrl": "https://github.com/NebulaRaven/zotero-refolio",
+  "updateUrl": "https://github.com/NebulaRaven/zotero-refolio/releases/latest/download/updates.json"
+}
