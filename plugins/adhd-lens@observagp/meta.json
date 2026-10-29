@@ -1,0 +1,8 @@
+{
+  "id": "adhd-lens@observagp",
+  "name": "ADHD Lens",
+  "description": "Movable, resizable reading guide overlay for focused PDF reading in Zotero.",
+  "homepage": "https://github.com/ObservaGP/adhd-lens",
+  "repoUrl": "https://github.com/ObservaGP/adhd-lens",
+  "updateUrl": "https://github.com/ObservaGP/adhd-lens/releases/download/release/update.json"
+}
