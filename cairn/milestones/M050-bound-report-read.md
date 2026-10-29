@@ -41,7 +41,7 @@ is added to the report read (see the work log).
       limit, for a stalled label read and for page 2 of the issues stalling
       before its headers and in its body. A test with the default limit
       under fake timers shows `passed its time limit of 3 minutes`.
-- [ ] AC2: `src/build/cli.ts` exits with the status that `main` returns
+- [x] AC2: `src/build/cli.ts` exits with the status that `main` returns
       once stdout and stderr have flushed, while a timer that the process
       did not end is still pending. Tests in `test/build.test.ts` run
       `pnpm build` with a preload that leaves a 10-minute timer pending.
@@ -128,4 +128,5 @@ is added to the report read (see the work log).
 - AC1 evidence: `vitest run test/build.test.ts -t "report read"` (verbose): the three "stops the report read at its limit and reads no plugin when …" cases (label stalls before headers, page 2 before headers, page 2 in body; 200 ms limit) and "names the default report read limit of 3 minutes" passed; each asserts the exact problem `cannot read the report issues: request-failed: GET <url> failed[ while reading the body]: the read passed its time limit of <duration>` and that every request is the label or an issue page.
 - AC2 evidence: the three "pnpm build with a timer still pending" tests passed (0.8 s, 0.6 s, 2.9 s). The 64 KiB test compares exit status and stdout but not the data file, so AC2's "a data file that matches apart from `generatedAt`" is unshown for that run: not ticked, review return 1.
 - AC3 evidence: README.md:718-720 says the label and report issue read counts toward the 18 minutes; README.md:769-771 lists a read that takes more than 3 minutes in all among the cases that write no data file; CHANGELOG.md:371-377 is one Unreleased entry naming the 3-minute report read limit and the exit once the output is written.
-- AC4 evidence: `pnpm test` at 6de3fbe: tsc clean, 22 files passed and 1 skipped, 1067 tests passed and 6 skipped; `pnpm check`: 56 entries, 0 problems.
+- Pass 2, 2026-10-29, at 474f4b8 after return 1, main at c7d844d (not moved). AC2 evidence: the three "pnpm build with a timer still pending" tests passed (0.5 s, 0.5 s, 2.8 s run time). Each timer run exits in under 30 s and matches the plain run with the same `--out` in exit status, stdout, and data file apart from `generatedAt`: the file-writing run (status 0), the no-file run (status 1, no file in either, stderr also equal), and the 1500-entry run (stdout over 64 KiB read after a 2 s pause, 1500 records in the compared file).
+- AC4 evidence: `pnpm test` at 6de3fbe: tsc clean, 22 files passed and 1 skipped, 1067 tests passed and 6 skipped; `pnpm check`: 56 entries, 0 problems. Re-run at cd244aa (the tree of 474f4b8 outside `cairn/`): 1067 passed, 6 skipped; `pnpm check` 0 problems.
