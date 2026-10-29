@@ -1,0 +1,8 @@
+{
+  "id": "bibtex-clean@ouyangjiahong.github.io",
+  "name": "BibTeX Clean",
+  "description": "清理 Zotero 条目的 BibTeX 导出",
+  "homepage": "https://github.com/ouyangjiahong26/bibtex-clean#readme",
+  "repoUrl": "https://github.com/ouyangjiahong26/bibtex-clean",
+  "updateUrl": "https://github.com/ouyangjiahong26/bibtex-clean/releases/download/release/update.json"
+}
