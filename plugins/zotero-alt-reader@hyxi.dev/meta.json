@@ -1,0 +1,8 @@
+{
+  "id": "zotero-alt-reader@hyxi.dev",
+  "name": "Alternative Reader",
+  "description": "An alternative reader for Zotero",
+  "homepage": "https://github.com/huangyxi/zotero-alt-reader",
+  "repoUrl": "https://github.com/huangyxi/zotero-alt-reader",
+  "updateUrl": "https://github.com/huangyxi/zotero-alt-reader/releases/latest/download/update.json"
+}
