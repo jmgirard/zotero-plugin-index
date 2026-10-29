@@ -1,13 +1,13 @@
 # M051: Alternate the build's plugin read order by day
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** M050
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — which plugins the public data leaves unread after a cut build
-- **Branch/PR:** —
+- **Branch/PR:** m051-alternate-read-order
 
 ## Goal
 
@@ -53,13 +53,13 @@ D-010 rules out for the deploy build; no work is planned for it.
 
 ## Tasks
 
-- [ ] T1: Write the tests first in the "with time limits" block of
+- [x] T1: Write the tests first in the "with time limits" block of
       `test/build.test.ts`: the request order on the two AC1 dates, and
       the output, `buildLevel`, and plan order on the odd date with a cut.
       Give every existing `buildData` test whose result depends on read
       order a fixed `now`, so `pnpm test` passes on any day. See the
       odd-date test fail on main at the request order.
-- [ ] T2: Order the entries by the parity of `now`'s UTC day count before
+- [x] T2: Order the entries by the parity of `now`'s UTC day count before
       the read loop in `src/build/build.ts`, and put the records back in id
       order before `countReports` and the output.
 - [ ] T3: Update README "Building the data" and the build lines of
@@ -79,6 +79,10 @@ D-010 rules out for the deploy build; no work is planned for it.
 - 2026-10-29: plan gate chose a direction that alternates by day over a rotation or shuffle by date because two days' cuts that both let the build deploy never leave the same entry unread under alternation, while a rotation or shuffle can; falsified by two deployed builds on consecutive days whose data both mark one plugin `not-read`.
 - 2026-10-29: changelog: one entry for this milestone, apart from M050's.
 - 2026-10-29: criteria audit (full): 4 findings on M051, all fixed. AC1 uses two dates on each side of UTC midnight whose day counts differ in parity and whose days of the month do not (31 and 1), and names `listEntries` order; AC2 uses four entries so the plan holds two or more items and names only the odd date; T1 fixes `now` in existing order-dependent tests; AC3 says `not-read`, and T3 keeps the two-day claim out of README and CHANGELOG.
+- 2026-10-29: implement started on branch m051-alternate-read-order, cut from main at 17065b3.
+- 2026-10-29: T1: four tests in "with time limits": request order on ODD (2026-10-31T23:30Z) and EVEN (2026-11-01T00:30Z), and the 4-entry odd-date cut (records, `buildLevel`, plan in id order); the existing cut test gets EVEN. Both odd-date tests failed on main at the request order and the cut output. The spawned `pnpm build` tests cannot take a `now`; none of their assertions depends on read order, so the one comment that claimed an order now names both days.
+- 2026-10-29: T2: `buildData` reads entry indices in id order, reversed when `floor(now / day) % 2 !== 0`, writes each record at its index, and builds `buildLevel` from the indices in id order, so `countReports`, the file, and the plan see id order. Choice: index slots over a re-sort, since ids are directory names and index order is `listEntries` order.
+- 2026-10-29: verify: `pnpm test` 1070 passed, 6 skipped, on an odd day (20755); with the parity shifted for today only, every test without a fixed date also passed (the 4 fixed-date tests failed, as the shift flips them too). `pnpm check`: 56 entries, 0 problems.
 
 ## Decisions
 

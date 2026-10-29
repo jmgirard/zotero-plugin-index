@@ -80,6 +80,8 @@ export const INDEX_REPO = "jmgirard/zotero-plugin-index";
 // around it.
 export const BUILD_LIMIT_MS = 18 * 60 * 1000;
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 // The longest the read of the report label and every report issue page may take in all.
 export const REPORTS_LIMIT_MS = 3 * 60 * 1000;
 
@@ -100,7 +102,7 @@ export interface TimeLimits {
 // `reportsMs`, also stops it, before any upstream read (D-013). A plugin read that passes
 // `readMs` fails as request-failed. Once `buildMs` has passed since `startedAt`, the build
 // reads no more plugins, and each entry left gets the failure not-read. Both count as
-// build-level.
+// build-level. The UTC day of `now` sets the read order.
 export async function buildData(
   root: string,
   fetch: Fetch,
@@ -153,18 +155,24 @@ export async function buildData(
     return { ok: false, problems: [`cannot read the report issues: ${which} in the list has no closed_by field`] };
   }
 
-  const records: PluginRecord[] = [];
-  const buildLevel: string[] = [];
+  // The plugins are read in id order on even UTC days since 1970-01-01 and in reverse on odd
+  // ones, so a build that `buildMs` cuts leaves the last ids unread one day and the first
+  // ids the next. The records and the build-level list keep id order.
+  const order = entries.map((_, i) => i);
+  if (Math.floor(now.getTime() / DAY_MS) % 2 !== 0) order.reverse();
+  const records: PluginRecord[] = new Array(entries.length);
+  const buildLevelAt = new Set<number>();
   const xpis = new Map<string, XpiRead>();
-  for (const { id, repoUrl, overrides } of entries) {
+  for (const i of order) {
+    const { id, repoUrl, overrides } = entries[i];
     if (performance.now() - startedAt >= buildMs) {
       const message = `the build reads no plugin after ${duration(buildMs)}, its time limit`;
-      records.push({ id, repoUrl, failure: { name: "not-read", message }, overrides });
-      buildLevel.push(id);
+      records[i] = { id, repoUrl, failure: { name: "not-read", message }, overrides };
+      buildLevelAt.add(i);
       continue;
     }
     const { buildLevel: counts, xpi, ...read } = await readRecord(repoUrl, fetch, readMs);
-    if (counts) buildLevel.push(id);
+    if (counts) buildLevelAt.add(i);
     if (xpi) xpis.set(id, xpi);
     const record: PluginRecord = { id, repoUrl, ...read, overrides };
     // Facts that the schema rejects, such as a repo body with no created_at, become this
@@ -173,11 +181,12 @@ export async function buildData(
       ? []
       : (validateRecord.errors ?? []).map(describe);
     if (recordProblems.length > 0 && record.upstream) {
-      records.push({ id, repoUrl, failure: { name: "facts-invalid", message: recordProblems.join("; ") }, overrides });
+      records[i] = { id, repoUrl, failure: { name: "facts-invalid", message: recordProblems.join("; ") }, overrides };
     } else {
-      records.push(record);
+      records[i] = record;
     }
   }
+  const buildLevel = entries.flatMap(({ id }, i) => (buildLevelAt.has(i) ? [id] : []));
   const reports = countReports(issues, records);
   const plugins = records.map(({ id, repoUrl, upstream, failure, overrides }) =>
     upstream ? { id, repoUrl, upstream, reports: reports.get(id) ?? [], overrides } : { id, repoUrl, failure, overrides },
