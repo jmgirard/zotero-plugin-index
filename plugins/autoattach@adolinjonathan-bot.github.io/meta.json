@@ -1,0 +1,8 @@
+{
+  "id": "autoattach@adolinjonathan-bot.github.io",
+  "name": "AutoAttach",
+  "description": "Attach downloaded PDFs to existing Zotero items by matching what is inside the file - DOI, arXiv ID, embedded metadata and first-page text - not the filename.",
+  "homepage": "https://github.com/adolinjonathan-bot/zotero-toolkit",
+  "repoUrl": "https://github.com/adolinjonathan-bot/zotero-toolkit",
+  "updateUrl": "https://github.com/adolinjonathan-bot/zotero-toolkit/releases/download/pdf-file-attacher-update/update.json"
+}
