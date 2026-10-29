@@ -1,0 +1,8 @@
+{
+  "id": "daeda@mit.edu",
+  "name": "MarkDB-Connect",
+  "description": "Zotero plugin that links your Markdown database to Zotero.",
+  "homepage": "https://github.com/daeh/zotero-markdb-connect#readme",
+  "repoUrl": "https://github.com/daeh/zotero-markdb-connect",
+  "updateUrl": "https://raw.githubusercontent.com/daeh/zotero-markdb-connect/main/update.json"
+}
