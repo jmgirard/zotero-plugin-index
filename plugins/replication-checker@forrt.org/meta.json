@@ -1,0 +1,8 @@
+{
+  "id": "replication-checker@forrt.org",
+  "name": "Replication Checker for Zotero",
+  "description": "Privacy-preserving Zotero plugin for checking item replications in research",
+  "homepage": "https://forrtproject.github.io/flora-zotero/",
+  "repoUrl": "https://github.com/forrtproject/flora-zotero",
+  "updateUrl": "https://forrtproject.github.io/flora-zotero/update.json"
+}
