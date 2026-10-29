@@ -1,0 +1,8 @@
+{
+  "id": "zotero-feed-sort@sebastiansherrah.github.io",
+  "name": "Zotero Feed Sort",
+  "description": "Adds normal clickable column sorting to Zotero feeds, defaulting to newest first.",
+  "homepage": "https://github.com/SebastianSherrah/zotero-feed-sort",
+  "repoUrl": "https://github.com/SebastianSherrah/zotero-feed-sort",
+  "updateUrl": "https://raw.githubusercontent.com/SebastianSherrah/zotero-feed-sort/main/updates.json"
+}
