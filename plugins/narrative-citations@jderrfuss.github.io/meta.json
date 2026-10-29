@@ -1,0 +1,7 @@
+{
+  "id": "narrative-citations@jderrfuss.github.io",
+  "name": "Narrative Citations",
+  "description": "Cite as Smith and Jones (2024) instead of (Smith & Jones, 2024).",
+  "repoUrl": "https://github.com/jderrfuss/zotero-narrative-citations",
+  "updateUrl": "https://github.com/jderrfuss/zotero-narrative-citations/releases/download/release/update.json"
+}
