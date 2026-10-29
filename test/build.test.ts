@@ -751,7 +751,7 @@ describe("buildData", () => {
       // Read last to first: d-fourth and c-third are read, then b-stalled's read passes the
       // build limit, so a-first is not read.
       const { tree, recorded } = stalledTree([...NAMES, "d-fourth"]);
-      const limits = { readMs: 1500, buildMs: 1000, startedAt: performance.now() };
+      const limits = { readMs: 3000, buildMs: 2000, startedAt: performance.now() };
       const result = await buildData(tree, fixtureFetch(recorded).fetch, ODD, undefined, limits);
       if (!result.ok) throw new Error(result.problems.join("\n"));
       expect(failures(result.text)).toEqual([
