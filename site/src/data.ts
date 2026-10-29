@@ -56,6 +56,9 @@ export function rangeText(record: PluginRecord): string {
   return "No declared range";
 }
 
+// The sign for each kind of declared support, on a pill and on a home table mark.
+export const SUPPORT_MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "–" };
+
 // The words for one major's declared support, as a pill's or a mark's hidden text says them.
 export function supportText(record: PluginRecord, support: MajorSupport, major: string): string {
   if (support === "all") return `Declares all of Zotero ${major}`;

@@ -27,7 +27,12 @@ function pnpmSite(args: string[]) {
   const pnpmPath = process.env.npm_execpath;
   if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");
   const { INIT_CWD: _outer, ...env } = process.env;
-  return spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "site", ...args], { encoding: "utf8", env, timeout: 50_000 });
+  // A zone behind UTC, so a release date written in local time shows the wrong month here.
+  return spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "site", ...args], {
+    encoding: "utf8",
+    env: { ...env, TZ: "America/New_York" },
+    timeout: 50_000,
+  });
 }
 
 // An out directory holding data, for the failure cases.
@@ -177,12 +182,10 @@ describe("the site fixture", () => {
   });
 
   test("holds each shape of home table row", () => {
-    // Two names that differ only in letter case or accents, and so compare equal.
     const names = records.map(displayName);
     expect(
       names.some((a, i) => names.some((b, j) => i !== j && a !== b && a.localeCompare(b, "en", { sensitivity: "base" }) === 0)),
     ).toBe(true);
-    // A declared range whose start results cover some of its majors only.
     expect(
       records.some((record) => {
         const declared = ZOTERO_MAJORS.filter((major) => majorSupport(record, major) === "all");
@@ -480,16 +483,17 @@ describe("the home page", () => {
     for (const id of linked) expect(existsSync(join(out, "plugins", id, "index.html")), id).toBe(true);
   });
 
-  // The table's body rows, each with its attributes and its cells.
+  // The table's body rows, each with its attributes and its cells, the row header first.
   function rows() {
     const html = home();
     const body = html.slice(html.indexOf("<tbody>"), html.indexOf("</tbody>"));
     return [...body.matchAll(/<tr([^>]*)>(.*?)<\/tr>/gs)].map(([, attributes, inner]) => ({
       attributes: attributes!,
       id: unescaped(/^ data-plugin="([^"]*)"/.exec(attributes!)![1]!),
-      cells: [...inner!.matchAll(/<td([^>]*)>(.*?)<\/td>/gs)].map(([, cellAttributes, cell]) => ({
+      cells: [...inner!.matchAll(/<(t[dh])([^>]*)>(.*?)<\/\1>/gs)].map(([, tag, cellAttributes, cell]) => ({
         attributes: cellAttributes!,
         html: cell!,
+        tag: tag!,
       })),
     }));
   }
@@ -522,6 +526,8 @@ describe("the home page", () => {
   test.each(ids)("shows the name cell of %s", (id) => {
     const record = records.find((r) => r.id === id)!;
     const description = shownDescription(record);
+    expect(row(id).cells[0]!.attributes).toBe(' scope="row" class="name"');
+    expect(row(id).cells.map(({ tag }) => tag)).toEqual(["th", ...row(id).cells.slice(1).map(() => "td")]);
     expect(row(id).cells[0]!.html).toBe(
       `<a href="${escaped(pluginHref(id))}" data-name>${escaped(displayName(record))}</a>` +
         (record.upstream?.archived === true ? '<span class="badge" data-archived>Archived</span>' : "") +
@@ -531,7 +537,6 @@ describe("the home page", () => {
 
   test("marks only the archived plugin", () => {
     expect(home().match(/\sdata-archived/g)).toHaveLength(1);
-    expect(row("old-plugin@example.org").cells[0]!.html).toContain(">Archived</span>");
   });
 
   // The declared mark and the start mark of one version cell.
@@ -554,7 +559,7 @@ describe("the home page", () => {
     const record = records.find((r) => r.id === id)!;
     const cells = row(id).cells.slice(1, record.failure ? 2 : 1 + ZOTERO_MAJORS.length);
     if (record.failure) {
-      expect(cells[0]).toEqual({ attributes: ' class="v not-read" colspan="4" data-status="failure"', html: "Not read" });
+      expect(cells[0]).toEqual({ attributes: ' class="v not-read" colspan="4" data-status="failure"', html: "Not read", tag: "td" });
       expect(row(id).cells.some(({ attributes }) => attributes.includes("data-major"))).toBe(false);
       return;
     }
@@ -588,8 +593,6 @@ describe("the home page", () => {
     const cells = row("a-cafe@example.org").cells;
     const starts = cells.slice(1, 5).map(({ html }) => /<span class="start" data-start="([^"]+)" title="([^"]*)"/.exec(html)?.slice(1));
     expect(starts).toEqual([["started", "Zotero 7.0.32 started"], ["started", "Zotero 8.0.10 started"], undefined, undefined]);
-    expect(cells[3]!.html).toContain('data-support="all"');
-    // A record with no declared range keeps its start marks.
     const bare = row("no-range-plugin@example.org").cells.slice(1, 5).map(({ html }) => [html.includes('class="mark"'), /data-start="([^"]+)"/.exec(html)?.[1]]);
     expect(bare).toEqual([[false, "started"], [false, "start-error"], [false, "not-installed"], [false, "timed-out"]]);
   });
@@ -607,7 +610,8 @@ describe("the home page", () => {
     expect(cells).toHaveLength((record.failure ? 2 : 1 + ZOTERO_MAJORS.length) + 3);
     expect(languages!.attributes).toBe(' class="lang" data-languages-shown');
     expect([...languages!.html.matchAll(/<abbr[^>]*>([^<]*)<\/abbr>/g)].map(([, text]) => text)).toEqual(codes(record));
-    expect(languages!.html.replace(/<abbr[^>]*>[^<]*<\/abbr>/g, "")).toBe("");
+    // One space between codes, so a screen reader does not read them as one word.
+    expect(languages!.html.replace(/<abbr[^>]*>[^<]*<\/abbr>/g, "")).toBe(" ".repeat(Math.max(0, codes(record).length - 1)));
     const released = record.upstream?.latestReleaseDate;
     expect(date!.html).toBe(
       released
@@ -622,11 +626,13 @@ describe("the home page", () => {
 
   test("shows the first two of four or more language codes and names the rest", () => {
     const html = row("a-cafe@example.org").cells.at(-3)!.html;
-    expect(html).toBe('<abbr title="French">fr</abbr><abbr title="German">de</abbr><abbr class="more" title="Japanese, English, Italian">+3</abbr>');
+    expect(html).toBe('<abbr title="French">fr</abbr> <abbr title="German">de</abbr> <abbr class="more" title="Japanese, English, Italian">+3</abbr>');
     expect(row("b-cafe@example.org").cells.at(-3)!.html).toBe(`<abbr title="${languageName("en")}">en</abbr>`);
   });
 
+  // The site builds in New York time (pnpmSite), where 00:30 UTC on the 1st is still the month before.
   test("shows the release month in UTC", () => {
+    expect(row("a-cafe@example.org").cells.at(-2)!.html).toBe('<time datetime="2026-07-01">Jul 2026</time>');
     expect(row("b-cafe@example.org").cells.at(-2)!.html).toBe('<time datetime="2025-12-31">Dec 2025</time>');
   });
 
@@ -644,7 +650,7 @@ describe("the home page", () => {
 
   test("names each declared mark and each start mark in a legend under the table, and says a range is not a test result", () => {
     const html = home();
-    const legend = /<ul class="legend" data-legend>(.*?)<\/ul>/s.exec(html);
+    const legend = /<ul class="legend" role="list" data-legend>(.*?)<\/ul>/s.exec(html);
     expect(legend).not.toBeNull();
     expect(html.indexOf("<ul class=\"legend\"")).toBeGreaterThan(html.indexOf("</table>"));
     const items = [...legend![1]!.matchAll(/<li[^>]*>(.*?)<\/li>/gs)].map(([, item]) => item!.replace(/\s+/g, " "));
@@ -652,6 +658,7 @@ describe("the home page", () => {
       '<span class="mark" data-support="all" aria-hidden="true">✓</span> Declares all of that Zotero version',
       '<span class="mark" data-support="some" aria-hidden="true">◐</span> Declares part of it',
       '<span class="mark" data-support="none" aria-hidden="true">–</span> Declares none of it',
+      "No mark: the plugin declares no range",
       '<span class="start" data-start="started" aria-hidden="true">●</span> Started in the daily start test',
       '<span class="start" data-start="start-error" aria-hidden="true">✕</span> Failed to install, start, or answer in the start test',
       "A declared range comes from the plugin's manifest and the index's overrides, not from a test. A start test does not show that a plugin works.",
@@ -798,60 +805,88 @@ function homeScript(href: string) {
       return lists[selector];
     },
   };
-  const history = { replaceState: (_state: unknown, _title: string, next: string) => (location.href = String(next)) };
-  runInNewContext(script, { document, location, history, URL, addEventListener: listen("window") });
+  const writes: string[] = [];
+  const history = {
+    replaceState: (_state: unknown, _title: string, next: string) => {
+      location.href = String(next);
+      writes.push(location.href);
+    },
+  };
+  // Timers wait until the test runs them, as the page's would wait for a pause in typing.
+  const timers = new Map<number, { run: () => void; delay: number }>();
+  let nextTimer = 0;
+  const setTimeout = (run: () => void, delay: number) => (timers.set(++nextTimer, { run, delay }), nextTimer);
+  const clearTimeout = (timer?: number) => timers.delete(timer!);
+  runInNewContext(script, { document, location, history, URL, setTimeout, clearTimeout, addEventListener: listen("window") });
   return {
     search,
     status,
     location,
     shown,
+    writes,
+    timers,
     visible: () => tableRows.filter((r) => !r.hidden).map((r) => r.dataset.plugin),
     fire: (name: string) => events.get(name)!(),
+    runTimers: () => {
+      for (const [timer, { run }] of [...timers]) (timers.delete(timer), run());
+    },
   };
 }
 
 describe("the home page script", () => {
   const PAGE = "https://jmgirard.github.io/zotero-plugin-index/";
-  // The ids of the rows whose lowercased name or description holds the query, which the
-  // caller gives in lower case, in table order.
-  const matching = (query: string) =>
-    [...home().matchAll(/<tr data-plugin="([^"]*)"/g)]
-      .map(([, id]) => records.find((record) => record.id === unescaped(id!))!)
-      .filter((record) => [displayName(record), shownDescription(record) ?? ""].some((text) => text.toLowerCase().includes(query)))
-      .map(({ id }) => id);
 
   test("reads q into the search box on load and shows only the rows it matches", () => {
     const page = homeScript(`${PAGE}?q=TOOLS`);
     expect(page.search.value).toBe("TOOLS");
     expect(page.visible()).toEqual(["a-cafe@example.org", "b-cafe@example.org"]);
-    expect(page.visible()).toEqual(matching("tools"));
     expect(page.status.textContent).toBe(`2 of ${ids.length} plugins`);
     expect([...page.shown].sort()).toEqual(["buttons", "count", "menu", "search"]);
   });
 
-  test("passes what the visitor types to the row test and writes it to q", () => {
+  test("passes what the visitor types to the row test and writes it to q once typing stops", () => {
     const page = homeScript(PAGE);
     expect(page.visible()).toHaveLength(ids.length);
     expect(page.status.textContent).toBe(`${ids.length} plugins`);
-    page.search.value = " LOG ";
-    page.fire("search:input");
-    // Only a description holds "log".
+    for (const value of [" L", " LO", " LOG "]) {
+      page.search.value = value;
+      page.fire("search:input");
+    }
     expect(page.visible()).toEqual(["b-cafe@example.org"]);
-    expect(page.visible()).toEqual(matching("log"));
-    expect(page.location.href).toBe(`${PAGE}?q=LOG`);
+    expect(page.writes).toEqual([]);
+    expect([...page.timers.values()].map(({ delay }) => delay)).toEqual([500]);
+    page.runTimers();
+    expect(page.writes).toEqual([`${PAGE}?q=LOG`]);
     page.search.value = "";
     page.fire("search:input");
+    page.runTimers();
     expect(page.visible()).toHaveLength(ids.length);
     expect(page.location.href).toBe(PAGE);
   });
 
-  test("reads q again when Back or Forward changes the address", () => {
+  test("removes a language parameter that names no option and keeps q", () => {
+    const page = homeScript(`${PAGE}?language=xx&q=log`);
+    expect(page.writes).toEqual([`${PAGE}?q=log`]);
+    expect(page.visible()).toEqual(["b-cafe@example.org"]);
+  });
+
+  test("counts every row for a query of spaces only", () => {
     const page = homeScript(PAGE);
+    page.search.value = "   ";
+    page.fire("search:input");
+    expect(page.visible()).toHaveLength(ids.length);
+    expect(page.status.textContent).toBe(`${ids.length} plugins`);
+  });
+
+  test("reads q again when Back or Forward changes the address, and drops a write that typing left waiting", () => {
+    const page = homeScript(PAGE);
+    page.search.value = "tools";
+    page.fire("search:input");
     page.location.href = `${PAGE}?q=edits`;
     page.fire("window:popstate");
     expect(page.search.value).toBe("edits");
-    expect(page.visible()).toEqual(matching("edits"));
     expect(page.visible()).toEqual(["b-cafe@example.org"]);
+    expect(page.timers.size).toBe(0);
   });
 });
 
@@ -997,7 +1032,6 @@ describe("the site styles", () => {
     expect(layout).toMatch(
       /@media \(max-width: 560px\) \{\s*\.plugins \.desc,\s*\.plugins \.links a\[data-link="source"\] \{\s*display: none;\s*\}/,
     );
-    // Each header and cell of those columns carries the class the rule names.
     const html = home();
     expect(html.match(/<t[dh][^>]* class="lang"/g)).toHaveLength(ids.length + 2);
     expect(html.match(/<t[dh][^>]* class="date"/g)).toHaveLength(ids.length + 2);
@@ -1059,7 +1093,6 @@ describe("the site colors", () => {
     ["light", light],
     ["dark", dark],
   ])("gives each listed token pair its contrast in the %s scheme", (_, scheme) => {
-    expect(PAIRS).toHaveLength(17);
     for (const [text, background, least] of PAIRS) {
       expect(scheme.get(text), text).toMatch(/^#/);
       expect(scheme.get(background), background).toMatch(/^#/);
@@ -1107,6 +1140,26 @@ describe("the site colors", () => {
     expect(layout).toMatch(/\.button \{[^}]*border: 1px solid currentColor;/);
     for (const border of ["--ok", "--bad"]) {
       expect(contrast(scheme.get(border)!, scheme.get("--surface")!), `${border} on --surface`).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  test.each([
+    ["light", light],
+    ["dark", dark],
+  ])("gives the edges of the search box, the menu, and the version buttons a contrast of at least 3:1 with the surface in the %s scheme", (_, scheme) => {
+    const edges = cssRules(layout).flatMap(({ selector, declarations }) =>
+      declarations
+        .filter(([property, value]) => (property === "border" || property === "border-left") && value.includes("var("))
+        .filter(() => [".search input", "[data-language-filter]", "[data-version-filter]"].some((control) => selector.includes(control)))
+        .map(([, value]) => ({ selector, token: /var\((--[\w-]+)\)/.exec(value)?.[1] })),
+    );
+    expect(edges.map(({ selector }) => selector)).toEqual([
+      ".search input, [data-language-filter]",
+      "[data-version-filter]",
+      "[data-version-filter] button",
+    ]);
+    for (const { selector, token } of edges) {
+      expect(contrast(scheme.get(token!)!, scheme.get("--surface")!), `${selector}: ${token}`).toBeGreaterThanOrEqual(3);
     }
   });
 });

@@ -112,7 +112,7 @@ export function majorSupport(record: RangeRecord, major: string): MajorSupport |
 }
 
 // The row's data-zotero: each major of ZOTERO_MAJORS whose support is all or some, in that
-// order, joined by spaces. Empty for a record with no pills or with only "none" pills.
+// order, joined by spaces. Empty for a record with no declared marks or with only "none" marks.
 export function rowMajors(record: RangeRecord): string {
   return ZOTERO_MAJORS.filter((major) => {
     const support = majorSupport(record, major);

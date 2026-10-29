@@ -62,8 +62,9 @@ major is all or part, one major at a time, together with the menu; the
 same script runs them and keeps the choice in `?zotero=` (D-019, M037).
 A search box filters the table to the rows whose name or description holds
 the query, both lowercased, and keeps it in `?q=` (M053). The same script
-writes a plugin count beside the filters, which says how many plugins show
-while a filter is on, or that none match (M044, M053). A top bar on every
+writes a plugin count beside the filters: the total, how many plugins show
+while a filter is on, or that none match (M044, M053). Typing writes `?q=`
+once the visitor stops for half a second (M053 review). A top bar on every
 page links to the home page, the "Add a plugin" issue form, and the data
 file (M053).
 The page opens with a header block of the name and the description, then
@@ -635,7 +636,7 @@ reused._
   declared range with overrides applied, and, in `majorSupport`, how much of
   one Zotero major that range covers. The tests and the templates (through
   `site/src/data.ts`, `site/src/components/Support.astro`, and, for
-  `ZOTERO_MAJORS`, `site/src/pages/index.astro`) import it. The
+  `ZOTERO_MAJORS` and `majorSupport`, `site/src/pages/index.astro`) import it. The
   pages carried no script from M015. Since M024 the home page carries one,
   for the language menu and, since M037, the version buttons and, since
   M044, the status line under them, and since M053 the search box and the

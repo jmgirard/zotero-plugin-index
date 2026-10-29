@@ -13,7 +13,7 @@ sorted by name. The sort ignores letter case and accents, and names that
 are then equal sort by plugin id. Each row shows the plugin's name and its
 description. If the plugin's GitHub repository is archived, the row shows
 "Archived" after the name. Then come one cell for each Zotero major version
-from 7 to 10 and a cell for the plugin's languages. Next comes the month of
+from 7 to 10 and a "Menus and settings" cell. Next comes the month of
 the release that the index read. Last come links to the source code and to
 the `.xpi` file.
 
@@ -35,13 +35,15 @@ newest release. A dot (●) means that the plugin started. A cross (✕) means
 that it failed at startup, did not install, or gave no answer in time. A
 cell with neither has no start result. A legend under the table names each
 mark. A plugin with no declared range shows no declared marks. If the last
-build failed to
-read a plugin, its row shows "Not read" in place of the version cells.
+build failed to read a plugin, its row shows "Not read" in place of the
+version cells.
 
-The languages cell shows the language codes of the plugin's languages list,
-after overrides, in list order. Regional forms such as `zh-CN` and `zh-TW`
-share one code. Hold the pointer over a code to read its name. If the list
-has more than 3 codes, the cell shows the first 2 and "+N" for the rest.
+The "Menus and settings" cell shows the language codes of the plugin's
+languages list, after overrides, in list order. Regional forms such as
+`zh-CN` and `zh-TW` share one code. Hold the pointer over a code to read its
+name. If the list has more than 3 codes, the cell shows the first 2 and "+N"
+for the rest. An empty cell means that no language is left, which the
+plugin's page shows as "Unknown (no translations found)".
 The source link goes to the plugin's repository. The download link goes to
 the `.xpi` file that the index read, on the author's release. The author
 can replace that file later. A link whose address does not start with
@@ -77,7 +79,7 @@ language, so a plugin with `zh-CN` or `zh-TW` counts under Chinese.
 "All languages" shows every plugin. The page keeps your choice in the
 `language` query parameter of its address, such as `?language=zh`, so you
 can link to the filtered table. If the parameter names no language in the
-menu, the page shows every plugin.
+menu, the page shows every plugin and removes the parameter.
 
 The home page also has "Declares Zotero" buttons: "Any" and one button for
 each Zotero major from 7 to 10. If you press a major, the table shows only

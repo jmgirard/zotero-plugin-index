@@ -266,7 +266,7 @@
         "repoCreatedAt": "2024-08-08T00:00:00Z",
         "openIssues": 5,
         "releaseCount": 14,
-        "latestReleaseDate": "2026-07-04T12:00:00Z",
+        "latestReleaseDate": "2026-07-01T00:30:00Z",
         "xpiUrl": "https://github.com/example/cafe-tools/releases/download/v2.0.0/cafe-tools-2.0.0.xpi",
         "prerelease": false,
         "archived": false,
@@ -275,7 +275,8 @@
       "startTests": [
         { "zotero": "7.0.32", "result": "started" },
         { "zotero": "8.0.3", "result": "start-error" },
-        { "zotero": "8.0.10", "result": "started" }
+        { "zotero": "8.0.10", "result": "started" },
+        { "zotero": "8.0.4", "result": "not-installed" }
       ],
       "overrides": []
     },

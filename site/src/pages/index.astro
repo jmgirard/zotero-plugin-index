@@ -1,5 +1,5 @@
 ---
-import { majorSupport, ZOTERO_MAJORS, type MajorSupport } from "../../../src/site/version.ts";
+import { majorSupport, ZOTERO_MAJORS } from "../../../src/site/version.ts";
 import Icon from "../components/Icon.astro";
 import Base from "../layouts/Base.astro";
 import {
@@ -18,19 +18,19 @@ import {
   shortLanguages,
   shownDescription,
   startText,
+  SUPPORT_MARKS as MARKS,
   supportText,
 } from "../data.ts";
 
 const { plugins } = loadData();
-
-const MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "–" };
 ---
 
 <Base title="Zotero plugin index">
   <div class="hero">
     <h1>Plugins for Zotero 7 and later</h1>
     <p class="intro">
-      A daily build reads these facts from each plugin's GitHub repository and releases, and starts the plugins in Zotero.
+      A daily build reads these facts from each plugin's GitHub repository and releases, and starts each plugin in the
+      tested Zotero releases that its manifest's range covers.
     </p>
   </div>
   <div class="toolbar">
@@ -63,6 +63,14 @@ const MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "�
   </div>
   <div class="table-card">
     <table class="plugins">
+      <caption class="visually-hidden">Plugins in the index</caption>
+      <colgroup>
+        <col />
+        <col span={ZOTERO_MAJORS.length} />
+        <col class="lang" />
+        <col class="date" />
+        <col />
+      </colgroup>
       <thead>
         <tr class="group">
           <td></td>
@@ -80,7 +88,7 @@ const MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "�
               </th>
             ))
           }
-          <th scope="col" class="lang">Languages</th>
+          <th scope="col" class="lang">Menus and settings</th>
           <th scope="col" class="date">Latest release</th>
           <th scope="col"><span class="visually-hidden">Links</span></th>
         </tr>
@@ -94,13 +102,17 @@ const MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "�
             const sourceHref = safeHref(upstream?.repoUrl ?? record.repoUrl);
             const xpiHref = upstream?.xpiUrl === undefined ? undefined : safeHref(upstream.xpiUrl);
             const { shown, rest } = shortLanguages(record);
+            const codes = [
+              ...shown.map((subtag) => ({ text: subtag, title: languageName(subtag), more: false })),
+              ...(rest.length > 0 ? [{ text: `+${rest.length}`, title: rest.map(languageName).join(", "), more: true }] : []),
+            ];
             return (
               <tr data-plugin={record.id} data-languages={rowLanguagesAttribute(record)} data-zotero={rowMajorsAttribute(record)}>
-                <td class="name">
+                <th scope="row" class="name">
                   <a href={pluginHref(record.id)} data-name>{name}</a>
                   {upstream?.archived === true && <span class="badge" data-archived>Archived</span>}
                   {description && <div class="desc" data-description>{description}</div>}
-                </td>
+                </th>
                 {record.failure ? (
                   <td class="v not-read" colspan={ZOTERO_MAJORS.length} data-status="failure">
                     Not read
@@ -128,8 +140,16 @@ const MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "�
                   })
                 )}
                 <td class="lang" data-languages-shown>
-                  {shown.map((subtag) => <abbr title={languageName(subtag)}>{subtag}</abbr>)}
-                  {rest.length > 0 && <abbr class="more" title={rest.map(languageName).join(", ")}>+{rest.length}</abbr>}
+                  {
+                    codes.map(({ text, title, more }, i) => (
+                      <>
+                        {i > 0 && " "}
+                        <abbr class={more ? "more" : undefined} title={title}>
+                          {text}
+                        </abbr>
+                      </>
+                    ))
+                  }
                 </td>
                 <td class="date">{upstream && <time datetime={day(upstream.latestReleaseDate)}>{monthYear(upstream.latestReleaseDate)}</time>}</td>
                 <td class="links">
@@ -156,10 +176,11 @@ const MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "�
       </tbody>
     </table>
   </div>
-  <ul class="legend" data-legend>
+  <ul class="legend" role="list" data-legend>
     <li><span class="mark" data-support="all" aria-hidden="true">{MARKS.all}</span> Declares all of that Zotero version</li>
     <li><span class="mark" data-support="some" aria-hidden="true">{MARKS.some}</span> Declares part of it</li>
     <li><span class="mark" data-support="none" aria-hidden="true">{MARKS.none}</span> Declares none of it</li>
+    <li>No mark: the plugin declares no range</li>
     <li><span class="start" data-start="started" aria-hidden="true">●</span> Started in the daily start test</li>
     <li><span class="start" data-start="start-error" aria-hidden="true">✕</span> Failed to install, start, or answer in the start test</li>
     <li data-legend-note>
@@ -205,7 +226,15 @@ const MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "�
     // Reads the parameters into the search box, the menu, and the buttons, on load and when
     // Back or Forward changes the address in the same page. A parameter that names no option
     // leaves the address.
+    // Typing writes the address once the visitor stops for half a second, so a burst of keys
+    // makes one history call, not one per key.
+    let pending: ReturnType<typeof setTimeout> | undefined;
+    const write = () => {
+      clearTimeout(pending);
+      history.replaceState(null, "", address());
+    };
     const fromAddress = () => {
+      clearTimeout(pending);
       const params = new URL(location.href).searchParams;
       search.value = params.get("q") ?? "";
       select.value = chosenValue(params.get("language"), languages);
@@ -216,11 +245,15 @@ const MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "�
     };
     const update = () => {
       show();
-      history.replaceState(null, "", address());
+      write();
     };
     fromAddress();
     addEventListener("popstate", fromAddress);
-    search.addEventListener("input", update);
+    search.addEventListener("input", () => {
+      show();
+      clearTimeout(pending);
+      pending = setTimeout(write, 500);
+    });
     select.addEventListener("change", update);
     for (const button of buttons) {
       button.addEventListener("click", () => {

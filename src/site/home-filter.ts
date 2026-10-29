@@ -7,7 +7,7 @@ export interface Filter {
   options: readonly string[];
 }
 
-// Whether a filter is on: its value is not "" (All languages, Any version) and an option
+// Whether a filter is on: its value is not "" (All languages, Any) and an option
 // has it.
 export function filterOn(filter: Filter): boolean {
   return filter.value !== "" && filter.options.includes(filter.value);
@@ -43,7 +43,7 @@ export function rowShows(row: HomeRow, language: Filter, zotero: Filter, query: 
 }
 
 // The chosen value for an address parameter: the parameter when an option has it, else ""
-// (All languages, Any version).
+// (All languages, Any).
 export function chosenValue(asked: string | null, options: readonly string[]): string {
   return asked !== null && options.includes(asked) ? asked : "";
 }
