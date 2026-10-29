@@ -1,0 +1,8 @@
+{
+  "id": "bilingual-linked-reader@houxin2024.github.io",
+  "name": "Zotero Bilingual PDF Reader",
+  "description": "Read layout-preserving bilingual PDFs in Zotero with click-to-match sentence highlighting; the Windows bundle includes one-click translation setup.",
+  "homepage": "https://github.com/Houxin2024/zotero-bilingual",
+  "repoUrl": "https://github.com/Houxin2024/zotero-bilingual",
+  "updateUrl": "https://raw.githubusercontent.com/Houxin2024/zotero-bilingual/main/updates.json"
+}
