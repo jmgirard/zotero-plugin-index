@@ -80,6 +80,9 @@ export const INDEX_REPO = "jmgirard/zotero-plugin-index";
 // around it.
 export const BUILD_LIMIT_MS = 18 * 60 * 1000;
 
+// The longest the read of the report label and every report issue page may take in all.
+export const REPORTS_LIMIT_MS = 3 * 60 * 1000;
+
 // `startedAt` is a performance.now() time. Its default, 0, is when the process started.
 // `reportsMs` bounds the label read and every page of the report issues together.
 export interface TimeLimits {
@@ -103,7 +106,7 @@ export async function buildData(
   fetch: Fetch,
   now = new Date(),
   indexRepo = INDEX_REPO,
-  { readMs = READ_LIMIT_MS, reportsMs = READ_LIMIT_MS, buildMs = BUILD_LIMIT_MS, startedAt = 0 }: TimeLimits = {},
+  { readMs = READ_LIMIT_MS, reportsMs = REPORTS_LIMIT_MS, buildMs = BUILD_LIMIT_MS, startedAt = 0 }: TimeLimits = {},
 ): Promise<BuildResult> {
   let listed: Awaited<ReturnType<typeof listEntries>>;
   try {

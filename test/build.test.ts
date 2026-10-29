@@ -761,10 +761,11 @@ describe("buildData", () => {
       const recorded = responses();
       recorded[url] = { ...recorded[url], stall };
       const { fetch, requests } = fixtureFetch(recorded);
-      const result = await buildData(TREE, fetch, undefined, undefined, { reportsMs: 200 });
+      // The limit also covers the label and page 1 reads before page 2, so it leaves them room.
+      const result = await buildData(TREE, fetch, undefined, undefined, { reportsMs: 1000 });
       expect(result).toEqual({
         ok: false,
-        problems: [`cannot read the report issues: request-failed: ${failed}: the read passed its time limit of 200 ms`],
+        problems: [`cannot read the report issues: request-failed: ${failed}: the read passed its time limit of 1000 ms`],
       });
       expect(requests.map((r) => r.url).every(reportRead)).toBe(true);
       expect(requests.map((r) => r.url)).toContain(url);
