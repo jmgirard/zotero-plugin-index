@@ -1,6 +1,6 @@
 # M049: Give the whole site the card look
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** M048
 - **Driving RR:** —
@@ -105,6 +105,9 @@ browser".
 - 2026-10-29: T2: for AC5, a new test checks every rule that sets a text color and a background together, in both schemes, instead of extending M048's pair list; the one new pair is the select's `--text` on `--card`, already on that list. Verify clean: 1060 tests passed, 6 skipped; `pnpm check` 56 entries, 0 problems.
 - 2026-10-29: T3: fixture site at commit 4ede776 served on port 4326 under `/zotero-plugin-index/`. Each of the 6 menu options and 4 major buttons showed exactly its matching rows, with "Showing n of 9 plugins." as `filterStatus(n, 9, true)` gives; Any version reset to 9 rows and an empty status. Width in 360 and 1280 px iframes: scrollWidth equals clientWidth, also with `?language=zh&zotero=9`; a planted 900 px div gave 916 > 360. Screenshots taken at 1280 and 360 px (dark scheme), footer included.
 - 2026-10-29: T4: CHANGELOG entry under Unreleased for the header, footer, and home look; DESIGN's style note names the custom-property and no-other-style rules. README describes facts, not looks, so it needs no change. Verify clean: 1060 tests passed, 6 skipped; `pnpm check` 56 entries, 0 problems.
+- 2026-10-29: claim audit: 21 claims read, 5 corrected — CHANGELOG.md, test/site.test.ts, test/support/home-facts.ts
+- 2026-10-29: claim audit fixes: the CHANGELOG names the bold labels; the AC1 test name lists its properties, exemptions, and allowed values; the helper's comments say which classes it still reads, that it prints the fixture's "facts" field, and which attributes it keeps. The same reader re-read the five: all true. Open concern: WebKit may not draw a rounded border on a native `<select>` without `appearance: none`; not checked in Safari. Verify clean: 1060 passed, 6 skipped; `pnpm check` 0 problems.
+- 2026-10-29: status review.
 
 ## Decisions
 

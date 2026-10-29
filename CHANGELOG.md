@@ -365,6 +365,7 @@
 - The header, the footer, and the home page take the card look of the
   plugin pages. The header and the footer are cards on every page. On the
   home page, the title and the intro sit in a card. The language menu takes
-  the rounded shape of the version buttons. The filter labels and the status
-  line are smaller and gray. The home page shows the same facts, and the
-  menu and the buttons filter the list as before.
+  the rounded shape of the version buttons. The filter labels are smaller,
+  bold, and gray, and the status line is smaller and gray. The home page
+  shows the same facts, and the menu and the buttons filter the list as
+  before.

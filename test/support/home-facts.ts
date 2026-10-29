@@ -1,9 +1,10 @@
 import { readFileSync } from "node:fs";
 
-// The facts the home page's rows and filters show, read from the built HTML so that a
-// change of layout markup or classes leaves them the same. Run it as
-// `node test/support/home-facts.ts <index.html>` to print the facts of a built home page,
-// as test/fixtures/site/home-facts.json holds them.
+// The facts the home page's rows and filters show, read from the built HTML. They leave out
+// classes and element nesting, so wrapping elements or changing other classes leaves them the
+// same while p.language-filter, div.version-filter, and the pills' .visually-hidden text stay.
+// Run it as `node test/support/home-facts.ts <index.html>` to print the facts of a built home
+// page, as the "facts" field of test/fixtures/site/home-facts.json holds them.
 
 interface Element {
   tag: string;
@@ -65,7 +66,8 @@ function hasClass(element: Element, name: string): boolean {
   return (element.attributes.get("class") ?? "").split(/\s+/).includes(name);
 }
 
-// The attributes the home page script reads or sets, with `hidden`.
+// The id, value, aria-pressed, role, hidden, and data-* attributes, which include all the
+// ones the home page script reads or sets.
 function kept(element: Element): Record<string, string> {
   const names = [...element.attributes.keys()].filter(
     (name) => ["id", "value", "aria-pressed", "role", "hidden"].includes(name) || name.startsWith("data-"),

@@ -665,7 +665,7 @@ function cssRules(layout: string): { selector: string; declarations: [string, st
 describe("the site styles", () => {
   const layout = readFileSync(resolve(ROOT, "site/src/layouts/Base.astro"), "utf8");
 
-  test("takes each spacing, corner radius, and type size outside :root from a custom property", () => {
+  test("takes each margin, padding, gap, corner radius, and font size outside :root and .visually-hidden from a custom property, 0, or auto", () => {
     const sized = cssRules(layout)
       .filter(({ selector }) => selector !== ":root" && selector !== ".visually-hidden")
       .flatMap(({ selector, declarations }) =>
