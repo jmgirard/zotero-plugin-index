@@ -1,0 +1,8 @@
+{
+  "id": "zotero-settings-sync@gaviiiinnnn.github.io",
+  "name": "Zotero Settings Sync",
+  "description": "Sync Zotero settings, plugin configurations, installed plugins, citation styles, and site-specific settings across devices",
+  "homepage": "https://github.com/gaviiiinnnn/zotero-settings-sync#readme",
+  "repoUrl": "https://github.com/gaviiiinnnn/zotero-settings-sync",
+  "updateUrl": "https://github.com/gaviiiinnnn/zotero-settings-sync/releases/download/release/update.json"
+}
