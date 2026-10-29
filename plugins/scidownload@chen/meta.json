@@ -1,0 +1,8 @@
+{
+  "id": "scidownload@chen",
+  "name": "Sci-Download",
+  "description": "Download PDF from Sci-Hub - Zotero Plugin",
+  "homepage": "https://github.com/chen7447/sci-download-for-zotero#readme",
+  "repoUrl": "https://github.com/chen7447/sci-download-for-zotero",
+  "updateUrl": "https://github.com/chen7447/sci-download-for-zotero/releases/download/release/update.json"
+}
