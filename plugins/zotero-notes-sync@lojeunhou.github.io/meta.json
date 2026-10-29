@@ -1,0 +1,8 @@
+{
+  "id": "zotero-notes-sync@lojeunhou.github.io",
+  "name": "Zotero Notes Sync",
+  "description": "Export Zotero notes to Markdown for local knowledge bases.",
+  "homepage": "https://github.com/lojeunhou/zotero-notes-sync-zotero-plugin",
+  "repoUrl": "https://github.com/lojeunhou/zotero-notes-sync-zotero-plugin",
+  "updateUrl": "https://github.com/lojeunhou/zotero-notes-sync-zotero-plugin/releases/latest/download/updates.json"
+}
