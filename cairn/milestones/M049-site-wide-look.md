@@ -124,3 +124,24 @@ browser".
 - AC7: `CHANGELOG.md` holds one new entry under Unreleased (the only one `git diff main` adds there), "The header, the footer, and the home page take the card look of the plugin pages…", naming the header, footer, and home page. Verify clean as above.
 - Gate: `cairn_validate.py` all checks passed (exit 0); no principle changed, so no `cairn_impact`; the generic profile names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the home-facts test repeats the stricter exact-markup home tests and adds a 427-line fixture — reject (planned change: AC3 and T1 name this check against the M048 build).
+- diff-bug #2: `homeFacts` keeps no attributes of the version group wrapper (`data-version-filter`, `role="group"`, `aria-labelledby`) or the label's `for` — reject (planned change: AC3 lists the select, buttons, and status line, not the wrapper; the exact test "holds hidden version buttons…" pins the wrapper).
+- diff-bug #3: the rounded `<select>` is unchecked in Safari, so the CHANGELOG's "rounded shape" sentence may be false there — fix now (sentence removed) and follow-up to the candidate row "Check the language menu in Safari", fixed 3083dd6.
+- diff-bug #4: `import.meta.main` is undefined on Node 24.0–24.1, which `engines` allows, so the helper would print nothing — fix now (compares `process.argv[1]` with the module path), fixed 3083dd6.
+- diff-bug #5: the AC1 test checks fewer properties than DESIGN's "each spacing, corner radius, and type size" sentence claims — fix now (DESIGN names the five properties and `0`/`auto`), fixed 3083dd6; the wider property set is reject (planned change: AC1 names its properties).
+- diff-bug #6: footer paragraph spacing rests on `.site-foot p` following `.card p` at equal specificity — reject (style: the order gives the intended 0.25rem, and no rule moves it).
+- diff-bug #7: the both-scheme contrast test repeats its non-empty check per scheme, sees only pairs set in one rule, and has a comment that restates the code — fix now for the comment (removed), fixed 3083dd6; the rest reject (planned change: AC5 names both schemes and rules that set both; cross-rule pairs stay on M048's PAIRS list).
+- diff-bug #8: the facts parser misreads HTML comments, entities, single-quoted or unquoted values, `>` in values, and `<body attr>` — reject (edge: Astro's built pages carry none of these; the effect is a test failure, not a wrong pass).
+- diff-bug #9: the fixture's `source` names dc1caf0 while the T1 line names fad2e7e — reject (false: both are true; the site code is the same at both, and the review rebuilt at dc1caf0 with identical facts).
+- diff-bug #10: the AC2 test hard-codes three file names and its regex misses `style =` — reject (style: the names are T1's non-empty check; the spaced form is a formatting edge no file uses).
+- diff-bug #11: the fixture length checks before the exact match are redundant — reject (false: they show the fixture is not empty, as T1 asks).
+- diff-bug #12: the CHANGELOG omits the larger header link, the 1.5rem footer gap, and the rows' last margin — reject (style: the entry describes the look at the level of M048's entry; each change is in the T2 work-log line).
+- blame-history #1: `.plugins { margin: 0 }` drops the list's default margin — reject (planned change: Scope In restyles the home rows).
+- blame-history #2: footer top margin 2rem to 1.5rem — reject (planned change: Scope In restyles the footer; Out's "only moves literal values" binds the plugin page's rules).
+- blame-history #3: header bottom margin 1rem to 0.75rem — reject (planned change: Scope In restyles the header).
+- blame-history #4: the header and footer border lines give way to card borders — reject (planned change).
+- blame-history #5: the `{" "}` between the menu label and the select no longer renders in the flex row; `gap` spaces them — reject (planned change: the layout gap replaces it, as seen in the T3 screenshots).
+- prior-review #1: the menu's 1px `--muted` border has no forced-colors rule, unlike the buttons — reject (false: forced colors replace every border color with a system color, so the edge stays; the M037 rule marks the pressed state; `--muted` on `--card` is already at least 4.5:1 on M048's list).
+- ripple #1: DESIGN.md says each spacing comes from a custom property, but `0` and `auto` remain — fix now, same fix as diff-bug #5, fixed 3083dd6.
+- ripple #2: "header block" now names the plugin page's name block and could be read as the site header — reject (false: the plugin page lines stay true).
+- Verify after fixes (3083dd6): `pnpm test` 1060 passed, 6 skipped; `pnpm check` 0 problems; `node test/support/home-facts.ts` printed 9 rows, and an import printed nothing.
