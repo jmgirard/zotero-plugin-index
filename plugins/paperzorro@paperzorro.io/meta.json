@@ -1,0 +1,8 @@
+{
+  "id": "paperzorro@paperzorro.io",
+  "name": "PaperZorro",
+  "description": "AI-powered literature scout for Zotero. Search PubMed, arXiv and bioRxiv, filter with AI, and import to your library.",
+  "homepage": "https://github.com/Rafael-Silva-Oliveira/paperzorro",
+  "repoUrl": "https://github.com/Rafael-Silva-Oliveira/paperzorro",
+  "updateUrl": "https://raw.githubusercontent.com/Rafael-Silva-Oliveira/paperzorro/master/update.json"
+}
