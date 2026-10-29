@@ -1,0 +1,8 @@
+{
+  "id": "mdbundle@williammendes.dev",
+  "name": "MdBundle for Zotero",
+  "description": "Bundle, analyze & export your PDF/MD attachments. Generate MDs from PDFs and select cited items from Word documents.",
+  "homepage": "https://github.com/wcmendes/MdBundle-for-Zotero",
+  "repoUrl": "https://github.com/wcmendes/MdBundle-for-Zotero",
+  "updateUrl": "https://raw.githubusercontent.com/wcmendes/MdBundle-for-Zotero/main/updates.json"
+}
