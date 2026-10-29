@@ -1,0 +1,7 @@
+{
+  "id": "zotero-ai-explain@vishnutskumar.github.io",
+  "name": "Zotero AI Explain",
+  "description": "Selected-text explanations and sidebar follow-up chat for Zotero.",
+  "repoUrl": "https://github.com/vishnutskumar/zotero-ai-explain",
+  "updateUrl": "https://github.com/vishnutskumar/zotero-ai-explain/releases/latest/download/updates.json"
+}
