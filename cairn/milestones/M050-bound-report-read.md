@@ -108,6 +108,7 @@ is added to the report read (see the work log).
 - 2026-10-29: T3 choices: `cli.ts` awaits an empty write on stdout and stderr, then calls `process.exit(code)`; the old `exitCode` comment is replaced.
 - 2026-10-29: T1–T3 share one commit, since the T1 tests stay red until T2 and T3. Verify clean: 1067 tests passed, 6 skipped; `pnpm check` 56 entries, 0 problems.
 - 2026-10-29: T4: README adds the report read to the 18-minute paragraph and to the no-file list; `build.yml` comment names the 3-minute report limit; DESIGN's build lines name the limit and the exit; CHANGELOG entry under Unreleased; D-027 annotates D-013 and D-016. The simple-english hook flagged README lines 64, 78, 135, 536 and CHANGELOG lines 174–355, all present before this branch, left as they are. Verify clean: 1067 passed, 6 skipped; `pnpm check` 0 problems.
+- 2026-10-29: claim audit: 19 claims read, 1 corrected — CHANGELOG.md ("only each page had a limit of 60 seconds" now names each request, the label read included); re-read by the same reader pending.
 
 ## Decisions
 
