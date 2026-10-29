@@ -106,7 +106,7 @@ A script on the plugin pages stays out, because this layout needs none
       Serve each at the Pages base path through `.claude/launch.json` and
       `preview_start`. Measure AC7 on each fixture page. Take screenshots
       at both widths.
-- [ ] T5: Update the README paragraph and the DESIGN.md plugin page
+- [x] T5: Update the README paragraph and the DESIGN.md plugin page
       sentence (`cairn/DESIGN.md:69`, "links first"), and add the
       CHANGELOG entry. Run `pnpm test` and `pnpm check`.
 
@@ -128,6 +128,7 @@ A script on the plugin pages stays out, because this layout needs none
 - 2026-10-29: T2: the page is a `div.card.page-head` and four `section.card` elements marked `data-section`; the Works and Broken links carry `class="button"` after `href` and sit under the line "Tried this version on Zotero? Report what you found:", in place of "Report that it Works or is Broken." 88 site tests pass.
 - 2026-10-29: T3: `--card-border`, `--card-radius`, and `--card-padding` join `--card`; `.card`, `.plugin`, and `details` use them. Section h2s are small uppercase `--muted` labels. Buttons are pills with a transparent border that forced colors draw. `--broken-*` is #a4261a on #fde7e5 (light) and #f5aaa1 on #44201c (dark). The new rules set only the AC6 pairs (muted h2 on card, the two button pairs, details on card). The color test failed on a planted #6a3a35 broken text (1.54:1). `pnpm test` 1050 passed, `pnpm check` 0 problems.
 - 2026-10-29: T4: built the fixture site (10 pages) and a site from the deployed `v1/plugins.json` (49 pages), served at `/zotero-plugin-index/` on ports 4324 and 4325 (`.claude/launch.json`, git-excluded). In 360 px and 1280 px iframes with Details open, all 18 fixture page loads gave `scrollWidth == clientWidth`; a planted 900 px block gave 916 > 360. Screenshots of the live Linter for Zotero page at 800 px and the fixture First Plugin page at 360 px, dark scheme (the pane's scheme).
+- 2026-10-29: T5: README's plugin page paragraph, DESIGN's plugin page sentence, and a new CHANGELOG entry describe the header block, the four cards, and the report buttons; README drops its sentence on the reports and links, which the card sentence now covers. `pnpm test` 1050 passed, `pnpm check` 0 problems.
 
 ## Decisions
 

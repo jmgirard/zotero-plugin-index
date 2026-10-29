@@ -72,9 +72,12 @@ The home page intro links to the "Add a plugin" issue form, which
 "Proposing a plugin with an issue" describes. The form needs a GitHub
 account.
 
-Each plugin has its own page. The page shows the name, the description, the
-pills, the declared range, and a "Menus and settings in" line. That line
-names the languages of the `languages` list that "Using the data"
+Each plugin has its own page. A header block at the top shows the name and
+the description. Cards with headings follow. "Declared support" shows the
+pills and the declared range. "Start test" shows the start-test results,
+"User reports" shows the reports, and "About" shows a "Menus and settings
+in" line and the links. The "Menus and settings in" line names the
+languages of the `languages` list that "Using the data"
 describes, which come from the plugin's locale folders. If a `languages`
 override applies to the plugin version that the index read, the override
 replaces that list. The line does not say how complete each language is.
@@ -84,8 +87,7 @@ record has a `startTests` list, the page shows a "Starts in Zotero" line.
 It names each tested Zotero version and its result in words, such as
 "Zotero 10.0.6 started". A note beside it says that the build waits 3
 seconds after the install. The note also says that a start test does not
-show that the plugin works. The page also shows the user reports and links
-to the repository and its releases.
+show that the plugin works.
 If no language is left, the page shows "Unknown (no translations found)".
 A closed "Details" section follows. It holds the plugin id, facts about the
 repository and its releases, and the overrides of the index for the plugin.
@@ -96,7 +98,7 @@ The user reports part of a page names the plugin version that the index
 read. For each Zotero major with a counted report, it shows the number of
 "works" reports and of "broken" reports. "Using the data" says which
 reports count. If no report counts, the page says that the version has no
-reports yet. A "Works" link and a "Broken" link open the report forms on
+reports yet. A "Works" button and a "Broken" button open the report forms on
 GitHub with the plugin id and that version filled in. The page of a plugin
 whose read failed shows no reports and no links.
 

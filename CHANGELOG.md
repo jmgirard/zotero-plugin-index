@@ -349,3 +349,11 @@
   since it rejects fields that it does not define. The new commands are
   `pnpm start-test`, `pnpm start-tests`, and `pnpm add-start-results`, and
   `pnpm build --plan <file>` writes the start plan.
+- Each plugin page has a new layout. A header block shows the name and the
+  description. Cards with headings follow, in this order: "Declared
+  support" (the pills and the declared range), "Start test" (when the
+  plugin has start results), "User reports", and "About" (the "Menus and
+  settings in" line and the repository and releases links). The closed
+  "Details" section comes last. The "Works" and "Broken" report links now
+  look like buttons and open the same forms. The page shows the same facts
+  as before.
