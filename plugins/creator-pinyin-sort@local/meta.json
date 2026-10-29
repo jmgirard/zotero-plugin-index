@@ -1,0 +1,8 @@
+{
+  "id": "creator-pinyin-sort@local",
+  "name": "pinyin-for-zotero",
+  "description": "帮助修正Zotero中文文献多音字作者姓氏拼音排序。",
+  "homepage": "https://github.com/Logan12l/pinyin-for-zotero",
+  "repoUrl": "https://github.com/Logan12l/pinyin-for-zotero",
+  "updateUrl": "https://github.com/Logan12l/pinyin-for-zotero/releases/download/release/update.json"
+}
