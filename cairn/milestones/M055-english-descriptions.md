@@ -140,7 +140,7 @@ added after this plan, which follow D-030 case by case.
 - [x] T5: Update README, CHANGELOG, `site/src/pages/about.astro`,
       `cairn/DESIGN.md` (lines ~46-49, ~106-108, ~172, and the reader's
       Architecture text), and the two schemas' prose per AC5.
-- [ ] T6: For each AC6 entry, read its README (English file or section
+- [x] T6: For each AC6 entry, read its README (English file or section
       first), write a one- or two-sentence English `description` override
       with its reason, and run `pnpm check`.
 - [ ] T7: Run the `verify` slot.
@@ -166,3 +166,4 @@ added after this plan, which follow D-030 case by case.
 - 2026-10-29: T3 done: `shownDescription` picks per AC3 with an exported `cjkShare` (regex `v` flag set difference for the other-letter runs); 15 pick cases and 4 share cases; a `<=` tie plant failed 1 test and dropping the 0.5 threshold failed 5.
 - 2026-10-29: T4 done: "Manifest description" and "GitHub description" facts open the Details list, before "Archived on GitHub"; site fixture gives first-plugin both texts and old-plugin GitHub text only; a hidden GitHub fact failed 4 site tests.
 - 2026-10-29: T5 done: README (description rule, override case, English-file size line), CHANGELOG entry with the refetch notice, About page "Descriptions" section plus an override sentence (2 site tests), DESIGN (description text, item 3, reader Architecture, `cjkShare`), and the prose of both schemas; full `pnpm test` 1227 passed, 6 skipped.
+- 2026-10-29: T6 done: eight `description` overrides with no `version`; Jasminum and Papilot copied from their English READMEs (`doc/README-en.md`, `README.en.md`), Zotero OCR drawn from its English README, five translated from Chinese READMEs; a script found each value at CJK share 0 with a Latin letter and each reason saying the upstream has no English description; `pnpm check` 58 entries, 0 problems.

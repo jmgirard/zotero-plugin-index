@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Reading and library tools for Zotero: per-page reading progress, item list columns such as journal tags and impact factor, nested tags, PDF style and annotation options, sentence translation with a word list, and a graph of related items.",
+      "reason": "Translated from the main feature list of README.md, which is in Chinese. The upstream has no English description beyond the name: the manifest description and the GitHub About text, \"Ethereal Style for Zotero\", only repeat it."
+    }
+  ]
 }

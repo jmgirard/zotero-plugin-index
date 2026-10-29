@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Reads papers beside the PDF in Zotero: AI summaries of the abstract and the current page, close reading, translation, and follow-up questions on selected text, reading cards, self-tests, and a one-paper report. Reading records stay on your computer.",
+      "reason": "Translated from the opening paragraph and the feature list of README.md, which is in Chinese. The upstream has no English description: the manifest and the GitHub About text are in Chinese."
+    }
+  ]
 }

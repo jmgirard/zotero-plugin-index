@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "AI research tools in Zotero: full-text PDF translation that keeps the layout, literature search with one-click import, Q&A over a knowledge base of papers, AI close reading, and literature review drafts.",
+      "reason": "Translated from the feature table of README.md, which is in Chinese. The upstream has no English description: the manifest and the GitHub About text are in Chinese."
+    }
+  ]
 }

@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Puts the ChatGPT or DeepSeek web chat in Zotero's right sidebar. It sends selected PDF or EPUB text, or a whole PDF, to the open chat, and the item menu can ask for a summary or reading questions.",
+      "reason": "Translated from the feature list of README.md, which is in Chinese. The upstream has no English description: the manifest and the GitHub About text are in Chinese."
+    }
+  ]
 }

@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Runs OCR with Tesseract on the PDFs selected in Zotero. It can add a new PDF with the recognized text, a note with the text, and hOCR HTML files. Tesseract and pdftoppm must be installed.",
+      "reason": "Drawn from the opening and the Prerequisites section of README.md. The upstream has no English description beyond the name: the manifest description and the GitHub About text, \"Zotero Plugin for OCR\", only repeat it."
+    }
+  ]
 }
