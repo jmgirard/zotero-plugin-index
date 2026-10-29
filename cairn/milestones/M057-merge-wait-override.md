@@ -25,7 +25,7 @@ row "Close gaps in bot holds and merges" (6).
 
 ## Acceptance criteria
 
-- [ ] AC1: `pnpm merge-discover` takes either no arguments or exactly `--wait-hours <n>`, where `<n>` matches
+- [x] AC1: `pnpm merge-discover` takes either no arguments or exactly `--wait-hours <n>`, where `<n>` matches
       `^(0|[1-9]\d{0,3})$`. With no arguments the wait is 48 hours. The age condition (README: "It opened at least
       48 hours before the run") becomes "opened at least `<n>` hours before the run's `now`". A pull request that
       fails it is skipped with `it opened less than <n> hour ago` when `<n>` is 1 and `it opened less than <n> hours
@@ -39,20 +39,20 @@ row "Close gaps in bot holds and merges" (6).
       the unreadable reason with wait 0. With `ZPI_REQUESTS` set, `--wait-hours`, `--wait-hours -1`,
       `--wait-hours 1.5`, `--wait-hours 10000`, `--wait 0`, `--wait-hours=2`, `--wait-hours 2 --wait-hours 3`,
       `--wait-hours 2 x`, and `x` each exit 1 with the usage line and leave the log empty.
-- [ ] AC2: `.github/workflows/merge-discover.yml` has a `workflow_dispatch` input `wait_hours` of type `number`
+- [x] AC2: `.github/workflows/merge-discover.yml` has a `workflow_dispatch` input `wait_hours` of type `number`
       with default 48. The input appears in an expression only on the step's env line
       `WAIT_HOURS: ${{ inputs.wait_hours }}`, with no `||` default, and the run line is
       `pnpm merge-discover ${WAIT_HOURS:+--wait-hours "$WAIT_HOURS"}`, so a scheduled run, which has no inputs,
       keeps 48 hours. No `run:` line holds `${{`. Its trigger events stay `schedule` (cron `13 5 * * *`) and
       `workflow_dispatch`; its `if:`, permissions, group, and `cache-mode` are unchanged.
-- [ ] AC3: README's "Merging bot pull requests" section states the wait as 48 hours or the dispatched
+- [x] AC3: README's "Merging bot pull requests" section states the wait as 48 hours or the dispatched
       `wait_hours`, in the conditions list and the sentence on when a pull request can merge; says that only a run
       started by hand sets `wait_hours`, that scheduled runs wait 48 hours, and that a value the command refuses
       fails the run with nothing merged; and gives the backfill steps: start `Discover plugins` by hand with
       `limit` 100, after that run finishes start `Merge bot pull requests` by hand with `wait_hours` 0, and repeat
       both while a discover run reports unread repos. `CHANGELOG.md`'s Unreleased section has an entry for the
       input.
-- [ ] AC4: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
+- [x] AC4: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
 
 ## Coverage
 
@@ -97,3 +97,14 @@ row "Close gaps in bot holds and merges" (6).
 - 2026-10-29: claim audit: not owed is false (user-facing, lines added); spawned below.
 - 2026-10-29: claim audit: 30 claims read, 8 corrected — src/discover/merge.ts, src/discover/merge-cli.ts, .github/workflows/merge-discover.yml, README.md, CHANGELOG.md, cairn/DESIGN.md. Fixed: the NaN reason in the opening-time comment, the README wait bullet and merge sentence (a hand run uses its own wait, not either), "rounds" in the CHANGELOG, DESIGN's 0 to 9999 range and the CLI as the default's source, the CLI's exit cases, and how GitHub formats the number. The re-read found all corrected and one more stale comment (`mergeDiscover`'s throws), fixed. The previous line's wording was a slip: this line is the audit record.
 - 2026-10-29: main moved to 136e4b0 (a candidate row added at the user's request); review step 1 merges it.
+- 2026-10-29: review started; main merged into the branch (9213e12), origin/main an ancestor; Copilot round off.
+
+## Decisions
+
+## Review
+
+- AC1: `test/merge.test.ts` (31, passed 2026-10-29 after the main merge): "a wait of 0 merges a pull request opened 1 minute before the run"; the conditions test skips #6, opened 47 hours before, with "it opened less than 48 hours ago" under no option; "a wait of 2 skips one opened 1 hour before with the 2-hour reason and merges one opened exactly 2 hours before"; "a wait of 1 names 1 hour"; a `created_at` an hour after `now` and "yesterday" each get "its opening time is unreadable or after the run" at wait 0; "passes --wait-hours to the run" prints "skipped #1: it opened less than 3 hours ago"; the nine refusals (`--wait-hours`, `-1`, `1.5`, `10000`, `--wait 0`, `--wait-hours=2`, the flag twice, `2 x`, `x`) each exit 1 with stderr exactly the new usage line, with `GITHUB_REPOSITORY` unset and `ZPI_REQUESTS` set, and an empty log. Implement planted `<=`, a dropped future-time check, and a CLI that let `x` through; each turned tests red.
+- AC2: `test/workflows.test.ts` "merge-discover.yml" (4, passed 2026-10-29): the `on:` block is the `13 5 * * *` schedule and `workflow_dispatch` with input `wait_hours`, `type: number`, `default: 48`; the step reads `run: pnpm merge-discover ${WAIT_HOURS:+--wait-hours "$WAIT_HOURS"}` with env `GITHUB_TOKEN` and `WAIT_HOURS: ${{ inputs.wait_hours }}`; `wait_hours` appears in exactly one expression, that one; no `run:` line holds `${{`; `if:`, permissions, group, `cache-mode: none` checks unchanged and passing. Ruby's YAML parse gives the same input and step. A planted `|| 48` turned the env test red.
+- AC3: joined README (LESSONS M018) on 2026-10-29: the conditions bullet "in a run started by hand, at least that run's `wait_hours`" (1), the merge sentence "once its `wait_hours` (48 unless changed) passes" (1), the input paragraph ("When you start the workflow by hand, its `wait_hours` input sets the wait", "Scheduled runs have no inputs, so they always wait 48 hours", "the run fails and merges nothing", 1 each), and the backfill steps "Start `Discover plugins` by hand with `limit` 100", "After that run finishes, start `Merge bot pull requests` by hand with `wait_hours` 0", "Repeat both steps while a discover run reports unread repos" (1 each). The Unreleased CHANGELOG holds the `wait_hours` entry once.
+- AC4: 2026-10-29 after the main merge: `npx -y pnpm@12.15.0 test` 24 files passed, 1 skipped, 1287 tests passed, 6 skipped; `npx -y pnpm@12.15.0 check` "checked 58 entries in plugins, 0 problems".
+- consistency gate: `cairn_validate.py` all checks passed; no principle changed; the `generic` profile names no toolchain checks. T5 and T6 run after the merge, by the plan.
