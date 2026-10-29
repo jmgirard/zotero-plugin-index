@@ -90,7 +90,13 @@ describe("build.yml", () => {
     expect(site).toMatch(/^ {4}needs: \[build, start-test\]$/m);
     expect(site).toMatch(/^ {4}if: \$\{\{ !cancelled\(\) && needs\.build\.result == 'success' \}\}$/m);
     expect(jobText(build, "deploy")).toMatch(/^ {4}needs: site$/m);
-    expect(jobText(build, "deploy")).toMatch(/^ {4}if: \$\{\{ !cancelled\(\) && needs\.site\.result == 'success' \}\}$/m);
+  });
+
+  // The github-pages environment refuses a deploy from any other branch, which failed the run.
+  test("deploys only for a scheduled run or a dispatched run on the default branch", () => {
+    expect(jobText(build, "deploy").match(/^ {4}if:.*$/gm)).toEqual([
+      "    if: ${{ !cancelled() && needs.site.result == 'success' && (github.event_name == 'schedule' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}",
+    ]);
   });
 
   test.each([
