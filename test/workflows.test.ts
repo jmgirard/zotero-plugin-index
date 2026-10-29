@@ -8,6 +8,7 @@ const REPORT = resolve(ROOT, ".github/workflows/report-issue.yml");
 const CLOSE = resolve(ROOT, ".github/workflows/close-add-plugin-issue.yml");
 const ADD = resolve(ROOT, ".github/workflows/add-plugin-issue.yml");
 const DISCOVER = resolve(ROOT, ".github/workflows/discover.yml");
+const MERGE = resolve(ROOT, ".github/workflows/merge-discover.yml");
 
 // Each line of a workflow, other than a comment line, that uses an actions/cache action or
 // sets a `cache` key, in block or flow form. An inline comment stays in its line, so a
@@ -287,6 +288,39 @@ describe("discover.yml", () => {
       block: "concurrency:\n  group: discover\n  cancel-in-progress: false\n  queue: max\n",
       keys: ["concurrency:"],
     });
+  });
+});
+
+describe("merge-discover.yml", () => {
+  const merge = readFileSync(MERGE, "utf8");
+  const job = jobText(merge, "merge");
+
+  test("runs daily and on dispatch, and its one job only for a schedule or a dispatch on the default branch", () => {
+    expect(triggers(merge)).toBe('schedule:\n    - cron: "13 5 * * *"\n  workflow_dispatch:');
+    expect(merge.slice(merge.indexOf("\njobs:\n")).match(/^ {2}[\w-]+:$/gm)).toEqual(["  merge:"]);
+    expect(job.match(/^ {4}if:.*$/gm)).toEqual([
+      "    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch))",
+    ]);
+  });
+
+  test("gives the job contents write and pull-requests write, and no other permission", () => {
+    expect(merge).toMatch(/^permissions: \{\}$/m);
+    expect(job).toMatch(/^ {4}permissions:\n {6}contents: write\n {6}pull-requests: write\n {4}\S/m);
+  });
+
+  test("runs pnpm merge-discover with the workflow's GITHUB_TOKEN only", () => {
+    expect(job).toContain("      - run: pnpm merge-discover\n        env:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n");
+    expect(merge.match(/secrets\.\w+/g)).toEqual(["secrets.GITHUB_TOKEN"]);
+    expect(job).toMatch(/^ {6}- uses: actions\/checkout@v7\n {8}with:\n {10}persist-credentials: false$/m);
+  });
+
+  test("queues its runs in the discover group and restores no cache", () => {
+    expect(concurrency(merge)).toEqual({
+      block: "concurrency:\n  group: discover\n  cancel-in-progress: false\n  queue: max\n",
+      keys: ["concurrency:"],
+    });
+    expect(job).toMatch(/^ {4}cache-mode: none$/m);
+    expect(cacheLines(merge)).toEqual([]);
   });
 });
 
