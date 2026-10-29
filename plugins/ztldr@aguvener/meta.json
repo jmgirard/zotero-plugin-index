@@ -1,0 +1,8 @@
+{
+  "id": "ztldr@aguvener",
+  "name": "zTLDR",
+  "description": "Fetch and display TL;DR summaries from Semantic Scholar in Zotero",
+  "homepage": "https://github.com/aguvener/zTLDR#readme",
+  "repoUrl": "https://github.com/aguvener/zTLDR",
+  "updateUrl": "https://github.com/aguvener/zTLDR/releases/download/release/update.json"
+}
