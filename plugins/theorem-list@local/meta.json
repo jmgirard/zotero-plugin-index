@@ -1,0 +1,8 @@
+{
+  "id": "theorem-list@local",
+  "name": "Theorem List",
+  "description": "Adds a button to the PDF reader toolbar that lists theorems, lemmas, propositions and corollaries, with click-to-jump.",
+  "homepage": "https://github.com/ievlevpn/zotero-theorem-list",
+  "repoUrl": "https://github.com/ievlevpn/zotero-theorem-list",
+  "updateUrl": "https://raw.githubusercontent.com/ievlevpn/zotero-theorem-list/master/update.json"
+}
