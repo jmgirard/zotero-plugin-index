@@ -442,8 +442,9 @@
   If none of them holds a message that is not blank, it reads the default
   locale. Each `upstream` block of the data file has a new optional
   `repoDescription` field: the About text of the GitHub repository,
-  trimmed. If less than half of the manifest description is Chinese,
-  Japanese, or Korean, the site shows it. The README gives the count. In
+  trimmed. If the site keeps the manifest description and less than half
+  of it is Chinese, Japanese, or Korean, the site shows it. The README says
+  how that share is counted. In
   other cases the site can show the GitHub description, by the rule in the
   README. Each plugin page's Details card shows both descriptions. A
   `description` override can now give English text for a plugin with no

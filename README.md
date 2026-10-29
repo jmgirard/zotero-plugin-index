@@ -321,9 +321,10 @@ only registry fields. Its `id` must equal the directory name.
 - `overrides`: a list of corrections to upstream facts. Use an override only
   when the plugin author cannot or will not fix the fact upstream. A
   `description` override can also give English text for a plugin with no
-  English description upstream. "Upstream" here means the manifest, the
-  English locale, and the GitHub repository. An English description that
-  only repeats the name also counts as none. Each item has these fields:
+  English description upstream. "Upstream" here means the manifest, its
+  English locale files, and the About text of the GitHub repository. An
+  English description that only repeats the name also counts as none. Each
+  item has these fields:
   - `field`: the fact to correct. The value is one of `name`, `description`,
     `homepage`, `strict_min_version`, `strict_max_version`, or `languages`.
   - `version`: the plugin version that the override applies to. If you leave

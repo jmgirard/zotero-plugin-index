@@ -637,7 +637,7 @@ describe("the About page", () => {
   test("says where the description comes from and when an override gives English text", () => {
     const text = mainText(about());
     for (const line of [
-      "the index reads an English locale file of the plugin first, if it has one.",
+      "the index reads the plugin's English locale file first, if it has one.",
       "If less than half of the manifest description is Chinese, Japanese, or Korean, the site shows it.",
       "the manifest description was dropped, or the GitHub description has less of that text.",
       "A description override can also give English text for a plugin with no English description upstream.",
