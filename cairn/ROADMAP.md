@@ -1,18 +1,17 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-29 (M051 done and archived; 1 candidate row graduated; 5 lessons marked used; no lesson captured)_
+_Last hygiene check: 2026-10-29 (M052 done and archived; 1 candidate row added; 4 lessons marked used; no lesson captured)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M052 | Publish each plugin's XPI address | review | — | normal | milestones/M052-publish-xpi-address.md |
 | M053 | Show the home list as a table | planned | M052 | normal | milestones/M053-home-table.md |
 | M054 | Rebuild the plugin page and add an About page | planned | M053 | normal | milestones/M054-plugin-page-redesign.md |
+| M052 | Publish each plugin's XPI address | done | — | normal | milestones/archive/M052-publish-xpi-address.md |
 | M051 | Alternate the build's plugin read order by day | done | M050 | normal | milestones/archive/M051-alternate-read-order.md |
 | M050 | End the daily build within its time limits | done | — | normal | milestones/archive/M050-bound-report-read.md |
-| M049 | Give the whole site the card look | done | M048 | normal | milestones/archive/M049-site-wide-look.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
@@ -42,6 +41,7 @@ _Last hygiene check: 2026-10-29 (M051 done and archived; 1 candidate row graduat
 - [low] Close gaps around the filter line: (1) on a load with `?language=` or `?zotero=` the script writes the line's first text while the line is still hidden, so screen readers do not announce it, and a change that keeps the same count writes the same text, which some screen readers do not repeat; (2) on such a load the line appears after the first paint and moves the list down, as "Filter the home list before it paints" says for the rows; (3) the line's DOM code (the count, the unhide) has only a hand check, as "Test the home page script in a browser" says for the menu and buttons; (4) README line 46 says an unknown `language` parameter shows every plugin, but not that the page removes it, as the `zotero` paragraph says (M044 review) — added 2026-10-28 — M024, M037, M044
 - [low] Fix the Overrides table's heading level: the Overrides table inside the closed Details section of a plugin page has an h2, so it reads as a sibling of the "About" card in the heading outline; this predates M048, which made the card headings h2 (M048 review) — added 2026-10-29 — M048 — started M054
 - [low] Check the language menu in Safari: M049 gives the home page's `<select>` a pill `border-radius`, a border, and a card background without `appearance: none`, and WebKit may draw a native menu without them; no Safari check ran, so the CHANGELOG makes no claim about the menu's shape (M049 review) — added 2026-10-29 — M049
+- [low] Publish each XPI's SHA-256 too: `upstream.xpiUrl` is a release asset address that the author can replace under the same name, so a reader who downloads later can get a file other than the one the build read and the start tests checked; the build already holds the SHA-256 (`XpiRead.sha256`, in the start plan), and publishing it would let a reader or the site compare (M052 review) — added 2026-10-29 — M052, D-029
 - [parked] Stop retrying a failing bot pull request: `pnpm propose` records no failure of its push or create request, so a repo whose request is refused for a reason that repeats fails again each run, takes one of its slots, and fails the workflow daily; record such failures under the 30-day rule, leaving 5xx, rate-limit, and network errors unrecorded (M009 review); an issue run meets the same refused request and leaves its issue open with the error (M010 review); narrowed 2026-10-26 by M011, whose read step refuses and records as `not-proposable` a repo whose branch name git refuses; narrowed 2026-10-28 by M039, which cuts the check output so the body stays under GitHub's size limit; promote when a run log shows a push or create request refused, for a reason other than body length, for a repo that a later run proposes again — added 2026-10-26 — M009, M010, M011, M039
 - [parked] Check addresses when the reader connects: M004 checks the reader's own DNS answer before each download, and DNS can answer differently when fetch connects (rebinding); check the address at connect time, which needs the undici package and a decision entry; promote on evidence that the build publishes response bodies or that a rebinding answer reaches a service on the runner — added 2026-10-25 — M004
 - [parked] Keep the v1 data when v2 ships: each Pages deploy replaces the whole site, so a build that moves to `plugins.v2` must keep writing `v1/plugins.json` and its schema for the transition period DESIGN.md promises; promote when a v2 schema is planned (M006 review) — added 2026-10-25 — M006, cairn/DESIGN.md Contract boundary

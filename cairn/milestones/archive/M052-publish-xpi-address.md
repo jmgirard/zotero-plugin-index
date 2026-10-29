@@ -1,0 +1,11 @@
+# M052: Publish each plugin's XPI address
+
+**Status:** done (2026-10-29, PR #101 https://github.com/jmgirard/zotero-plugin-index/pull/101)
+
+**Goal:** The published data gives, for each plugin the build read, the address of the XPI file it read.
+
+**Outcome:** Schema v1's `upstream` definition gains an optional string `xpiUrl`; the build's `PluginRecord.upstream` is `UpstreamFacts & { xpiUrl?: string }`, so the reader's facts are unchanged. `readRecord` in `src/build/build.ts` sets `upstream.xpiUrl` from `read.xpi.url`, the `browser_download_url` of the first `.xpi` asset of the release whose manifest was read, which is also the start plan item's `xpiUrl`. `test/build.test.ts` covers the three reader paths (stable, prerelease only, a Zotero 6 stable followed by a newer prerelease whose first of two assets is read) and the schema (string and absent pass, a number fails); `mixed-failures.plugins.json` gains the passing record's `xpiUrl`. README "Using the data" and the start plan paragraph, DESIGN (data source 2; the out-of-scope line now says a plain link to the author's file is not an install button), the schema description, and CHANGELOG (with D-007's fetch-the-schema-again line) name the field and say an author can replace the file at the address. The `XpiRead` comment in `src/upstream/reader.ts` now says the URL is published and the SHA-256 is not.
+
+**Decisions:** D-029 (the data publishes the XPI address; a plain link to it is not an install button), made at review.
+
+**Review:** Plan audit 18 findings across M052–M054, all fixed; claim audit 14 claims, 1 corrected ("links to" before any page links). Four-lens pass: 25 findings, 14 fixed in ef75e5a (CHANGELOG fetch-again line, "GitHub address" and "start tests download" overclaims, a mutable-URL note, D-029 for the reversed M047 comment and the install-button carve-out, two redundant test checks, a README wrap, stale lines in the mockups README and the start plan paragraph), 9 rejected (planned or false), 2 follow-ups: new row "Publish each XPI's SHA-256 too", and "Let old v1 schemas accept new fields" unchanged. CI green on PR #101; merged as 83e19e9. Lessons: 4 marked used M052 (M001, M010, M027, M036); none captured or retired.
