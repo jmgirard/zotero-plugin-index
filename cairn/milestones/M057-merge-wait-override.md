@@ -98,6 +98,7 @@ row "Close gaps in bot holds and merges" (6).
 - 2026-10-29: claim audit: 30 claims read, 8 corrected — src/discover/merge.ts, src/discover/merge-cli.ts, .github/workflows/merge-discover.yml, README.md, CHANGELOG.md, cairn/DESIGN.md. Fixed: the NaN reason in the opening-time comment, the README wait bullet and merge sentence (a hand run uses its own wait, not either), "rounds" in the CHANGELOG, DESIGN's 0 to 9999 range and the CLI as the default's source, the CLI's exit cases, and how GitHub formats the number. The re-read found all corrected and one more stale comment (`mergeDiscover`'s throws), fixed. The previous line's wording was a slip: this line is the audit record.
 - 2026-10-29: main moved to 136e4b0 (a candidate row added at the user's request); review step 1 merges it.
 - 2026-10-29: review started; main merged into the branch (9213e12), origin/main an ancestor; Copilot round off.
+- 2026-10-29: step-7 approval: m057-merge-wait-override approved for merge
 
 ## Decisions
 
