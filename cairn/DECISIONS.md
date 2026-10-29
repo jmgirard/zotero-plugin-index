@@ -429,3 +429,19 @@ measures it, even when one of them holds some English. The `reason` says
 which of these each text is. The plan's first count of seven such plugins
 came before the CJK share counted runs of letters as one unit; that change
 added Jasminum. The rest of D-030 and D-031 stands.
+
+### D-033: The bot merges its own pull requests after a wait unless held, replacing DESIGN's per-pull-request approval
+
+2026-10-29, M056 plan. DESIGN.md said that the maintainer approves each bot
+pull request. The maintainer merged every bot pull request that the bot
+opened, and inclusion is not a judgment of quality, so the approval added a
+wait and no filter. From M056 on, a daily job squash-merges a bot pull
+request whose body says `Hold: none`, that has no `hold` label, and that
+opened at least 48 hours earlier, once its entry passes `pnpm check`
+against the current entries. The bot holds a pull request at opening for a
+name that matches another owner's entry, an owner account that is under 30
+days old or cannot be read, an update host outside GitHub, or an issue-form
+repo with neither topic. A held pull request waits for the maintainer.
+Closing a bot pull request without a merge still keeps the bot from
+proposing that repo again (M009). The user chose these four rules over also
+holding repos under 30 days old, and a 48-hour wait.
