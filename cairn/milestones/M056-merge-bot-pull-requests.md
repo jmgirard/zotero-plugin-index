@@ -106,7 +106,7 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
       `src/upstream/reader.ts` (174-218), read `GET /users/<owner>`, build the name keys from the indexed
       entries in `src/discover/discover.ts` near `draftEntry` (198), and fill `holds` for discover and issue
       runs (`discover.ts`, `issue.ts`). Tests in `test/discover.test.ts` and `test/issue.test.ts`.
-- [ ] T3: Write the `Hold:` line and the reason map in `body()` (`src/discover/propose.ts` 462-489), read the
+- [x] T3: Write the `Hold:` line and the reason map in `body()` (`src/discover/propose.ts` 462-489), read the
       new pull request's `number`, and send the label request after it opens (434-439). Tests in
       `test/propose.test.ts`. Create the `hold` label on the repo with `gh label create hold` (granted).
 - [ ] T4: Add `src/discover/merge.ts` and `merge-cli.ts`, and the `merge-discover` script in `package.json`:
@@ -136,3 +136,4 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
 - 2026-10-29: implement started on branch m056-merge-bot-pull-requests.
 - 2026-10-29: implementation choice: the rules live in `src/discover/holds.ts` (`holdReasons`, `nameKey`, `ownerCreatedAt`), and `TOPICS` moved there from `discover.ts` so `handoff.ts` can import `HOLD_REASONS` with no import cycle; `readUpstream` returns `topics` beside `facts` so the build does not publish them; the owner read uses the client's own per-request time limit.
 - 2026-10-29: T1, T2 done: `holds` in the handoff schema and `PlannedEntry`; `draftEntry` fills it for discover and issue runs; `indexed` also returns each entry's owner, repo part, and name; `pluginRepo` fixtures carry a topic and an old owner account. New `test/holds.test.ts` (13 tests), plan.json tests in `test/propose.test.ts` and `test/issue.test.ts`, 3 refusal cases in `test/handoff.test.ts`. Planted `<=` for the 30-day rule and a dropped owner check each turned one test red. `pnpm test` 1247 passed, `pnpm check` clean.
+- 2026-10-29: T3 done: `body()` writes `Hold: none` and `UNHELD_TEXT`, or `Hold: <reasons>` and a `HOLD_TEXT` sentence for each; `proposeHandoff` posts the `hold` label to the new pull request's `number` and fails the entry, naming the pull request URL, when that request fails. 3 tests in `test/propose.test.ts`; a planted skip of the label request turned 2 red. The body-end test now expects the Hold line after the fence. Created the `hold` label on jmgirard/zotero-plugin-index with `gh label create` (granted at the question set). `pnpm test` 1250 passed.

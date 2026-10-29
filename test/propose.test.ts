@@ -5,7 +5,17 @@ import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
 import type { ReadItem, SkippedItem } from "../src/discover/discover.ts";
 import { entriesDir, planned, plannedProblem, REF_CHECK_LIMIT_MS, readHandoff, writePlan } from "../src/discover/handoff.ts";
-import { body, type CheckRunner, discoverRead, GIT_LIMIT_MS, pnpmCheck, proposeHandoff, type Written } from "../src/discover/propose.ts";
+import {
+  body,
+  type CheckRunner,
+  discoverRead,
+  GIT_LIMIT_MS,
+  HOLD_TEXT,
+  pnpmCheck,
+  proposeHandoff,
+  UNHELD_TEXT,
+  type Written,
+} from "../src/discover/propose.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 import { checkout as gitCheckout, git, pushFromClone } from "./support/git-checkout.ts";
 import { pluginRepo, searchPage } from "./support/plugin-repo.ts";
@@ -230,7 +240,7 @@ describe("proposing pull requests", () => {
   test("the body quotes a check output of 10,000 characters and a newline whole, with no cut line", () => {
     const output = `${"b".repeat(10_000)}\n`;
     const sent = body(entry, { status: 1, output });
-    expect(sent).toContain(`\`\`\`\n${output}\`\`\`\n\nIf this pull request`);
+    expect(sent).toContain(`\`\`\`\n${output}\`\`\`\n\nHold: none\n`);
     expect(sent).not.toContain("is cut to");
   });
 
@@ -246,6 +256,55 @@ describe("proposing pull requests", () => {
     expect(long.repoUrl).toHaveLength(300);
     const sent = body(long, { status: 1, output: "`".repeat(100_000) }, 7);
     expect(sent.length).toBeLessThanOrEqual(65_536);
+  });
+});
+
+describe("the Hold line and the hold label", () => {
+  const created = { status: 201, json: { html_url: "https://github.com/example/index/pull/12", number: 12 } };
+  const LABELS = `${INDEX}/issues/12/labels`;
+  // A repo whose owner's account is 5 days old and whose update.json is off GitHub.
+  const held: Responses = {
+    ...indexRepo,
+    ...searched([["example/held", "2026-10-01T00:00:00Z"]]),
+    ...pluginRepo("example/held", "held@example.org", { ownerCreatedAt: "2026-10-20T12:00:00Z", updateHost: "updates.example.org" }),
+    [`POST ${PULLS}`]: created,
+  };
+
+  test("an entry with no hold reason gets Hold: none and the merge sentence, and no label request", async () => {
+    const { result, posts } = await twoStep({ ...indexRepo, ...passing(["alpha"]), [`POST ${PULLS}`]: created }, checkout().work);
+    if (!result?.ok) throw new Error(JSON.stringify(result));
+    expect(posts.map(({ url }) => url)).toEqual([PULLS]);
+    const sent = JSON.parse(posts[0].body!).body as string;
+    expect(sent).toContain(`\nHold: none\n\n${UNHELD_TEXT}\n`);
+  });
+
+  test("a held entry gets its reasons, a sentence for each, and the hold label", async () => {
+    const { result, posts } = await twoStep({ ...held, [`POST ${LABELS}`]: { status: 200, json: [{ name: "hold" }] } }, checkout().work);
+    if (!result?.ok) throw new Error(JSON.stringify(result));
+    expect(result.failed).toEqual([]);
+    expect(posts.map(({ url }) => url)).toEqual([PULLS, LABELS]);
+    expect(JSON.parse(posts[1].body!)).toEqual({ labels: ["hold"] });
+    const sent = JSON.parse(posts[0].body!).body as string;
+    expect(sent).toContain(`\nHold: new-account, update-host\n`);
+    expect(sent).not.toMatch(/^Hold: none$/m);
+    expect(sent).toContain(`- \`new-account\`: ${HOLD_TEXT["new-account"]}\n- \`update-host\`: ${HOLD_TEXT["update-host"]}\n`);
+  });
+
+  test("a failed label request fails the entry, naming the pull request", async () => {
+    const { result, posts } = await twoStep(
+      { ...held, [`POST ${LABELS}`]: { status: 403, json: { message: "Resource not accessible by integration" } } },
+      checkout().work,
+    );
+    if (!result?.ok) throw new Error(JSON.stringify(result));
+    expect(posts.map(({ url }) => url)).toEqual([PULLS, LABELS]);
+    expect(result.proposed).toEqual([]);
+    expect(result.failed).toEqual([
+      {
+        repo: "example/held",
+        id: "held@example.org",
+        message: expect.stringMatching(/^opened https:\/\/github\.com\/example\/index\/pull\/12 but could not add the hold label: .*HTTP 403/),
+      },
+    ]);
   });
 });
 

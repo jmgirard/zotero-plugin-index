@@ -8,6 +8,7 @@ import type { Lookup } from "../upstream/host-guard.ts";
 import { type Fetch, githubClient, ReadFailure } from "../upstream/reader.ts";
 import { duration } from "../upstream/time-limit.ts";
 import { type DiscoverResult, type DiscoveryState, discover, type indexed, type ReadItem, repoName } from "./discover.ts";
+import type { HoldReason } from "./holds.ts";
 
 const API = "https://api.github.com";
 // The bot's branches are `discover/<owner>/<repo>`, lowercase.
@@ -436,8 +437,19 @@ export async function propose(options: ProposeOptions): Promise<{ proposed: Prop
           head: branch,
           base,
           body: body(entry, checked, issue),
-        })) as { html_url?: unknown };
-        proposed.push({ repo, id, branch, url: typeof pull?.html_url === "string" ? pull.html_url : "" });
+        })) as { html_url?: unknown; number?: unknown };
+        const url = typeof pull?.html_url === "string" ? pull.html_url : "";
+        if (entry.holds.length > 0) {
+          // The body's Hold line keeps `pnpm merge-discover` from merging a held pull
+          // request even when this label request fails.
+          try {
+            if (!Number.isSafeInteger(pull?.number)) throw new Error("the create request's answer has no pull request number");
+            await github.post(`${API}/repos/${indexRepo}/issues/${pull.number}/labels`, { labels: [HOLD_LABEL] });
+          } catch (error) {
+            throw new Error(`opened ${url || branch} but could not add the ${HOLD_LABEL} label: ${(error as Error).message}`);
+          }
+        }
+        proposed.push({ repo, id, branch, url });
       } catch (error) {
         failed.push({ repo, id, message: (error as Error).message });
       }
@@ -455,10 +467,28 @@ export async function propose(options: ProposeOptions): Promise<{ proposed: Prop
 // checks its length.
 const CHECK_OUTPUT_MAX = 10_000;
 
+// The label that keeps `pnpm merge-discover` from merging a bot pull request.
+export const HOLD_LABEL = "hold";
+
+// The sentence a pull request body gives for each hold reason.
+export const HOLD_TEXT: Record<HoldReason, string> = {
+  "name-match":
+    "The plugin's name or repo name matches an entry from another owner, with the words zotero, plugin, addon, and for left out.",
+  "owner-unread": "The bot could not read when the repo owner's GitHub account was made.",
+  "new-account": "The repo owner's GitHub account is less than 30 days old.",
+  "update-host": "The plugin's update.json is not on github.com or raw.githubusercontent.com, so its updates come from another host.",
+  "issue-no-topic": "An issue proposed this repo, and the repo has neither the zotero-plugin nor the zotero-addon topic.",
+};
+
+// The sentence after `Hold: none`.
+export const UNHELD_TEXT =
+  "The bot can merge this pull request at its first daily run at least 48 hours after it opens, unless it has the `hold` label or is closed.";
+
 // The pull request body. The manifest's values and the check output are in code spans
 // and a code block, so text in them cannot mention a GitHub user. With `issue`, the body
 // says that issue asked for the entry, and closes it. A check output longer than
-// CHECK_OUTPUT_MAX is cut, and the body says so.
+// CHECK_OUTPUT_MAX is cut, and the body says so. The Hold line names the entry's hold
+// reasons, or says `Hold: none`, which `pnpm merge-discover` looks for.
 export function body(entry: Written, checked: { status: number; output: string }, issue?: number): string {
   const declared = (value: string | undefined) => (value === undefined ? "not declared" : code(value));
   const trimmed = checked.output.trimEnd();
@@ -483,6 +513,10 @@ export function body(entry: Written, checked: { status: number; output: string }
     output,
     fence,
     ...(cut ? ["", `The output above is cut to its first ${CHECK_OUTPUT_MAX.toLocaleString("en-US")} characters.`] : []),
+    "",
+    ...(entry.holds.length === 0
+      ? ["Hold: none", "", UNHELD_TEXT]
+      : [`Hold: ${entry.holds.join(", ")}`, "", "The bot does not merge this pull request itself.", "", ...entry.holds.map((reason) => `- \`${reason}\`: ${HOLD_TEXT[reason]}`)]),
     "",
     "If this pull request is closed without a merge, the bot does not propose this repo again, from its topic or from an issue.",
   ].join("\n");
