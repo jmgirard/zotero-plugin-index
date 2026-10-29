@@ -1,0 +1,8 @@
+{
+  "id": "tara@linxzh.com",
+  "name": "Tara",
+  "description": "Backup and restore Zotero common preferences, addons, translators, CSLs",
+  "homepage": "https://github.com/l0o0/tara#readme",
+  "repoUrl": "https://github.com/l0o0/tara",
+  "updateUrl": "https://github.com/l0o0/tara/releases/download/release/update.json"
+}
