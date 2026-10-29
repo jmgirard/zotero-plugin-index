@@ -605,7 +605,8 @@ request that meets all of these conditions:
 - `github-actions[bot]` opened it.
 - Its body has a line that is exactly `Hold: none`.
 - It has no `hold` label.
-- It opened at least 48 hours before the run.
+- It opened at least 48 hours before the run, or the `wait_hours` of a run
+  started by hand.
 - Its files are exactly `plugins/<id>/meta.json` and
   `plugins/<id>/index.json` for one id, both added.
 - The checkout's `plugins/` folder has no folder of that id in any letter
@@ -618,10 +619,30 @@ case. It also skips a draft and a pull request whose base is not the default
 branch.
 
 So the bot can merge a bot pull request without a hold reason at its first
-daily run at least 48 hours after it opens. A run started by hand after
-those 48 hours can merge it sooner. To stop the bot from merging one, add
-the `hold` label or close it. Bot pull requests opened before the Hold line
-existed have no `Hold: none` line, so the command never merges them.
+daily run at least 48 hours after it opens. A run started by hand can merge
+it sooner, after those 48 hours or after its own `wait_hours`. To stop the
+bot from merging one, add the `hold` label or close it. Bot pull requests
+opened before the Hold line existed have no `Hold: none` line, so the
+command never merges them.
+
+When you start the workflow by hand, its `wait_hours` input sets the wait in
+whole hours, from 0 to 9999. It is 48 unless you change it. Scheduled runs
+have no inputs, so they always wait 48 hours. If the command refuses the
+value, such as `1.5` or `-1`, the run fails and merges nothing. On the
+command line, `pnpm merge-discover --wait-hours <n>` sets the same wait. A
+pull request whose opening time cannot be read or is after the run is
+skipped whatever the wait.
+
+To add every clean plugin at once, for example to fill a new index, run
+rounds of these two steps:
+
+1. Start `Discover plugins` by hand with `limit` 100.
+2. After that run finishes, start `Merge bot pull requests` by hand with
+   `wait_hours` 0.
+
+GitHub does not promise the order of runs that wait in the group, so start
+the merge only after the discover run ends. Repeat both steps while a
+discover run reports unread repos. Held pull requests stay open for you.
 
 Before it merges, the command reads the two files at the head commit of the
 pull request. It copies the checkout's `plugins/` folder, adds the new entry,

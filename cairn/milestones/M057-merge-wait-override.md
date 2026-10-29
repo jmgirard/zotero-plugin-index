@@ -69,9 +69,9 @@ row "Close gaps in bot holds and merges" (6).
 - [x] T2: Add the `wait_hours` input, the `WAIT_HOURS` env line, and the run line to
       `.github/workflows/merge-discover.yml`. In `test/workflows.test.ts`, check the trigger events, the input,
       the env line with no `||`, the run line, and that no `run:` line holds `${{`.
-- [ ] T3: README "Merging bot pull requests" and a CHANGELOG entry; append D-034 (a dispatched merge run may set a
+- [x] T3: README "Merging bot pull requests" and a CHANGELOG entry; append D-034 (a dispatched merge run may set a
       shorter wait, annotating D-033).
-- [ ] T4: Run the verify slot.
+- [x] T4: Run the verify slot.
 - [ ] T5: After the merge, merge #104 to #107 by hand, each with its own approval marker (granted).
 - [ ] T6: After the merge, run rounds: dispatch `Discover plugins` with `limit` 100, wait for it to finish, then
       dispatch `Merge bot pull requests` with `wait_hours` 0 and wait for it; repeat while the discover run reports
@@ -92,3 +92,6 @@ row "Close gaps in bot holds and merges" (6).
 - 2026-10-29: implement started on branch m057-merge-wait-override.
 - 2026-10-29: T1 done: `DEFAULT_WAIT_HOURS` (48) and a `waitHours` option replace `WAIT_MS`; an unreadable or future `created_at` gets its own reason before the wait test; `merge-cli.ts` takes no arguments or exactly `--wait-hours <n>` and prints the new `USAGE` before the `GITHUB_REPOSITORY` check. 15 new tests in `test/merge.test.ts` (31 in the file); planted `<=`, a dropped future-time check, and a CLI that let `x` through turned 4 red.
 - 2026-10-29: T2 done: `merge-discover.yml` gains the `wait_hours` number input (default 48), the `WAIT_HOURS` env line, and the `${WAIT_HOURS:+…}` run line, with a comment on scheduled runs and refused values. `test/workflows.test.ts` checks the `on:` block with the input, the step's run and env lines, that `wait_hours` appears in one expression only, and that no `run:` line holds `${{`; a planted `|| 48` turned 1 test red. Ruby's YAML parse shows the input and the step.
+- 2026-10-29: T3 done: README's conditions list and merge sentence name the dispatched wait, a new paragraph covers `wait_hours`, scheduled runs, refused values, and `--wait-hours`, and numbered backfill steps wait for each discover run to finish; a CHANGELOG entry; DESIGN item 1 and the merge Architecture bullet name M057 and D-034. D-034 landed with the plan commit.
+- 2026-10-29: T4 done: `pnpm test` 1287 passed, 6 skipped; `pnpm check` 58 entries, 0 problems.
+- 2026-10-29: claim audit: not owed is false (user-facing, lines added); spawned below.

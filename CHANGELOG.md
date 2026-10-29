@@ -464,3 +464,8 @@
   no `hold` label, and opened at least 48 hours before the run. Before the
   merge, the entry must pass `pnpm check` beside the current entries. To
   stop the bot from merging one, add the `hold` label or close it.
+- A run of `Merge bot pull requests` started by hand takes a `wait_hours`
+  input, 48 unless you change it, and `pnpm merge-discover` takes
+  `--wait-hours <n>`. Scheduled runs still wait 48 hours. With
+  `wait_hours` 0, a round of discovery and merging adds every clean plugin
+  at once, as the README's backfill steps say.
