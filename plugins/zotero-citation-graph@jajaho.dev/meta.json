@@ -1,0 +1,7 @@
+{
+  "id": "zotero-citation-graph@jajaho.dev",
+  "name": "Citation Graph for Zotero",
+  "description": "Force-directed citation graph for a Zotero collection.",
+  "repoUrl": "https://github.com/Jajaho/zotero-citation-graph",
+  "updateUrl": "https://raw.githubusercontent.com/Jajaho/zotero-citation-graph/main/updates.json"
+}
