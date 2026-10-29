@@ -109,8 +109,8 @@ or that finds a listed issue with no `closed_by` key, deploys nothing
 
 Out of scope: install buttons, mirrors for regions that cannot reach GitHub,
 user accounts, and a combined compatibility verdict. A plain link to the
-author's own `.xpi` file on GitHub (the data's `xpiUrl`, M052) is not an
-install button: it downloads the file and installs nothing.
+author's own `.xpi` file (the data's `xpiUrl`, M052) is not an install
+button: it downloads the file and installs nothing (D-029).
 
 ## Data sources and contribution
 
@@ -143,8 +143,9 @@ shows each one separately. A combined verdict is out of scope.
    `no-zotero-id`, or `max-version-below-7`), the bot reads the newest later
    release instead, when one has an `.xpi` file. The data's `prerelease`
    fact says whether the release read is a prerelease. The data's `xpiUrl`
-   fact is the GitHub address of the first `.xpi` file of that release,
-   the file that the start tests download (M052). These files
+   fact is the download address that GitHub gives for the first `.xpi`
+   file of that release, the address the start plan names (M052, D-029).
+   These files
    are the source of truth for the name, the description, the versions, and
    the declared compatibility (`strict_min_version`, `strict_max_version`).
 3. Overrides. An override in the index corrects a fact that the author cannot

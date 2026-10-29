@@ -708,7 +708,6 @@ describe("buildData", () => {
     ]);
     expect(record(output, FALLBACK)?.upstream?.version).toBe("2.0.0-beta.1");
     expect(record(output, FORKED)).not.toHaveProperty("upstream");
-    expect(checkOutput(output)).toEqual([]);
   });
 
   test("the schema takes an upstream with or without a string xpiUrl and refuses one of another type", async () => {
@@ -716,7 +715,7 @@ describe("buildData", () => {
     if (!result.ok) throw new Error(result.problems.join("\n"));
     const withUrl: Output = JSON.parse(result.text);
     const index = withUrl.plugins.findIndex((plugin) => plugin.id === BETTER_NOTES);
-    withUrl.plugins[index].upstream!.xpiUrl = "https://example.org/a.xpi";
+    expect(typeof withUrl.plugins[index].upstream!.xpiUrl).toBe("string");
     expect(checkOutput(withUrl)).toEqual([]);
     delete withUrl.plugins[index].upstream!.xpiUrl;
     expect(checkOutput(withUrl)).toEqual([]);

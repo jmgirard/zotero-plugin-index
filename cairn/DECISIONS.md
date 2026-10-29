@@ -371,3 +371,21 @@ and the reverse cut leave no entry unread on both days. A rotation or a
 shuffle can. The limit: two deployed builds on days of the same parity,
 such as two days apart with the build between them withheld, read in the
 same order and can leave the same entries unread. The rest of D-015 stands.
+
+### D-029: The data publishes the XPI address, and a plain link to it is not an install button, annotating D-023 and DESIGN's out-of-scope line
+
+2026-10-29, M052. At the plan question set for the site redesign, the user
+chose to link each plugin page straight to the author's XPI file, with the
+address added to the data as an optional `upstream.xpiUrl` (D-006, D-007).
+Before this, the XPI URL that the build read went only into the start plan,
+and the reader's comment said it stayed out of the published data (M047).
+The data now carries that URL. DESIGN keeps "install buttons" out of scope:
+a link to the author's file on GitHub downloads it and installs nothing,
+and Zotero installs a plugin only from its own add-ons dialog. The site
+shows the link as a plain button beside the source and releases links, not
+as a highlighted one, so it does not read as an endorsement. The index
+still keeps no copy of a plugin file (D-023). The author can replace a
+release file at the same address, so the file a reader downloads later can
+differ from the one the build read and the start tests checked. The plan
+rejected linking to the latest release page, which can name a newer release
+than the one the index read.

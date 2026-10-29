@@ -383,6 +383,8 @@
   left the last ids unread every day. The data file still lists its records
   in id order.
 - Each `upstream` block of the data file has a new optional `xpiUrl` field:
-  the GitHub address of the first `.xpi` file of the release whose manifest
-  the index read. It is the file that the start tests download. Schema v1
-  allows the field, so the schema version stays 1.
+  the download address that GitHub gives for the first `.xpi` file of the
+  release whose manifest the index read. The start plan names the same
+  address. The schema stays at version 1 under the project's rule that a
+  new optional field does not need a new version. The schema rejects
+  fields that it does not define, so fetch any saved copy of it again.

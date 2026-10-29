@@ -94,3 +94,29 @@ Evidence at 89d7d12, 2026-10-29, branch level with main (2d2639a).
 - AC3: README.md:138 ("Using the data") and README.md:709, DESIGN.md:145 (data source 2) and DESIGN.md:110-113 (out-of-scope line: a plain link to the author's .xpi is not an install button), and CHANGELOG.md:385 under Unreleased each name `xpiUrl` and the file it addresses.
 - AC4: `pnpm test` passed with 1072 passed and 6 skipped across 22 files; `pnpm check` checked 56 entries with 0 problems.
 - Consistency gate: `cairn_validate.py` exit 0, with 1 advisory (M053 has 8 criteria, accepted at the plan). The profile `generic` names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: CHANGELOG entry lacks D-007's "fetch any saved copy of the schema again" line — fix now
+- diff-bug #2: docs and schema call the address "the GitHub address", but the reader takes any public http(s) URL the API body gives — fix now (reworded to "the download address that GitHub gives"; the href guard is safeHref in M053 AC3 and M054 AC1)
+- diff-bug #3: "the file that the start tests download" overstates, since out-of-range and time-cut items are never downloaded — fix now (reworded to "the start plan names the same address")
+- diff-bug #4: the AC2 test's final `checkOutput` repeats buildData's own check — fix now (removed)
+- diff-bug #5: the schema test's "with xpiUrl" case overwrote a value the build had already written and checked — fix now (it now asserts the built value is a string)
+- diff-bug #6: the forked-record check covers unchanged behavior — reject, planned change (AC2 names it)
+- diff-bug #7: the plan comparison holds by construction — reject, planned change (AC2 asks for it; the literal URL list is what fails without the change)
+- diff-bug #8: the site fixture has no xpiUrl — reject, planned change (M053 T1 adds xpiUrl fixture records)
+- diff-bug #9: plan and record hold one value from two places — reject, false (both read the same `XpiRead` object and cannot diverge)
+- diff-bug #10: DESIGN's Contract boundary fact list omits xpiUrl — reject, false (the list names page facts; no page shows the link until M054, whose AC7 updates DESIGN)
+- diff-bug #11: README.md:141 overlong line — fix now
+- blame-history #1: rewrites M047's "stays out of the published data" comment with no D-entry — fix now (D-029)
+- blame-history #2: the out-of-scope carve-out works by definition — fix now (D-029 records the user's plan-time choice and the reason: the link installs nothing, and Zotero installs only from its add-ons dialog)
+- blame-history #3: the address is a mutable release-asset URL with no published hash, so a later download can differ from the file tested — fix now (README, schema, and D-029 say so) and follow-up (candidate row "Publish each XPI's SHA-256 with its address", written at hygiene)
+- blame-history #4: CHANGELOG lacks the fetch-again line — fix now (same as diff-bug #1)
+- blame-history #5: the schema field has no pattern — reject, planned change (URL fields stay plain strings, as `repoUrl`; the site guards hrefs with safeHref in M053 and M054)
+- prior-review #1: CHANGELOG lacks the fetch-again line — fix now (same as diff-bug #1)
+- prior-review #2: one more strict-v1 field for saved schema copies — follow-up, covered by the existing row "Let old v1 schemas accept new fields", unchanged
+- prior-review #3: README wrap — fix now (same as diff-bug #11)
+- ripple #1: cairn/mockups/README.md:15 says the site links to xpiUrl — fix now (now says M053 and M054 will)
+- ripple #2: the mockup's primary Download control — reject, planned change (M054 scope and D-029 make it a plain button)
+- ripple #3: README's start plan paragraph reads as if only the plan holds the URL — fix now (adds that `xpiUrl` holds the same URL)
+- ripple #4: Contract boundary list omits xpiUrl — reject, false (same as diff-bug #10)
+- ripple #5: CHANGELOG entry placement — reject, false (it sits last under the one Unreleased heading)
+- ripple #6: build.ts "the plan stay out of the data" — reject, false (still true; the reviewer found no conflict)
