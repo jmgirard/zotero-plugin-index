@@ -1,0 +1,8 @@
+{
+  "id": "zotero-name-normalizer@marcinmilkowski.pl",
+  "name": "Zotero Name Normalizer",
+  "description": "Normalize author names in your Zotero library",
+  "homepage": "https://github.com/milekpl/zotero-ner",
+  "repoUrl": "https://github.com/milekpl/zotero-ner",
+  "updateUrl": "https://raw.githubusercontent.com/milekpl/zotero-ner/main/update.json"
+}
