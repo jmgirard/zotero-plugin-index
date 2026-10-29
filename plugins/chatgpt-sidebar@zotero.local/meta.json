@@ -1,0 +1,7 @@
+{
+  "id": "chatgpt-sidebar@zotero.local",
+  "name": "Zotero ChatGPT Sidebar",
+  "description": "在 Zotero 侧栏直接使用 ChatGPT 网页，支持通过本机 Chrome 扩展复用登录。",
+  "repoUrl": "https://github.com/mohui666/zotero-chatgpt-sidebar",
+  "updateUrl": "https://raw.githubusercontent.com/mohui666/zotero-chatgpt-sidebar/main/updates.json"
+}
