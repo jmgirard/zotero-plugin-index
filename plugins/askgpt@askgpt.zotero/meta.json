@@ -1,0 +1,8 @@
+{
+  "id": "askgpt@askgpt.zotero",
+  "name": "AskGPT - Zotero AI 阅读助手",
+  "description": "选中文献文字，按 Ctrl+K 弹出小窗向 AI 提问。支持 PDF、HTML、Markdown 附件全文提问。兼容 DeepSeek 及任意 OpenAI 兼容 API。",
+  "homepage": "https://github.com/Marco0431/askgpt-zotero#readme",
+  "repoUrl": "https://github.com/Marco0431/askgpt-zotero",
+  "updateUrl": "https://github.com/Marco0431/askgpt-zotero/releases/download/release/update.json"
+}
