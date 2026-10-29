@@ -35,21 +35,26 @@ is added to the report read (see the work log).
 
 - [ ] AC1: When the read of the `report` label and the report issue pages
       passes its limit, `buildData` returns `ok: false` with one problem
-      that starts with `cannot read the report issues: ` and names the
-      limit, and it requests no URL outside that read. Tests in
-      `test/build.test.ts` show this for a stalled label read and for a
-      stalled issue page, each with a short limit. A test with the default
-      limit under fake timers shows that the problem names "3 minutes".
-- [ ] AC2: `pnpm build` exits once it has written its output, even while
-      work that a read left behind still holds the process open. A test in
-      `test/build.test.ts` runs the command over the fixture tree with a
-      preload whose host lookup leaves a 10-minute timer pending. It shows
-      that the command exits within 60 seconds with the same exit status,
-      the same stdout, and the same data file as a run without that timer.
-- [ ] AC3: README "Building the data" says that the command stops the
-      label and report issue read after 3 minutes, and that it then writes
-      no data file and exits with status 1. One CHANGELOG entry under
-      Unreleased names the report read limit and the exit after the output.
+      that starts with `cannot read the report issues: ` and contains
+      `passed its time limit of <duration>`, and it requests no URL outside
+      that read. Tests in `test/build.test.ts` show this, each with a short
+      limit, for a stalled label read and for page 2 of the issues stalling
+      before its headers and in its body. A test with the default limit
+      under fake timers shows `passed its time limit of 3 minutes`.
+- [ ] AC2: `src/build/cli.ts` exits with the status that `main` returns
+      once stdout and stderr have flushed, while a timer that the process
+      did not end is still pending. Tests in `test/build.test.ts` run
+      `pnpm build` with a preload that leaves a 10-minute timer pending.
+      Each run exits in under 30 seconds, with the same exit status and
+      stdout as a run with no such timer and the same `--out`, and a data
+      file that matches apart from `generatedAt`. The runs are one that
+      writes the file, one that writes no file and exits 1, and one whose
+      stdout is over 64 KiB and arrives whole.
+- [ ] AC3: README "Building the data" lists a label and report issue read
+      that passes 3 minutes among the cases that write no data file, and
+      says that this read counts toward the 18 minutes from the command's
+      start. One CHANGELOG entry under Unreleased names the report read
+      limit and the exit once the output has flushed.
 - [ ] AC4: The profile's `verify` slot is clean: `pnpm test` and
       `pnpm check` pass.
 
@@ -63,10 +68,12 @@ is added to the report read (see the work log).
 ## Tasks
 
 - [ ] T1: Write the tests first. Add the AC1 cases to the "with time
-      limits" block of `test/build.test.ts`, with the label or an issue
-      page set to stall. Add the AC2 command test and its preload. See each
-      fail on main, and check that it fails at the stalled read or the
-      pending timer, not elsewhere.
+      limits" block of `test/build.test.ts`, with the label or page 2 set
+      to stall. Add the AC2 command tests and a preload that starts the
+      timer; build the large-stdout tree and fixture in a temp dir. Give
+      the AC2 tests a timeout that leaves room for two runs. See each fail
+      on main, and check that it fails at the stalled read or the pending
+      timer, not elsewhere.
 - [ ] T2: Add a report read limit to `TimeLimits` in
       `src/build/build.ts`, 3 minutes by default (`READ_LIMIT_MS`). Run the
       label and issue reads (`build.ts:118-128`) under `withinLimit`, with
@@ -93,6 +100,7 @@ is added to the report read (see the work log).
 - 2026-10-29: plan gate chose an exit after flushed output over a cancelable c-ares resolver because that resolver does not read the hosts file or search domains as the getaddrinfo lookup that fetch uses does, so the host check would read different answers; falsified by a run whose stdout or stderr is cut short at the exit.
 - 2026-10-29: changelog: one entry for this milestone, apart from M051's.
 - 2026-10-29: plan committed while the criteria audit ran, so the tree stays clean at the stop; the audit's dispositions follow in a second plan commit.
+- 2026-10-29: criteria audit (full): 6 findings on M050, all disposed. Fixed: AC2 compares runs with one `--out` and the data file apart from `generatedAt`, bounds the exit at 30 s, and adds a no-file run and a run with over 64 KiB of stdout; AC1 stalls page 2 before headers and in the body and quotes `passed its time limit of <duration>`; AC3 adds that the read counts toward the 18 minutes. Answered: AC3's no-file claim adds no CLI test hook, since the CLI's existing tested path writes no file for any `ok: false`, and the claim is narrowed to a README list entry; the D-entry, DESIGN, and `build.yml` comment stay in T4 as records.
 
 ## Decisions
 

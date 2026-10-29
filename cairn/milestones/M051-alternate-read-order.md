@@ -27,17 +27,19 @@ D-010 rules out for the deploy build; no work is planned for it.
 
 ## Acceptance criteria
 
-- [ ] AC1: `buildData` reads the entries in id order when the whole UTC
-      days from 1970-01-01 to `now` are even, and in reverse id order when
-      they are odd. A test in `test/build.test.ts` with three entries and
-      one date of each kind shows the repo API requests in that order.
-- [ ] AC2: On a date of each kind, the data file lists its records in id
-      order, and `buildLevel` and the start plan list their ids in id
-      order. The AC1 test shows this for the odd date, with a build limit
-      that leaves at least one entry `not-read`.
+- [ ] AC1: `buildData` reads the entries in the order that `listEntries`
+      returns (id order) when the whole UTC days from 1970-01-01 to `now`
+      are even, and in reverse when they are odd. A test in
+      `test/build.test.ts` with `now` set to 2026-10-31T23:30Z (day 20757)
+      and 2026-11-01T00:30Z (day 20758) shows the repo API requests in
+      reverse order on the first date and in id order on the second.
+- [ ] AC2: On the odd date, with four entries and a build limit that
+      leaves at least two records with `upstream` and at least one entry
+      `not-read`, the data file lists its records in id order, and
+      `buildLevel` and the start plan list their ids in id order.
 - [ ] AC3: README "Building the data" states the AC1 order, and that the
-      entries a cut build leaves unread are then the last ids on even days
-      and the first ids on odd days. One CHANGELOG entry under Unreleased
+      entries that get `not-read` are then the last ids on even days and
+      the first ids on odd days. One CHANGELOG entry under Unreleased
       states the same.
 - [ ] AC4: The profile's `verify` slot is clean: `pnpm test` and
       `pnpm check` pass.
@@ -52,15 +54,18 @@ D-010 rules out for the deploy build; no work is planned for it.
 ## Tasks
 
 - [ ] T1: Write the tests first in the "with time limits" block of
-      `test/build.test.ts`: the request order on an even and an odd date,
-      and the output, `buildLevel`, and plan order on the odd date with a
-      cut. See the odd-date test fail on main at the request order.
+      `test/build.test.ts`: the request order on the two AC1 dates, and
+      the output, `buildLevel`, and plan order on the odd date with a cut.
+      Give every existing `buildData` test whose result depends on read
+      order a fixed `now`, so `pnpm test` passes on any day. See the
+      odd-date test fail on main at the request order.
 - [ ] T2: Order the entries by the parity of `now`'s UTC day count before
       the read loop in `src/build/build.ts`, and put the records back in id
       order before `countReports` and the output.
 - [ ] T3: Update README "Building the data" and the build lines of
-      DESIGN.md, and add the CHANGELOG entry. Run `pnpm test` and
-      `pnpm check`.
+      DESIGN.md, and add the CHANGELOG entry. They state the order rule
+      only, not that a plugin is never left unread two days running, which
+      no test shows. Run `pnpm test` and `pnpm check`.
 
 ## Work log
 
@@ -73,6 +78,7 @@ D-010 rules out for the deploy build; no work is planned for it.
 - 2026-10-29: lessons used: 2026-10-25 (M001) pnpm through npx and spawn tests through `pnpm test`; 2026-10-26 (M018) search a joined README copy; 2026-10-28 (M036) long lines after an Edit.
 - 2026-10-29: plan gate chose a direction that alternates by day over a rotation or shuffle by date because two days' cuts that both let the build deploy never leave the same entry unread under alternation, while a rotation or shuffle can; falsified by two deployed builds on consecutive days whose data both mark one plugin `not-read`.
 - 2026-10-29: changelog: one entry for this milestone, apart from M050's.
+- 2026-10-29: criteria audit (full): 4 findings on M051, all fixed. AC1 uses two dates on each side of UTC midnight whose day counts differ in parity and whose days of the month do not (31 and 1), and names `listEntries` order; AC2 uses four entries so the plan holds two or more items and names only the odd date; T1 fixes `now` in existing order-dependent tests; AC3 says `not-read`, and T3 keeps the two-day claim out of README and CHANGELOG.
 
 ## Decisions
 
