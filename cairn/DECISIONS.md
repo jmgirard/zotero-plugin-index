@@ -445,3 +445,12 @@ repo with neither topic. A held pull request waits for the maintainer.
 Closing a bot pull request without a merge still keeps the bot from
 proposing that repo again (M009). The user chose these four rules over also
 holding repos under 30 days old, and a 48-hour wait.
+
+### D-034: A merge run started by hand may set a shorter wait, annotating D-033
+
+2026-10-29, M057 plan. D-033 has the merge job wait 48 hours after a bot pull
+request opens. For the first backfill of the index the user chose to land
+every clean plugin at once rather than over days. `Merge bot pull requests`
+gains a `wait_hours` input that only a run started by hand sets, 0 included.
+Scheduled runs keep 48 hours, and the hold reasons, the `hold` label, and the
+check before each merge are unchanged. The rest of D-033 stands.

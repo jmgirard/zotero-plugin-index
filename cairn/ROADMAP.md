@@ -7,6 +7,7 @@ _Last hygiene check: 2026-10-29 (M056 done and archived; 1 row added, 2 merged; 
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
+| M057 | Let a dispatched merge run set its own wait | planned | — | high | milestones/M057-merge-wait-override.md |
 | M056 | Merge bot pull requests after a wait unless held | done | — | normal | milestones/archive/M056-merge-bot-pull-requests.md |
 | M055 | Show English descriptions where upstream has them | done | — | normal | milestones/archive/M055-english-descriptions.md |
 | M054 | Rebuild the plugin page and add an About page | done | M053 | normal | milestones/archive/M054-plugin-page-redesign.md |
