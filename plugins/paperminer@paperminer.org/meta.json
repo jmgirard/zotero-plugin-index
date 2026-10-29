@@ -1,0 +1,8 @@
+{
+  "id": "paperminer@paperminer.org",
+  "name": "PaperMiner",
+  "description": "PaperMiner: AI reading assistant for Zotero with journal ranking, chat, summary, slides and translation.",
+  "homepage": "https://github.com/Waynehfut/Paper-Miner",
+  "repoUrl": "https://github.com/Waynehfut/Paper-Miner",
+  "updateUrl": "https://github.com/Waynehfut/Paper-Miner/releases/download/release/update.json"
+}
