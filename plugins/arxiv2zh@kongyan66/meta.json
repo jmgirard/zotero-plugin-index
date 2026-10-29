@@ -1,0 +1,8 @@
+{
+  "id": "arxiv2zh@kongyan66",
+  "name": "arxiv2zh",
+  "description": "Translate arXiv source or attached PDFs with hjfy.top and archive Chinese PDFs in Zotero.",
+  "homepage": "https://github.com/kongyan66/arxiv2zh#readme",
+  "repoUrl": "https://github.com/kongyan66/arxiv2zh",
+  "updateUrl": "https://github.com/kongyan66/arxiv2zh/releases/download/release/update.json"
+}
