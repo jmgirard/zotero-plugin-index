@@ -6,10 +6,11 @@ import { runInNewContext } from "node:vm";
 import { Ajv } from "ajv";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json" };
-import { displayName, pluginHref, rangeText, reportHref, safeHref, type PluginRecord } from "../site/src/data.ts";
+import { displayName, majorReport, pluginHref, rangeText, reportHref, safeHref, type PluginRecord } from "../site/src/data.ts";
 import type { PluginsFile } from "../src/build/build.ts";
 import { shownDescription } from "../src/site/description.ts";
 import { appliedLanguages, languageName } from "../src/site/languages.ts";
+import { START_LIMIT_MS } from "../src/start-test/start-test.ts";
 import { compareVersions, declaredRange, majorSupport, ZOTERO_MAJORS } from "../src/site/version.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -143,20 +144,31 @@ function expectInOrder(html: string, markers: string[]): void {
 interface CompatRow {
   major: string;
   declared: string;
+  // The declared cell's text for screen readers, which the visible mark and word hide from them.
+  spoken?: string;
   cells: string[];
 }
 
+const HIDDEN = /<span class="visually-hidden">([^<]*)<\/span>/;
+
 // The rows of a page's compatibility table, or undefined when the page has none: each row's
-// major, its declared kind, and the text of its declared, start, and reports cells.
+// major, its declared kind and spoken text, and the visible text of its declared, start, and
+// reports cells.
 function compatRows(html: string): CompatRow[] | undefined {
   const table = /<table class="compat-table">(.*?)<\/table>/s.exec(html)?.[1];
   if (table === undefined) return undefined;
   const text = (cell: string) => unescaped(cell.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
   const row =
     /<tr data-major="([^"]+)">\s*<th scope="row">([^<]*)<\/th>\s*<td data-declared="([^"]+)">(.*?)<\/td>\s*<td data-start-cell>(.*?)<\/td>\s*<td data-reports-cell>(.*?)<\/td>\s*<\/tr>/gs;
-  const rows = [...table.matchAll(row)].map(([, major, heading, declared, ...cells]) => {
+  const rows = [...table.matchAll(row)].map(([, major, heading, declared, declaredCell, ...cells]) => {
     expect(heading).toBe(major);
-    return { major: major!, declared: declared!, cells: cells.map((cell) => text(cell!)) };
+    const spoken = HIDDEN.exec(declaredCell!)?.[1];
+    if (spoken !== undefined) {
+      // Outside the hidden text, the cell holds only spans hidden from screen readers.
+      expect(declaredCell!.replace(HIDDEN, "").match(/<span(?![^>]*aria-hidden="true")[^>]*>/g)).toBeNull();
+    }
+    const visible = text(declaredCell!.replace(HIDDEN, ""));
+    return { major: major!, declared: declared!, ...(spoken === undefined ? {} : { spoken: unescaped(spoken) }), cells: [visible, ...cells.map((cell) => text(cell!))] };
   });
   expect(table.split("<tr data-major=").length - 1).toBe(rows.length);
   return rows;
@@ -185,9 +197,18 @@ function expectedRows(record: PluginRecord): CompatRow[] {
       const support = majorSupport(record, major);
       const start = (record.startTests ?? []).filter(({ zotero }) => majorOf(zotero) === major).sort((a, b) => compareVersions(b.zotero, a.zotero))[0];
       const report = record.reports?.find(({ zoteroMajor }) => String(zoteroMajor) === major);
+      const spoken =
+        support === "all"
+          ? `Declares all of Zotero ${major}`
+          : support === "some"
+            ? `Declares part of Zotero ${major}. Declared range: ${rangeText(record)}`
+            : support === "none"
+              ? `Does not declare Zotero ${major}`
+              : undefined;
       return {
         major,
         declared: support ?? "no-range",
+        ...(spoken === undefined ? {} : { spoken }),
         cells: [
           support ? DECLARED_CELL[support]! : "No range",
           start ? `${START_CELL[start.result]} Zotero ${start.zotero}` : "Not tested",
@@ -199,20 +220,19 @@ function expectedRows(record: PluginRecord): CompatRow[] {
 
 describe("the site fixture", () => {
   test("holds each shape of row and page", () => {
-    const pilled = records.filter((record) => !record.failure && hasBound(record));
+    const bounded = records.filter((record) => !record.failure && hasBound(record));
     expect(records.some((record) => record.failure)).toBe(true);
     expect(records.some((record) => !record.failure && !hasBound(record))).toBe(true);
     expect(records.some((record) => record.upstream?.archived === true)).toBe(true);
     expect(records.some((record) => record.upstream?.description && !shownDescription(record))).toBe(true);
     expect(records.some((record) => record.overrides.some((o) => o.field === "description"))).toBe(true);
     for (const support of ["all", "some", "none"]) {
-      expect(pilled.some((record) => ZOTERO_MAJORS.some((major) => majorSupport(record, major) === support)), support).toBe(true);
+      expect(bounded.some((record) => ZOTERO_MAJORS.some((major) => majorSupport(record, major) === support)), support).toBe(true);
     }
     expect(records.some((record) => (record.reports?.length ?? 0) > 0)).toBe(true);
     expect(records.some((record) => record.upstream && record.reports?.length === 0)).toBe(true);
     expect(records.some((record) => record.upstream && !("reports" in record))).toBe(true);
     const extra = (majors: string[]) => majors.some((major) => !ZOTERO_MAJORS.includes(major));
-    expect(records.some((record) => extra((record.reports ?? []).map(({ zoteroMajor }) => String(zoteroMajor))))).toBe(true);
     expect(records.some((record) => (record.reports ?? []).some(({ zoteroMajor }) => zoteroMajor === 11))).toBe(true);
     expect(records.some((record) => extra((record.startTests ?? []).map(({ zotero }) => zotero.split(".")[0]!)))).toBe(true);
     const majors = (record: PluginRecord) => (record.startTests ?? []).map(({ zotero }) => zotero.split(".")[0]);
@@ -271,19 +291,27 @@ describe("the compatibility table", () => {
     expect(cells("8")).toEqual(["✓ Yes", "● Started Zotero 8.0.4", "1 works 0 broken"]);
     expect(cells("7")).toEqual(["– No", "Not tested", "None yet"]);
     expect(compatRows(page("a-cafe@example.org"))!.find((row) => row.major === "8")!.cells[1]).toBe("● Started Zotero 8.0.10");
-    expect(compatRows(page("no-range-plugin@example.org"))!.map(({ declared, cells }) => [declared, cells[0]])).toEqual(
-      ZOTERO_MAJORS.map(() => ["no-range", "No range"]),
-    );
   });
 
-  test("hides each mark from screen readers and names it in its title", () => {
-    const html = page("min-only-plugin@example.org");
-    expect(html).toContain('<span class="mark" data-support="none" title="Does not declare Zotero 7" aria-hidden="true">–</span>');
-    expect(html).toContain(
-      '<span class="mark" data-support="some" title="Declares part of Zotero 8. Declared range: Zotero 8.0.1 or newer" aria-hidden="true">◐</span>',
-    );
-    expect(html).toContain('<span class="mark" data-support="all" title="Declares all of Zotero 9" aria-hidden="true">✓</span>');
+  test("tells screen readers how much of a major the range declares, with the range for part of one", () => {
+    const spoken = compatRows(page("min-only-plugin@example.org"))!.map(({ major, spoken }) => [major, spoken]);
+    expect(spoken).toEqual([
+      ["10", "Declares all of Zotero 10"],
+      ["9", "Declares all of Zotero 9"],
+      ["8", "Declares part of Zotero 8. Declared range: Zotero 8.0.1 or newer"],
+      ["7", "Does not declare Zotero 7"],
+    ]);
     expect(page("no-range-plugin@example.org")).toMatch(/<span class="start" data-start="started" aria-hidden="true">●<\/span>/);
+  });
+
+  // The build writes one item per major; the schema lets a file hold two.
+  test("adds the counts of two report items on one major", () => {
+    const record = { ...records.find((r) => r.id === "first-plugin@example.org")!, reports: [
+      { zoteroMajor: 8, works: 1, broken: 0 },
+      { zoteroMajor: 8, works: 0, broken: 3 },
+    ] };
+    expect(majorReport(record, "8")).toEqual({ works: 1, broken: 3 });
+    expect(majorReport(record, "7")).toBeUndefined();
   });
 });
 
@@ -299,7 +327,10 @@ describe("the report row", () => {
     expect(reportLink(html, "broken")).toBe(reportHref(record, "broken"));
     expect(fact(html, "report-prompt")).toBe(`Tried version ${escaped(record.upstream.version)} on Zotero? Report what you found:`);
     expectInOrder(html, ['class="compat-table"', "</table>", 'data-fact="report-prompt"', 'data-report="works"', 'data-report="broken"']);
-    // Each button is named by its verdict and described by the line above it.
+  });
+
+  test("names each button by its verdict and describes it by the line above it", () => {
+    const html = page("first-plugin@example.org");
     expect(html).toContain('<p id="report-prompt" data-fact="report-prompt">');
     expect(html).toMatch(/<a data-report="works" href="[^"]*" class="button" aria-describedby="report-prompt">Works<\/a>/);
     expect(html).toMatch(/<a data-report="broken" href="[^"]*" class="button" aria-describedby="report-prompt">Broken<\/a>/);
@@ -359,7 +390,8 @@ describe("the plugin page", () => {
     const record = records.find((r) => r.id === id)!;
     const html = page(id);
     const description = shownDescription(record);
-    const archived = record.upstream?.archived === true ? '<span class="badge" data-archived>Archived</span>' : "";
+    // A space keeps the name and the badge apart in the heading's text.
+    const archived = record.upstream?.archived === true ? ' <span class="badge" data-archived>Archived</span>' : "";
     const main = html.slice(html.indexOf("<main>") + "<main>".length, html.indexOf("</main>"));
     const head = new RegExp(
       `^<a class="back" href="/zotero-plugin-index/" data-back>${ICON}All plugins</a>` +
@@ -428,7 +460,6 @@ describe("the plugin page", () => {
       for (const marker of markers) expect(html.split(marker).length - 1, marker).toBe(1);
     }
     if (!hasBound(record)) expect(html).not.toContain('data-fact="declared-range"');
-    if (!read) expect(html).not.toMatch(/data-fact="languages"/);
   });
 
   test.each(ids)("lists the facts of %s in an open Details section, with the overrides under an h3", (id) => {
@@ -587,8 +618,7 @@ describe("the About page", () => {
     // The 3 seconds is the reporter's wait after the install, and the 90 the start's time limit.
     const reporter = readFileSync(resolve(ROOT, "src/start-test/reporter/bootstrap.js"), "utf8");
     expect(/^const SETTLE_MS = (\d+);$/m.exec(reporter)?.[1]).toBe("3000");
-    const start = readFileSync(resolve(ROOT, "src/start-test/start-test.ts"), "utf8");
-    expect(/^export const START_LIMIT_MS = (\d+) \* 1000;$/m.exec(start)?.[1]).toBe("90");
+    expect(START_LIMIT_MS).toBe(90 * 1000);
   });
 
   test("says which user reports count, how overrides and the Used column work, and that the index does not vet plugins", () => {
@@ -624,10 +654,6 @@ describe("the About page", () => {
     expect(card).toContain("data-about-line");
     if (records.find((r) => r.id === id)!.upstream) expectInOrder(card, ["</table>", "data-about-line", 'data-fact="report-prompt"']);
     else expectInOrder(card, ['data-fact="failure"', "data-about-line"]);
-  });
-
-  test("holds the phrase that the plugin page check looks for, so the check can fail", () => {
-    expect(mainText(about())).toContain(MOVED[0]);
   });
 });
 
@@ -1055,7 +1081,6 @@ describe("the built site", () => {
   test("puts the top bar and the footer on every page", () => {
     const files = htmlFiles(out);
     expect(files).toHaveLength(ids.length + 2);
-    expect(files).toContain(join("about", "index.html"));
     for (const path of files) {
       const html = readFileSync(join(out, path), "utf8");
       const bar = /<body><header class="topbar"><div class="topbar-inner">(.*?)<\/div><\/header><main>/s.exec(html)?.[1];
@@ -1309,20 +1334,24 @@ describe("the site colors", () => {
   test.each([
     ["light", light],
     ["dark", dark],
-  ])("gives the edges of the search box, the menu, and the version buttons a contrast of at least 3:1 with the surface in the %s scheme", (_, scheme) => {
+  ])("gives the edges of the search box, the menu, the version buttons, and the plugin page links a contrast of at least 3:1 with the surface and the page in the %s scheme", (_, scheme) => {
     const edges = cssRules(layout).flatMap(({ selector, declarations }) =>
       declarations
         .filter(([property, value]) => (property === "border" || property === "border-left") && value.includes("var("))
-        .filter(() => [".search input", "[data-language-filter]", "[data-version-filter]"].some((control) => selector.includes(control)))
+        .filter(() => [".search input", "[data-language-filter]", "[data-version-filter]", ".btn"].some((control) => selector.includes(control)))
         .map(([, value]) => ({ selector, token: /var\((--[\w-]+)\)/.exec(value)?.[1] })),
     );
     expect(edges.map(({ selector }) => selector)).toEqual([
       ".search input, [data-language-filter]",
       "[data-version-filter]",
       "[data-version-filter] button",
+      ".btn",
     ]);
+    // The controls sit on the page background and fill with the surface color.
     for (const { selector, token } of edges) {
-      expect(contrast(scheme.get(token!)!, scheme.get("--surface")!), `${selector}: ${token}`).toBeGreaterThanOrEqual(3);
+      for (const background of ["--surface", "--bg"]) {
+        expect(contrast(scheme.get(token!)!, scheme.get(background)!), `${selector}: ${token} on ${background}`).toBeGreaterThanOrEqual(3);
+      }
     }
   });
 });

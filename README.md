@@ -107,7 +107,7 @@ account.
 
 Each plugin has its own page. It opens with an "All plugins" link back to
 the home page, the plugin's name, and its description. Then come up to
-three links, each with an icon: "Download <version> (.xpi)" to the `.xpi`
+three links, each with an icon and text: "Download <version> (.xpi)" to the `.xpi`
 file that the index read, "Source" to the repository, and "Releases" to
 the repository's releases page. If the download address does not start
 with `http://` or `https://`, the page has no download link. If the

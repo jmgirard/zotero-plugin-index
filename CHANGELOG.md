@@ -417,9 +417,10 @@
   two cards. It opens with
   a link back to the home page, the name with "Archived" for an archived
   repository, and the description. Links to the `.xpi` file, the source
-  code, and the releases follow. A link to an address that does not start
-  with `http://` or `https://` shows as plain text, and the `.xpi` link
-  does not show. Then comes a "Zotero compatibility" table, newest major
+  code, and the releases follow. If the repository address does not start
+  with `http://` or `https://`, the source and releases addresses show as
+  plain text. If the `.xpi` address does not, the `.xpi` link does not
+  show. Then comes a "Zotero compatibility" table, newest major
   first. It has one row for each Zotero major from 7 to 10. It also has a
   row for each other major that the plugin's reports or start results
   name. A row shows the declared mark with "Yes", "Partly", or "No". It

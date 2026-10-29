@@ -77,9 +77,9 @@ record it names the version read and holds one table row per major,
 newest first, for `ZOTERO_MAJORS` and each other major that the record's
 reports or start results name. The row's cells are the declared support,
 the major's newest start result (`majorStart`, M053), and that major's
-report counts (M021). Under the table come the declared range, a line
-linking the About page, and the "Works" and "Broken" buttons after a line
-naming the version read. For a record with a failure the card holds the
+report counts (M021). Under the table comes one line with the declared
+range, when there is one, and the link to the About page, then the "Works"
+and "Broken" buttons after a line naming the version read. For a record with a failure the card holds the
 failure and the About line. An open "Details" card (h2) lists the plugin
 id, the repository and release facts, and the "Menus and settings in"
 fact (M024, M033), with each override beside the upstream value it
@@ -291,8 +291,8 @@ exception is a report that is abuse.
   rule M018; reports M021; time limits M029; label read and `closed_by`
   check M041; report read limit and exit M050; read order by day M051.
 - Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
-  home page and one page per record into `dist/`, or `<dir>`, from the data
-  file there. `src/site/version.ts` holds the version and range functions
+  home page, the About page (M054), and one page per record into `dist/`,
+  or `<dir>`, from the data file there. `src/site/version.ts` holds the version and range functions
   that the templates use, `majorSupport` and `ZOTERO_MAJORS` among them, and
   `src/site/description.ts` holds `shownDescription`.
   `src/site/languages.ts` holds the applied languages, their names, and the

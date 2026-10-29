@@ -580,7 +580,8 @@ const { generatedAt } = loadData();
         gap: var(--space-3);
         min-height: 2rem;
         padding: var(--space-1) var(--space-6);
-        border: 1px solid var(--line-strong);
+        /* --faint, as on the home controls, so the edge holds 3:1 on --bg and --surface. */
+        border: 1px solid var(--faint);
         border-radius: var(--radius-m);
         background: var(--surface);
         color: var(--text);
@@ -650,7 +651,8 @@ const { generatedAt } = loadData();
       }
       /* Forced colors replace the text and border colors, so this rule draws each button's edge in ButtonText. */
       @media (forced-colors: active) {
-        .button {
+        .button,
+        .btn {
           border-color: ButtonText;
         }
       }
