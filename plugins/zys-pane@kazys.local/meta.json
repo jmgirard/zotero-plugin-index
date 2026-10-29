@@ -1,0 +1,8 @@
+{
+  "id": "zys-pane@kazys.local",
+  "name": "Compact Pane for Zotero",
+  "description": "Compact Zotero metadata display, attachment path copy, and small item-pane safety utilities.",
+  "homepage": "https://github.com/kvarnelis/zotero-compact-pane",
+  "repoUrl": "https://github.com/kvarnelis/zotero-compact-pane",
+  "updateUrl": "https://raw.githubusercontent.com/kvarnelis/zotero-compact-pane/main/updates.json"
+}
