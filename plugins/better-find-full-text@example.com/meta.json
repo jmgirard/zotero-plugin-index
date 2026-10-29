@@ -1,0 +1,7 @@
+{
+  "id": "better-find-full-text@example.com",
+  "name": "Better Find Full Text",
+  "description": "Finds full text and snapshots for Zotero items, using the built-in PDF finder first, then falling back to direct download, USPTO, Google Patents, and paywall-assisted snapshots.",
+  "repoUrl": "https://github.com/ppavlidis/better-find-full-text",
+  "updateUrl": "https://raw.githubusercontent.com/ppavlidis/better-find-full-text/main/updates.json"
+}
