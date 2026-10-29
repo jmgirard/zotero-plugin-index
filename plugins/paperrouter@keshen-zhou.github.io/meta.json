@@ -1,0 +1,8 @@
+{
+  "id": "paperrouter@keshen-zhou.github.io",
+  "name": "PaperRouter",
+  "description": "Suggests Zotero collections for your papers via LLM or embedding similarity.",
+  "homepage": "https://github.com/KESHEN-ZHOU/PaperRouter",
+  "repoUrl": "https://github.com/KESHEN-ZHOU/PaperRouter",
+  "updateUrl": "https://raw.githubusercontent.com/KESHEN-ZHOU/PaperRouter/main/updates.json"
+}
