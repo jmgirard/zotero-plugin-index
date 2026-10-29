@@ -1,0 +1,8 @@
+{
+  "id": "arxiv_marker_ccf2026@local",
+  "name": "arxiv_marker_ccf2026",
+  "description": "Resolve arXiv preprints to verified venues in Zotero 9 and 10 and display offline CCF 2026 rankings.",
+  "homepage": "https://github.com/laiduo12345/arxiv_marker_ccf2026",
+  "repoUrl": "https://github.com/laiduo12345/arxiv_marker_ccf2026",
+  "updateUrl": "https://github.com/laiduo12345/arxiv_marker_ccf2026/releases/latest/download/update.json"
+}
