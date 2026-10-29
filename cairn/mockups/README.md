@@ -12,4 +12,5 @@ read the deployed data file. To view them, serve the folder over HTTP, for examp
 `python3 -m http.server 4327 --directory cairn/mockups/redesign-2026-10-29`,
 since the browser pane cannot open `file://` pages. The "Mockup options"
 box switches variants. The `.xpi` links in the mockup point at the latest
-release page. The site links to `upstream.xpiUrl` (M052).
+release page. The site is to link to `upstream.xpiUrl`, which M052 adds
+to the data, from M053 and M054.

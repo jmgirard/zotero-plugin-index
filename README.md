@@ -135,6 +135,14 @@ optional field does not get a new schema version. The schema rejects fields
 that it does not define. If you validate
 against a saved copy of the schema, fetch it again after such a change.
 
+Each `upstream` block has an `xpiUrl` field. It is the download address
+that GitHub gives for the first `.xpi` file of the release whose manifest
+the index read. The start plan names the same address. The file is the
+author's own: the data gives its address, and the index keeps no copy. An
+author can replace a release file later, so the file at the address can
+differ from the one the build read. Data written before the build wrote
+this field has none.
+
 Each `upstream` block has a `languages` list, such as `["en-US", "zh-CN"]`.
 It holds the language tags of the locale folders in the plugin's XPI, the
 one whose manifest the index read. A locale folder is `locale/<tag>/` or
@@ -700,7 +708,8 @@ GitHub response for the repository says whether it is archived, the
 `upstream` block has an `archived` field, `true` or `false`. The `upstream`
 block also has a `prerelease` field, `true` or `false`. It says whether
 GitHub marks the release that the reader read as a prerelease. It also has
-a `languages` list, which "Using the data" describes. Each record
+a `languages` list and an `xpiUrl` field, which "Using the data"
+describes. Each record
 with an `upstream` block has a `reports` list, which "Using the data"
 describes. The command writes no `startTests` list. The daily build adds
 it with `pnpm add-start-results`, as "Starting plugins in Zotero" says.
@@ -792,8 +801,9 @@ To also write a start plan, add `--plan <file>`. The plan has one item for
 each record with an `upstream` block. Each item names the entry id, the
 plugin id and version, and the manifest's `strict_min_version` and
 `strict_max_version`. It also names the URL of the XPI that the build read
-and the SHA-256 of the bytes that it got. The plan is not part of the data
-file, and the daily build writes it outside `dist/`. Without `--plan`, the
+and the SHA-256 of the bytes that it got. The data's `xpiUrl` holds the
+same URL. The plan is not part of the data file, and the daily build
+writes it outside `dist/`. Without `--plan`, the
 command writes no plan.
 
 ## Starting plugins in Zotero

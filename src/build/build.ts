@@ -20,7 +20,9 @@ export interface Override {
 export interface PluginRecord {
   id: string;
   repoUrl: string;
-  upstream?: UpstreamFacts;
+  // `xpiUrl` addresses the XPI file that the reader read; data written before the build
+  // wrote it has none.
+  upstream?: UpstreamFacts & { xpiUrl?: string };
   // The counted user reports on the version in upstream, by Zotero major. Every record with
   // upstream that the build writes has it; data written before reports existed has none.
   reports?: ReportCount[];
@@ -278,7 +280,7 @@ async function readRecord(
 ): Promise<Pick<PluginRecord, "upstream" | "failure"> & { buildLevel?: boolean; xpi?: XpiRead }> {
   try {
     const read = await withinLimit(readMs, (signal) => readUpstream(repoUrl, fetch, { signal }));
-    if (read.ok) return { upstream: read.facts, xpi: read.xpi };
+    if (read.ok) return { upstream: { ...read.facts, xpiUrl: read.xpi.url }, xpi: read.xpi };
     return { failure: { name: read.failure, message: read.message }, buildLevel: read.buildLevel };
   } catch (error) {
     // The reader names each problem it knows. Anything else is a bug or a surprise, and
