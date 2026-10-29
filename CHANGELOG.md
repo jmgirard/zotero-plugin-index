@@ -382,3 +382,7 @@
   on odd days. Before, the build always read in id order, so a cut build
   left the last ids unread every day. The data file still lists its records
   in id order.
+- Each `upstream` block of the data file has a new optional `xpiUrl` field:
+  the GitHub address of the first `.xpi` file of the release whose manifest
+  the index read. It is the file that the start tests download. Schema v1
+  allows the field, so the schema version stays 1.

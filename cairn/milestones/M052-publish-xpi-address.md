@@ -78,6 +78,7 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
 - 2026-10-29: criteria audit (full mode, fresh Opus reader): 18 findings across M052–M054, 2 here, both fixed: AC2 now compares every fixture record with its start plan item and covers the reader's third path (stable not Zotero 7+, then a newer prerelease); AC3 now has DESIGN say that a plain link to the author's .xpi is not an install button, since DESIGN puts install buttons out of scope.
 - 2026-10-29: status in-progress on branch m052-publish-xpi-address (set late, in the T1 commit).
 - 2026-10-29: T1 done: optional `xpiUrl` string in the schema's `upstream` definition, typed as `UpstreamFacts & { xpiUrl?: string }` on the build's `PluginRecord` so the reader's facts and its tests stay unchanged; the schema test in `test/build.test.ts` fails on main's schema (an extra-property error) and passes with the field; verify slot green (1071 passed), though npx stalled about 30 minutes before Vitest started at a load near 8.
+- 2026-10-29: checkpoint: T2 and T3 written, not yet ticked while the verify run is pending. `readRecord` sets `upstream.xpiUrl` from `read.xpi.url`; the new build test covers the three reader paths (stable, prerelease only, Zotero 6 stable then a newer prerelease whose first of two .xpi assets is read) and fails with the old line (planted); `mixed-failures.plugins.json` gains the passing record's `xpiUrl`. README, DESIGN (data source text, out-of-scope line), and CHANGELOG name the field.
 
 ## Decisions
 

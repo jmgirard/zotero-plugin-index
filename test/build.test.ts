@@ -669,6 +669,48 @@ describe("buildData", () => {
     expect(result.text).not.toContain("sha256");
   });
 
+  test("writes on each record with upstream the XPI address of its start plan item, on each of the reader's three release paths", async () => {
+    // FALLBACK's stable release declares Zotero 6, so the reader reads its newer prerelease,
+    // whose first .xpi asset is the one read.
+    const FALLBACK = "fallback-plugin@example.org";
+    const tree = treeOf(BETTER_NOTES, SECOND, FORKED);
+    mkdirSync(join(tree, FALLBACK));
+    writeFileSync(join(tree, FALLBACK, "meta.json"), JSON.stringify({ id: FALLBACK, name: "Fallback", repoUrl: "https://github.com/example/fallback-plugin" }));
+    writeFileSync(join(tree, FALLBACK, "index.json"), JSON.stringify({ schemaVersion: 1 }));
+    const recorded = { ...responses(), ...pluginRepo("example/fallback-plugin", FALLBACK) };
+    const stableXpi = "https://github.com/example/fallback-plugin/releases/download/v1.0.0/plugin.xpi";
+    const betaXpi = "https://github.com/example/fallback-plugin/releases/download/v2.0.0-beta.1/first.xpi";
+    const laterXpi = "https://github.com/example/fallback-plugin/releases/download/v2.0.0-beta.1/second.xpi";
+    const manifest = recorded[stableXpi].xpi!["manifest.json"] as { version: string; applications: { zotero: { strict_max_version: string } } };
+    (recorded["https://api.github.com/repos/example/fallback-plugin/releases?per_page=100"].json as unknown[]).unshift({
+      tag_name: "v2.0.0-beta.1",
+      draft: false,
+      prerelease: true,
+      published_at: "2026-04-01T12:00:00Z",
+      assets: [
+        { name: "first.xpi", browser_download_url: betaXpi },
+        { name: "second.xpi", browser_download_url: laterXpi },
+      ],
+    });
+    recorded[betaXpi] = { xpi: { "manifest.json": { ...structuredClone(manifest), version: "2.0.0-beta.1" } } };
+    manifest.applications.zotero.strict_max_version = "6.*";
+    const result = await buildData(tree, fixtureFetch(recorded).fetch);
+    if (!result.ok) throw new Error(result.problems.join("\n"));
+    const output: Output = JSON.parse(result.text);
+    const planned = new Map(result.plan.plugins.map((item) => [item.entry, item.xpiUrl]));
+    const read = output.plugins.filter((plugin) => plugin.upstream);
+    expect(read.map((plugin) => plugin.id).sort()).toEqual([BETTER_NOTES, FALLBACK, SECOND].sort());
+    for (const plugin of read) expect(plugin.upstream?.xpiUrl, plugin.id).toBe(planned.get(plugin.id));
+    expect([BETTER_NOTES, SECOND, FALLBACK].map((id) => record(output, id)?.upstream?.xpiUrl)).toEqual([
+      "https://github.com/windingwind/zotero-better-notes/releases/download/v3.3.3/better-notes-for-zotero.xpi",
+      "https://github.com/example/second-plugin/releases/download/v1.0.0/second-plugin.xpi",
+      betaXpi,
+    ]);
+    expect(record(output, FALLBACK)?.upstream?.version).toBe("2.0.0-beta.1");
+    expect(record(output, FORKED)).not.toHaveProperty("upstream");
+    expect(checkOutput(output)).toEqual([]);
+  });
+
   test("the schema takes an upstream with or without a string xpiUrl and refuses one of another type", async () => {
     const result = await buildData(TREE, fixtureFetch(responses()).fetch);
     if (!result.ok) throw new Error(result.problems.join("\n"));
