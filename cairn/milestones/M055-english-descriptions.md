@@ -1,6 +1,6 @@
 # M055: Show English descriptions where upstream has them
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -92,24 +92,22 @@ added after this plan, which follow D-030 case by case.
       description, and that the shown description is an applying override,
       else the manifest text or the GitHub text by the AC3 rule. DESIGN's
       override rule (Data sources item 3) and the `reason` prose of
-      `schemas/index.v1.schema.json` state the D-030 and D-031 case. README
+      `schemas/index.v1.schema.json` state the D-030 to D-032 cases. README
       and CHANGELOG also say that a saved copy of the v1 schema must be
       fetched again (D-007).
-- [ ] AC6: Each of these eight entries, which the plan found still showing
-      no description or one with a CJK share of 0.5 or more under the AC1
-      to AC3 rules, from the deployed data and the GitHub repo texts read
-      on 2026-10-29 with overrides left out: `ai4paper-v2@cpc.dev`,
+- [ ] AC6: Each of these eight entries, `ai4paper-v2@cpc.dev`,
       `bibtex-clean@ouyangjiahong.github.io`, `jasminum@linxzh.com`,
       `papermind-connector@papermind.local`, `papilot@dev.local`,
       `zotero-ocr@bib.uni-mannheim.de`, `zoterogpt-sidebar@workbuddy.local`,
       and `zoterostyle@polygon.org`, carries in `plugins/<id>/index.json` a
-      `description` override with no `version`, whose `value` has a CJK
-      share of 0 and holds at least one Latin letter, and whose `reason`
-      names the upstream file or section the text was drawn from and says
-      that the upstream has no English description or only one that
-      repeats the name. Whether each `value` is English that says what the
-      plugin does is judged by the user at the merge question. `pnpm check`
-      passes.
+      `description` override with no `version`. Its `value` has a
+      `cjkShare` of 0 and matches `\p{Script=Latin}`. Its `reason` names the
+      upstream file or section the text was drawn from. For the manifest
+      description and for the GitHub About text read on 2026-10-29, the
+      reason says correctly whether that text is missing, not in English,
+      only repeats the name, or has a CJK share of 0.5 or more (D-030,
+      D-031, D-032). The user judges at the merge question whether each
+      `value` is English that says what the plugin does. `pnpm check` passes.
 - [ ] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check`.
 
 ## Coverage
@@ -143,7 +141,7 @@ added after this plan, which follow D-030 case by case.
 - [x] T6: For each AC6 entry, read its README (English file or section
       first), write a one- or two-sentence English `description` override
       with its reason, and run `pnpm check`.
-- [ ] T7: Run the `verify` slot.
+- [x] T7: Run the `verify` slot.
 
 ## Work log
 
@@ -171,3 +169,6 @@ added after this plan, which follow D-030 case by case.
 - 2026-10-29: claim audit: 110 claims read, 6 corrected — plugins/jasminum@linxzh.com/index.json (reason said "no English description" and "copied"), plugins/ai4paper-v2@cpc.dev/index.json (source also the feature overview), README.md ("upstream" means the About text, not the whole repository), site/src/pages/about.astro (English locale applies to `__MSG_` values only), CHANGELOG.md (share wording).
 - 2026-10-29: re-audit: AC6 (full) — 3 findings: Jasminum's GitHub text holds an English sentence, so D-030 and D-031 do not cover its override and DESIGN item 3 and the `reason` prose say "no English description"; the reason clause is ambiguous over two texts; name the share and Latin-letter check. Posed to the user, since keeping Jasminum's override widens D-030.
 - 2026-10-29: user override at the stop: keep Jasminum's override; D-032 extends D-030 to upstream texts of CJK share 0.5 or more; README, CHANGELOG, About page (1 more site test line), DESIGN item 3, and both `index.v1` schema texts now name that case. Checkpoint: the amended AC6 and AC5 wording waits for its re-entry reader before it is written here.
+- 2026-10-29: re-audit: AC6 (full) — re-entry reader on the user-approved wording: all eight reasons pass; 3 tightenings taken (a "missing" case, "says correctly" for the texts read on 2026-10-29, "missing" and the CJK-share wording in the `reason` schema prose); D-032's reason sentence is read as replacing D-030's "no English description" wording; no further reader for AC6.
+- 2026-10-29: substantive amendment: AC6 reason clause now names four cases per upstream text and cites D-032; AC5 cites D-030 to D-032; override values and the eight ids unchanged.
+- 2026-10-29: T7 done: after the amendment `pnpm test` 1227 passed, 6 skipped; `pnpm check` 58 entries, 0 problems; `cairn_validate` all checks passed. Status review.

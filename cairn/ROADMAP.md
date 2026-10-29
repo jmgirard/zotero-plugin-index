@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-29 (M054 done and archived; 1 row graduated, 1 corr
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M055 | Show English descriptions where upstream has them | in-progress | — | normal | milestones/M055-english-descriptions.md |
+| M055 | Show English descriptions where upstream has them | review | — | normal | milestones/M055-english-descriptions.md |
 | M054 | Rebuild the plugin page and add an About page | done | M053 | normal | milestones/archive/M054-plugin-page-redesign.md |
 | M053 | Show the home list as a table | done | M052 | normal | milestones/archive/M053-home-table.md |
 | M052 | Publish each plugin's XPI address | done | — | normal | milestones/archive/M052-publish-xpi-address.md |
