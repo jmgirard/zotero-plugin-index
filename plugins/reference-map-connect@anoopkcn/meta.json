@@ -1,0 +1,8 @@
+{
+  "id": "reference-map-connect@anoopkcn",
+  "name": "Reference Map Connect",
+  "description": "Lets websites you approve (e.g. your Reference Map instance) search this Zotero library and save items into it. Each origin must be explicitly allowed in a Zotero dialog.",
+  "homepage": "https://github.com/anoopkcn/reference-map",
+  "repoUrl": "https://github.com/anoopkcn/reference-map",
+  "updateUrl": "https://raw.githubusercontent.com/anoopkcn/reference-map/main/plugin/updates.json"
+}
