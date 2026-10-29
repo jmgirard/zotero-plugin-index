@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ai-notes@paper-ai.local",
+  "name": "Zotero AI Notes",
+  "description": "Generate AI-powered summaries for Zotero papers with multiple LLM providers",
+  "homepage": "https://github.com/haobbc/zotero-ai-notes#readme",
+  "repoUrl": "https://github.com/haobbc/zotero-ai-notes",
+  "updateUrl": "https://github.com/haobbc/zotero-ai-notes/releases/download/release/update.json"
+}
