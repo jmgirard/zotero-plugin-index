@@ -362,3 +362,9 @@
   same facts as before. The new text is the card headings and the report
   prompt, which now reads "Tried this version on Zotero? Report what you
   found:".
+- The header, the footer, and the home page take the card look of the
+  plugin pages. The header and the footer are cards on every page. On the
+  home page, the title and the intro sit in a card. The filter labels are
+  smaller, bold, and gray, and the status line is smaller and gray. The home
+  page shows the same facts, and the menu and the buttons filter the list as
+  before.

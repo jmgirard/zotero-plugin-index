@@ -1,0 +1,427 @@
+{
+  "source": "node test/support/home-facts.ts on the home page that pnpm site built from test/fixtures/site/plugins.json at commit dc1caf0",
+  "facts": {
+    "languageFilter": {
+      "hidden": ""
+    },
+    "versionFilter": {
+      "hidden": ""
+    },
+    "select": {
+      "data-language-filter": "",
+      "id": "language"
+    },
+    "options": [
+      [
+        {
+          "value": ""
+        },
+        "All languages"
+      ],
+      [
+        {
+          "value": "zh"
+        },
+        "Chinese (2)"
+      ],
+      [
+        {
+          "value": "es"
+        },
+        "Spanish (2)"
+      ],
+      [
+        {
+          "value": "en"
+        },
+        "English (1)"
+      ],
+      [
+        {
+          "value": "fr"
+        },
+        "French (1)"
+      ],
+      [
+        {
+          "value": "de"
+        },
+        "German (1)"
+      ],
+      [
+        {
+          "value": "pt"
+        },
+        "Portuguese (1)"
+      ]
+    ],
+    "buttons": [
+      [
+        {
+          "aria-pressed": "true"
+        },
+        "Any version"
+      ],
+      [
+        {
+          "aria-pressed": "false",
+          "value": "7"
+        },
+        "7"
+      ],
+      [
+        {
+          "aria-pressed": "false",
+          "value": "8"
+        },
+        "8"
+      ],
+      [
+        {
+          "aria-pressed": "false",
+          "value": "9"
+        },
+        "9"
+      ],
+      [
+        {
+          "aria-pressed": "false",
+          "value": "10"
+        },
+        "10"
+      ]
+    ],
+    "status": {
+      "data-filter-status": "",
+      "hidden": "",
+      "role": "status"
+    },
+    "rows": [
+      {
+        "attributes": {
+          "data-languages": "",
+          "data-plugin": "broken-plugin@example.org",
+          "data-zotero": ""
+        },
+        "parts": [
+          [
+            "link",
+            "/zotero-plugin-index/plugins/broken-plugin%40example.org/",
+            "broken-plugin@example.org"
+          ],
+          [
+            "status",
+            "failure",
+            "Not read: no-xpi-release"
+          ]
+        ]
+      },
+      {
+        "attributes": {
+          "data-languages": "en es zh",
+          "data-plugin": "first-plugin@example.org",
+          "data-zotero": "7 8"
+        },
+        "parts": [
+          [
+            "link",
+            "/zotero-plugin-index/plugins/first-plugin%40example.org/",
+            "First Plugin"
+          ],
+          [
+            "description",
+            "A plugin for the site tests."
+          ],
+          [
+            "pill",
+            "7",
+            "all",
+            "Declares all of Zotero 7",
+            "Declares all of Zotero 7"
+          ],
+          [
+            "pill",
+            "8",
+            "all",
+            "Declares all of Zotero 8",
+            "Declares all of Zotero 8"
+          ],
+          [
+            "pill",
+            "9",
+            "none",
+            "Does not declare Zotero 9",
+            "Does not declare Zotero 9"
+          ],
+          [
+            "pill",
+            "10",
+            "none",
+            "Does not declare Zotero 10",
+            "Does not declare Zotero 10"
+          ]
+        ]
+      },
+      {
+        "attributes": {
+          "data-languages": "",
+          "data-plugin": "old-plugin@example.org",
+          "data-zotero": "7"
+        },
+        "parts": [
+          [
+            "link",
+            "/zotero-plugin-index/plugins/old-plugin%40example.org/",
+            "Old Plugin"
+          ],
+          [
+            "archived",
+            "(archived)"
+          ],
+          [
+            "pill",
+            "7",
+            "some",
+            "Declares part of Zotero 7. Declared range: Zotero 6.999 to 7.0.*",
+            "Declares part of Zotero 7. Declared range: Zotero 6.999 to 7.0.*"
+          ],
+          [
+            "pill",
+            "8",
+            "none",
+            "Does not declare Zotero 8",
+            "Does not declare Zotero 8"
+          ],
+          [
+            "pill",
+            "9",
+            "none",
+            "Does not declare Zotero 9",
+            "Does not declare Zotero 9"
+          ],
+          [
+            "pill",
+            "10",
+            "none",
+            "Does not declare Zotero 10",
+            "Does not declare Zotero 10"
+          ]
+        ]
+      },
+      {
+        "attributes": {
+          "data-languages": "",
+          "data-plugin": "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}",
+          "data-zotero": "9"
+        },
+        "parts": [
+          [
+            "link",
+            "/zotero-plugin-index/plugins/%7Bc2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b%7D/",
+            "GUID Plugin"
+          ],
+          [
+            "pill",
+            "7",
+            "none",
+            "Does not declare Zotero 7",
+            "Does not declare Zotero 7"
+          ],
+          [
+            "pill",
+            "8",
+            "none",
+            "Does not declare Zotero 8",
+            "Does not declare Zotero 8"
+          ],
+          [
+            "pill",
+            "9",
+            "all",
+            "Declares all of Zotero 9",
+            "Declares all of Zotero 9"
+          ],
+          [
+            "pill",
+            "10",
+            "none",
+            "Does not declare Zotero 10",
+            "Does not declare Zotero 10"
+          ]
+        ]
+      },
+      {
+        "attributes": {
+          "data-languages": "de fr",
+          "data-plugin": "no-range-plugin@example.org",
+          "data-zotero": ""
+        },
+        "parts": [
+          [
+            "link",
+            "/zotero-plugin-index/plugins/no-range-plugin%40example.org/",
+            "No Range Plugin"
+          ],
+          [
+            "status",
+            "no-range",
+            "No declared range"
+          ]
+        ]
+      },
+      {
+        "attributes": {
+          "data-languages": "zh",
+          "data-plugin": "min-only-plugin@example.org",
+          "data-zotero": "8 9 10"
+        },
+        "parts": [
+          [
+            "link",
+            "/zotero-plugin-index/plugins/min-only-plugin%40example.org/",
+            "Min Only Plugin"
+          ],
+          [
+            "description",
+            "Sorts attachments into folders."
+          ],
+          [
+            "pill",
+            "7",
+            "none",
+            "Does not declare Zotero 7",
+            "Does not declare Zotero 7"
+          ],
+          [
+            "pill",
+            "8",
+            "some",
+            "Declares part of Zotero 8. Declared range: Zotero 8.0.1 or newer",
+            "Declares part of Zotero 8. Declared range: Zotero 8.0.1 or newer"
+          ],
+          [
+            "pill",
+            "9",
+            "all",
+            "Declares all of Zotero 9",
+            "Declares all of Zotero 9"
+          ],
+          [
+            "pill",
+            "10",
+            "all",
+            "Declares all of Zotero 10",
+            "Declares all of Zotero 10"
+          ]
+        ]
+      },
+      {
+        "attributes": {
+          "data-languages": "es pt",
+          "data-plugin": "locale-plugin@example.org",
+          "data-zotero": "7 8 9"
+        },
+        "parts": [
+          [
+            "link",
+            "/zotero-plugin-index/plugins/locale-plugin%40example.org/",
+            "Locale Plugin"
+          ],
+          [
+            "description",
+            "Translates item fields."
+          ],
+          [
+            "pill",
+            "7",
+            "all",
+            "Declares all of Zotero 7",
+            "Declares all of Zotero 7"
+          ],
+          [
+            "pill",
+            "8",
+            "all",
+            "Declares all of Zotero 8",
+            "Declares all of Zotero 8"
+          ],
+          [
+            "pill",
+            "9",
+            "all",
+            "Declares all of Zotero 9",
+            "Declares all of Zotero 9"
+          ],
+          [
+            "pill",
+            "10",
+            "none",
+            "Does not declare Zotero 10",
+            "Does not declare Zotero 10"
+          ]
+        ]
+      },
+      {
+        "attributes": {
+          "data-languages": "",
+          "data-plugin": "_x-y+z.w@{v}",
+          "data-zotero": ""
+        },
+        "parts": [
+          [
+            "link",
+            "/zotero-plugin-index/plugins/_x-y%2Bz.w%40%7Bv%7D/",
+            "_x-y+z.w@{v}"
+          ],
+          [
+            "status",
+            "failure",
+            "Not read: no-xpi-release"
+          ]
+        ]
+      },
+      {
+        "attributes": {
+          "data-languages": "",
+          "data-plugin": "zotero6-plugin@example.org",
+          "data-zotero": ""
+        },
+        "parts": [
+          [
+            "link",
+            "/zotero-plugin-index/plugins/zotero6-plugin%40example.org/",
+            "Zotero 6 Plugin"
+          ],
+          [
+            "pill",
+            "7",
+            "none",
+            "Does not declare Zotero 7",
+            "Does not declare Zotero 7"
+          ],
+          [
+            "pill",
+            "8",
+            "none",
+            "Does not declare Zotero 8",
+            "Does not declare Zotero 8"
+          ],
+          [
+            "pill",
+            "9",
+            "none",
+            "Does not declare Zotero 9",
+            "Does not declare Zotero 9"
+          ],
+          [
+            "pill",
+            "10",
+            "none",
+            "Does not declare Zotero 10",
+            "Does not declare Zotero 10"
+          ]
+        ]
+      }
+    ]
+  }
+}

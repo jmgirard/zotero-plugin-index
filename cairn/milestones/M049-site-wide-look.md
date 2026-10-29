@@ -1,13 +1,13 @@
 # M049: Give the whole site the card look
 
-- **Status:** planned
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** M048
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the public site's shared header, footer, and home page
-- **Branch/PR:** —
+- **Branch/PR:** m049-site-wide-look
 
 ## Goal
 
@@ -29,13 +29,13 @@ browser".
 
 ## Acceptance criteria
 
-- [ ] AC1: Outside the `:root` blocks and `.visually-hidden`, each value
+- [x] AC1: Outside the `:root` blocks and `.visually-hidden`, each value
       part of each `border-radius`, `padding*`, `margin*`, `gap`, and
       `font-size` declaration in the CSS of `Base.astro` is a `var()`,
       `0`, or `auto`.
-- [ ] AC2: No `.astro` file under `site/src` other than `Base.astro` holds
+- [x] AC2: No `.astro` file under `site/src` other than `Base.astro` holds
       a `<style>` element or a `style` attribute.
-- [ ] AC3: On the built fixture home page, each row keeps, in order, the
+- [x] AC3: On the built fixture home page, each row keeps, in order, the
       name link and its `href`, the `data-archived` mark, the
       `data-description` line, and the pills (`data-major`,
       `data-support`, `title`, hidden text) or the status line. Each `li`
@@ -45,22 +45,22 @@ browser".
       keep their `id`, `data-*`, `value`, `aria-pressed`, and `role`
       attributes. Each of these matches the built page at the merge
       commit of M048.
-- [ ] AC4: On the built fixture home page, served from a local server at
+- [x] AC4: On the built fixture home page, served from a local server at
       the Pages base path in the browser pane, each non-empty menu option
       and each major button shows exactly the rows that match. For a
       major, those are the rows whose pill for it is "all" or "some". The
       status line then reads what `filterStatus(shown, total, true)`
       returns.
-- [ ] AC5: Each text and background pair that one rule added or changed by
+- [x] AC5: Each text and background pair that one rule added or changed by
       this milestone sets together has a contrast ratio of at least 4.5:1
       by the WCAG 2.2 relative-luminance formula, in the light and the
       dark `:root` blocks. The pairs are found from the diff of
       `Base.astro` against the merge commit of M048.
-- [ ] AC6: The built fixture home page, served as in AC4, shows no
+- [x] AC6: The built fixture home page, served as in AC4, shows no
       horizontal page scroll at viewport widths 360 px and 1280 px. The
       measure is `document.documentElement.scrollWidth <=
       document.documentElement.clientWidth`.
-- [ ] AC7: One `CHANGELOG.md` entry under Unreleased describes the new
+- [x] AC7: One `CHANGELOG.md` entry under Unreleased describes the new
       look of the header, the footer, and the home page. The profile's
       `verify` slot is clean: `pnpm test` and `pnpm check` pass.
 
@@ -76,18 +76,18 @@ browser".
 
 ## Tasks
 
-- [ ] T1: Write the tests first: the AC1 declaration test, the AC2 style
+- [x] T1: Write the tests first: the AC1 declaration test, the AC2 style
       test, and the AC3 home row and filter checks. Make the AC1 and AC2
       tests show that they read a non-empty set of declarations and files.
       See the AC1 test fail on the literal values left after M048.
-- [ ] T2: Add the spacing and type-size properties. Restyle the header,
+- [x] T2: Add the spacing and type-size properties. Restyle the header,
       the footer, the intro, the filters, and the home rows with them.
       Extend the AC6 color-pair test of M048 with each pair this
       milestone adds.
-- [ ] T3: Serve the built fixture site at the Pages base path. Check the
+- [x] T3: Serve the built fixture site at the Pages base path. Check the
       language menu and the version buttons (AC4) and measure AC6 at both
       widths. Take screenshots.
-- [ ] T4: Add the CHANGELOG entry. Run `pnpm test` and `pnpm check`.
+- [x] T4: Add the CHANGELOG entry. Run `pnpm test` and `pnpm check`.
 
 ## Work log
 
@@ -98,7 +98,51 @@ browser".
 - 2026-10-29: question set: reach — whole site, so this milestone exists.
 - 2026-10-29: plan gate chose a whole-site restyle over plugin pages alone, at the user's choice; falsified by a home page check where the filters stop working after the restyle.
 - 2026-10-29: criteria audit (full): 8 findings, all fixed. AC1 allows `auto`, skips `.visually-hidden`, covers longhands and each value part, and drops its test-text clause (moved to T1). AC2 covers `.astro` files and `style` attributes. AC3 lists the parts and attributes the script uses, at M048's merge commit. AC4 checks each option and button and names `filterStatus`. AC5 covers changed rules. Out now says how far AC1 reaches into the plugin page rules.
+- 2026-10-29: status in-progress; branch m049-site-wide-look cut from main at fad2e7e.
+- 2026-10-29: T1: `test/support/home-facts.ts` reads the home rows' and filters' AC3 facts from built HTML by data attributes; `test/fixtures/site/home-facts.json` holds them from the fixture home page built at fad2e7e, whose site code equals the M048 merge dc1caf0. The AC1 test failed on 42 literal values before T2. Planted defects (no `hidden` on the language menu, a 1.3:1 select color, a `style` attribute in Support.astro) each turned their test red.
+- 2026-10-29: T1 and T2 share one commit, since the AC1 test stays red until T2.
+- 2026-10-29: T2 choices: `--space-N` is N eighths of a rem (1–6, 8, 12), `--text-xs/s/l`, `--radius-pill`; header and footer take the card class as `.site-head` and `.site-foot`; the home h1 and intro sit in `div.card.page-head`; the filters get no wrapper card, since they are hidden without JavaScript and an empty card would show; the select takes the version buttons' shape; plugin page values unchanged; footer top margin 2rem to 1.5rem, its paragraphs 0.25rem apart; a home row's last child loses its bottom margin.
+- 2026-10-29: T2: for AC5, a new test checks every rule that sets a text color and a background together, in both schemes, instead of extending M048's pair list; the one new pair is the select's `--text` on `--card`, already on that list. Verify clean: 1060 tests passed, 6 skipped; `pnpm check` 56 entries, 0 problems.
+- 2026-10-29: T3: fixture site at commit 4ede776 served on port 4326 under `/zotero-plugin-index/`. Each of the 6 menu options and 4 major buttons showed exactly its matching rows, with "Showing n of 9 plugins." as `filterStatus(n, 9, true)` gives; Any version reset to 9 rows and an empty status. Width in 360 and 1280 px iframes: scrollWidth equals clientWidth, also with `?language=zh&zotero=9`; a planted 900 px div gave 916 > 360. Screenshots taken at 1280 and 360 px (dark scheme), footer included.
+- 2026-10-29: T4: CHANGELOG entry under Unreleased for the header, footer, and home look; DESIGN's style note names the custom-property and no-other-style rules. README describes facts, not looks, so it needs no change. Verify clean: 1060 tests passed, 6 skipped; `pnpm check` 56 entries, 0 problems.
+- 2026-10-29: claim audit: 21 claims read, 5 corrected — CHANGELOG.md, test/site.test.ts, test/support/home-facts.ts
+- 2026-10-29: claim audit fixes: the CHANGELOG names the bold labels; the AC1 test name lists its properties, exemptions, and allowed values; the helper's comments say which classes it still reads, that it prints the fixture's "facts" field, and which attributes it keeps. The same reader re-read the five: all true. Open concern: WebKit may not draw a rounded border on a native `<select>` without `appearance: none`; not checked in Safari. Verify clean: 1060 passed, 6 skipped; `pnpm check` 0 problems.
+- 2026-10-29: status review.
+- 2026-10-29: step-7 approval: m049-site-wide-look approved for merge
 
 ## Decisions
 
 ## Review
+
+- Route (d): no PR for the branch; main at fad2e7e, the branch's base, so no sync. Copilot round off (no header line). Head a09b510.
+- Verify (2026-10-29, head a09b510): `pnpm test` 1060 passed, 6 skipped, 22 files; `pnpm check` 56 entries, 0 problems.
+- AC1: test "takes each margin, padding, gap, corner radius, and font size outside :root and .visually-hidden from a custom property, 0, or auto" passed; it found each of border-radius, padding, margin, margin-left, gap, and font-size, and no literal part. Planted literals failed it at T1 (42 parts).
+- AC2: test "leaves styles out of every other .astro file" passed over the three other files (pages/index.astro, pages/plugins/[id]/index.astro, components/Support.astro); a planted `style` attribute in Support.astro failed it at T1.
+- AC3: fixture home page built fresh at dc1caf0 (M048 merge, in a detached worktree) and at a09b510; `homeFacts` gave identical output for both (9 rows, 40 parts, the two filters' `hidden`, select, 7 options, 5 buttons, status line attributes), equal to `test/fixtures/site/home-facts.json`. Test "keeps the facts of its rows and filters as the page had them before the restyle" passed; dropping `hidden` from the language menu failed it at T1.
+- AC4: a09b510 fixture build served at `http://localhost:4326/zotero-plugin-index/` in the browser pane. Each of the 6 options (zh, es, en, fr, de, pt) and the 4 majors showed exactly the rows that match (2, 2, 1, 1, 1, 1; 3, 3, 3, 1), the majors by pills of "all" or "some"; the status line read "Showing n of 9 plugins.", which is `filterStatus(n, 9, true)` for n ≥ 1. Any version gave back 9 rows and an empty line.
+- AC5: rules of `Base.astro` at a09b510 not present verbatim at dc1caf0: 34. Those that set a text and a background together: `body` --text on --page 15.59 light, 15.47 dark; `[data-language-filter]` and `[data-version-filter] button` --text on --card 16.83 light, 13.93 dark. Both "each rule sets together" contrast tests passed; a planted 1.3:1 select color failed them at T1.
+- AC6: same served build, home page in same-origin iframes: 360 px wide, scrollWidth 360 = clientWidth 360; 1280 px wide, 1280 = 1280. At T3 a planted 900 px div gave 916 > 360.
+- AC7: `CHANGELOG.md` holds one new entry under Unreleased (the only one `git diff main` adds there), "The header, the footer, and the home page take the card look of the plugin pages…", naming the header, footer, and home page. Verify clean as above.
+- Gate: `cairn_validate.py` all checks passed (exit 0); no principle changed, so no `cairn_impact`; the generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the home-facts test repeats the stricter exact-markup home tests and adds a 427-line fixture — reject (planned change: AC3 and T1 name this check against the M048 build).
+- diff-bug #2: `homeFacts` keeps no attributes of the version group wrapper (`data-version-filter`, `role="group"`, `aria-labelledby`) or the label's `for` — reject (planned change: AC3 lists the select, buttons, and status line, not the wrapper; the exact test "holds hidden version buttons…" pins the wrapper).
+- diff-bug #3: the rounded `<select>` is unchecked in Safari, so the CHANGELOG's "rounded shape" sentence may be false there — fix now (sentence removed) and follow-up to the candidate row "Check the language menu in Safari", fixed 3083dd6.
+- diff-bug #4: `import.meta.main` is undefined on Node 24.0–24.1, which `engines` allows, so the helper would print nothing — fix now (compares `process.argv[1]` with the module path), fixed 3083dd6.
+- diff-bug #5: the AC1 test checks fewer properties than DESIGN's "each spacing, corner radius, and type size" sentence claims — fix now (DESIGN names the five properties and `0`/`auto`), fixed 3083dd6; the wider property set is reject (planned change: AC1 names its properties).
+- diff-bug #6: footer paragraph spacing rests on `.site-foot p` following `.card p` at equal specificity — reject (style: the order gives the intended 0.25rem, and no rule moves it).
+- diff-bug #7: the both-scheme contrast test repeats its non-empty check per scheme, sees only pairs set in one rule, and has a comment that restates the code — fix now for the comment (removed), fixed 3083dd6; the rest reject (planned change: AC5 names both schemes and rules that set both; cross-rule pairs stay on M048's PAIRS list).
+- diff-bug #8: the facts parser misreads HTML comments, entities, single-quoted or unquoted values, `>` in values, and `<body attr>` — reject (edge: Astro's built pages carry none of these; the effect is a test failure, not a wrong pass).
+- diff-bug #9: the fixture's `source` names dc1caf0 while the T1 line names fad2e7e — reject (false: both are true; the site code is the same at both, and the review rebuilt at dc1caf0 with identical facts).
+- diff-bug #10: the AC2 test hard-codes three file names and its regex misses `style =` — reject (style: the names are T1's non-empty check; the spaced form is a formatting edge no file uses).
+- diff-bug #11: the fixture length checks before the exact match are redundant — reject (false: they show the fixture is not empty, as T1 asks).
+- diff-bug #12: the CHANGELOG omits the larger header link, the 1.5rem footer gap, and the rows' last margin — reject (style: the entry describes the look at the level of M048's entry; each change is in the T2 work-log line).
+- blame-history #1: `.plugins { margin: 0 }` drops the list's default margin — reject (planned change: Scope In restyles the home rows).
+- blame-history #2: footer top margin 2rem to 1.5rem — reject (planned change: Scope In restyles the footer; Out's "only moves literal values" binds the plugin page's rules).
+- blame-history #3: header bottom margin 1rem to 0.75rem — reject (planned change: Scope In restyles the header).
+- blame-history #4: the header and footer border lines give way to card borders — reject (planned change).
+- blame-history #5: the `{" "}` between the menu label and the select no longer renders in the flex row; `gap` spaces them — reject (planned change: the layout gap replaces it, as seen in the T3 screenshots).
+- prior-review #1: the menu's 1px `--muted` border has no forced-colors rule, unlike the buttons — reject (false: forced colors replace every border color with a system color, so the edge stays; the M037 rule marks the pressed state; `--muted` on `--card` is already at least 4.5:1 on M048's list).
+- ripple #1: DESIGN.md says each spacing comes from a custom property, but `0` and `auto` remain — fix now, same fix as diff-bug #5, fixed 3083dd6.
+- ripple #2: "header block" now names the plugin page's name block and could be read as the site header — reject (false: the plugin page lines stay true).
+- Verify after fixes (3083dd6): `pnpm test` 1060 passed, 6 skipped; `pnpm check` 0 problems; `node test/support/home-facts.ts` printed 9 rows, and an import printed nothing.
