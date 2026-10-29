@@ -1,0 +1,8 @@
+{
+  "id": "arxiv@allanchain.github.com",
+  "name": "arXiv Workflow for Zotero",
+  "description": "arXiv Workflow for Zotero",
+  "homepage": "https://github.com/AllanChain/zotero-arxiv-workflow#readme",
+  "repoUrl": "https://github.com/AllanChain/zotero-arxiv-workflow",
+  "updateUrl": "https://github.com/AllanChain/zotero-arxiv-workflow/releases/download/release/update.json"
+}
