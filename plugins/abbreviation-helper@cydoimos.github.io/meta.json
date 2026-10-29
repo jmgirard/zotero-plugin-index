@@ -1,0 +1,8 @@
+{
+  "id": "abbreviation-helper@cydoimos.github.io",
+  "name": "Abbreviation Helper",
+  "description": "Expands acronyms, initialisms and other abbreviations while you read. Finds where a paper defines each short form and shows the meaning on hover, so PDFs can be skimmed without hunting for the first use. Optional database lookup links for gene, protein, cell line and chemical names.",
+  "homepage": "https://github.com/Cydoimos/zotero-abbreviation-helper",
+  "repoUrl": "https://github.com/Cydoimos/zotero-abbreviation-helper",
+  "updateUrl": "https://raw.githubusercontent.com/Cydoimos/zotero-abbreviation-helper/main/update.json"
+}
