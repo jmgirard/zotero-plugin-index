@@ -1,0 +1,8 @@
+{
+  "id": "glossa@openzotero.org",
+  "name": "Glossa",
+  "description": "Fully open-source AI assistant for Zotero. No paid modules, no encrypted payloads.",
+  "homepage": "https://github.com/senyamiku1101/glossa#readme",
+  "repoUrl": "https://github.com/senyamiku1101/glossa",
+  "updateUrl": "https://github.com/senyamiku1101/glossa/releases/download/release/update.json"
+}
