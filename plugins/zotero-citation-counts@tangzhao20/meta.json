@@ -1,0 +1,8 @@
+{
+  "id": "zotero-citation-counts@tangzhao20",
+  "name": "Zotero Citation Counts Manager",
+  "description": "Fetch and display citation counts",
+  "homepage": "https://github.com/tangzhao20/zotero-citation-counts",
+  "repoUrl": "https://github.com/tangzhao20/zotero-citation-counts",
+  "updateUrl": "https://raw.githubusercontent.com/tangzhao20/zotero-citation-counts/refs/heads/main/updates.json"
+}
