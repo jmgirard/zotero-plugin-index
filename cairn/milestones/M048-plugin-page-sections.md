@@ -31,18 +31,18 @@ A script on the plugin pages stays out, because this layout needs none
 
 ## Acceptance criteria
 
-- [ ] AC1: On the built page of each record in
+- [x] AC1: On the built page of each record in
       `test/fixtures/site/plugins.json`, the main content opens with a
       header block that is not a `<header>` element. The block holds the
       h1 name, the "(archived)" mark where the record is archived, and the
       description where `shownDescription` returns one.
-- [ ] AC2: Between the header block and `<details>`, each such page shows
+- [x] AC2: Between the header block and `<details>`, each such page shows
       exactly these h2 sections, in this order. "Declared support" comes
       first. "Start test" follows
       where the record was read and has a non-empty `startTests`. "User
       reports" follows where the record was read. "About" comes last. The
       closed Details section follows the sections.
-- [ ] AC3: On each such page, "Declared support" holds the pills or the
+- [x] AC3: On each such page, "Declared support" holds the pills or the
       failure or "No declared range" status, and the declared range where
       one is declared. "Start test" holds the "Starts in Zotero" line and
       its note. "User reports" holds the report version line, the counts
@@ -51,15 +51,15 @@ A script on the plugin pages stays out, because this layout needs none
       the repository fact (`data-fact="repository"`), and the releases
       link where the record was read. Details holds the facts
       that it holds on `main` at 48ef631.
-- [ ] AC4: On each such page, the Works, Broken, repository, and releases
+- [x] AC4: On each such page, the Works, Broken, repository, and releases
       links have the same `href` values as on `main` at 48ef631.
-- [ ] AC5: `Base.astro` defines the card's border color, radius, padding,
+- [x] AC5: `Base.astro` defines the card's border color, radius, padding,
       and background as custom properties. The header block, each of the
       four AC2 sections, and the home list's rows take those four values from them.
       The Works link takes its colors from `--all-text` on `--all-bg`. The
       Broken link takes its colors from a new `--broken-text` on
       `--broken-bg` pair, in the light and the dark block.
-- [ ] AC6: In the light and the dark `:root` blocks of `Base.astro`, each
+- [x] AC6: In the light and the dark `:root` blocks of `Base.astro`, each
       of these pairs has a contrast ratio of at least 4.5:1 by the WCAG 2.2
       relative-luminance formula: `--text`, `--muted`, and `--link`, each
       on `--card` and on `--page`. Also `--all-text` on `--all-bg`,
@@ -68,12 +68,12 @@ A script on the plugin pages stays out, because this layout needs none
       background pair that one rule added or changed by this milestone
       sets together,
       found from the diff of `Base.astro` against `main` at 48ef631.
-- [ ] AC7: The built fixture site, served from a local server at the Pages
+- [x] AC7: The built fixture site, served from a local server at the Pages
       base path, shows no horizontal page scroll on the page of each
       fixture record, with Details open, at viewport widths 360 px and
       1280 px. The measure is `document.documentElement.scrollWidth <=
       document.documentElement.clientWidth` in the browser pane.
-- [ ] AC8: The plugin page paragraph of `README.md`, the plugin page
+- [x] AC8: The plugin page paragraph of `README.md`, the plugin page
       sentence of `cairn/DESIGN.md`, and one `CHANGELOG.md` entry under
       Unreleased describe the header block and the four sections. The profile's `verify` slot is clean: `pnpm test` and
       `pnpm check` pass.
@@ -135,3 +135,14 @@ A script on the plugin pages stays out, because this layout needs none
 ## Decisions
 
 ## Review
+
+- consistency gate: `cairn_validate.py` all checks passed (1 advisory: sizing, 8 criteria, logged at plan); no principle changed, so no `cairn_impact`; the generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- AC1: `pnpm exec vitest run test/site.test.ts` — "opens the main content of %s with a header block of the name and the description" passed for all 9 fixture ids (the block is `div.card.page-head`, holds exactly the h1 with its archived mark and the `shownDescription` line, and `<main>` holds no `<header`).
+- AC2: "shows the sections of %s in order, each with its facts" passed for all 9 ids: Declared support, Start test (no-range-plugin only), User reports (the 7 read records), About; "holds the minor facts of %s in a closed Details section after the sections" passed for all 9.
+- AC3: the same section test asserts each section's markers in order and that each fact marker appears exactly once on the page; the Details test asserts the id, repository, release, and override facts inside `<details>`, as on main at 48ef631.
+- AC4: built the fixture site at 48ef631 (detached worktree) and at the branch head; for all 9 pages the Works, Broken, repository, and releases `href` values are equal (7 pages with 4 links, the 2 failed-read pages with the repository link only).
+- AC5: `Base.astro:37-39` defines `--card-border`, `--card-radius`, `--card-padding` beside `--card`; `.plugin, .card` (`:143-149`) and `details` (`:290-295`) take all four from them; `.button[data-report="works"]` uses `--all-text` on `--all-bg`, `[data-report="broken"]` uses `--broken-text` on `--broken-bg`, defined in light (`:35-36`) and dark (`:57-58`).
+- AC6: "gives each listed text and background pair a contrast of at least 4.5:1" passed in light and dark (10 pairs, dark keys equal light keys); the color declarations added in `git diff 48ef631 -- site/src/layouts/Base.astro` set only `--muted` on `--card` (h2), the two button pairs, and `--card` behind `details` text, all in the list; the forced-colors rule uses system colors.
+- AC7: fixture site rebuilt at the head and served at `/zotero-plugin-index/` (port 4324); 18 of 18 iframe loads (9 pages × 360 and 1280 px, Details open) gave `scrollWidth <= clientWidth`.
+- AC8: README plugin page paragraph (`README.md:75-80`), DESIGN plugin page sentence (`cairn/DESIGN.md:64-71`), and the CHANGELOG Unreleased entry describe the header block and the four cards; `pnpm test` 1050 passed, 6 skipped; `pnpm check` 48 entries, 0 problems.
