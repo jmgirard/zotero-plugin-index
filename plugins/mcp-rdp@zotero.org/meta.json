@@ -1,0 +1,8 @@
+{
+  "id": "mcp-rdp@zotero.org",
+  "name": "MCP Bridge for Zotero",
+  "description": "Enables Remote Debugging Protocol for AI-assisted Zotero plugin development",
+  "homepage": "https://github.com/introfini/mcp-server-zotero-dev",
+  "repoUrl": "https://github.com/introfini/mcp-server-zotero-dev",
+  "updateUrl": "https://raw.githubusercontent.com/introfini/mcp-server-zotero-dev/main/update.json"
+}
