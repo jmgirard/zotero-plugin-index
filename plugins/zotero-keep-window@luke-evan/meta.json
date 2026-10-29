@@ -1,0 +1,8 @@
+{
+  "id": "zotero-keep-window@luke-evan",
+  "name": "Zotero Keep Window",
+  "description": "点击关闭按钮或 Alt+F4 只最小化窗口，不退出 Zotero。Minimize Zotero instead of quitting.",
+  "homepage": "https://github.com/Luke-Evan/zotero-keep-window",
+  "repoUrl": "https://github.com/Luke-Evan/zotero-keep-window",
+  "updateUrl": "https://raw.githubusercontent.com/Luke-Evan/zotero-keep-window/main/update.json"
+}
