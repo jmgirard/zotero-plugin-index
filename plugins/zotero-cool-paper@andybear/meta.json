@@ -1,0 +1,8 @@
+{
+  "id": "zotero-cool-paper@andybear",
+  "name": "Zotero Cool Paper",
+  "description": "Read papers.cool KIMI content and discover related papers in your local Zotero library.",
+  "homepage": "https://github.com/zx33/zotero-cool-paper",
+  "repoUrl": "https://github.com/zx33/zotero-cool-paper",
+  "updateUrl": "https://raw.githubusercontent.com/zx33/zotero-cool-paper/main/update.json"
+}
