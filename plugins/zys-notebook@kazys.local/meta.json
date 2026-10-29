@@ -1,0 +1,8 @@
+{
+  "id": "zys-notebook@kazys.local",
+  "name": "NotebookLM Pane for Zotero",
+  "description": "Embeds Google NotebookLM in the Zotero item pane: upload sources, chat, and studio without leaving Zotero.",
+  "homepage": "https://github.com/kvarnelis/zotero-notebooklm-pane",
+  "repoUrl": "https://github.com/kvarnelis/zotero-notebooklm-pane",
+  "updateUrl": "https://raw.githubusercontent.com/kvarnelis/zotero-notebooklm-pane/main/updates.json"
+}
