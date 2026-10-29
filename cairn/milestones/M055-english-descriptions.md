@@ -43,18 +43,12 @@ added after this plan, which follow D-030 case by case.
       failure. This holds whatever `default_locale` names, and when it is
       absent. With no folder that qualifies, the value is the default
       locale's message, as before, and undefined with no `default_locale`.
-      Tests in `test/upstream.test.ts` show it for the description with:
-      `en` only and `default_locale` `zh_CN`; `en_US` only; `en_GB` only;
-      `en` and `en_GB` (`en`); `en_US` and `en_GB` (`en_US`); `en` lacking
-      the key and `en_US` holding it; `en` not JSON, `en` a JSON array, and
-      `en` with a non-string message, each beside `en_US` holding it; `en`
-      with a blank message and the default locale holding text (default);
-      a key spelled in another case in `en`; an `en` file over the size
-      limit beside the default locale (default); no `default_locale` and
-      `en` holding it; no `default_locale` and no English folder
-      (undefined); no English folder (default); and for the name, `en`
-      holding it with `default_locale` `zh_CN`, and the name from `en_US`
-      while the description comes from `en`.
+      `test/upstream.test.ts` shows each folder alone; `en` over `en_GB`;
+      `en_US` over `en_GB`; fall-through to `en_US` from an `en` that lacks
+      the key, is not JSON, is an array, or has a non-string message; a
+      blank `en` message, an oversize `en` file, and no English folder
+      (default); another key case; no `default_locale` with and without
+      `en`; the name from `en`; name and description from two folders.
 - [ ] AC2: Each published record whose read succeeds carries
       `upstream.repoDescription`, the GitHub repo response's `description`
       with outer whitespace trimmed, when it is a string whose `trim()` is
@@ -77,18 +71,12 @@ added after this plan, which follow D-030 case by case.
       the GitHub text when it is left and either the manifest text was
       dropped or the GitHub text's share is lower than the manifest
       text's; else the manifest text when it is left; else undefined.
-      Tests in `test/description.test.ts` show: an override beside both;
-      English manifest and English GitHub (manifest); English manifest and
-      Chinese GitHub (manifest); Chinese manifest and English GitHub
-      (GitHub); a Chinese manifest holding several Latin product names and
-      English GitHub (GitHub); Chinese manifest and mixed GitHub of lower
-      share (GitHub); Chinese manifest and Chinese GitHub of higher share
-      (manifest); equal shares at 0.5 or more (manifest); Japanese manifest
-      with kana and English GitHub (GitHub); Korean manifest and English
-      GitHub (GitHub); name-only manifest and Chinese GitHub (GitHub); both
-      name-only (undefined); Chinese manifest and name-only GitHub
-      (manifest); Chinese manifest and no GitHub (manifest); a digits-only
-      manifest and English GitHub (manifest).
+      `test/description.test.ts` shows, as manifest/GitHub: override beside
+      both; en/en and en/zh (manifest); zh/en, zh with Latin product
+      names/en, ja with kana/en, ko/en, zh/mixed of lower share, name-only/zh
+      (GitHub); zh/zh of higher share, equal shares at 0.5 or more,
+      zh/name-only, zh/none, digits-only/en (manifest); both name-only
+      (undefined).
 - [ ] AC4: A plugin page's Details card shows a "Manifest description" fact
       when `upstream.description` is present and a "GitHub description" fact
       when `upstream.repoDescription` is present, each with its text, and
