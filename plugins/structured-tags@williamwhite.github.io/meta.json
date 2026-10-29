@@ -1,0 +1,8 @@
+{
+  "id": "structured-tags@williamwhite.github.io",
+  "name": "Structured Tags for Zotero",
+  "description": "在 Zotero 文献列表中创建、显示和编辑结构化标签列。 / Create, display, and edit structured-tag columns in Zotero.",
+  "homepage": "https://github.com/WilliamWhite080808/zotero-structured-tags",
+  "repoUrl": "https://github.com/WilliamWhite080808/zotero-structured-tags",
+  "updateUrl": "https://raw.githubusercontent.com/WilliamWhite080808/zotero-structured-tags/main/updates.json"
+}
