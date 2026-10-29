@@ -1,0 +1,8 @@
+{
+  "id": "register02@cn.nutstore.net",
+  "name": "Nutstore",
+  "description": "Nutstore plugin for Zotero.",
+  "homepage": "https://github.com/nutstore/zotero-plugin-nutstore#readme",
+  "repoUrl": "https://github.com/nutstore/zotero-plugin-nutstore",
+  "updateUrl": "https://github.com/nutstore/zotero-plugin-nutstore/releases/download/release/update.json"
+}
