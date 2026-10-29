@@ -1,0 +1,8 @@
+{
+  "id": "preprint-bridge@research.local",
+  "name": "Preprint Bridge",
+  "description": "Find published versions of arXiv papers, review metadata, and keep your Zotero items and annotations.",
+  "homepage": "https://github.com/Kazuma-yj/preprint-bridge",
+  "repoUrl": "https://github.com/Kazuma-yj/preprint-bridge",
+  "updateUrl": "https://raw.githubusercontent.com/Kazuma-yj/preprint-bridge/main/update.json"
+}
