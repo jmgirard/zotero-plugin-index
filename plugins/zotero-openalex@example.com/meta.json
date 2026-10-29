@@ -1,0 +1,8 @@
+{
+  "id": "zotero-openalex@example.com",
+  "name": "Zotero OpenAlex",
+  "description": "Set the OpenAlex WorkID",
+  "homepage": "https://github.com/danieleongari/zotero-openalex",
+  "repoUrl": "https://github.com/danieleongari/zotero-openalex",
+  "updateUrl": "https://github.com/danieleongari/zotero-openalex/releases/latest/download/update.json"
+}
