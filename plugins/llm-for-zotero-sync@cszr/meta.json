@@ -1,0 +1,8 @@
+{
+  "id": "llm-for-zotero-sync@cszr",
+  "name": "LLM for Zotero Sync",
+  "description": "Sync MinerU parsed markdown files into Zotero item notes (companion add-on for llm-for-zotero)",
+  "homepage": "https://github.com/Vithrive/llm-for-zotero-sync",
+  "repoUrl": "https://github.com/Vithrive/llm-for-zotero-sync",
+  "updateUrl": "https://github.com/Vithrive/llm-for-zotero-sync/releases/download/release/update.json"
+}
