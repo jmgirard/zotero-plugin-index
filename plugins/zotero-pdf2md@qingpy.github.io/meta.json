@@ -1,0 +1,8 @@
+{
+  "id": "zotero-pdf2md@qingpy.github.io",
+  "name": "PDF to Markdown for Zotero",
+  "description": "Convert PDFs to Markdown and export attachments",
+  "homepage": "https://github.com/qingpy/zotero-pdf2md",
+  "repoUrl": "https://github.com/qingpy/zotero-pdf2md",
+  "updateUrl": "https://raw.githubusercontent.com/qingpy/zotero-pdf2md/main/update.json"
+}
