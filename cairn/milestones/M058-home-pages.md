@@ -1,0 +1,96 @@
+# M058: Page the home table
+
+- **Status:** planned
+- **Priority:** normal
+- **Depends on:** —
+- **Driving RR:** —
+- **Principles touched:** —
+- **Resolves:** —
+- **Surface tier:** user-facing — it changes what the home page shows and adds an address parameter
+- **Branch/PR:** —
+
+## Goal
+
+When its script runs, the home table shows the plugins that its filters pass 50 at a time, with a numbered pager, so the 272-plugin index stays easy to scan.
+
+## Scope
+
+**In:** paging in the home page script over the rows the search box, the language menu, and the version buttons
+pass; a pager below the table; a `page` address parameter with Back and Forward; pure helpers in
+`src/site/home-filter.ts`; README and CHANGELOG.
+
+**Out:** the page's weight and the full list that paints before the script pages it, which stay in row "Filter
+the home list before it paints" (extended by this plan); pages built as separate HTML files, which would need the
+filters to read the data file (not asked for).
+
+## Acceptance criteria
+
+- [ ] AC1: When the script runs, the home table shows at most 50 of the rows that the search box, the language
+      menu, and the version buttons pass, in table order: on page `p` it shows the passed rows numbered
+      50(p−1)+1 to 50p, counting from 1, and hides the rest. P, the number of pages, is the passed rows divided by
+      50, rounded up, and at least 1. A pager below the table, a `nav` labeled "Pages", holds a Previous button,
+      the text "Page p of P" in a polite live region, and a Next button. At page 1 Previous, and at page P Next,
+      has `aria-disabled="true"` and does nothing when pressed. The pager is hidden when the filters pass 50 rows
+      or fewer, and it is hidden in the built HTML whatever display its other style rules give it, so a page
+      without JavaScript shows every row and no pager. The count beside the filters still counts every row the
+      filters pass, on all pages. Tests: page-count helper cases for 0, 1, 50, 51, 100, 101, and 272 passed
+      rows; page-rows helper cases for the first, a middle, and the last page of 272; and the built script run in
+      `node:vm` over at least 101 rows, where page 1 shows the first 50 passed rows, the pager reads "Page 1 of
+      P", Previous has `aria-disabled="true"`, the count with no filter on reads the total, a filter that passes
+      more than 50 rows gives a count of "N of M plugins" with N over 50, a filter that passes exactly 50 rows
+      hides the pager, and one that passes 51 shows "Page 1 of 2".
+- [ ] AC2: A press of Next or Previous shows that page, scrolls the table's top into view, drops any address
+      write that typing left waiting, and adds a history entry with `pushState` whose address has `page=<p>` for p
+      of 2 or more and no `page` parameter for page 1. Each input event of the search box, change of the menu,
+      and click of a version button shows page 1; the address loses `page` when the filters' write runs, after
+      the typing pause for the search box. On load, and when Back or Forward changes the address, the script
+      reads the filter parameters first, then the first `page` parameter: a value that is a whole number from 2
+      to P, in digits with no sign or leading zero, shows that page, and any other value shows page 1 and is
+      removed from the address with `replaceState`. Every address the filters or the load write keeps a `page`
+      that names the page shown, other than 1. Tests in the `node:vm` run: Next writes `?page=2` and shows passed
+      rows 51 to 100; Next again writes `?page=3`; Previous on page 3 writes `?page=2`; Previous on page 2 writes
+      no `page`; Next at page P writes nothing; typing then Next before the pause, then the timers, leaves
+      `page=2`; a search input and a menu change on page 2 each show page 1 and remove `page`; `?page=3` on load
+      shows passed rows 101 on; `?page=1`, `?page=`, `?page=0`, `?page=-2`, `?page=x`, `?page=02`, and a page
+      past P each show page 1 and are removed; a `q` that passes 20 rows with `page=2` shows page 1 and removes
+      `page`; Back to an address with `page=2` shows page 2, and Back to one with no `page` shows page 1.
+- [ ] AC3: README's home page section states that the table shows 50 plugins a page when the script runs, the
+      pager, the `page` parameter and what the page does with a value that names no page, that a filter change
+      goes back to page 1, that the count covers the plugins on every page, and that a page without JavaScript
+      lists every plugin. `CHANGELOG.md`'s Unreleased section has an entry for the pages.
+- [ ] AC4: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
+
+## Coverage
+
+- AC1 → T1, T2, T3
+- AC2 → T2, T3
+- AC3 → T4
+- AC4 → T5
+
+## Tasks
+
+- [ ] T1: Add the paging helpers to `src/site/home-filter.ts` (page count, the rows of a page, the page an
+      address names), with tests beside the existing helper tests.
+- [ ] T2: Add the pager markup to `site/src/pages/index.astro` and the paging to its script: count passed rows
+      apart from paged-out ones, hide rows off the page, the Previous and Next handlers, `pushState`, the
+      scroll, page 1 on a filter event, and `page` read on load and on `popstate` after the filters; the pager's
+      styles in `site/src/layouts/Base.astro` with the `[hidden]` rule its controls already have.
+- [ ] T3: Let `homeScript` in `test/site.test.ts` take generated rows beside the built ones, with stand-ins for
+      the pager, `pushState`, and `scrollIntoView`, and write the AC1 and AC2 script tests.
+- [ ] T4: README home section and a CHANGELOG entry.
+- [ ] T5: Run the verify slot; look at the built home page in the browser pane at 375 px and at desktop width,
+      with the iframe width check (LESSONS M048) and the 375 px look (LESSONS M054), built from the deployed data
+      file (LESSONS M035).
+
+## Work log
+
+- 2026-10-30: created by /milestone-plan.
+- 2026-10-30: tier check: milestone — new page behavior, an address parameter, and a design choice of pager.
+- 2026-10-30: idea vet: gap — "pagination" could mean pages built as separate files or paging in the script; reading taken: script paging over the filtered rows, which keeps search, filters, and the count across every plugin, as the source row asks. No flaw.
+- 2026-10-30: lessons used: 2026-10-25 (M007), 2026-10-27 (M024), 2026-10-28 (M035), 2026-10-28 (M037), 2026-10-29 (M048, iframe width), 2026-10-29 (M053), 2026-10-29 (M054).
+- 2026-10-30: collision check: absorbs candidate row "Page the home table as it grows"; D-026 allows the script and needs the page to read in full without it, which the hidden pager keeps; row "Filter the home list before it paints" stays out and gains this plan's effect (more rows paint, then hide).
+- 2026-10-30: inbox sweep: no open issues; 18 open bot pull requests, none about the site; no disposition.
+- 2026-10-30: criteria audit (full, fresh Opus reader): 16 findings, all taken: P defined and at least 1; the count counts passed rows on all pages, with a probe over 50; the pager's `[hidden]` holds against its display rule; 50/51 and 100/101 boundaries; generated rows in the `node:vm` run, not a second site build; `aria-disabled` and a live region instead of `disabled`; scroll to the table's top; Next drops a waiting typing write, and filter, load, and Back writes keep `page`; filters read before `page`; every filter event resets the page; more invalid forms and first-parameter reading; 2 to 3 and back; README's count wording; the paint row extended.
+- 2026-10-30: question set: pager style — numbered pages with Previous and Next and `?page=`; page size — 50.
+- 2026-10-30: plan gate chose numbered pages with `pushState` over a "Show more" button, at the user's choice, because a page can be linked and Back returns to it; falsified by visitors who lose their place more often with pages than with a growing list.
+- 2026-10-30: plan gate chose paging in the script over pages built as separate files because the filters and the count already need every row in the page; falsified by a page weight that the `?page` view alone would cut enough to matter.
