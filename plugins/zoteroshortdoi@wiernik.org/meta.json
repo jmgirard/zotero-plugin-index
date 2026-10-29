@@ -1,0 +1,7 @@
+{
+  "id": "zoteroshortdoi@wiernik.org",
+  "name": "DOI Manager",
+  "description": "Plugin for fetching and validating DOI and shortDOI names",
+  "repoUrl": "https://github.com/reginalluna/zotero-doi-manager",
+  "updateUrl": "https://github.com/reginalluna/zotero-doi-manager/raw/refs/heads/main/updates.json"
+}
