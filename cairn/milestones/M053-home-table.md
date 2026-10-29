@@ -166,6 +166,7 @@ fixture is `test/fixtures/site/plugins.json`.
 - 2026-10-29: T8: README "The site" rewritten for the table, the marks, the start marks, the links, the search box, the count, and the top bar; DESIGN's site paragraphs and site build bullet updated; one CHANGELOG entry for the M053 -> M054 series, which M054 edits; added a test for the 760 px and 560 px column rules, which the entry claims; verify green (1136 tests, pnpm check 0 problems).
 - 2026-10-29: claim audit: 140 claims read, 8 corrected — README.md, CHANGELOG.md, site/src/pages/index.astro, site/src/components/Icon.astro, test/site.test.ts, test/home-filter.test.ts (reader's count approximate, counted by hand).
 - 2026-10-29: after the audit: rewrapped its README and CHANGELOG edits; the reader left the legend note open because a fix changes a tested string, so the note now says a declared range "comes from the plugin's manifest and the index's overrides, not from a test", and its test matches; verify green (1136 tests, pnpm check 0 problems).
+- 2026-10-29: step-7 approval: m053-home-table approved for merge
 - 2026-10-29: T8: the simple-english lint flags README lines 107, 165, and 574 and CHANGELOG lines 174 to 355; all are in text this milestone does not change, so they stay.
 
 ## Decisions
