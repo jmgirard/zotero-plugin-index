@@ -1,0 +1,8 @@
+{
+  "id": "hfdailypapers@arno.dev",
+  "name": "Zotero HF Daily Papers",
+  "description": "Browse, import, auto-tag and classify HuggingFace Daily Papers in Zotero",
+  "homepage": "https://github.com/buptweixin/zotero-hf-daily-papers#readme",
+  "repoUrl": "https://github.com/buptweixin/zotero-hf-daily-papers",
+  "updateUrl": "https://github.com/buptweixin/zotero-hf-daily-papers/releases/download/release/update.json"
+}
