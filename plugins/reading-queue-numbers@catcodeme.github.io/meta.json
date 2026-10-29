@@ -1,0 +1,8 @@
+{
+  "id": "reading-queue-numbers@catcodeme.github.io",
+  "name": "Global Number",
+  "description": "Assigns durable, configurable-width global numbers to Zotero items.",
+  "homepage": "https://github.com/CatCodeMe/zotero-global-number",
+  "repoUrl": "https://github.com/CatCodeMe/zotero-global-number",
+  "updateUrl": "https://github.com/CatCodeMe/zotero-global-number/releases/latest/download/updates.json"
+}
