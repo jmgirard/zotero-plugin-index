@@ -311,8 +311,9 @@
   with `entry-exists`. If the fetched commit has no `plugins/` folder, every
   entry fails. An issue run then leaves the issue open with its "could not
   finish" comment.
-- Runs of `Discover plugins` and `Add a plugin from an issue` wait in turn in
-  their shared concurrency group, up to 100 pending. GitHub does not promise
+- Runs of `Discover plugins`, `Add a plugin from an issue`, and
+  `Merge bot pull requests` wait in turn in their shared concurrency group,
+  up to 100 pending. GitHub does not promise
   their order. If 100 runs already wait, GitHub cancels a new run, and a
   later sweep can answer its issue, as for any unanswered issue. Before, a
   new run in the group canceled the run that waited, for example a waiting
@@ -454,3 +455,12 @@
   have one. If you validate against a saved copy of
   `schemas/plugins.v1.schema.json`, fetch the schema again, since it
   rejects fields that it does not define.
+- The bot now merges its own pull requests. Each new bot pull request body
+  has a Hold line, which names the entry's hold reasons or says
+  `Hold: none`. The README lists the five reasons. A held pull request gets
+  the `hold` label.
+  The new `Merge bot pull requests` workflow runs `pnpm merge-discover`
+  daily. The command merges a bot pull request that says `Hold: none`, has
+  no `hold` label, and opened at least 48 hours before the run. Before the
+  merge, the entry must pass `pnpm check` beside the current entries. To
+  stop the bot from merging one, add the `hold` label or close it.

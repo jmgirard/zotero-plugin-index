@@ -41,6 +41,8 @@ export interface IssueReadOptions {
   indexRepo: string;
   // The issue's number, whose body the read step reads from the API.
   issue: number;
+  // The time the owner's account age is measured to.
+  now?: Date;
 }
 
 // The read step of an issue run, which makes no GitHub write. It reads the issue's body
@@ -96,7 +98,7 @@ async function readOutcome(options: IssueReadOptions): Promise<IssueOutcome> {
   const given = githubRepo(parsed.url);
   if (known(given)) return { outcome: "known", repo: given! };
 
-  const drafted = await draftEntry(parsed.url, { ...options, ids: index.ids, pendingIds: pulls.ids });
+  const drafted = await draftEntry(parsed.url, { ...options, ids: index.ids, names: index.names, pendingIds: pulls.ids, issueRun: true });
   if (!drafted.ok) {
     const { failure, message } = drafted;
     // A rate limit, an outage, an outDir that cannot take the entry, or an entry check
@@ -217,7 +219,14 @@ export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRun
 
   const written: Written = { ...entry, outcome: "written", dir: read.dir! };
   const result = await propose({ ...options, pushBase, written: [written], issue });
-  if (result.failed.length > 0) return failed(result.failed[0].message);
+  const failure = result.failed[0];
+  // The pull request opened, and only its hold label failed: the issue gets the usual
+  // answer, which `pnpm close-issue` needs, and the run still fails.
+  if (failure?.url) {
+    errors.push(failure.message);
+    return answer(openedComment(failure.url));
+  }
+  if (failure) return failed(failure.message);
   const { url, branch } = result.proposed[0];
   // The create request's answer can lack the URL; the branch still names the pull request.
   // `pnpm close-issue` closes the issue only when this comment holds the URL.

@@ -30,8 +30,8 @@ const responses: Responses = {
   [`POST ${COMMENTS}`]: { status: 201, json: { id: 1 } },
 };
 
-type Entry = { repo: string; repoUrl: string; id: string; version: string };
-const entry = (repo: string, id: string): Entry => ({ repo, repoUrl: `https://github.com/${repo}`, id, version: "1.0.0" });
+type Entry = { repo: string; repoUrl: string; id: string; version: string; holds: string[] };
+const entry = (repo: string, id: string): Entry => ({ repo, repoUrl: `https://github.com/${repo}`, id, version: "1.0.0", holds: [] });
 const ALPHA = entry("example/alpha", "alpha@example.org");
 
 // Writes a handoff with `plan` and an entry directory with its two files for each id.
@@ -88,6 +88,9 @@ describe("pnpm propose refuses a handoff it cannot trust, with no request and no
     ["a plan with a field the schema does not define", () => handoff({ kind: "discover", entries: [ALPHA], extra: 1 }, [ALPHA.id]), {}, /does not match the handoff schema/],
     ["a plan that is a JSON string", () => handoff("{", []), {}, /does not match the handoff schema/],
     ["a plan that names an issue number", () => issueEntry({ issue: 3 }), issue, /does not match the handoff schema/],
+    ["an entry with no holds list", () => discover([{ ...ALPHA, holds: undefined as unknown as string[] }]), {}, /does not match the handoff schema/],
+    ["an entry whose holds name a sixth reason", () => discover([{ ...ALPHA, holds: ["name-match", "too-new"] }]), {}, /does not match the handoff schema/],
+    ["an issue entry whose holds name a sixth reason", () => issueEntry({ entry: { ...ALPHA, holds: ["spam"] } }), issue, /does not match the handoff schema/],
     ["a failure name with a backtick", () => handoff({ kind: "issue", outcome: "refused", failure: "x`@someone", message: "m" }, []), issue, /does not match the handoff schema/],
     ["a failed outcome's failure name with a backtick", () => handoff({ kind: "issue", outcome: "failed", failure: "x`@someone", message: "m" }, []), issue, /does not match the handoff schema/],
     ["an id that is not a Mozilla add-on id", () => discover([entry("example/alpha", "alpha")]), {}, /is not a Mozilla add-on id/],

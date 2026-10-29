@@ -535,8 +535,31 @@ exit status and the output of `pnpm check` on the new entry. If the output
 is longer than 10,000 characters, the body quotes only its first 10,000
 characters and says that the output is cut. The body also gives the
 repository URL, the plugin version, and the declared range of Zotero
-versions. The maintainer reviews each pull request and merges it or closes
-it.
+versions.
+
+The body also has a Hold line. The read job reads the hold reasons of each
+entry, and the line names them, or says `Hold: none`. An entry has these
+reasons, in this order:
+
+- `name-match`: the manifest name matches the name of an entry from another
+  owner, or the repository name without its owner matches that part of such
+  an entry's repository. The match ignores letter case and each character
+  other than `a` to `z` and `0` to `9`. It also drops `zotero`, `plugin`,
+  `addon`, and `for` where they stand apart as words. A name with nothing
+  left matches no entry.
+- `owner-unread`: the bot did not get the creation date of the owner's
+  GitHub account.
+- `new-account`: the owner's GitHub account is less than 30 days old.
+- `update-host`: the host of the manifest's `update_url`, with any port other
+  than the default one, is not `github.com` or `raw.githubusercontent.com`.
+- `issue-no-topic`: an issue proposed the repository, and it has neither the
+  topic `zotero-plugin` nor `zotero-addon`.
+
+A held pull request also gets the label `hold`, and the maintainer merges or
+closes it. If the label request fails, `pnpm propose` names the pull request
+as a failed entry and exits with status 1. The pull request stays open, and
+its Hold line still keeps the bot from merging it. In an issue run, the
+issue still gets the comment that names the pull request.
 
 If you close a bot pull request without a merge, the bot does not propose
 that owner/repo name again. The bot also skips a repository whose bot pull
@@ -567,6 +590,64 @@ Both commands read the name of the index repository from the
 `GITHUB_REPOSITORY` environment variable, which GitHub Actions sets. The
 workflow needs the repository setting "Allow GitHub Actions to create and
 approve pull requests" under Settings > Actions > General.
+
+### Merging bot pull requests
+
+The `Merge bot pull requests` workflow runs `pnpm merge-discover` once a day
+at 05:13 UTC, before the daily build. You can also start it by hand on the
+default branch. It runs in the same group as `Discover plugins`, so it never
+runs while that workflow or `Add a plugin from an issue` runs.
+
+The command reads every page of the open pull requests. It merges a pull
+request that meets all of these conditions:
+
+- Its branch starts with `discover/` and is in the index repository.
+- `github-actions[bot]` opened it.
+- Its body has a line that is exactly `Hold: none`.
+- It has no `hold` label.
+- It opened at least 48 hours before the run.
+- Its files are exactly `plugins/<id>/meta.json` and
+  `plugins/<id>/index.json` for one id, both added.
+- The checkout's `plugins/` folder has no folder of that id in any letter
+  case.
+
+The command looks for the Hold line only outside fenced code, so a line in
+the quoted check output does not count. The body must have no other line
+that starts with `Hold:`. It matches the `hold` label in any letter
+case. It also skips a draft and a pull request whose base is not the default
+branch.
+
+So the bot can merge a bot pull request without a hold reason at its first
+daily run at least 48 hours after it opens. A run started by hand after
+those 48 hours can merge it sooner. To stop the bot from merging one, add
+the `hold` label or close it. Bot pull requests opened before the Hold line
+existed have no `Hold: none` line, so the command never merges them.
+
+Before it merges, the command reads the two files at the head commit of the
+pull request. It copies the checkout's `plugins/` folder, adds the new entry,
+and runs `pnpm check` on the copy. An entry that this run merged is in that
+copy too. Then it reads the pull request again. The command skips it if,
+since the first read, it closed, got the `hold` label, lost its
+`Hold: none` line, or moved its head. Otherwise it squash-merges the pull
+request at that head commit.
+
+In these cases a pull request fails, and the command goes on to the next:
+
+- Its head has no commit SHA.
+- A read of its files or their contents fails.
+- The check fails or passes its time limit of 5 minutes.
+- GitHub refuses the merge.
+
+The command first prints a `merged #<n>` line for each merged pull request.
+Then it prints a `skipped #<n>: <reason>` line for each skipped one. Last,
+it prints a `failed #<n>: <error>` line on stderr for each failed one. If a
+pull request failed, the command exits with status 1. Some reads stop the
+whole run: the default branch, the list of pull requests, and the
+checkout's `plugins/` folder. If one of them fails, the command prints
+`merged nothing: <error>` and exits with status 1.
+
+A merge made with the workflow's `GITHUB_TOKEN` starts no workflow run, so
+the merged plugin appears on the site after the next daily build.
 
 ### Proposing a plugin with an issue
 
@@ -663,7 +744,8 @@ example is the comment that starts with `The bot could not finish`.
 The jobs get only issue numbers. The read job and the write job get them
 from the `pick` job in the `ISSUES` environment variable. Each command gets
 one in `ISSUE_NUMBER`. Some runs share the concurrency group of
-`Discover plugins`, so the two workflows do not push at the same time.
+`Discover plugins` and `Merge bot pull requests`, so the workflows do not
+push or merge at the same time.
 These are a run for an issue with the label `add-plugin`, a sweep, and a
 dispatch from the default branch. Up to 100 runs wait in the group, and
 they run one at a time. GitHub does not promise their order. If 100 runs

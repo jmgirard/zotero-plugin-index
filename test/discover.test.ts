@@ -324,7 +324,7 @@ describe("the time limits", () => {
 
   test("marks a read that passes its limit as build-level", async () => {
     const { fetch } = fixtureFetch(stalled());
-    const drafted = await draftEntry("https://github.com/example/t2", { fetch, lookup: publicLookup, outDir: tempDir(), ids: new Set(), readMs: 200 });
+    const drafted = await draftEntry("https://github.com/example/t2", { fetch, lookup: publicLookup, outDir: tempDir(), ids: new Set(), names: [], readMs: 200 });
     expect(drafted).toMatchObject({ ok: false, failure: "request-failed", recorded: false, buildLevel: true });
   });
 
@@ -354,7 +354,7 @@ describe("the time limits", () => {
     const { fetch } = fixtureFetch(stalled(), (seen) => seen.url === stalledXpi && reached());
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     try {
-      const pending = draftEntry("https://github.com/example/t2", { fetch, lookup: publicLookup, outDir: tempDir(), ids: new Set() });
+      const pending = draftEntry("https://github.com/example/t2", { fetch, lookup: publicLookup, outDir: tempDir(), ids: new Set(), names: [] });
       // The clock moves only once the read waits on the stalled XPI.
       await waiting;
       await vi.advanceTimersByTimeAsync(3 * 60 * 1000);

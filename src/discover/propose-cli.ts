@@ -85,7 +85,8 @@ async function main(): Promise<number> {
   console.log(JSON.stringify({ proposed, skipped }, null, 2));
   if (failed.length > 0) {
     const lines = failed.map(({ repo, id, message }) => `- ${repo} (${id}): ${message}`);
-    console.error(`opened no pull request for ${failed.length} entries:\n${lines.join("\n")}`);
+    // A held entry whose label request failed has an open pull request, which its message names.
+    console.error(`${failed.length} entries failed:\n${lines.join("\n")}`);
     return 1;
   }
   return 0;

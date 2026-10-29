@@ -8,6 +8,7 @@ import type { Lookup } from "../upstream/host-guard.ts";
 import { type Fetch, githubClient, ReadFailure } from "../upstream/reader.ts";
 import { duration } from "../upstream/time-limit.ts";
 import { type DiscoverResult, type DiscoveryState, discover, type indexed, type ReadItem, repoName } from "./discover.ts";
+import type { HoldReason } from "./holds.ts";
 
 const API = "https://api.github.com";
 // The bot's branches are `discover/<owner>/<repo>`, lowercase.
@@ -79,6 +80,8 @@ export interface ProposeFailure {
   repo: string;
   id: string;
   message: string;
+  // The pull request that opened before the failure, when the hold label request failed.
+  url?: string;
 }
 
 export interface DiscoverReadOptions {
@@ -229,10 +232,19 @@ interface PullJson {
 }
 
 // The issue numbers of the lines that are exactly `Closes #<n>`, outside fenced code
-// blocks. A fence closes on a line of the same character, at least as long, with
-// nothing else on the line but whitespace.
+// blocks.
 export function closesLines(body: string): number[] {
-  const numbers: number[] = [];
+  return unfencedLines(body).flatMap((line) => {
+    const closes = /^Closes #([1-9]\d*)$/.exec(line)?.[1];
+    return closes ? [Number(closes)] : [];
+  });
+}
+
+// The lines of a body outside fenced code blocks, such as the block that quotes the check
+// output. A fence closes on a line of the same character, at least as long, with nothing
+// else on the line but whitespace.
+export function unfencedLines(body: string): string[] {
+  const lines: string[] = [];
   let fence: string | undefined;
   for (const line of body.split(/\r?\n/)) {
     if (fence) {
@@ -245,10 +257,9 @@ export function closesLines(body: string): number[] {
       fence = open;
       continue;
     }
-    const closes = /^Closes #([1-9]\d*)$/.exec(line)?.[1];
-    if (closes) numbers.push(Number(closes));
+    lines.push(line);
   }
-  return numbers;
+  return lines;
 }
 
 export async function defaultBranch(fetch: Fetch, indexRepo: string): Promise<string> {
@@ -309,7 +320,7 @@ function tokenEnv(): Record<string, string> {
 export interface PushBase {
   branch: string;
   commit: string;
-  index: Awaited<ReturnType<typeof indexed>>;
+  index: Pick<Awaited<ReturnType<typeof indexed>>, "repos" | "ids">;
 }
 
 // Fetches the default branch `base` from `remote` and reads the index at the fetched
@@ -323,7 +334,7 @@ export async function fetchBase(options: { gitDir: string; remote?: string; base
   return { branch: base, commit, index: await indexAt(git, base, commit) };
 }
 
-// The index at `commit`, in the shape of `indexed`: each folder under plugins/ whose name
+// The index at `commit`, in the shape of `indexed` less its names: each folder under plugins/ whose name
 // does not start with "." is an entry, and a meta.json in it that is JSON names its repo.
 // Two git processes read it: one ls-tree, from the repo root whatever the checkout's
 // current folder, and one cat-file for every meta.json.
@@ -436,8 +447,22 @@ export async function propose(options: ProposeOptions): Promise<{ proposed: Prop
           head: branch,
           base,
           body: body(entry, checked, issue),
-        })) as { html_url?: unknown };
-        proposed.push({ repo, id, branch, url: typeof pull?.html_url === "string" ? pull.html_url : "" });
+        })) as { html_url?: unknown; number?: unknown };
+        const url = typeof pull?.html_url === "string" ? pull.html_url : "";
+        if (entry.holds.length > 0) {
+          // The body's Hold line keeps `pnpm merge-discover` from merging a held pull
+          // request even when this label request fails. The failure carries the URL, so
+          // an issue run can still answer with the pull request.
+          try {
+            if (!Number.isSafeInteger(pull?.number)) throw new Error("the create request's answer has no pull request number");
+            await github.post(`${API}/repos/${indexRepo}/issues/${pull.number}/labels`, { labels: [HOLD_LABEL] });
+          } catch (error) {
+            const message = `opened ${url || branch} but could not add the ${HOLD_LABEL} label: ${(error as Error).message}`;
+            failed.push({ repo, id, message, ...(url && { url }) });
+            continue;
+          }
+        }
+        proposed.push({ repo, id, branch, url });
       } catch (error) {
         failed.push({ repo, id, message: (error as Error).message });
       }
@@ -455,10 +480,28 @@ export async function propose(options: ProposeOptions): Promise<{ proposed: Prop
 // checks its length.
 const CHECK_OUTPUT_MAX = 10_000;
 
+// The label that keeps `pnpm merge-discover` from merging a bot pull request.
+export const HOLD_LABEL = "hold";
+
+// The sentence a pull request body gives for each hold reason.
+export const HOLD_TEXT: Record<HoldReason, string> = {
+  "name-match":
+    "The plugin's name matches the name of an entry from another owner, or its repo name matches that entry's repo name, ignoring case, characters other than a to z and 0 to 9, and the separate words zotero, plugin, addon, and for.",
+  "owner-unread": "The bot could not read when the repo owner's GitHub account was made.",
+  "new-account": "The repo owner's GitHub account is less than 30 days old.",
+  "update-host": "The plugin's update.json is not on github.com or raw.githubusercontent.com, so its updates come from another host.",
+  "issue-no-topic": "An issue proposed this repo, and the repo has neither the zotero-plugin nor the zotero-addon topic.",
+};
+
+// The sentence after `Hold: none`.
+export const UNHELD_TEXT =
+  "The bot can merge this pull request at its first daily run at least 48 hours after it opens, unless it has the `hold` label or is closed.";
+
 // The pull request body. The manifest's values and the check output are in code spans
 // and a code block, so text in them cannot mention a GitHub user. With `issue`, the body
 // says that issue asked for the entry, and closes it. A check output longer than
-// CHECK_OUTPUT_MAX is cut, and the body says so.
+// CHECK_OUTPUT_MAX is cut, and the body says so. The Hold line names the entry's hold
+// reasons, or says `Hold: none`, which `pnpm merge-discover` looks for.
 export function body(entry: Written, checked: { status: number; output: string }, issue?: number): string {
   const declared = (value: string | undefined) => (value === undefined ? "not declared" : code(value));
   const trimmed = checked.output.trimEnd();
@@ -483,6 +526,10 @@ export function body(entry: Written, checked: { status: number; output: string }
     output,
     fence,
     ...(cut ? ["", `The output above is cut to its first ${CHECK_OUTPUT_MAX.toLocaleString("en-US")} characters.`] : []),
+    "",
+    ...(entry.holds.length === 0
+      ? ["Hold: none", "", UNHELD_TEXT]
+      : [`Hold: ${entry.holds.join(", ")}`, "", "The bot does not merge this pull request itself.", "", ...entry.holds.map((reason) => `- \`${reason}\`: ${HOLD_TEXT[reason]}`)]),
     "",
     "If this pull request is closed without a merge, the bot does not propose this repo again, from its topic or from an issue.",
   ].join("\n");

@@ -477,6 +477,19 @@ describe("pnpm discover-issue --handoff then pnpm propose", () => {
     expect(writes(requestLog)).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(/git push failed: .*refused by the test hook/s) }]);
   });
 
+  test("the read step writes the entry's hold reasons in the plan", () => {
+    const responses = {
+      ...indexRepo,
+      ...pluginRepo("example/alpha", "alpha@example.org", { topics: [] }),
+      [ISSUE]: { json: { number: 7, body: rendered("https://github.com/example/alpha") } },
+    };
+    const handoff = join(tempDir(), "handoff");
+    const read = pnpm("discover-issue", ["--handoff", handoff], responses, tempDir(), { GITHUB_REPOSITORY: "example/index", ISSUE_NUMBER: "7" });
+    expect(read.status).toBe(0);
+    const plan = JSON.parse(readFileSync(join(handoff, "plan.json"), "utf8"));
+    expect([plan.outcome, plan.entry.holds]).toEqual(["entry", ["issue-no-topic"]]);
+  });
+
   test("comments that the bot could not finish, leaves the issue open, and exits 1 when the read step left no handoff", () => {
     const requestLog = join(tempDir(), "requests.jsonl");
     writeFileSync(requestLog, "");
@@ -543,8 +556,23 @@ describe("the write step of an issue run", () => {
 
   // The read step's entry for example/<name>, with the id <name>@example.org.
   const drafted = (name: string) => ({
-    outcome: { outcome: "entry" as const, entry: { repo: `example/${name}`, repoUrl: `https://github.com/example/${name}`, id: `${name}@example.org`, version: "1.0" } },
+    outcome: { outcome: "entry" as const, entry: { repo: `example/${name}`, repoUrl: `https://github.com/example/${name}`, id: `${name}@example.org`, version: "1.0", holds: [] } },
     dir: tempDir(),
+  });
+
+  test("answers with the pull request, and fails the run, when only the hold label request fails", async () => {
+    const dir = tempDir();
+    for (const file of ["meta.json", "index.json"]) writeFileSync(join(dir, file), "{}\n");
+    const read = { outcome: { outcome: "entry" as const, entry: { ...drafted("gamma").outcome.entry, holds: ["issue-no-topic" as const] } }, dir };
+    const { result, sent } = await answer(read, {
+      ...indexRepo,
+      [`POST ${PULLS}`]: { status: 201, json: { html_url: "https://github.com/example/index/pull/9", number: 9 } },
+      [`POST ${INDEX}/issues/9/labels`]: { status: 403, json: { message: "Resource not accessible by integration" } },
+    });
+    expect(result.status).toBe(1);
+    expect(result.errors).toEqual([expect.stringMatching(/^opened https:\/\/github\.com\/example\/index\/pull\/9 but could not add the hold label: .*HTTP 403/)]);
+    expect(sent.map(({ url }) => url)).toEqual([PULLS, `${INDEX}/issues/9/labels`, COMMENTS]);
+    expect(sent[2].body).toMatch(/^The bot opened https:\/\/github\.com\/example\/index\/pull\/9\. This issue closes when that pull request merges\./);
   });
 
   test("names the entry and closes the issue as completed when only main, after the checkout, holds an entry for the repo", async () => {

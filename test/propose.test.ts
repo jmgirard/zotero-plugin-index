@@ -5,7 +5,17 @@ import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
 import type { ReadItem, SkippedItem } from "../src/discover/discover.ts";
 import { entriesDir, planned, plannedProblem, REF_CHECK_LIMIT_MS, readHandoff, writePlan } from "../src/discover/handoff.ts";
-import { body, type CheckRunner, discoverRead, GIT_LIMIT_MS, pnpmCheck, proposeHandoff, type Written } from "../src/discover/propose.ts";
+import {
+  body,
+  type CheckRunner,
+  discoverRead,
+  GIT_LIMIT_MS,
+  HOLD_TEXT,
+  pnpmCheck,
+  proposeHandoff,
+  UNHELD_TEXT,
+  type Written,
+} from "../src/discover/propose.ts";
 import { fixtureFetch, loadFixture, type Responses } from "./support/fixture-fetch.ts";
 import { checkout as gitCheckout, git, pushFromClone } from "./support/git-checkout.ts";
 import { pluginRepo, searchPage } from "./support/plugin-repo.ts";
@@ -197,7 +207,7 @@ describe("proposing pull requests", () => {
   test("the body shows a failed check's status and output, and a range bound the manifest leaves out", () => {
     const output = "x@example.org: registry-schema: has ``` in it\nchecked 1 entries in /tmp/x, 1 problems\n";
     const sent = body(
-      { repo: "example/x", repoUrl: "https://github.com/example/x", outcome: "written", id: "x@example.org", dir: "/tmp/x", version: "2.0", strictMinVersion: "7.0" },
+      { repo: "example/x", repoUrl: "https://github.com/example/x", outcome: "written", id: "x@example.org", dir: "/tmp/x", version: "2.0", strictMinVersion: "7.0", holds: [] },
       { status: 1, output },
     );
     expect(sent).toContain("strict_min_version ` 7.0 `, strict_max_version not declared");
@@ -207,13 +217,13 @@ describe("proposing pull requests", () => {
 
   test("the body keeps a manifest value with a blank line inside one code span", () => {
     const sent = body(
-      { repo: "example/x", repoUrl: "https://github.com/example/x", outcome: "written", id: "x@example.org", dir: "/tmp/x", version: "2.0\n\n@someone" },
+      { repo: "example/x", repoUrl: "https://github.com/example/x", outcome: "written", id: "x@example.org", dir: "/tmp/x", version: "2.0\n\n@someone", holds: [] },
       { status: 0, output: "checked 1 entries in /tmp/x, 0 problems\n" },
     );
     expect(sent).toContain("- Version: ` 2.0 @someone `\n");
   });
 
-  const entry: Written = { repo: "example/x", repoUrl: "https://github.com/example/x", outcome: "written", id: "x@example.org", dir: "/tmp/x", version: "2.0" };
+  const entry: Written = { repo: "example/x", repoUrl: "https://github.com/example/x", outcome: "written", id: "x@example.org", dir: "/tmp/x", version: "2.0", holds: [] };
   const cutLine = "The output above is cut to its first 10,000 characters.";
 
   test("the body quotes the first 10,000 characters of a longer check output and says so", () => {
@@ -230,7 +240,7 @@ describe("proposing pull requests", () => {
   test("the body quotes a check output of 10,000 characters and a newline whole, with no cut line", () => {
     const output = `${"b".repeat(10_000)}\n`;
     const sent = body(entry, { status: 1, output });
-    expect(sent).toContain(`\`\`\`\n${output}\`\`\`\n\nIf this pull request`);
+    expect(sent).toContain(`\`\`\`\n${output}\`\`\`\n\nHold: none\n`);
     expect(sent).not.toContain("is cut to");
   });
 
@@ -246,6 +256,56 @@ describe("proposing pull requests", () => {
     expect(long.repoUrl).toHaveLength(300);
     const sent = body(long, { status: 1, output: "`".repeat(100_000) }, 7);
     expect(sent.length).toBeLessThanOrEqual(65_536);
+  });
+});
+
+describe("the Hold line and the hold label", () => {
+  const created = { status: 201, json: { html_url: "https://github.com/example/index/pull/12", number: 12 } };
+  const LABELS = `${INDEX}/issues/12/labels`;
+  // A repo whose owner's account is 5 days old and whose update.json is off GitHub.
+  const held: Responses = {
+    ...indexRepo,
+    ...searched([["example/held", "2026-10-01T00:00:00Z"]]),
+    ...pluginRepo("example/held", "held@example.org", { ownerCreatedAt: "2026-10-20T12:00:00Z", updateHost: "updates.example.org" }),
+    [`POST ${PULLS}`]: created,
+  };
+
+  test("an entry with no hold reason gets Hold: none and the merge sentence, and no label request", async () => {
+    const { result, posts } = await twoStep({ ...indexRepo, ...passing(["alpha"]), [`POST ${PULLS}`]: created }, checkout().work);
+    if (!result?.ok) throw new Error(JSON.stringify(result));
+    expect(posts.map(({ url }) => url)).toEqual([PULLS]);
+    const sent = JSON.parse(posts[0].body!).body as string;
+    expect(sent).toContain(`\nHold: none\n\n${UNHELD_TEXT}\n`);
+  });
+
+  test("a held entry gets its reasons, a sentence for each, and the hold label", async () => {
+    const { result, posts } = await twoStep({ ...held, [`POST ${LABELS}`]: { status: 200, json: [{ name: "hold" }] } }, checkout().work);
+    if (!result?.ok) throw new Error(JSON.stringify(result));
+    expect(result.failed).toEqual([]);
+    expect(posts.map(({ url }) => url)).toEqual([PULLS, LABELS]);
+    expect(JSON.parse(posts[1].body!)).toEqual({ labels: ["hold"] });
+    const sent = JSON.parse(posts[0].body!).body as string;
+    expect(sent).toContain(`\nHold: new-account, update-host\n`);
+    expect(sent).not.toMatch(/^Hold: none$/m);
+    expect(sent).toContain(`- \`new-account\`: ${HOLD_TEXT["new-account"]}\n- \`update-host\`: ${HOLD_TEXT["update-host"]}\n`);
+  });
+
+  test("a failed label request fails the entry, naming the pull request", async () => {
+    const { result, posts } = await twoStep(
+      { ...held, [`POST ${LABELS}`]: { status: 403, json: { message: "Resource not accessible by integration" } } },
+      checkout().work,
+    );
+    if (!result?.ok) throw new Error(JSON.stringify(result));
+    expect(posts.map(({ url }) => url)).toEqual([PULLS, LABELS]);
+    expect(result.proposed).toEqual([]);
+    expect(result.failed).toEqual([
+      {
+        repo: "example/held",
+        id: "held@example.org",
+        message: expect.stringMatching(/^opened https:\/\/github\.com\/example\/index\/pull\/12 but could not add the hold label: .*HTTP 403/),
+        url: "https://github.com/example/index/pull/12",
+      },
+    ]);
   });
 });
 
@@ -300,7 +360,7 @@ describe("the read step's entry check", () => {
     const saved = process.env.PATH;
     process.env.PATH = tempDir();
     try {
-      const entry = { repo: "example/alpha", repoUrl: "https://github.com/example/alpha", id: "alpha@example.org", version: "1.0" };
+      const entry = { repo: "example/alpha", repoUrl: "https://github.com/example/alpha", id: "alpha@example.org", version: "1.0", holds: [] };
       await expect(plannedProblem(entry, tempDir())).rejects.toMatchObject({ code: "ENOENT" });
     } finally {
       process.env.PATH = saved;
@@ -309,7 +369,7 @@ describe("the read step's entry check", () => {
 });
 
 describe("readHandoff when the branch-name check throws", () => {
-  const ALPHA = { repo: "example/alpha", repoUrl: "https://github.com/example/alpha", id: "alpha@example.org", version: "1.0" };
+  const ALPHA = { repo: "example/alpha", repoUrl: "https://github.com/example/alpha", id: "alpha@example.org", version: "1.0", holds: [] };
   const realGit = spawnSync("sh", ["-c", "command -v git"], { encoding: "utf8" }).stdout.trim();
 
   async function alphaHandoff(): Promise<string> {
@@ -371,7 +431,7 @@ describe("read and write step failures", () => {
   test("the write step ends before any push when the repo record has no default branch", async () => {
     const { remote, work } = checkout();
     const handoff = tempDir();
-    const entry = { repo: "example/alpha", repoUrl: "https://github.com/example/alpha", id: "alpha@example.org", version: "1.0" };
+    const entry = { repo: "example/alpha", repoUrl: "https://github.com/example/alpha", id: "alpha@example.org", version: "1.0", holds: [] };
     mkdirSync(join(entriesDir(handoff), entry.id), { recursive: true });
     for (const file of ["meta.json", "index.json"]) writeFileSync(join(entriesDir(handoff), entry.id, file), "{}\n");
     const { fetch, requests } = fixtureFetch({ ...indexRepo, [INDEX]: { json: { full_name: "example/index" } } });
@@ -486,8 +546,8 @@ describe("the write step checks the bot pull requests again and the index at the
       for (const file of ["meta.json", "index.json"]) writeFileSync(join(entriesDir(handoff), id, file), `{"repo":"${repo}"}\n`);
     }
     const entries = [
-      { repo: "example/second-plugin", repoUrl: "https://github.com/example/second-plugin", id: "new-id@example.org", version: "1.0" },
-      { repo: "example/fresh", repoUrl: "https://github.com/example/fresh", id: "open-pr@example.org", version: "1.0" },
+      { repo: "example/second-plugin", repoUrl: "https://github.com/example/second-plugin", id: "new-id@example.org", version: "1.0", holds: [] },
+      { repo: "example/fresh", repoUrl: "https://github.com/example/fresh", id: "open-pr@example.org", version: "1.0", holds: [] },
     ];
     const { fetch, requests } = fixtureFetch(loadFixture(resolve(ROOT, "test/fixtures/discover/pulls.json")).responses);
     const result = await proposeHandoff({
@@ -518,7 +578,7 @@ describe("the write step checks the bot pull requests again and the index at the
       const dir = join(entriesDir(handoff), id);
       mkdirSync(dir, { recursive: true });
       for (const file of ["meta.json", "index.json"]) writeFileSync(join(dir, file), "{}\n");
-      return { repo: `example/${name}`, repoUrl: `https://github.com/example/${name}`, id, version: "1.0", outcome: "written", dir };
+      return { repo: `example/${name}`, repoUrl: `https://github.com/example/${name}`, id, version: "1.0", outcome: "written", dir, holds: [] };
     });
   }
 
@@ -650,6 +710,7 @@ describe("pnpm propose failures", () => {
     expect(pnpm("discover", ["--handoff", handoff, "--state", join(tempDir(), "state.json")], responses, tempDir(), env).status).toBe(0);
     const result = pnpm("propose", [handoff], responses, work, env);
     expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/^2 entries failed:\n/);
     expect(result.stderr).toMatch(/- example\/q3 \(q3@example\.org\): git push failed: .*refused by the test hook/s);
     expect(result.stderr).toContain(
       `- example/q2 (q2@example.org): POST ${PULLS} returned HTTP 422: Validation Failed; A pull request already exists`,
@@ -715,6 +776,19 @@ describe("pnpm discover --handoff", () => {
     ]);
     expect(report.read.map((item: ReadItem) => item.repo).sort()).toEqual(["example/fork-pr", "example/merged-pr"]);
     expect(JSON.parse(readFileSync(join(cwd, "handoff/plan.json"), "utf8"))).toEqual({ kind: "discover", entries: [] });
+  });
+
+  test("writes each entry's hold reasons in the plan", () => {
+    const responses: Responses = {
+      ...indexRepo,
+      ...searched([["example/held", "2026-10-01T00:00:00Z"]]),
+      ...pluginRepo("example/held", "held@example.org", { updateHost: "updates.example.org" }),
+    };
+    const cwd = tempDir();
+    const result = pnpm("discover", ["--handoff", "handoff", "--state", "state.json"], responses, cwd, { GITHUB_REPOSITORY: "example/index" });
+    expect(result.status).toBe(0);
+    const plan = JSON.parse(readFileSync(join(cwd, "handoff/plan.json"), "utf8"));
+    expect(plan.entries.map(({ id, holds }: { id: string; holds: string[] }) => [id, holds])).toEqual([["held@example.org", ["update-host"]]]);
   });
 
   test("prints the usage when GITHUB_REPOSITORY does not name a repo", () => {
