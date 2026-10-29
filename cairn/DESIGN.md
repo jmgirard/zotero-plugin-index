@@ -624,7 +624,9 @@ reused._
   and the home list's `data-archived` marker only for `archived: true` (M013).
   All styles are global in `site/src/layouts/Base.astro`, with a
   `prefers-color-scheme: dark` block, so Astro adds no scoped attributes to
-  the markup the site tests match (M015).
+  the markup the site tests match (M015). Outside its `:root` blocks and
+  `.visually-hidden`, each spacing, corner radius, and type size there comes
+  from a custom property, and no other `.astro` file holds a style (M049).
 
 ## Known issues
 
