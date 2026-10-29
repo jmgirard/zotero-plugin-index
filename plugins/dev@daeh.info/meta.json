@@ -1,0 +1,8 @@
+{
+  "id": "dev@daeh.info",
+  "name": "Citation Tally",
+  "description": "Plugin that tallies citation counts for Zotero items",
+  "homepage": "https://github.com/daeh/zotero-citation-tally#readme",
+  "repoUrl": "https://github.com/daeh/zotero-citation-tally",
+  "updateUrl": "https://github.com/daeh/zotero-citation-tally/releases/download/release/update.json"
+}
