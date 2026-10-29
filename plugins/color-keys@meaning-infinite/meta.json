@@ -1,0 +1,8 @@
+{
+  "id": "color-keys@meaning-infinite",
+  "name": "Zotero Color Keys",
+  "description": "Customizable keyboard shortcuts for text color and highlight color in Zotero notes",
+  "homepage": "https://github.com/meaning-infinite/zotero-color-keys#readme",
+  "repoUrl": "https://github.com/meaning-infinite/zotero-color-keys",
+  "updateUrl": "https://github.com/meaning-infinite/zotero-color-keys/releases/download/release/update.json"
+}
