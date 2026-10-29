@@ -131,7 +131,7 @@
   and the local storage that kept its value are gone. If the manifest
   description is blank or only repeats the plugin's name, the site shows no
   description. A `description` override still replaces it. Each plugin page
-  shows its repository and releases links under the declared range. It puts
+  shows its repository and releases links. It puts
   the plugin id, the repository and release facts such as the release count,
   and the overrides in a closed "Details" section. An archived plugin shows
   "(archived)" after its name on its page too.
@@ -349,3 +349,16 @@
   since it rejects fields that it does not define. The new commands are
   `pnpm start-test`, `pnpm start-tests`, and `pnpm add-start-results`, and
   `pnpm build --plan <file>` writes the start plan.
+- Each plugin page has a new layout. A header block shows the name and the
+  description. Cards with headings follow, in this order: "Declared
+  support" (the pills and the declared range, the "No declared range"
+  line, or the failure when the build could not read the plugin), "Start
+  test" (when the plugin has
+  start results), "User reports" (when the build read the plugin), and
+  "About" (the "Menus and settings in" line, the repository link, and the
+  releases link, the first and last only when the build read the plugin).
+  The closed "Details" section comes last. The "Works" and "Broken" report
+  links now look like buttons and open the same forms. The page shows the
+  same facts as before. The new text is the card headings and the report
+  prompt, which now reads "Tried this version on Zotero? Report what you
+  found:".

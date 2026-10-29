@@ -34,34 +34,33 @@ const { min, max } = declaredRange(record);
 ---
 
 <Base title={`${displayName(record)}: Zotero plugin index`}>
-  <h1>{displayName(record)}{upstream?.archived === true && <span data-archived>(archived)</span>}</h1>
-  {description && <p class="description" data-description>{description}</p>}
-  {
-    failure ? (
-      <p data-fact="failure">
-        The last build could not read this plugin: <code>{failure.name}</code>: {failure.message}
-      </p>
-    ) : (
-      <Support record={record} />
-    )
-  }
-  {
-    (min !== undefined || max !== undefined) && (
-      <p class="range">
-        Declared range: <span data-fact="declared-range">{rangeText(record)}</span>
-      </p>
-    )
-  }
-  {
-    upstream && (
-      <p class="languages">
-        Menus and settings in: <span data-fact="languages">{languagesText(record)}</span>
-      </p>
-    )
-  }
+  <div class="card page-head" data-page-head>
+    <h1>{displayName(record)}{upstream?.archived === true && <span data-archived>(archived)</span>}</h1>
+    {description && <p class="description" data-description>{description}</p>}
+  </div>
+  <section class="card" data-section="support">
+    <h2>Declared support</h2>
+    {
+      failure ? (
+        <p data-fact="failure">
+          The last build could not read this plugin: <code>{failure.name}</code>: {failure.message}
+        </p>
+      ) : (
+        <Support record={record} />
+      )
+    }
+    {
+      (min !== undefined || max !== undefined) && (
+        <p class="range">
+          Declared range: <span data-fact="declared-range">{rangeText(record)}</span>
+        </p>
+      )
+    }
+  </section>
   {
     upstream && startTests.length > 0 && (
-      <div class="start-tests" data-start-tests>
+      <section class="card" data-section="start-test" data-start-tests>
+        <h2>Start test</h2>
         <p>
           Starts in Zotero: <span data-fact="start-tests">{startTestsText(record)}</span>
         </p>
@@ -69,12 +68,13 @@ const { min, max } = declaredRange(record);
           The daily build installs version {upstream.version} in a new Zotero profile on Linux and
           waits 3 seconds. A start test does not show that the plugin works.
         </p>
-      </div>
+      </section>
     )
   }
   {
     upstream && (
-      <section class="reports" data-reports>
+      <section class="card reports" data-section="reports" data-reports>
+        <h2>User reports</h2>
         <p data-fact="report-version">User reports on version {upstream.version}, the version the index read</p>
         {reports.length > 0 ? (
           <ul class="report-counts">
@@ -87,24 +87,34 @@ const { min, max } = declaredRange(record);
         ) : (
           <p class="status" data-fact="no-reports">No reports on this version yet.</p>
         )}
-        <p class="report-links">
-          Tried this version on Zotero? Report that it{" "}
-          <a data-report="works" href={reportHref(record, "works")}>Works</a> or is{" "}
-          <a data-report="broken" href={reportHref(record, "broken")}>Broken</a>.
-        </p>
+        <p class="report-links" id="report-prompt">Tried this version on Zotero? Report what you found:</p>
+        <div class="report-buttons">
+          <a data-report="works" href={reportHref(record, "works")} class="button" aria-describedby="report-prompt">Works</a>
+          <a data-report="broken" href={reportHref(record, "broken")} class="button" aria-describedby="report-prompt">Broken</a>
+        </div>
       </section>
     )
   }
-  <ul class="links">
-    <li data-fact="repository">{repoHref ? <a href={repoHref}>{repoUrl}</a> : repoUrl}</li>
+  <section class="card" data-section="about">
+    <h2>About</h2>
     {
       upstream && (
-        <li data-fact="releases">
-          {repoHref ? <a href={`${repoHref}/releases`}>Releases</a> : `${repoUrl}/releases`}
-        </li>
+        <p class="languages">
+          Menus and settings in: <span data-fact="languages">{languagesText(record)}</span>
+        </p>
       )
     }
-  </ul>
+    <ul class="links">
+      <li data-fact="repository">{repoHref ? <a href={repoHref}>{repoUrl}</a> : repoUrl}</li>
+      {
+        upstream && (
+          <li data-fact="releases">
+            {repoHref ? <a href={`${repoHref}/releases`}>Releases</a> : `${repoUrl}/releases`}
+          </li>
+        )
+      }
+    </ul>
+  </section>
   <details>
     <summary>Details</summary>
     <dl>

@@ -61,13 +61,16 @@ same script runs them and keeps the choice in `?zotero=` (D-019, M037).
 While a filter is on, the same script writes a status line under the
 filters that says how many plugins show, or that none match (M044).
 The home intro links to the "Add a plugin" issue form (M037).
-The page shows the name, the description, the version pills, the declared
-range, the "Menus and settings in" line (M024, M033), the "Starts in
-Zotero" line with its note when the record has `startTests` (M047), the
-user reports on
-the release the index read with a "Works" and a "Broken" link (M021), and
-the repository and releases links first. The other facts sit in a closed
-"Details" section (M015). The home list marks an
+The page opens with a header block of the name and the description, then
+cards with headings (M048): "Declared support" holds the version pills and
+the declared range, the "No declared range" line, or the read failure;
+"Start test" holds the "Starts in Zotero" line with its note when the
+record has `startTests` (M047); "User reports", when the build read the
+plugin, holds the reports on the release the index read with a "Works" and
+a "Broken" button (M021); "About" holds the repository link and, when the
+build read the plugin, the "Menus and settings in" line (M024, M033) and
+the releases link. The other facts sit in a closed "Details"
+section (M015). The home list marks an
 archived plugin with "(archived)" after its name, and the data carries the
 same `archived` fact (M013).
 The Details section also shows each override beside the upstream value it
@@ -146,7 +149,7 @@ shows each one separately. A combined verdict is out of scope.
    the plugin id, the plugin version, and the Zotero version. A bot checks
    each report, comments, and closes the issue (M020), and a daily sweep
    answers up to 20 report issues that no run answered (M040). Each plugin
-   page has a "Works" link and a "Broken" link. Each link opens a form with the
+   page has a "Works" button and a "Broken" button. Each opens a form with the
    plugin and its version filled in, so the reporter adds only the Zotero
    version. The daily build reads the closed report issues and counts those
    that `github-actions[bot]`, the account the bot runs as, closed as

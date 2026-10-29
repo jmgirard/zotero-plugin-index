@@ -8,5 +8,6 @@ export default defineConfig({
   output: "static",
   base: BASE,
   trailingSlash: "always",
-  build: { format: "directory" },
+  // Each page carries its styles, so it needs no request for a stylesheet.
+  build: { format: "directory", inlineStylesheets: "always" },
 });

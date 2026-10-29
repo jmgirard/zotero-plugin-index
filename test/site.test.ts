@@ -213,8 +213,10 @@ describe("the report block", () => {
           ["version", record.upstream!.version],
         ]);
       }
-      expect(page(id)).toMatch(/<a data-report="works" href="[^"]*">Works<\/a>/);
-      expect(page(id)).toMatch(/<a data-report="broken" href="[^"]*">Broken<\/a>/);
+      // Each button is named by its verdict and described by the prompt above it.
+      expect(page(id)).toContain('<p class="report-links" id="report-prompt">Tried this version on Zotero? Report what you found:</p>');
+      expect(page(id)).toMatch(/<a data-report="works" href="[^"]*" class="button" aria-describedby="report-prompt">Works<\/a>/);
+      expect(page(id)).toMatch(/<a data-report="broken" href="[^"]*" class="button" aria-describedby="report-prompt">Broken<\/a>/);
     },
   );
 
@@ -231,29 +233,84 @@ describe("the report block", () => {
   });
 });
 
+// The h2 card sections before <details>, each with its markup.
+function sections(html: string): { name: string; heading: string; body: string }[] {
+  const top = html.slice(0, html.indexOf("<details>"));
+  return [...top.matchAll(/<section class="card[^"]*" data-section="([^"]+)"[^>]*>\s*<h2>([^<]*)<\/h2>(.*?)<\/section>/gs)].map(
+    ([, name, heading, body]) => ({ name: name!, heading: heading!, body: body! }),
+  );
+}
+
 describe("the plugin page", () => {
-  test.each(ids)("shows the parts of %s in order, with the minor facts in a closed Details section", (id) => {
+  test.each(ids)("opens the main content of %s with a header block of the name and the description", (id) => {
     const record = records.find((r) => r.id === id)!;
     const html = page(id);
     const description = shownDescription(record);
-    const support = record.failure ? 'data-fact="failure"' : hasBound(record) ? 'class="pills"' : 'data-status="no-range"';
     const archived = record.upstream?.archived === true ? "<span data-archived>(archived)</span>" : "";
-    expectInOrder(html, [
-      `<h1>${escaped(displayName(record))}${archived}</h1>`,
-      ...(description ? [`<p class="description" data-description>${escaped(description)}</p>`] : []),
-      support,
-      ...(hasBound(record) ? ['data-fact="declared-range"'] : []),
-      ...(record.upstream ? ['data-fact="languages"', "<section class=\"reports\" data-reports>"] : []),
-      'data-fact="repository"',
-      ...(record.upstream ? ['data-fact="releases"'] : []),
-      "<details>",
-    ]);
-    if (!description) expect(html).not.toContain("data-description");
-    if (!hasBound(record)) expect(html).not.toContain('data-fact="declared-range"');
-    if (!record.upstream) expect(html).not.toMatch(/data-fact="(?:releases|languages)"/);
-    if (!record.failure && hasBound(record)) expectPills(html, record);
-    else expect(pills(html)).toEqual([]);
+    const main = html.slice(html.indexOf("<main>") + "<main>".length, html.indexOf("</main>"));
+    const head = /^\s*<div class="card page-head" data-page-head>(.*?)<\/div>/s.exec(main)?.[1];
+    expect(head?.replace(/>\s+</g, "><").trim()).toBe(
+      `<h1>${escaped(displayName(record))}${archived}</h1>` +
+        (description ? `<p class="description" data-description>${escaped(description)}</p>` : ""),
+    );
+    expect(main).not.toMatch(/<header[\s>]/);
+  });
 
+  test.each(ids)("shows the sections of %s in order, each with its facts", (id) => {
+    const record = records.find((r) => r.id === id)!;
+    const html = page(id);
+    const read = record.upstream !== undefined;
+    const started = read && (record.startTests?.length ?? 0) > 0;
+    const found = sections(html);
+    // No other section or h2 sits between the layout's top and <details>.
+    const top = html.slice(html.indexOf("<main>"), html.indexOf("<details>"));
+    expect(top.split("<section").length - 1).toBe(found.length);
+    expect(top.split("<h2").length - 1).toBe(found.length);
+    expect(found.map(({ name, heading }) => [name, heading])).toEqual([
+      ["support", "Declared support"],
+      ...(started ? [["start-test", "Start test"]] : []),
+      ...(read ? [["reports", "User reports"]] : []),
+      ["about", "About"],
+    ]);
+    const body = (name: string) => found.find((section) => section.name === name)!.body;
+    const holds: [string, string[]][] = [
+      [
+        "support",
+        [
+          record.failure ? 'data-fact="failure"' : hasBound(record) ? 'class="pills"' : 'data-status="no-range"',
+          ...(hasBound(record) ? ['data-fact="declared-range"'] : []),
+        ],
+      ],
+      ...(started ? [["start-test", ['data-fact="start-tests"', 'data-fact="start-test-note"']] as [string, string[]]] : []),
+      ...(read
+        ? [
+            [
+              "reports",
+              [
+                'data-fact="report-version"',
+                (record.reports?.length ?? 0) > 0 ? "data-report-major=" : 'data-fact="no-reports"',
+                'data-report="works"',
+                'data-report="broken"',
+              ],
+            ] as [string, string[]],
+          ]
+        : []),
+      ["about", [...(read ? ['data-fact="languages"'] : []), 'data-fact="repository"', ...(read ? ['data-fact="releases"'] : [])]],
+    ];
+    for (const [name, markers] of holds) {
+      expectInOrder(body(name), markers);
+      // Each fact sits in its section and nowhere else on the page.
+      for (const marker of markers) expect(html.split(marker).length - 1, marker).toBe(marker === "data-report-major=" ? record.reports!.length : 1);
+    }
+    if (!hasBound(record)) expect(html).not.toContain('data-fact="declared-range"');
+    if (!read) expect(html).not.toMatch(/data-fact="(?:releases|languages)"/);
+    if (!record.failure && hasBound(record)) expectPills(body("support"), record);
+    else expect(pills(html)).toEqual([]);
+  });
+
+  test.each(ids)("holds the minor facts of %s in a closed Details section after the sections", (id) => {
+    const record = records.find((r) => r.id === id)!;
+    const html = page(id);
     expect(html).not.toMatch(/<details\s+open/);
     const start = html.indexOf("<details>");
     const end = html.indexOf("</details>");
@@ -506,6 +563,14 @@ describe("the home page", () => {
 });
 
 describe("the built site", () => {
+  test("carries its styles in each page and links no stylesheet", () => {
+    for (const path of htmlFiles(out)) {
+      const html = readFileSync(join(out, path), "utf8");
+      expect(html, path).toMatch(/<style>[^<]*\.card[^<]*<\/style>/);
+      expect(html, path).not.toMatch(/<link[^>]*rel="stylesheet"/);
+    }
+  });
+
   test("has a script on the home page only", () => {
     const files = htmlFiles(out);
     expect(files).toContain("index.html");
@@ -570,4 +635,72 @@ describe("pnpm site with no data file", () => {
       rmSync(empty, { recursive: true, force: true });
     }
   }, 60_000);
+});
+
+// The color variables of one :root block of the layout.
+function colors(block: string): Map<string, string> {
+  return new Map([...block.matchAll(/(--[\w-]+):\s*(#[0-9a-f]{6});/gi)].map(([, name, value]) => [name!, value!.toLowerCase()]));
+}
+
+// WCAG 2.2 contrast ratio of two #rrggbb colors.
+function contrast(a: string, b: string): number {
+  const luminance = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map((at) => {
+      const c = parseInt(hex.slice(at, at + 2), 16) / 255;
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+  };
+  const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (light! + 0.05) / (dark! + 0.05);
+}
+
+describe("the site colors", () => {
+  const layout = readFileSync(resolve(ROOT, "site/src/layouts/Base.astro"), "utf8");
+  const light = colors(/\n {6}:root \{(.*?)\n {6}\}/s.exec(layout)![1]!);
+  const darkBlock = /@media \(prefers-color-scheme: dark\) \{\s*:root \{(.*?)\}/s.exec(layout)![1]!;
+  const dark = new Map([...light, ...colors(darkBlock)]);
+  const PAIRS = [
+    ["--text", "--card"],
+    ["--text", "--page"],
+    ["--muted", "--card"],
+    ["--muted", "--page"],
+    ["--link", "--card"],
+    ["--link", "--page"],
+    ["--all-text", "--all-bg"],
+    ["--some-text", "--some-bg"],
+    ["--none-text", "--none-bg"],
+    ["--broken-text", "--broken-bg"],
+  ];
+
+  test.each([
+    ["light", light],
+    ["dark", dark],
+  ])("gives each listed text and background pair a contrast of at least 4.5:1 in the %s scheme", (_, scheme) => {
+    for (const [text, background] of PAIRS) {
+      expect(scheme.get(text), text).toMatch(/^#/);
+      expect(scheme.get(background), background).toMatch(/^#/);
+      expect(contrast(scheme.get(text)!, scheme.get(background)!), `${text} on ${background}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  test("redefines every hex color of the light block in the dark block, so none falls back to it", () => {
+    expect([...colors(darkBlock).keys()].sort()).toEqual([...light.keys()].sort());
+  });
+
+  test("colors each report button from its verdict's pair", () => {
+    expect(layout).toMatch(/\.button\[data-report="works"\] \{\s*background: var\(--all-bg\);\s*color: var\(--all-text\);\s*\}/);
+    expect(layout).toMatch(/\.button\[data-report="broken"\] \{\s*background: var\(--broken-bg\);\s*color: var\(--broken-text\);\s*\}/);
+  });
+
+  // A report button's border takes its text color, and WCAG 2.2 asks 3:1 for a control's edge.
+  test.each([
+    ["light", light],
+    ["dark", dark],
+  ])("gives each report button's edge a contrast of at least 3:1 with the card in the %s scheme", (_, scheme) => {
+    expect(layout).toMatch(/\.button \{[^}]*border: 1px solid currentColor;/);
+    for (const border of ["--all-text", "--broken-text"]) {
+      expect(contrast(scheme.get(border)!, scheme.get("--card")!), `${border} on --card`).toBeGreaterThanOrEqual(3);
+    }
+  });
 });
