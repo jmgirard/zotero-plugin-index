@@ -296,7 +296,11 @@ describe("merge-discover.yml", () => {
   const job = jobText(merge, "merge");
 
   test("runs daily and on dispatch, and its one job only for a schedule or a dispatch on the default branch", () => {
-    expect(triggers(merge)).toBe('schedule:\n    - cron: "13 5 * * *"\n  workflow_dispatch:');
+    expect(triggers(merge)).toBe(
+      'schedule:\n    - cron: "13 5 * * *"\n  workflow_dispatch:\n    inputs:\n      wait_hours:\n' +
+        "        description: How many hours before the run a pull request must have opened, 0 to 9999\n" +
+        "        type: number\n        default: 48",
+    );
     expect(merge.slice(merge.indexOf("\njobs:\n")).match(/^ {2}[\w-]+:$/gm)).toEqual(["  merge:"]);
     expect(job.match(/^ {4}if:.*$/gm)).toEqual([
       "    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch))",
@@ -308,8 +312,15 @@ describe("merge-discover.yml", () => {
     expect(job).toMatch(/^ {4}permissions:\n {6}contents: write\n {6}pull-requests: write\n {4}\S/m);
   });
 
-  test("runs pnpm merge-discover with the workflow's GITHUB_TOKEN only", () => {
-    expect(job).toContain("      - run: pnpm merge-discover\n        env:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n");
+  test("runs pnpm merge-discover with the workflow's GITHUB_TOKEN only, and the dispatched wait only through env", () => {
+    expect(job).toContain(
+      '      - run: pnpm merge-discover ${WAIT_HOURS:+--wait-hours "$WAIT_HOURS"}\n        env:\n' +
+        "          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n          WAIT_HOURS: ${{ inputs.wait_hours }}\n",
+    );
+    // The input's one expression is the env line, with no `||` default, which would turn 0 into the default.
+    const expressions = [...merge.matchAll(/\$\{\{[^}]*\}\}/g)].map(([use]) => use);
+    expect(expressions.filter((use) => use.includes("wait_hours"))).toEqual(["${{ inputs.wait_hours }}"]);
+    expect(merge.split("\n").filter((line) => /^\s*-?\s*run\s*:/.test(line) && line.includes("${{"))).toEqual([]);
     expect(merge.match(/secrets\.\w+/g)).toEqual(["secrets.GITHUB_TOKEN"]);
     expect(job).toMatch(/^ {6}- uses: actions\/checkout@v7\n {8}with:\n {10}persist-credentials: false$/m);
   });

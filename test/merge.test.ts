@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
@@ -81,9 +81,9 @@ const files = (n: number, list: { filename: string; status: string }[]): Respons
 
 const indexRecord: Responses = { [INDEX]: { json: { full_name: "example/index", default_branch: "main" } } };
 
-async function run(responses: Responses, check = passes) {
+async function run(responses: Responses, check = passes, waitHours?: number) {
   const { fetch, requests } = fixtureFetch({ ...indexRecord, ...responses });
-  const result = await mergeDiscover({ fetch, indexRepo: "example/index", root: PLUGINS, check, now: NOW });
+  const result = await mergeDiscover({ fetch, indexRepo: "example/index", root: PLUGINS, check, now: NOW, waitHours });
   const merges = requests.filter(({ method }) => method === "PUT").map(({ url, body }) => ({ url, ...JSON.parse(body!) }));
   return { result, merges };
 }
@@ -232,22 +232,91 @@ describe("pnpm merge-discover's check and merge failures", () => {
   });
 });
 
+describe("pnpm merge-discover's wait", () => {
+  const opened = (hours: number) => ({ created_at: new Date(NOW.getTime() - hours * HOUR).toISOString() });
+
+  test("a wait of 0 merges a pull request opened 1 minute before the run", async () => {
+    const { result } = await run({ [LIST]: { json: [pull(1, opened(1 / 60))] }, ...entry(1) }, passes, 0);
+    expect(result.merged).toEqual([1]);
+  });
+
+  test("a wait of 2 skips one opened 1 hour before with the 2-hour reason and merges one opened exactly 2 hours before", async () => {
+    const { result } = await run({ [LIST]: { json: [pull(1, opened(1)), pull(2, opened(2))] }, ...entry(1), ...entry(2) }, passes, 2);
+    expect(result.skipped).toEqual([{ number: 1, reason: "it opened less than 2 hours ago" }]);
+    expect(result.merged).toEqual([2]);
+  });
+
+  test("a wait of 1 names 1 hour", async () => {
+    const { result } = await run({ [LIST]: { json: [pull(1, opened(0.5))] }, ...entry(1) }, passes, 1);
+    expect(result.skipped).toEqual([{ number: 1, reason: "it opened less than 1 hour ago" }]);
+  });
+
+  test.each([Number.NaN, -1, 1.5])("refuses a wait of %s before any request", async (waitHours) => {
+    const { fetch, requests } = fixtureFetch({ ...indexRecord, [LIST]: { json: [pull(1)] }, ...entry(1) });
+    await expect(mergeDiscover({ fetch, indexRepo: "example/index", root: PLUGINS, check: passes, now: NOW, waitHours })).rejects.toThrow(
+      `the wait of ${waitHours} hours is not a whole number of at least 0`,
+    );
+    expect(requests).toEqual([]);
+  });
+
+  test.each([
+    ["after the run", new Date(NOW.getTime() + HOUR).toISOString()],
+    ["not a date", "yesterday"],
+  ])("a wait of 0 skips a pull request whose opening time is %s", async (_name, createdAt) => {
+    const { result, merges } = await run({ [LIST]: { json: [pull(1, { created_at: createdAt })] }, ...entry(1) }, passes, 0);
+    expect(result.skipped).toEqual([{ number: 1, reason: "its opening time is unreadable or after the run" }]);
+    expect(merges).toEqual([]);
+  });
+});
+
 describe("pnpm merge-discover", () => {
-  test("prints what it merged and skipped, names each failure, and exits 1 after a failure", () => {
+  // Runs the command against `responses`, logging each request it sends to a file.
+  function cli(args: string[], responses: Responses, env: Record<string, string>) {
     const pnpmPath = process.env.npm_execpath;
     if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");
+    const fixture = join(tempDir(), "responses.json");
+    writeFileSync(fixture, JSON.stringify({ source: "merge test", repoUrl: "", responses }));
+    const log = join(tempDir(), "requests.jsonl");
+    writeFileSync(log, "");
+    const { INIT_CWD: _outer, GITHUB_TOKEN: _token, GITHUB_REPOSITORY: _repo, ...outer } = process.env;
+    Object.assign(outer, { ZPI_FIXTURE: fixture, ZPI_REQUESTS: log, NODE_OPTIONS: `--import=${PRELOAD}` }, env);
+    const result = spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "merge-discover", ...args], { cwd: tempDir(), encoding: "utf8", env: outer, timeout: 50_000 });
+    return { result, log: readFileSync(log, "utf8") };
+  }
+
+  test("prints what it merged and skipped, names each failure, and exits 1 after a failure", () => {
     const responses: Responses = {
       ...indexRecord,
       [LIST]: { json: [pull(1, { labels: [{ name: "hold" }] }), pull(2)] },
       [`${INDEX}/pulls/2/files?per_page=100`]: { status: 500, json: { message: "Server Error" } },
     };
-    const fixture = join(tempDir(), "responses.json");
-    writeFileSync(fixture, JSON.stringify({ source: "merge test", repoUrl: "", responses }));
-    const { INIT_CWD: _outer, GITHUB_TOKEN: _token, ...outer } = process.env;
-    Object.assign(outer, { ZPI_FIXTURE: fixture, NODE_OPTIONS: `--import=${PRELOAD}`, GITHUB_REPOSITORY: "example/index" });
-    const result = spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "merge-discover"], { cwd: tempDir(), encoding: "utf8", env: outer, timeout: 50_000 });
+    const { result } = cli([], responses, { GITHUB_REPOSITORY: "example/index" });
     expect(result.stdout).toBe("skipped #1: it has the hold label\n");
     expect(result.stderr).toMatch(/^failed #2: cannot read its files: .*HTTP 500/);
     expect(result.status).toBe(1);
+  });
+
+  test("passes --wait-hours to the run", () => {
+    const responses: Responses = { ...indexRecord, [LIST]: { json: [pull(1, { created_at: new Date(Date.now() - HOUR).toISOString() })] } };
+    const { result } = cli(["--wait-hours", "3"], responses, { GITHUB_REPOSITORY: "example/index" });
+    expect(result.stdout).toBe("skipped #1: it opened less than 3 hours ago\n");
+    expect(result.status).toBe(0);
+  });
+
+  test.each([
+    [["--wait-hours"]],
+    [["--wait-hours", "-1"]],
+    [["--wait-hours", "1.5"]],
+    [["--wait-hours", "10000"]],
+    [["--wait", "0"]],
+    [["--wait-hours=2"]],
+    [["--wait-hours", "2", "--wait-hours", "3"]],
+    [["--wait-hours", "2", "x"]],
+    [["x"]],
+  ])("refuses %j with the usage line before reading GITHUB_REPOSITORY, and sends no request", (args) => {
+    const { result, log } = cli(args, indexRecord, {});
+    expect(result.stderr).toBe("usage: pnpm merge-discover [--wait-hours <n>], with GITHUB_REPOSITORY set\n");
+    expect(result.status).toBe(1);
+    expect(log).toBe("");
   });
 });

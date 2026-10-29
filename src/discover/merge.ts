@@ -7,8 +7,10 @@ import { type CheckRunner, defaultBranch, HOLD_LABEL, PREFIX, unfencedLines } fr
 const API = "https://api.github.com";
 // The account that opens the bot's pull requests with the workflow's GITHUB_TOKEN.
 const BOT_LOGIN = "github-actions[bot]";
-// A bot pull request opened this long before the run can merge.
-export const WAIT_MS = 48 * 60 * 60 * 1000;
+// A bot pull request opened this many hours before the run can merge, unless a run
+// started by hand sets another wait.
+export const DEFAULT_WAIT_HOURS = 48;
+const HOUR_MS = 60 * 60 * 1000;
 // More than an entry file the bot writes needs, as in a handoff.
 const FILE_MAX_BYTES = 64 * 1024;
 const ENTRY_FILES = ["index.json", "meta.json"];
@@ -21,6 +23,8 @@ export interface MergeOptions {
   root: string;
   check: CheckRunner;
   now?: Date;
+  // How long before `now` a pull request must have opened, in hours.
+  waitHours?: number;
 }
 
 export interface MergeResult {
@@ -49,7 +53,7 @@ interface FileJson {
 // The first of the conditions on a pull request's own record that it fails, or undefined.
 // The body's one Hold line outside fenced code must be `Hold: none`, so a line in the
 // quoted check output cannot stand in for it.
-function recordProblem(pull: PullJson, indexRepo: string, now: Date): string | undefined {
+function recordProblem(pull: PullJson, indexRepo: string, now: Date, waitHours: number): string | undefined {
   const ref = pull.head?.ref;
   const headRepo = pull.head?.repo?.full_name;
   if (typeof ref !== "string" || !ref.startsWith(PREFIX)) return `its head branch does not start with ${PREFIX}`;
@@ -62,20 +66,25 @@ function recordProblem(pull: PullJson, indexRepo: string, now: Date): string | u
     return `it has the ${HOLD_LABEL} label`;
   }
   const opened = typeof pull.created_at === "string" ? Date.parse(pull.created_at) : Number.NaN;
-  if (!(now.getTime() - opened >= WAIT_MS)) return "it opened less than 48 hours ago";
+  // An unreadable time would pass any wait, since a comparison with NaN is false, and a time
+  // after `now` would get a wrong reason, so both are skipped here.
+  if (Number.isNaN(opened) || opened > now.getTime()) return "its opening time is unreadable or after the run";
+  if (now.getTime() - opened < waitHours * HOUR_MS) return `it opened less than ${waitHours} hour${waitHours === 1 ? "" : "s"} ago`;
   return undefined;
 }
 
 // Squash-merges each open bot pull request that says `Hold: none`, has no hold label,
-// opened at least WAIT_MS before `now`, and adds exactly one new entry, once that entry
+// opened at least `waitHours` before `now`, and adds exactly one new entry, once that entry
 // passes `check` beside the checkout's entries and those this run merged. Each other open
 // pull request is skipped with the first condition it fails; a draft, a pull request
 // for another base branch, and one whose record changed during the run are skipped
 // too. A failed read of a pull request's files or contents, a failed or timed-out check,
 // or a refused merge request fails that pull request, and the run goes on to the next.
-// A failed read of the list of pull requests or of the default branch throws.
+// A failed read of the default branch, the list of pull requests, or `root` throws.
 export async function mergeDiscover(options: MergeOptions): Promise<MergeResult> {
-  const { fetch, indexRepo, root, check, now = new Date() } = options;
+  const { fetch, indexRepo, root, check, now = new Date(), waitHours = DEFAULT_WAIT_HOURS } = options;
+  // A wait that is not a whole number of hours of at least 0 would let every age pass.
+  if (!Number.isSafeInteger(waitHours) || waitHours < 0) throw new Error(`the wait of ${waitHours} hours is not a whole number of at least 0`);
   const github = githubClient(fetch);
   const result: MergeResult = { merged: [], skipped: [], failed: [] };
   const base = await defaultBranch(fetch, indexRepo);
@@ -88,7 +97,7 @@ export async function mergeDiscover(options: MergeOptions): Promise<MergeResult>
     if (!Number.isSafeInteger(pull?.number)) continue;
     const number = pull.number as number;
     const skip = (reason: string) => result.skipped.push({ number, reason });
-    const problem = recordProblem(pull, indexRepo, now);
+    const problem = recordProblem(pull, indexRepo, now, waitHours);
     if (problem) {
       skip(problem);
       continue;
@@ -144,7 +153,7 @@ export async function mergeDiscover(options: MergeOptions): Promise<MergeResult>
       const changed =
         fresh?.state !== "open"
           ? "it is no longer open"
-          : (recordProblem(fresh, indexRepo, now) ??
+          : (recordProblem(fresh, indexRepo, now, waitHours) ??
             (fresh.draft === true ? "it is a draft" : undefined) ??
             (fresh.base?.ref !== base ? `it does not target the default branch ${base}` : undefined) ??
             (fresh.head?.sha !== sha ? "its head moved" : undefined));
