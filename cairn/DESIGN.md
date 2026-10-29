@@ -180,8 +180,10 @@ shows each one separately. A combined verdict is out of scope.
 3. Overrides. An override in the index corrects a fact that the author cannot
    or will not fix upstream. Each override states its reason. A
    `description` override can also give English text for a plugin with no
-   English description upstream, or only one that repeats the name, with a
-   reason that names its upstream source (D-030, D-031).
+   English description upstream: the manifest and GitHub texts are each
+   missing, only repeat the name, or have a CJK share of 0.5 or more. Its
+   reason names its upstream source and which case each text is (D-030,
+   D-031, D-032).
 4. User reports. Two issue forms take a "works" or a "broken" report with
    the plugin id, the plugin version, and the Zotero version. A bot checks
    each report, comments, and closes the issue (M020), and a daily sweep

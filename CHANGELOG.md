@@ -448,6 +448,7 @@
   other cases the site can show the GitHub description, by the rule in the
   README. Each plugin page's Details card shows both descriptions. A
   `description` override can now give English text for a plugin with no
-  English description upstream, and eight plugins have one. If you
+  English description upstream, as the README defines it. Eight plugins
+  have one. If you
   validate against a saved copy of `schemas/plugins.v1.schema.json`, fetch
   the schema again, since it rejects fields that it does not define.

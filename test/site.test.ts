@@ -641,6 +641,7 @@ describe("the About page", () => {
       "If less than half of the manifest description is Chinese, Japanese, or Korean, the site shows it.",
       "the manifest description was dropped, or the GitHub description has less of that text.",
       "A description override can also give English text for a plugin with no English description upstream.",
+      "That covers a description that only repeats the name or that is half or more Chinese, Japanese, or Korean.",
     ]) {
       expect(text).toContain(line);
     }
