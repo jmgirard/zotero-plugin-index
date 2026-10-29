@@ -1,0 +1,7 @@
+{
+  "id": "zotero-sideline@shiys.local",
+  "name": "Zotero Sideline",
+  "description": "Zotero PDF 阅读器对话侧栏：全文总结、解释选区、文本翻译、自动高亮及批次撤销；支持材料添加、对话检索、回复保存为子笔记、Markdown 与离线公式。模型使用兼容 API 或本机 Codex、OpenCode、DeepSeek Harness，会话保存为文献条目下的 JSON 附件。",
+  "repoUrl": "https://github.com/shiysent-ctrl/Zotero-SideLine",
+  "updateUrl": "https://raw.githubusercontent.com/shiysent-ctrl/Zotero-SideLine/main/updates.json"
+}
