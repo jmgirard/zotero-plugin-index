@@ -1,0 +1,8 @@
+{
+  "id": "zys-theme@kazys.local",
+  "name": "Quiet Theme for Zotero",
+  "description": "Switch Zotero native appearance and manage a quiet userChrome overlay.",
+  "homepage": "https://github.com/kvarnelis/zotero-quiet-theme",
+  "repoUrl": "https://github.com/kvarnelis/zotero-quiet-theme",
+  "updateUrl": "https://raw.githubusercontent.com/kvarnelis/zotero-quiet-theme/main/updates.json"
+}
