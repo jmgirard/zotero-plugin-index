@@ -213,8 +213,10 @@ describe("the report block", () => {
           ["version", record.upstream!.version],
         ]);
       }
-      expect(page(id)).toMatch(/<a data-report="works" href="[^"]*"[^>]*>Works<\/a>/);
-      expect(page(id)).toMatch(/<a data-report="broken" href="[^"]*"[^>]*>Broken<\/a>/);
+      // Each button is named by its verdict and described by the prompt above it.
+      expect(page(id)).toContain('<p class="report-links" id="report-prompt">Tried this version on Zotero? Report what you found:</p>');
+      expect(page(id)).toMatch(/<a data-report="works" href="[^"]*" class="button" aria-describedby="report-prompt">Works<\/a>/);
+      expect(page(id)).toMatch(/<a data-report="broken" href="[^"]*" class="button" aria-describedby="report-prompt">Broken<\/a>/);
     },
   );
 
@@ -260,6 +262,10 @@ describe("the plugin page", () => {
     const read = record.upstream !== undefined;
     const started = read && (record.startTests?.length ?? 0) > 0;
     const found = sections(html);
+    // No other section or h2 sits between the layout's top and <details>.
+    const top = html.slice(html.indexOf("<main>"), html.indexOf("<details>"));
+    expect(top.split("<section").length - 1).toBe(found.length);
+    expect(top.split("<h2").length - 1).toBe(found.length);
     expect(found.map(({ name, heading }) => [name, heading])).toEqual([
       ["support", "Declared support"],
       ...(started ? [["start-test", "Start test"]] : []),
@@ -308,7 +314,6 @@ describe("the plugin page", () => {
     expect(html).not.toMatch(/<details\s+open/);
     const start = html.indexOf("<details>");
     const end = html.indexOf("</details>");
-    expect(html.lastIndexOf('data-section="about"', start)).toBeGreaterThan(-1);
     const inside = ['data-fact="id"'];
     if (record.upstream) {
       if (typeof record.upstream.archived === "boolean") inside.push('data-fact="archived"');
@@ -558,6 +563,14 @@ describe("the home page", () => {
 });
 
 describe("the built site", () => {
+  test("carries its styles in each page and links no stylesheet", () => {
+    for (const path of htmlFiles(out)) {
+      const html = readFileSync(join(out, path), "utf8");
+      expect(html, path).toMatch(/<style>[^<]*\.card[^<]*<\/style>/);
+      expect(html, path).not.toMatch(/<link[^>]*rel="stylesheet"/);
+    }
+  });
+
   test("has a script on the home page only", () => {
     const files = htmlFiles(out);
     expect(files).toContain("index.html");
@@ -664,13 +677,20 @@ describe("the site colors", () => {
     ["light", light],
     ["dark", dark],
   ])("gives each listed text and background pair a contrast of at least 4.5:1 in the %s scheme", (_, scheme) => {
-    // The dark block redefines every hex color of the light block, so none falls back to it.
-    expect([...colors(darkBlock).keys()].sort()).toEqual([...light.keys()].sort());
     for (const [text, background] of PAIRS) {
       expect(scheme.get(text), text).toMatch(/^#/);
       expect(scheme.get(background), background).toMatch(/^#/);
       expect(contrast(scheme.get(text)!, scheme.get(background)!), `${text} on ${background}`).toBeGreaterThanOrEqual(4.5);
     }
+  });
+
+  test("redefines every hex color of the light block in the dark block, so none falls back to it", () => {
+    expect([...colors(darkBlock).keys()].sort()).toEqual([...light.keys()].sort());
+  });
+
+  test("colors each report button from its verdict's pair", () => {
+    expect(layout).toMatch(/\.button\[data-report="works"\] \{\s*background: var\(--all-bg\);\s*color: var\(--all-text\);\s*\}/);
+    expect(layout).toMatch(/\.button\[data-report="broken"\] \{\s*background: var\(--broken-bg\);\s*color: var\(--broken-text\);\s*\}/);
   });
 
   // A report button's border takes its text color, and WCAG 2.2 asks 3:1 for a control's edge.

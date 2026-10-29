@@ -351,8 +351,9 @@
   `pnpm build --plan <file>` writes the start plan.
 - Each plugin page has a new layout. A header block shows the name and the
   description. Cards with headings follow, in this order: "Declared
-  support" (the pills and the declared range, or the failure when the
-  build could not read the plugin), "Start test" (when the plugin has
+  support" (the pills and the declared range, the "No declared range"
+  line, or the failure when the build could not read the plugin), "Start
+  test" (when the plugin has
   start results), "User reports" (when the build read the plugin), and
   "About" (the "Menus and settings in" line, the repository link, and the
   releases link, the first and last only when the build read the plugin).

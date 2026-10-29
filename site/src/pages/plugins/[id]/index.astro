@@ -87,10 +87,10 @@ const { min, max } = declaredRange(record);
         ) : (
           <p class="status" data-fact="no-reports">No reports on this version yet.</p>
         )}
-        <p class="report-links">Tried this version on Zotero? Report what you found:</p>
+        <p class="report-links" id="report-prompt">Tried this version on Zotero? Report what you found:</p>
         <div class="report-buttons">
-          <a data-report="works" href={reportHref(record, "works")} class="button">Works</a>
-          <a data-report="broken" href={reportHref(record, "broken")} class="button">Broken</a>
+          <a data-report="works" href={reportHref(record, "works")} class="button" aria-describedby="report-prompt">Works</a>
+          <a data-report="broken" href={reportHref(record, "broken")} class="button" aria-describedby="report-prompt">Broken</a>
         </div>
       </section>
     )

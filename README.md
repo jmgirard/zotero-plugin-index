@@ -74,7 +74,8 @@ account.
 
 Each plugin has its own page. A header block at the top shows the name and
 the description. Cards with headings follow. "Declared support" shows the
-pills and the declared range, or the failure. "Start test" shows the
+pills and the declared range, the "No declared range" line, or the failure.
+"Start test" shows the
 start-test results, "User reports" shows the reports, and "About" shows
 the repository link and, when the build read the plugin, a "Menus and
 settings in" line and the releases link. The "Menus and settings in" line
@@ -82,6 +83,7 @@ names the languages of the `languages` list that "Using the data"
 describes, which come from the plugin's locale folders. If a `languages`
 override applies to the plugin version that the index read, the override
 replaces that list. The line does not say how complete each language is.
+If no language is left, the page shows "Unknown (no translations found)".
 The description comes from the plugin's manifest or from an index override,
 so it can be in another language than the languages line names. If the
 record has a `startTests` list, the page shows a "Starts in Zotero" line.
@@ -89,7 +91,6 @@ It names each tested Zotero version and its result in words, such as
 "Zotero 10.0.6 started". A note beside it says that the build waits 3
 seconds after the install. The note also says that a start test does not
 show that the plugin works.
-If no language is left, the page shows "Unknown (no translations found)".
 A closed "Details" section follows. It holds the plugin id, facts about the
 repository and its releases, and the overrides of the index for the plugin.
 If the last build failed to read a plugin, its page shows the failure in place
