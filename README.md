@@ -610,11 +610,11 @@ request that meets all of these conditions:
 - The checkout's `plugins/` folder has no folder of that id in any letter
   case.
 
-So a bot pull request without a hold reason can merge 48 hours after it
-opens. The merge comes at the next run, daily or by hand. To stop the bot
-from merging one, add the `hold` label or close it. Bot pull requests opened
-before the Hold line existed have no `Hold: none` line, so the command never
-merges them.
+So the bot can merge a bot pull request without a hold reason at its first
+daily run at least 48 hours after it opens. A run started by hand after
+those 48 hours can merge it sooner. To stop the bot from merging one, add
+the `hold` label or close it. Bot pull requests opened before the Hold line
+existed have no `Hold: none` line, so the command never merges them.
 
 Before it merges, the command reads the two files at the head commit of the
 pull request. It copies the checkout's `plugins/` folder, adds the new entry,

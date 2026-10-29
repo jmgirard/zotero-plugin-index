@@ -162,8 +162,8 @@ shows each one separately. A combined verdict is out of scope.
    is not on github.com or raw.githubusercontent.com, or an issue proposed a
    repo with neither topic. A held pull request gets the `hold` label. A
    daily job merges a pull request that says `Hold: none` and has no `hold`
-   label at its first run at least 48 hours after it opens, once its entry
-   passes `pnpm check` beside the current entries. Closing a bot pull
+   label at its first daily run at least 48 hours after it opens, once its
+   entry passes `pnpm check` beside the current entries. Closing a bot pull
    request still keeps the bot from proposing that repo again.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
    `manifest.json` in the newest stable release that has an `.xpi` file,
