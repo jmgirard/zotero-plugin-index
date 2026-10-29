@@ -1,0 +1,8 @@
+{
+  "id": "paperbridge@example.com",
+  "name": "PaperBridge",
+  "description": "Translate a paper PDF into a left-Chinese right-English side-by-side PDF using a local or remote Claude Code / Codex CLI.",
+  "homepage": "https://github.com/myheart521/cli2openai",
+  "repoUrl": "https://github.com/myheart521/cli2openai",
+  "updateUrl": "https://raw.githubusercontent.com/myheart521/cli2openai/main/zotero-paperbridge/updates.json"
+}
