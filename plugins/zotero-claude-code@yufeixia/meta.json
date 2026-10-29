@@ -1,0 +1,8 @@
+{
+  "id": "zotero-claude-code@yufeixia",
+  "name": "Claude Code for Zotero",
+  "description": "Chat with the paper you are reading, using the Claude Code CLI on your own machine. Sidebar panel or a separate window.",
+  "homepage": "https://github.com/YufeiXIA/zotero-claude-code",
+  "repoUrl": "https://github.com/YufeiXIA/zotero-claude-code",
+  "updateUrl": "https://github.com/YufeiXIA/zotero-claude-code/releases/latest/download/update.json"
+}
