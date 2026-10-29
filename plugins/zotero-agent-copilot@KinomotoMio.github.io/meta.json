@@ -1,0 +1,8 @@
+{
+  "id": "zotero-agent-copilot@KinomotoMio.github.io",
+  "name": "Zotero Agent Copilot",
+  "description": "Create resumable AI workspaces for Zotero items, capture MinerU Markdown outputs, and launch external coding agents.",
+  "homepage": "https://github.com/KinomotoMio/zotero-agent-copilot",
+  "repoUrl": "https://github.com/KinomotoMio/zotero-agent-copilot",
+  "updateUrl": "https://raw.githubusercontent.com/KinomotoMio/zotero-agent-copilot/main/updates.json"
+}
