@@ -1,0 +1,8 @@
+{
+  "id": "zys-reader@kazys.local",
+  "name": "Page View for Zotero",
+  "description": "Adds true single-page PDF reading mode to Zotero's built-in reader.",
+  "homepage": "https://github.com/kvarnelis/zotero-page-view",
+  "repoUrl": "https://github.com/kvarnelis/zotero-page-view",
+  "updateUrl": "https://raw.githubusercontent.com/kvarnelis/zotero-page-view/main/updates.json"
+}
