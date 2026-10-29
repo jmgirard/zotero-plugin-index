@@ -102,7 +102,7 @@ fixture are as M053 defines them.
 
 - [x] T1: Add the icon set to the layout and rebuild the page head in
       `site/src/pages/plugins/[id]/index.astro`; test the head and links.
-- [ ] T2: Add the fixture records AC2 names; build the compatibility
+- [x] T2: Add the fixture records AC2 names; build the compatibility
       table and the report row (a data helper for the rows by major, in
       `site/src/data.ts`); replace the section tests in `test/site.test.ts`.
 - [ ] T3: Replace the closed Details with the h2 section and grid, and
@@ -131,6 +131,8 @@ fixture are as M053 defines them.
 - 2026-10-29: choice: the file link uses the same plain `.btn` style as Source and Releases, not the mockup's dark primary button, per the plan's idea vet (a plain button, not an endorsement); link texts "Download <version> (.xpi)", "Source", "Releases"; the Archived mark reuses the home table's `.badge`.
 - 2026-10-29: choice: the fixture gains `next-plugin@example.org`, whose `upstream.repoUrl` fails `safeHref` (the releases plain-text case AC1 names), with reports on majors 8 and 11 and start results 8.0.3, 8.0.4, and 12.0.1 (two on one major, one on a major only its start tests name, for AC2).
 - 2026-10-29: T1 done: back link, head with the Archived badge, and download, source, and releases links with icons; the About card now holds only the languages line and shows only for a read record; head test checks link order, hrefs, icons, and text on every fixture page, and went red on all 13 pages with `aria-hidden` removed from the icon.
+- 2026-10-29: choice: the declared cell shows the home table's mark (hidden from screen readers, titled with `supportText`) and the mockup's words Yes, Partly, or No; the start cell shows ● or ✕, the result in words, and "Zotero <release>"; the reports cell shows "N works M broken"; helpers `compatMajors`, `majorReport`, and `startWords` in `site/src/data.ts`; `Support.astro`, `startTestsText`, and the pill styles removed as unused.
+- 2026-10-29: T2 done: one "Zotero compatibility" card replaces the Declared support, Start test, and User reports cards; it holds the version line, the table, the declared range line, and the report row; tests compare every fixture page's rows with rows built from `majorSupport` and the data, pin the next-plugin rows, and went red (24 tests) with the major order reversed and the works href swapped.
 
 ## Decisions
 

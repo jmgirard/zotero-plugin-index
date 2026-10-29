@@ -1,20 +1,26 @@
 ---
+import { majorSupport } from "../../../../../src/site/version.ts";
 import Icon from "../../../components/Icon.astro";
-import Support from "../../../components/Support.astro";
 import Base from "../../../layouts/Base.astro";
 import {
   BASE,
+  compatMajors,
   day,
   declaredRange,
   displayName,
   languagesText,
   loadData,
+  majorReport,
+  majorStart,
   overrideUsed,
   rangeText,
   reportHref,
   safeHref,
   shownDescription,
-  startTestsText,
+  startWords,
+  SUPPORT_MARKS as MARKS,
+  SUPPORT_WORDS,
+  supportText,
   upstreamValue,
   type PluginRecord,
 } from "../../../data.ts";
@@ -25,10 +31,6 @@ export function getStaticPaths() {
 
 const { record } = Astro.props as { record: PluginRecord };
 const { upstream, failure, overrides } = record;
-// Data written before the build counted reports has no reports field.
-const reports = record.reports ?? [];
-// Data written before the start tests, and a record no tested release gave a result for, have none.
-const startTests = record.startTests ?? [];
 const repoUrl = upstream?.repoUrl ?? record.repoUrl;
 const repoHref = safeHref(repoUrl);
 const xpiHref = upstream?.xpiUrl === undefined ? undefined : safeHref(upstream.xpiUrl);
@@ -73,63 +75,91 @@ const { min, max } = declaredRange(record);
       }
     </div>
   </div>
-  <section class="card" data-section="support">
-    <h2>Declared support</h2>
+  <section class="card compat" data-section="compatibility">
+    <h2>Zotero compatibility</h2>
     {
-      failure ? (
-        <p data-fact="failure">
-          The last build could not read this plugin: <code>{failure.name}</code>: {failure.message}
-        </p>
+      upstream ? (
+        <>
+          <p class="sub" data-fact="read-version">For version {upstream.version}, the release the index read</p>
+          <div class="table-wrap">
+            <table class="compat-table">
+              <thead>
+                <tr>
+                  <th scope="col">Zotero</th>
+                  <th scope="col">Declared</th>
+                  <th scope="col">Start test</th>
+                  <th scope="col">User reports</th>
+                </tr>
+              </thead>
+              <tbody>
+                {compatMajors(record).map((major) => {
+                  const support = majorSupport(record, major);
+                  const start = majorStart(record, major);
+                  const report = majorReport(record, major);
+                  return (
+                    <tr data-major={major}>
+                      <th scope="row">{major}</th>
+                      <td data-declared={support ?? "no-range"}>
+                        {support ? (
+                          <>
+                            <span class="mark" data-support={support} title={supportText(record, support, major)} aria-hidden="true">
+                              {MARKS[support]}
+                            </span>{" "}
+                            {SUPPORT_WORDS[support]}
+                          </>
+                        ) : (
+                          <span class="none">No range</span>
+                        )}
+                      </td>
+                      <td data-start-cell>
+                        {start ? (
+                          <>
+                            <span class="start" data-start={start.result} aria-hidden="true">
+                              {start.result === "started" ? "●" : "✕"}
+                            </span>{" "}
+                            {startWords(start.result)} <span class="note">Zotero {start.zotero}</span>
+                          </>
+                        ) : (
+                          <span class="none">Not tested</span>
+                        )}
+                      </td>
+                      <td data-reports-cell>
+                        {report ? (
+                          <>
+                            <span class="works">{report.works} works</span> <span class="broken">{report.broken} broken</span>
+                          </>
+                        ) : (
+                          <span class="none">None yet</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {(min !== undefined || max !== undefined) && (
+            <p class="fineprint">
+              Declared range: <span data-fact="declared-range">{rangeText(record)}</span>
+            </p>
+          )}
+          <div class="report-row" data-reports>
+            <p id="report-prompt" data-fact="report-prompt">Tried version {upstream.version} on Zotero? Report what you found:</p>
+            <div class="report-buttons">
+              <a data-report="works" href={reportHref(record, "works")} class="button" aria-describedby="report-prompt">Works</a>
+              <a data-report="broken" href={reportHref(record, "broken")} class="button" aria-describedby="report-prompt">Broken</a>
+            </div>
+          </div>
+        </>
       ) : (
-        <Support record={record} />
-      )
-    }
-    {
-      (min !== undefined || max !== undefined) && (
-        <p class="range">
-          Declared range: <span data-fact="declared-range">{rangeText(record)}</span>
-        </p>
+        failure && (
+          <p data-fact="failure">
+            The last build could not read this plugin: <code>{failure.name}</code>: {failure.message}
+          </p>
+        )
       )
     }
   </section>
-  {
-    upstream && startTests.length > 0 && (
-      <section class="card" data-section="start-test" data-start-tests>
-        <h2>Start test</h2>
-        <p>
-          Starts in Zotero: <span data-fact="start-tests">{startTestsText(record)}</span>
-        </p>
-        <p class="status" data-fact="start-test-note">
-          The daily build installs version {upstream.version} in a new Zotero profile on Linux and
-          waits 3 seconds. A start test does not show that the plugin works.
-        </p>
-      </section>
-    )
-  }
-  {
-    upstream && (
-      <section class="card reports" data-section="reports" data-reports>
-        <h2>User reports</h2>
-        <p data-fact="report-version">User reports on version {upstream.version}, the version the index read</p>
-        {reports.length > 0 ? (
-          <ul class="report-counts">
-            {reports.map(({ zoteroMajor, works, broken }) => (
-              <li data-report-major={zoteroMajor}>
-                Zotero {zoteroMajor}: {works} works, {broken} broken
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p class="status" data-fact="no-reports">No reports on this version yet.</p>
-        )}
-        <p class="report-links" id="report-prompt">Tried this version on Zotero? Report what you found:</p>
-        <div class="report-buttons">
-          <a data-report="works" href={reportHref(record, "works")} class="button" aria-describedby="report-prompt">Works</a>
-          <a data-report="broken" href={reportHref(record, "broken")} class="button" aria-describedby="report-prompt">Broken</a>
-        </div>
-      </section>
-    )
-  }
   {
     upstream && (
       <section class="card" data-section="about">

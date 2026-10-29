@@ -8,6 +8,7 @@ import {
   declaredRange,
   rowMajors,
   usedOverride,
+  ZOTERO_MAJORS,
   type MajorSupport,
 } from "../../src/site/version.ts";
 import { BASE } from "./base.ts";
@@ -56,8 +57,12 @@ export function rangeText(record: PluginRecord): string {
   return "No declared range";
 }
 
-// The sign for each kind of declared support, on a pill and on a home table mark.
+// The sign for each kind of declared support, on a home table mark and a plugin page's
+// compatibility table.
 export const SUPPORT_MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "–" };
+
+// The word for each kind of declared support in a plugin page's compatibility table.
+export const SUPPORT_WORDS: Record<MajorSupport, string> = { all: "Yes", some: "Partly", none: "No" };
 
 // The words for one major's declared support, as a pill's or a mark's hidden text says them.
 export function supportText(record: PluginRecord, support: MajorSupport, major: string): string {
@@ -145,10 +150,26 @@ export function startText({ zotero, result }: StartTestRecord): string {
   return `Zotero ${zotero} ${START_WORDS[result]}`;
 }
 
-// Each tested Zotero version and its result in words, such as "Zotero 7.0.32 started; Zotero
-// 8.0.4 failed at startup", in the order of the data.
-export function startTestsText(record: PluginRecord): string {
-  return (record.startTests ?? []).map(startText).join("; ");
+// One start-test result in words that open a table cell, such as "Failed at startup".
+export function startWords(result: StartTestRecord["result"]): string {
+  const words = START_WORDS[result];
+  return words[0]!.toUpperCase() + words.slice(1);
+}
+
+// The Zotero majors of a plugin page's compatibility table, newest first: each major of
+// ZOTERO_MAJORS and each other major that the record's reports or start results name.
+export function compatMajors(record: PluginRecord): string[] {
+  const majors = new Set([
+    ...ZOTERO_MAJORS,
+    ...(record.reports ?? []).map(({ zoteroMajor }) => String(zoteroMajor)),
+    ...(record.startTests ?? []).map(({ zotero }) => zotero.split(".")[0]!),
+  ]);
+  return [...majors].sort((a, b) => Number(b) - Number(a));
+}
+
+// The counted reports on Zotero major N, if any count.
+export function majorReport(record: PluginRecord, major: string): NonNullable<PluginRecord["reports"]>[number] | undefined {
+  return (record.reports ?? []).find(({ zoteroMajor }) => String(zoteroMajor) === major);
 }
 
 // The start-test result for Zotero major N: the result whose Zotero release is N.x, the
