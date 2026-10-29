@@ -1,6 +1,6 @@
 # M056: Merge bot pull requests after a wait unless held
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -115,7 +115,7 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
 - [x] T5: Add `.github/workflows/merge-discover.yml` and its checks in `test/workflows.test.ts`.
 - [x] T6: Update README, DESIGN.md (item 1 and the `src/discover/` Architecture bullet), and `CHANGELOG.md`;
       append D-033.
-- [ ] T7: Run the verify slot. After the merge, list the open bot pull requests, dispatch `merge-discover.yml`
+- [x] T7: Run the verify slot. After the merge, list the open bot pull requests, dispatch `merge-discover.yml`
       on the default branch (granted), and check that its log gives each one with its skip reason or merge.
 
 ## Work log
@@ -141,3 +141,5 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
 - 2026-10-29: T4 done: `src/discover/merge.ts` (`mergeDiscover`), `merge-cli.ts`, and the `merge-discover` script. 7 tests in `test/merge.test.ts`: one pull request failing each part of AC3 alone, a second page, CRLF, a failed files read, the 48-hour edge, a registry-schema failure with the real check, a check time limit by a pnpm shim, a 405 merge answer, and the command's output and exit 1. Planted `split("\n")`, a skipped check, and `> WAIT_MS` turned 4 tests red. `pnpm test` 1257 passed.
 - 2026-10-29: T5 done: `.github/workflows/merge-discover.yml` runs at 05:13 UTC, before the 06:17 build, and on dispatch; its job runs only for a schedule or a dispatch whose `github.ref` is the default branch's `refs/heads/` name, the form `report-issue.yml` uses, so a tag does not pass; `cache-mode: none` and no cache step, as in `close-add-plugin-issue.yml`. 4 tests in `test/workflows.test.ts`; a planted `issues: write` turned the permissions test red. `discover.yml`'s group comment names the new workflow. GitHub can check the file only once it is on the default branch (T7).
 - 2026-10-29: T6 done: README "Pull requests from the bot" gains the Hold line and the five reasons, and a new "Merging bot pull requests" section; DESIGN.md item 1 and a `src/discover/holds.ts` Architecture bullet; one CHANGELOG entry. D-033 landed with the plan commit. Joined-copy searches of README and DESIGN find 0 of "approves each pull request" and "reviews each pull request"; no added line over 80 columns. `pnpm test` 1261 passed, `pnpm check` clean.
+- 2026-10-29: claim audit: 58 claims read, 10 corrected — README.md, CHANGELOG.md, src/discover/propose.ts. Fixed: name-match wording (like with like; ASCII runs; separate words), default port, "keep open" to "stop the bot from merging", every failure case and the `merged nothing` exit, output order, "new" bot pull requests, "read job", and a duplicated README paragraph with the merge section split from the `pnpm propose` text (section moved before "Proposing a plugin with an issue"). Declined for `UNHELD_TEXT` only: "first daily run" is AC2's fixed wording, and a by-hand run is the maintainer's act; the README says "daily or by hand". The re-read found one more gap (a missing head SHA as a failure), now listed.
+- 2026-10-29: T7: verify slot clean (`pnpm test` 1261 passed, `pnpm check` 58 entries, 0 problems). The post-merge dispatch of `merge-discover.yml` is left to `/milestone-review` after the merge, as AC5's audit disposition says. Implement complete; status review.

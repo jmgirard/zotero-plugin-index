@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-29 (M055 done and archived; 1 row added, 1 extended
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M056 | Merge bot pull requests after a wait unless held | in-progress | — | normal | milestones/M056-merge-bot-pull-requests.md |
+| M056 | Merge bot pull requests after a wait unless held | review | — | normal | milestones/M056-merge-bot-pull-requests.md |
 | M055 | Show English descriptions where upstream has them | done | — | normal | milestones/archive/M055-english-descriptions.md |
 | M054 | Rebuild the plugin page and add an About page | done | M053 | normal | milestones/archive/M054-plugin-page-redesign.md |
 | M053 | Show the home list as a table | done | M052 | normal | milestones/archive/M053-home-table.md |

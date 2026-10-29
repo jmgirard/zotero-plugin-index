@@ -611,27 +611,29 @@ request that meets all of these conditions:
   case.
 
 So a bot pull request without a hold reason can merge 48 hours after it
-opens. The merge comes at the next run, daily or by hand. To stop the bot from merging
-one, add the `hold` label or close it. Bot pull requests opened before the
-Hold line existed have no `Hold: none` line, so the command never merges
-them.
+opens. The merge comes at the next run, daily or by hand. To stop the bot
+from merging one, add the `hold` label or close it. Bot pull requests opened
+before the Hold line existed have no `Hold: none` line, so the command never
+merges them.
 
 Before it merges, the command reads the two files at the head commit of the
 pull request. It copies the checkout's `plugins/` folder, adds the new entry,
 and runs `pnpm check` on the copy. An entry that this run merged is in that
 copy too. Then it squash-merges the pull request at that head commit.
 
-A pull request fails, and the command goes on to the next, in these cases:
-a read of its files or their contents fails, the check fails or passes its
-time limit of 5 minutes, or GitHub refuses the merge.
+In these cases a pull request fails, and the command goes on to the next:
+
+- Its head has no commit SHA.
+- A read of its files or their contents fails.
+- The check fails or passes its time limit of 5 minutes.
+- GitHub refuses the merge.
 
 The command first prints a `merged #<n>` line for each merged pull request.
 Then it prints a `skipped #<n>: <reason>` line for each skipped one. Last,
 it prints a `failed #<n>: <error>` line on stderr for each failed one. If a
-pull request
-failed, the command exits with status 1. If the command cannot read the list
-of pull requests or the checkout's `plugins/` folder, it prints
-`merged nothing: <error>` and exits with status 1.
+pull request failed, the command exits with status 1. If the command cannot
+read the list of pull requests or the checkout's `plugins/` folder, it
+prints `merged nothing: <error>` and exits with status 1.
 
 A merge made with the workflow's `GITHUB_TOKEN` starts no workflow run, so
 the merged plugin appears on the site after the next daily build.
