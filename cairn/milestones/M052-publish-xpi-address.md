@@ -120,3 +120,6 @@ Evidence at 89d7d12, 2026-10-29, branch level with main (2d2639a).
 - ripple #4: Contract boundary list omits xpiUrl — reject, false (same as diff-bug #10)
 - ripple #5: CHANGELOG entry placement — reject, false (it sits last under the one Unreleased heading)
 - ripple #6: build.ts "the plan stay out of the data" — reject, false (still true; the reviewer found no conflict)
+- Every fix-now line above: fixed ef75e5a. After the fixes, `pnpm test` gave 1072 passed and 6 skipped, `pnpm check` 0 problems, and `cairn_validate.py` exit 0.
+- snapshot: no changed snapshot files (no `_snaps` or `__snapshots__` path in the diff).
+- Open-PR cap: 0 open PRs of the operator on this repo, under the feature cap of 1.
