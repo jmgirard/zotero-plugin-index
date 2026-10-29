@@ -1,0 +1,8 @@
+{
+  "id": "duplicate-doctor@pandaaigc.github.io",
+  "name": "Duplicate Doctor for Zotero",
+  "description": "Audits Zotero duplicate groups and safely merges same-DOI webpage records into journal articles.",
+  "homepage": "https://github.com/pandaAIGC/zotero-duplicate-doctor",
+  "repoUrl": "https://github.com/pandaAIGC/zotero-duplicate-doctor",
+  "updateUrl": "https://raw.githubusercontent.com/pandaAIGC/zotero-duplicate-doctor/main/updates.json"
+}
