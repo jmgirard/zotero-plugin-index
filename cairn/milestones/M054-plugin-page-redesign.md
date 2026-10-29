@@ -1,13 +1,13 @@
 # M054: Rebuild the plugin page and add an About page
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** M053
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the public plugin pages and a new public page
-- **Branch/PR:** —
+- **Branch/PR:** m054-plugin-page-redesign
 
 ## Goal
 
@@ -100,7 +100,7 @@ fixture are as M053 defines them.
 
 ## Tasks
 
-- [ ] T1: Add the icon set to the layout and rebuild the page head in
+- [x] T1: Add the icon set to the layout and rebuild the page head in
       `site/src/pages/plugins/[id]/index.astro`; test the head and links.
 - [ ] T2: Add the fixture records AC2 names; build the compatibility
       table and the report row (a data helper for the rows by major, in
@@ -127,6 +127,10 @@ fixture are as M053 defines them.
 - 2026-10-29: absorbed candidate row "Fix the Overrides table's heading level" (AC4).
 - 2026-10-29: lessons used: 2026-10-26 (M015) serving the built site; 2026-10-27 (M021) Astro line breaks; 2026-10-28 (M035) deployed data for hand checks; 2026-10-28 (M037) block nesting; 2026-10-29 (M048) iframe width check.
 - 2026-10-29: criteria audit (full mode, fresh Opus reader): 6 findings here plus 1 shared with M053, all fixed: "every fixture page" made "each page built from the site fixture", with failing-link fixtures and the releases fallback named; a major-11 reports fixture and a two-result fixture added, newest result used; report hrefs tied to `reportHref`; Details given an h2 above the overrides h3; the method-text claim narrowed to named sentences with the footer exempt, and "the build" made `pnpm site`; the color clause dropped (M053 AC6 owns it); Scope no longer moves notes from a home intro that M053 removes. Note kept, no change: the links come before the table, as in the mockup the user chose.
+- 2026-10-29: started by /milestone-implement on branch m054-plugin-page-redesign.
+- 2026-10-29: choice: the file link uses the same plain `.btn` style as Source and Releases, not the mockup's dark primary button, per the plan's idea vet (a plain button, not an endorsement); link texts "Download <version> (.xpi)", "Source", "Releases"; the Archived mark reuses the home table's `.badge`.
+- 2026-10-29: choice: the fixture gains `next-plugin@example.org`, whose `upstream.repoUrl` fails `safeHref` (the releases plain-text case AC1 names), with reports on majors 8 and 11 and start results 8.0.3, 8.0.4, and 12.0.1 (two on one major, one on a major only its start tests name, for AC2).
+- 2026-10-29: T1 done: back link, head with the Archived badge, and download, source, and releases links with icons; the About card now holds only the languages line and shows only for a read record; head test checks link order, hrefs, icons, and text on every fixture page, and went red on all 13 pages with `aria-hidden` removed from the icon.
 
 ## Decisions
 

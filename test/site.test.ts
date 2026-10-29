@@ -272,19 +272,59 @@ function sections(html: string): { name: string; heading: string; body: string }
   );
 }
 
+const ICON = /<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">(?:<path d="[^"]*"><\/path>)+<\/svg>/.source;
+
+// The links of a page head in order: each one's kind, its href (undefined for plain text),
+// and its text, with the HTML escapes undone.
+function headLinks(actions: string): { kind: string; href?: string; text: string }[] {
+  const item = new RegExp(`<a class="btn" href="([^"]*)" data-link="([^"]+)">${ICON}(.*?)</a>|<span class="link-text" data-link="([^"]+)">(.*?)</span>`, "gs");
+  const found = [...actions.matchAll(item)];
+  // Nothing but these items sits in the links block.
+  expect(actions.replace(item, "").trim()).toBe("");
+  return found.map(([, href, kind, text, plainKind, plainText]) =>
+    href === undefined
+      ? { kind: plainKind!, text: unescaped(plainText!) }
+      : { kind: kind!, href: unescaped(href), text: unescaped(text!).replace(/\s+/g, " ").trim() },
+  );
+}
+
 describe("the plugin page", () => {
-  test.each(ids)("opens the main content of %s with a header block of the name and the description", (id) => {
+  test.each(ids)("opens the main content of %s with a back link, the name, the description, and the links", (id) => {
     const record = records.find((r) => r.id === id)!;
     const html = page(id);
     const description = shownDescription(record);
-    const archived = record.upstream?.archived === true ? "<span data-archived>(archived)</span>" : "";
+    const archived = record.upstream?.archived === true ? '<span class="badge" data-archived>Archived</span>' : "";
     const main = html.slice(html.indexOf("<main>") + "<main>".length, html.indexOf("</main>"));
-    const head = /^\s*<div class="card page-head" data-page-head>(.*?)<\/div>/s.exec(main)?.[1];
-    expect(head?.replace(/>\s+</g, "><").trim()).toBe(
+    const head = new RegExp(
+      `^<a class="back" href="/zotero-plugin-index/" data-back>${ICON}All plugins</a>` +
+        `<div class="page-head" data-page-head>(.*?)<div class="actions" data-links>(.*?)</div></div>`,
+      "s",
+    ).exec(main.replace(/>\s+</g, "><").trim());
+    expect(head?.[1]).toBe(
       `<h1>${escaped(displayName(record))}${archived}</h1>` +
         (description ? `<p class="description" data-description>${escaped(description)}</p>` : ""),
     );
+    const { upstream } = record;
+    const repoUrl = upstream?.repoUrl ?? record.repoUrl;
+    const repo = safeHref(repoUrl) !== undefined;
+    expect(headLinks(head![2]!)).toEqual([
+      ...(upstream?.xpiUrl && safeHref(upstream.xpiUrl)
+        ? [{ kind: "download", href: upstream.xpiUrl, text: `Download ${upstream.version} (.xpi)` }]
+        : []),
+      repo ? { kind: "source", href: repoUrl, text: "Source" } : { kind: "source", text: repoUrl },
+      ...(upstream
+        ? [repo ? { kind: "releases", href: `${repoUrl}/releases`, text: "Releases" } : { kind: "releases", text: `${repoUrl}/releases` }]
+        : []),
+    ]);
     expect(main).not.toMatch(/<header[\s>]/);
+  });
+
+  test("covers each shape of page head link in the site fixture", () => {
+    const repoFails = (record: PluginRecord) => !safeHref(record.upstream?.repoUrl ?? record.repoUrl);
+    expect(records.some((record) => record.upstream && repoFails(record))).toBe(true);
+    expect(records.some((record) => !record.upstream && repoFails(record))).toBe(true);
+    expect(records.some((record) => record.upstream?.xpiUrl && !safeHref(record.upstream.xpiUrl))).toBe(true);
+    expect(records.some((record) => record.upstream?.xpiUrl && safeHref(record.upstream.xpiUrl) && !repoFails(record))).toBe(true);
   });
 
   test.each(ids)("shows the sections of %s in order, each with its facts", (id) => {
@@ -301,7 +341,7 @@ describe("the plugin page", () => {
       ["support", "Declared support"],
       ...(started ? [["start-test", "Start test"]] : []),
       ...(read ? [["reports", "User reports"]] : []),
-      ["about", "About"],
+      ...(read ? [["about", "About"]] : []),
     ]);
     const body = (name: string) => found.find((section) => section.name === name)!.body;
     const holds: [string, string[]][] = [
@@ -326,7 +366,7 @@ describe("the plugin page", () => {
             ] as [string, string[]],
           ]
         : []),
-      ["about", [...(read ? ['data-fact="languages"'] : []), 'data-fact="repository"', ...(read ? ['data-fact="releases"'] : [])]],
+      ...(read ? [["about", ['data-fact="languages"']] as [string, string[]]] : []),
     ];
     for (const [name, markers] of holds) {
       expectInOrder(body(name), markers);
@@ -334,7 +374,7 @@ describe("the plugin page", () => {
       for (const marker of markers) expect(html.split(marker).length - 1, marker).toBe(marker === "data-report-major=" ? record.reports!.length : 1);
     }
     if (!hasBound(record)) expect(html).not.toContain('data-fact="declared-range"');
-    if (!read) expect(html).not.toMatch(/data-fact="(?:releases|languages)"/);
+    if (!read) expect(html).not.toMatch(/data-fact="languages"/);
     if (!record.failure && hasBound(record)) expectPills(body("support"), record);
     else expect(pills(html)).toEqual([]);
   });
@@ -365,8 +405,6 @@ describe("the plugin page", () => {
 
   test("shows the repository facts", () => {
     const html = page("first-plugin@example.org");
-    expect(html).toContain('<a href="https://github.com/example/first-plugin">');
-    expect(html).toContain('<a href="https://github.com/example/first-plugin/releases">');
     expect(fact(html, "repo-created")).toBe("2023-03-14");
     expect(fact(html, "latest-release")).toBe("1.2.0, published 2026-09-30");
     expect(fact(html, "release-count")).toBe("27");
@@ -516,6 +554,7 @@ describe("the home page", () => {
       "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}",
       "locale-plugin@example.org",
       "min-only-plugin@example.org",
+      "next-plugin@example.org",
       "no-range-plugin@example.org",
       "old-plugin@example.org",
       "ssh-plugin@example.org",
@@ -675,6 +714,7 @@ describe("the home page", () => {
       ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", ""],
       ["locale-plugin@example.org", "es pt"],
       ["min-only-plugin@example.org", "zh"],
+      ["next-plugin@example.org", ""],
       ["no-range-plugin@example.org", "de fr"],
       ["old-plugin@example.org", ""],
       ["ssh-plugin@example.org", ""],
@@ -692,6 +732,7 @@ describe("the home page", () => {
       ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "9"],
       ["locale-plugin@example.org", "7 8 9"],
       ["min-only-plugin@example.org", "8 9 10"],
+      ["next-plugin@example.org", "8 9 10"],
       ["no-range-plugin@example.org", ""],
       ["old-plugin@example.org", "7"],
       ["ssh-plugin@example.org", ""],

@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-29 (M053 done and archived; 1 row unparked, 4 rows 
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M054 | Rebuild the plugin page and add an About page | planned | M053 | normal | milestones/M054-plugin-page-redesign.md |
+| M054 | Rebuild the plugin page and add an About page | in-progress | M053 | normal | milestones/M054-plugin-page-redesign.md |
 | M053 | Show the home list as a table | done | M052 | normal | milestones/archive/M053-home-table.md |
 | M052 | Publish each plugin's XPI address | done | — | normal | milestones/archive/M052-publish-xpi-address.md |
 | M051 | Alternate the build's plugin read order by day | done | M050 | normal | milestones/archive/M051-alternate-read-order.md |

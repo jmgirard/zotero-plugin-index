@@ -2,7 +2,7 @@
 // A line icon drawn in the text color. It is hidden from screen readers, so the link around
 // it, or the labeled control beside it, carries the words.
 interface Props {
-  name: "source" | "download" | "search";
+  name: "source" | "download" | "search" | "back" | "releases";
 }
 const { name } = Astro.props;
 
@@ -13,6 +13,11 @@ const PATHS: Record<Props["name"], string[]> = {
   ],
   download: ["M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", "m7 10 5 5 5-5", "M12 15V3"],
   search: ["M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0", "m21 21-4.3-4.3"],
+  back: ["m12 19-7-7 7-7", "M19 12H5"],
+  releases: [
+    "M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z",
+    "M7.5 7.5h.01",
+  ],
 };
 ---
 

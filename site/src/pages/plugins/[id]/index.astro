@@ -1,7 +1,9 @@
 ---
+import Icon from "../../../components/Icon.astro";
 import Support from "../../../components/Support.astro";
 import Base from "../../../layouts/Base.astro";
 import {
+  BASE,
   day,
   declaredRange,
   displayName,
@@ -29,14 +31,47 @@ const reports = record.reports ?? [];
 const startTests = record.startTests ?? [];
 const repoUrl = upstream?.repoUrl ?? record.repoUrl;
 const repoHref = safeHref(repoUrl);
+const xpiHref = upstream?.xpiUrl === undefined ? undefined : safeHref(upstream.xpiUrl);
 const description = shownDescription(record);
 const { min, max } = declaredRange(record);
 ---
 
 <Base title={`${displayName(record)}: Zotero plugin index`}>
-  <div class="card page-head" data-page-head>
-    <h1>{displayName(record)}{upstream?.archived === true && <span data-archived>(archived)</span>}</h1>
+  <a class="back" href={BASE} data-back><Icon name="back" />All plugins</a>
+  <div class="page-head" data-page-head>
+    <h1>{displayName(record)}{upstream?.archived === true && <span class="badge" data-archived>Archived</span>}</h1>
     {description && <p class="description" data-description>{description}</p>}
+    <div class="actions" data-links>
+      {
+        upstream && xpiHref && (
+          <a class="btn" href={xpiHref} data-link="download">
+            <Icon name="download" />
+            Download {upstream.version} (.xpi)
+          </a>
+        )
+      }
+      {
+        repoHref ? (
+          <a class="btn" href={repoHref} data-link="source">
+            <Icon name="source" />
+            Source
+          </a>
+        ) : (
+          <span class="link-text" data-link="source">{repoUrl}</span>
+        )
+      }
+      {
+        upstream &&
+          (repoHref ? (
+            <a class="btn" href={`${repoHref}/releases`} data-link="releases">
+              <Icon name="releases" />
+              Releases
+            </a>
+          ) : (
+            <span class="link-text" data-link="releases">{`${repoUrl}/releases`}</span>
+          ))
+      }
+    </div>
   </div>
   <section class="card" data-section="support">
     <h2>Declared support</h2>
@@ -95,26 +130,16 @@ const { min, max } = declaredRange(record);
       </section>
     )
   }
-  <section class="card" data-section="about">
-    <h2>About</h2>
-    {
-      upstream && (
+  {
+    upstream && (
+      <section class="card" data-section="about">
+        <h2>About</h2>
         <p class="languages">
           Menus and settings in: <span data-fact="languages">{languagesText(record)}</span>
         </p>
-      )
-    }
-    <ul class="links">
-      <li data-fact="repository">{repoHref ? <a href={repoHref}>{repoUrl}</a> : repoUrl}</li>
-      {
-        upstream && (
-          <li data-fact="releases">
-            {repoHref ? <a href={`${repoHref}/releases`}>Releases</a> : `${repoUrl}/releases`}
-          </li>
-        )
-      }
-    </ul>
-  </section>
+      </section>
+    )
+  }
   <details>
     <summary>Details</summary>
     <dl>
