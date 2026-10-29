@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ask@benshenhar.com",
+  "name": "Zotero Ask",
+  "description": "A document-aware Ask sidebar for Zotero's PDF reader.",
+  "homepage": "https://github.com/benshen94/zotero-ask",
+  "repoUrl": "https://github.com/benshen94/zotero-ask",
+  "updateUrl": "https://raw.githubusercontent.com/benshen94/zotero-ask/main/updates.json"
+}
