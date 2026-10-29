@@ -1,0 +1,8 @@
+{
+  "id": "addontemplate@euclpts.com",
+  "name": "Zotero Plugin Template",
+  "description": "Zotero Plugin Template",
+  "homepage": "https://github.com/windingwind/zotero-plugin-template#readme",
+  "repoUrl": "https://github.com/windingwind/zotero-plugin-template",
+  "updateUrl": "https://github.com/windingwind/zotero-plugin-template/releases/download/release/update.json"
+}
