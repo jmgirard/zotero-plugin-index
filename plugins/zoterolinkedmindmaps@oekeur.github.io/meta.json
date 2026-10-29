@@ -1,0 +1,8 @@
+{
+  "id": "zoterolinkedmindmaps@oekeur.github.io",
+  "name": "Zotero Linked Mindmaps",
+  "description": "Mind map plugin for Zotero 7 and later: build a knowledge graph of your sources with typed, named links between items and notes, across multiple mindmaps.",
+  "homepage": "https://github.com/oekeur/zotero-linked-mindmaps",
+  "repoUrl": "https://github.com/oekeur/zotero-linked-mindmaps",
+  "updateUrl": "https://github.com/oekeur/zotero-linked-mindmaps/releases/download/release/update.json"
+}
