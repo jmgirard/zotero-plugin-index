@@ -1,0 +1,8 @@
+{
+  "id": "line-focus@junyeol.dev",
+  "name": "A line focus addon for Zotero",
+  "description": "A line focus addon for Zotero",
+  "homepage": "https://github.com/JunyeolYu/line_focus#readme",
+  "repoUrl": "https://github.com/JunyeolYu/line_focus",
+  "updateUrl": "https://github.com/JunyeolYu/line_focus/releases/download/release/update.json"
+}
