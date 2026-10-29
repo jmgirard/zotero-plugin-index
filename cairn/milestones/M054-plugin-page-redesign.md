@@ -153,6 +153,8 @@ fixture are as M053 defines them.
 - 2026-10-29: user chose the strict wording at the AC5 chip (over keeping the reviewed wording or stopping); no further reader spawned for AC5.
 - 2026-10-29: amendment return: AC5 — "On each plugin page built from the site fixture, no text contains these strings from the plugin page before M054: "waits 3 seconds", "A start test does not show that the plugin works", "An override marked", and "The declared range above uses"; exactly one line in the "Zotero compatibility" section links to the About page, under the table for a record with `upstream` and under the failure message for a record with `failure`. The footer's not-vetted line stays on every page built from the site fixture."
 - 2026-10-29: minor amendment: T7 added and mapped to AC5 for the two test gaps both readers named; T7 done: the moved-strings check now reads each plugin page's whole markup and text, and failed records' pages check the failure message before the About line; moving the About line above the failure message failed the 3 failure pages; verify passes (1179 tests, 58 entries, 0 problems); status set to review.
+- 2026-10-29: review pass 2: AC5 verified on the amended wording; 48 findings settled (24 fix now in 9007997, 4 follow-up to the row "Close small gaps on the site pages", 20 rejected); AC6 rechecked after the fixes.
+- 2026-10-29: step-7 approval: m054-plugin-page-redesign approved for merge
 
 ## Decisions
 
