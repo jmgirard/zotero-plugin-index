@@ -1,0 +1,8 @@
+{
+  "id": "semantic-tagger@zotero.local",
+  "name": "Semantic Tagger",
+  "description": "Automatically tag Zotero items using semantic analysis and the Claude API",
+  "homepage": "https://github.com/roey-angel/zotero-semantic-tagger",
+  "repoUrl": "https://github.com/roey-angel/zotero-semantic-tagger",
+  "updateUrl": "https://github.com/roey-angel/zotero-semantic-tagger/releases/download/release/update.json"
+}
