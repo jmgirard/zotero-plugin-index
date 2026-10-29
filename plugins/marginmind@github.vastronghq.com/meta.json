@@ -1,0 +1,8 @@
+{
+  "id": "marginmind@github.vastronghq.com",
+  "name": "MarginMind",
+  "description": "AI chat in Zotero sidebar. Discuss papers, generate summaries, and brainstorm ideas without leaving your research workflow.",
+  "homepage": "https://github.com/vastronghq/MarginMind#readme",
+  "repoUrl": "https://github.com/vastronghq/MarginMind",
+  "updateUrl": "https://github.com/vastronghq/MarginMind/releases/download/release/update.json"
+}
