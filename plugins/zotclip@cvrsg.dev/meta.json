@@ -1,0 +1,8 @@
+{
+  "id": "zotclip@cvrsg.dev",
+  "name": "ZotClip",
+  "description": "Copy Zotero attachment files to clipboard and generate tags using AI providers (DeepSeek, OpenRouter, Ollama, LM Studio, Custom).",
+  "homepage": "https://github.com/kenanking/ZotClip#readme",
+  "repoUrl": "https://github.com/kenanking/ZotClip",
+  "updateUrl": "https://github.com/kenanking/ZotClip/releases/download/release/update.json"
+}
