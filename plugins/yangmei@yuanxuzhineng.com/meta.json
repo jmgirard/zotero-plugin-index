@@ -1,0 +1,8 @@
+{
+  "id": "yangmei@yuanxuzhineng.com",
+  "name": "杨梅助手",
+  "description": "杨梅助手 - AI 研究学习伴侣，基于 Hermes 的 Zotero 智能对话插件",
+  "homepage": "https://github.com/geshuangyang/zotero-hermes-ai-plugin",
+  "repoUrl": "https://github.com/geshuangyang/zotero-hermes-ai-plugin",
+  "updateUrl": "https://github.com/geshuangyang/zotero-hermes-ai-plugin/releases/download/release/update.json"
+}
