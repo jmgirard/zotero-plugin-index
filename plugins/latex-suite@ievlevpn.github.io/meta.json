@@ -1,0 +1,8 @@
+{
+  "id": "latex-suite@ievlevpn.github.io",
+  "name": "LaTeX Suite",
+  "description": "Renders LaTeX in PDF annotation comments as you write, and adds Obsidian Latex Suite's snippets to Zotero's notes and annotations.",
+  "homepage": "https://github.com/ievlevpn/zotero-latex-suite",
+  "repoUrl": "https://github.com/ievlevpn/zotero-latex-suite",
+  "updateUrl": "https://raw.githubusercontent.com/ievlevpn/zotero-latex-suite/master/update.json"
+}
