@@ -1,0 +1,8 @@
+{
+  "id": "bilingual-pdf@local.zotero",
+  "name": "Zotero Bilingual PDF",
+  "description": "Batch translate academic PDFs into side-by-side Chinese bilingual PDFs",
+  "homepage": "https://github.com/LanTing-0119/zotero-bilingual-pdf",
+  "repoUrl": "https://github.com/LanTing-0119/zotero-bilingual-pdf",
+  "updateUrl": "https://raw.githubusercontent.com/LanTing-0119/zotero-bilingual-pdf/main/update.json"
+}
