@@ -1,0 +1,7 @@
+{
+  "id": "retrieval-index@sit2023.local",
+  "name": "Retrieval Index",
+  "description": "Build a page-aware passage index for your local Zotero library and expose it over Zotero's local HTTP server.",
+  "repoUrl": "https://github.com/ZJW11398925/zotero-retrieval-index",
+  "updateUrl": "https://raw.githubusercontent.com/ZJW11398925/zotero-retrieval-index/main/update.json"
+}
