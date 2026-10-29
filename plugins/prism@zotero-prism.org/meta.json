@@ -1,0 +1,8 @@
+{
+  "id": "prism@zotero-prism.org",
+  "name": "Zotero Prism",
+  "description": "Reading analytics, an AI copilot and full-text translation for Zotero. Free and open source — github.com/mxlapan/zotero-prism · 免费开源，发布和使用均不收取任何费用。",
+  "homepage": "https://github.com/mxlapan/zotero-prism",
+  "repoUrl": "https://github.com/mxlapan/zotero-prism",
+  "updateUrl": "https://github.com/mxlapan/zotero-prism/releases/download/release/update.json"
+}
