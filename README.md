@@ -131,8 +131,8 @@ row has three cells:
   that major, as "Using the data" counts them. If no report counts, the
   cell shows "None yet".
 
-Under the table, the card shows the declared range and a link to the About
-page. Then a line names the plugin version that the index read, beside a
+Under the table, the card shows a link to the About page. If the plugin
+declares a range, the declared range comes before that link. Then a line names the plugin version that the index read, beside a
 "Works" button and a "Broken" button. The buttons open the report forms on
 GitHub with the plugin id and that version filled in. If the last build
 failed to read a plugin, the card shows the failure in place of the table,

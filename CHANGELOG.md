@@ -412,8 +412,9 @@
   560 pixels or less, it also hides the descriptions and the source links.
   Without JavaScript, the home page shows every plugin and no search box,
   menu, buttons, or count. Every page is now up to 65rem wide, not 50rem.
-  Each plugin page has a new layout in place of the cards, pills, and
-  closed "Details" section that the entries above describe. It opens with
+  Each plugin page has a new layout in place of the four cards, the pills,
+  and the closed "Details" section that the entries above describe. It has
+  two cards. It opens with
   a link back to the home page, the name with "Archived" for an archived
   repository, and the description. Links to the `.xpi` file, the source
   code, and the releases follow. A link to an address that does not start
@@ -423,8 +424,9 @@
   row for each other major that the plugin's reports or start results
   name. A row shows the declared mark with "Yes", "Partly", or "No". It
   also shows the result of the newest tested release of that major and
-  the counts of "works" and "broken" reports. Under the table come the
-  declared range and a link to the About page. A line that names the
+  the counts of "works" and "broken" reports. Under the table comes a
+  link to the About page. If the plugin declares a range, the declared
+  range comes before that link. A line that names the
   version that the index read comes next, with the "Works" and "Broken"
   buttons. An open "Details" card lists the plugin id, the repository
   facts, the release that the index read, and the languages. The

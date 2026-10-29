@@ -1,6 +1,6 @@
 # M054: Rebuild the plugin page and add an About page
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** M053
 - **Driving RR:** —
@@ -140,6 +140,8 @@ fixture are as M053 defines them.
 - 2026-10-29: T5: built from the deployed `v1/plugins.json` (generatedAt 2026-10-29T19:12:45.935Z, 56 records, all with `xpiUrl`), served on port 4329 (`m054-live` in the excluded `.claude/launch.json`); the first 375 px look showed table headers broken mid-word ("Zo ter o") under the body's `overflow-wrap: anywhere`, fixed with `overflow-wrap: normal` on the table, a no-wrap declared cell, and smaller cell padding at 560 px or less.
 - 2026-10-29: T5 done: iframe width check with `border: 0`, after the fix: DeepRead, Better BibTeX, and PDF Preview plugin pages and the About page all have scrollWidth equal to clientWidth at 375 (375/375) and 1280 (1280/1280); a planted 900 px block gave 900/375; DOMParser nesting check found no block inside a `<p>`; screenshots of the four pages at 375 and 1280 px were taken in the pane (no tool saves them to the repo; the pane keeps them in this session's tool results).
 - 2026-10-29: T6 done: README's site section (top bar, plugin page, About page, `pnpm site` output) and DESIGN's site paragraphs, pill example, and module notes describe the new pages; the M053 CHANGELOG entry gains the About link and the plugin page and About page text, and says it replaces the layout the older Unreleased entries describe, which stay as written (no release yet); verify passes (1179 tests, 56 entries, 0 problems).
+- 2026-10-29: claim audit: 99 claims read, 3 corrected — README.md, CHANGELOG.md (the declared range shows under the table only when the plugin declares one, twice; the new layout still has two cards).
+- 2026-10-29: all tasks done; status set to review.
 
 ## Decisions
 
