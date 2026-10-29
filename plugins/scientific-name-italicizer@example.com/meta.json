@@ -1,0 +1,8 @@
+{
+  "id": "scientific-name-italicizer@example.com",
+  "name": "Scientific Name Italicizer",
+  "description": "Italicizes species-level organism names in Zotero item titles using a local Catalogue of Life index.",
+  "homepage": "https://github.com/Crowmane420/zotero-scientific-name-italicizer",
+  "repoUrl": "https://github.com/Crowmane420/zotero-scientific-name-italicizer",
+  "updateUrl": "https://raw.githubusercontent.com/Crowmane420/zotero-scientific-name-italicizer/main/update.json"
+}
