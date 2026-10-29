@@ -1,0 +1,8 @@
+{
+  "id": "zotero2notion@local.plugin",
+  "name": "Zotero2Notion",
+  "description": "Sync papers and custom Markdown templates to Notion.",
+  "homepage": "https://github.com/legojeon/Zotero2Notion",
+  "repoUrl": "https://github.com/legojeon/Zotero2Notion",
+  "updateUrl": "https://github.com/legojeon/Zotero2Notion/releases/latest/download/updates.json"
+}
