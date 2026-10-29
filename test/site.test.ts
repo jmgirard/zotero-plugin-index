@@ -213,8 +213,8 @@ describe("the report block", () => {
           ["version", record.upstream!.version],
         ]);
       }
-      expect(page(id)).toMatch(/<a data-report="works" href="[^"]*">Works<\/a>/);
-      expect(page(id)).toMatch(/<a data-report="broken" href="[^"]*">Broken<\/a>/);
+      expect(page(id)).toMatch(/<a data-report="works" href="[^"]*"[^>]*>Works<\/a>/);
+      expect(page(id)).toMatch(/<a data-report="broken" href="[^"]*"[^>]*>Broken<\/a>/);
     },
   );
 
@@ -231,32 +231,84 @@ describe("the report block", () => {
   });
 });
 
+// The h2 sections between the header block and <details>, each with its markup.
+function sections(html: string): { name: string; heading: string; body: string }[] {
+  const top = html.slice(0, html.indexOf("<details>"));
+  return [...top.matchAll(/<section class="card[^"]*" data-section="([^"]+)"[^>]*>\s*<h2>([^<]*)<\/h2>(.*?)<\/section>/gs)].map(
+    ([, name, heading, body]) => ({ name: name!, heading: heading!, body: body! }),
+  );
+}
+
 describe("the plugin page", () => {
-  test.each(ids)("shows the parts of %s in order, with the minor facts in a closed Details section", (id) => {
+  test.each(ids)("opens the main content of %s with a header block of the name and the description", (id) => {
     const record = records.find((r) => r.id === id)!;
     const html = page(id);
     const description = shownDescription(record);
-    const support = record.failure ? 'data-fact="failure"' : hasBound(record) ? 'class="pills"' : 'data-status="no-range"';
     const archived = record.upstream?.archived === true ? "<span data-archived>(archived)</span>" : "";
-    expectInOrder(html, [
-      `<h1>${escaped(displayName(record))}${archived}</h1>`,
-      ...(description ? [`<p class="description" data-description>${escaped(description)}</p>`] : []),
-      support,
-      ...(hasBound(record) ? ['data-fact="declared-range"'] : []),
-      ...(record.upstream ? ['data-fact="languages"', "<section class=\"reports\" data-reports>"] : []),
-      'data-fact="repository"',
-      ...(record.upstream ? ['data-fact="releases"'] : []),
-      "<details>",
-    ]);
-    if (!description) expect(html).not.toContain("data-description");
-    if (!hasBound(record)) expect(html).not.toContain('data-fact="declared-range"');
-    if (!record.upstream) expect(html).not.toMatch(/data-fact="(?:releases|languages)"/);
-    if (!record.failure && hasBound(record)) expectPills(html, record);
-    else expect(pills(html)).toEqual([]);
+    const main = html.slice(html.indexOf("<main>") + "<main>".length, html.indexOf("</main>"));
+    const head = /^\s*<div class="card page-head" data-page-head>(.*?)<\/div>/s.exec(main)?.[1];
+    expect(head?.replace(/>\s+</g, "><").trim()).toBe(
+      `<h1>${escaped(displayName(record))}${archived}</h1>` +
+        (description ? `<p class="description" data-description>${escaped(description)}</p>` : ""),
+    );
+    expect(main).not.toMatch(/<header[\s>]/);
+  });
 
+  test.each(ids)("shows the sections of %s in order, each with its facts", (id) => {
+    const record = records.find((r) => r.id === id)!;
+    const html = page(id);
+    const read = record.upstream !== undefined;
+    const started = read && (record.startTests?.length ?? 0) > 0;
+    const found = sections(html);
+    expect(found.map(({ name, heading }) => [name, heading])).toEqual([
+      ["support", "Declared support"],
+      ...(started ? [["start-test", "Start test"]] : []),
+      ...(read ? [["reports", "User reports"]] : []),
+      ["about", "About"],
+    ]);
+    const body = (name: string) => found.find((section) => section.name === name)!.body;
+    const holds: [string, string[]][] = [
+      [
+        "support",
+        [
+          record.failure ? 'data-fact="failure"' : hasBound(record) ? 'class="pills"' : 'data-status="no-range"',
+          ...(hasBound(record) ? ['data-fact="declared-range"'] : []),
+        ],
+      ],
+      ...(started ? [["start-test", ['data-fact="start-tests"', 'data-fact="start-test-note"']] as [string, string[]]] : []),
+      ...(read
+        ? [
+            [
+              "reports",
+              [
+                'data-fact="report-version"',
+                (record.reports?.length ?? 0) > 0 ? "data-report-major=" : 'data-fact="no-reports"',
+                'data-report="works"',
+                'data-report="broken"',
+              ],
+            ] as [string, string[]],
+          ]
+        : []),
+      ["about", [...(read ? ['data-fact="languages"'] : []), 'data-fact="repository"', ...(read ? ['data-fact="releases"'] : [])]],
+    ];
+    for (const [name, markers] of holds) {
+      expectInOrder(body(name), markers);
+      // Each fact sits in its section and nowhere else on the page.
+      for (const marker of markers) expect(html.split(marker).length - 1, marker).toBe(marker === "data-report-major=" ? record.reports!.length : 1);
+    }
+    if (!hasBound(record)) expect(html).not.toContain('data-fact="declared-range"');
+    if (!read) expect(html).not.toMatch(/data-fact="(?:releases|languages)"/);
+    if (!record.failure && hasBound(record)) expectPills(body("support"), record);
+    else expect(pills(html)).toEqual([]);
+  });
+
+  test.each(ids)("holds the minor facts of %s in a closed Details section after the sections", (id) => {
+    const record = records.find((r) => r.id === id)!;
+    const html = page(id);
     expect(html).not.toMatch(/<details\s+open/);
     const start = html.indexOf("<details>");
     const end = html.indexOf("</details>");
+    expect(html.lastIndexOf('data-section="about"', start)).toBeGreaterThan(-1);
     const inside = ['data-fact="id"'];
     if (record.upstream) {
       if (typeof record.upstream.archived === "boolean") inside.push('data-fact="archived"');

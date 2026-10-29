@@ -1,13 +1,13 @@
 # M048: Lay out the plugin pages in card sections
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the public site's plugin pages
-- **Branch/PR:** —
+- **Branch/PR:** m048-plugin-page-sections
 
 ## Goal
 
@@ -91,7 +91,7 @@ A script on the plugin pages stays out, because this layout needs none
 
 ## Tasks
 
-- [ ] T1: Write the tests first. Rewrite the order test at
+- [x] T1: Write the tests first. Rewrite the order test at
       `test/site.test.ts:235` for the header block, the four sections, and
       what each holds. Keep each `href` check, and add one for any link
       that has none. Run them and see them fail.
@@ -124,6 +124,7 @@ A script on the plugin pages stays out, because this layout needs none
 - 2026-10-29: split: M048 covers the plugin pages, and M049 (planned now, depends on M048) covers the header, the footer, and the home list.
 - 2026-10-29: user superseded D-019 with D-026 at the plan, so AC6 of the audited draft (no script on plugin pages) left the criteria.
 - 2026-10-29: criteria re-audit (full): 6 findings on M048, all fixed. AC1 forbids any `<header>` element and names `shownDescription`. AC2 counts only the sections before `<details>`, so the Overrides h2 stays out. AC3 names the repository fact, since no fixture has an unsafe URL. Scope names the home row change. AC6 covers changed rules too. DESIGN.md's "links first" sentence joins AC8 and T5.
+- 2026-10-29: T1: the plugin page tests now check the header block, the four sections and their facts, and the Details section on each of the 9 fixture pages; the 27 new tests fail on the current page. The report link tests allow attributes after `href`, which they still match exactly.
 
 ## Decisions
 
