@@ -6,9 +6,9 @@ import type { Lookup } from "../upstream/host-guard.ts";
 import { type Failure, type Fetch, githubClient, ReadFailure, readUpstream } from "../upstream/reader.ts";
 import { duration, READ_LIMIT_MS, withinLimit } from "../upstream/time-limit.ts";
 import { plannedProblem } from "./handoff.ts";
+import { type HoldReason, holdReasons, type IndexedName, ownerCreatedAt, TOPICS } from "./holds.ts";
 
 const API = "https://api.github.com";
-export const TOPICS = ["zotero-plugin", "zotero-addon"];
 // GitHub's repository search returns at most this many results for one query.
 const SEARCH_MAX = 1000;
 // A refused repo is read again after this long, even when it was not pushed.
@@ -46,6 +46,7 @@ export type ReadItem =
       version: string;
       strictMinVersion?: string;
       strictMaxVersion?: string;
+      holds: HoldReason[];
     }
   | { repo: string; repoUrl: string; outcome: "refused"; failure: DiscoveryFailure; message: string };
 
@@ -151,27 +152,46 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
       continue;
     }
 
-    const drafted = await draftEntry(repoUrl, { fetch, lookup, outDir, ids: index.ids, pendingIds: options.pendingIds, readMs, refCheckMs });
+    const drafted = await draftEntry(repoUrl, {
+      fetch,
+      lookup,
+      outDir,
+      ids: index.ids,
+      names: index.names,
+      pendingIds: options.pendingIds,
+      readMs,
+      refCheckMs,
+      now,
+    });
     if (!drafted.ok) {
       const { failure, message } = drafted;
       if (drafted.recorded) state[repo] = { pushedAt, failure, checkedAt: now.toISOString() };
       report.read.push({ repo, repoUrl, outcome: "refused", failure, message });
       continue;
     }
-    const { id, dir, version, strictMinVersion, strictMaxVersion } = drafted;
+    const { id, dir, version, strictMinVersion, strictMaxVersion, holds } = drafted;
     delete state[repo];
     index.ids.add(id.toLowerCase());
     written++;
     // The name and URL that draftEntry checked, which can differ from the search
     // result's after a rename.
     const read = { repo: repoName(drafted.repoUrl) ?? repo, repoUrl: drafted.repoUrl };
-    report.read.push({ ...read, outcome: "written", id, dir, version, strictMinVersion, strictMaxVersion });
+    report.read.push({ ...read, outcome: "written", id, dir, version, strictMinVersion, strictMaxVersion, holds });
   }
   return { ok: true, state, report };
 }
 
 export type Drafted =
-  | { ok: true; id: string; dir: string; repoUrl: string; version: string; strictMinVersion?: string; strictMaxVersion?: string }
+  | {
+      ok: true;
+      id: string;
+      dir: string;
+      repoUrl: string;
+      version: string;
+      strictMinVersion?: string;
+      strictMaxVersion?: string;
+      holds: HoldReason[];
+    }
   // `recorded` is false for a refusal that says nothing about the repo. `buildLevel` marks a
   // refusal that usually points at the bot rather than at the repo: a reader failure that
   // the reader marks build-level, a read that threw, or an entry that writeEntry could not
@@ -187,9 +207,15 @@ export interface DraftOptions {
   // requests add.
   ids: Set<string>;
   pendingIds?: Set<string>;
+  // The index's entries by owner, repo part, and name, for the `name-match` hold.
+  names: IndexedName[];
   // The longest the read of the repo, and the branch-name check of its entry, may take.
   readMs?: number;
   refCheckMs?: number;
+  // The time the owner's account age is measured to, and whether an issue run drafts the
+  // entry, for the hold reasons.
+  now?: Date;
+  issueRun?: boolean;
 }
 
 // Reads one repo and writes its entry to outDir, unless the index or an open pull
@@ -225,13 +251,25 @@ export async function draftEntry(repoUrl: string, options: DraftOptions): Promis
     const unsafe = entry.failure === "unsafe-id";
     return refuse(entry.failure, entry.message, unsafe, !unsafe);
   }
+  const repo = repoName(read.facts.repoUrl);
+  const holds = repo
+    ? holdReasons({
+        repo,
+        name: read.facts.name,
+        updateHost: read.facts.updateHost,
+        topics: read.topics,
+        issueRun: options.issueRun ?? false,
+        ownerCreatedAt: await ownerCreatedAt(fetch, repo.split("/")[0]),
+        now: options.now ?? new Date(),
+        indexed: options.names,
+      })
+    : [];
   // `pnpm propose` refuses a handoff with an entry it cannot push, so such a repo is
   // refused here, and recorded.
-  const repo = repoName(read.facts.repoUrl);
   let problem: string | undefined;
   try {
     problem = repo
-      ? await plannedProblem({ repo, repoUrl: read.facts.repoUrl, id, version, strictMinVersion, strictMaxVersion }, entry.dir, refCheckMs)
+      ? await plannedProblem({ repo, repoUrl: read.facts.repoUrl, id, version, strictMinVersion, strictMaxVersion, holds }, entry.dir, refCheckMs)
       : `${read.facts.repoUrl} names no owner/repo`;
   } catch (error) {
     await rm(entry.dir, { recursive: true, force: true });
@@ -241,7 +279,7 @@ export async function draftEntry(repoUrl: string, options: DraftOptions): Promis
     await rm(entry.dir, { recursive: true, force: true });
     return refuse("not-proposable", `the bot cannot propose ${read.facts.repoUrl}: ${problem}`);
   }
-  return { ok: true, id, dir: entry.dir, repoUrl: read.facts.repoUrl, version, strictMinVersion, strictMaxVersion };
+  return { ok: true, id, dir: entry.dir, repoUrl: read.facts.repoUrl, version, strictMinVersion, strictMaxVersion, holds };
 }
 
 interface SearchItem {
@@ -291,23 +329,28 @@ async function search(fetch: Fetch, warnings: string[]): Promise<Candidate[]> {
   return [...found.values()].sort((a, b) => Date.parse(b.pushedAt) - Date.parse(a.pushedAt) || a.repo.localeCompare(b.repo));
 }
 
-// The plugin ids of the entries under root by their lowercase owner/repo names, and the
-// lowercase ids. An entry whose meta.json cannot be read still counts by its directory
-// name, which is its id; `pnpm check` reports such entries.
-export async function indexed(root: string): Promise<{ repos: Map<string, string>; ids: Set<string> }> {
+// The plugin ids of the entries under root by their lowercase owner/repo names, the
+// lowercase ids, and each entry's owner, repo part, and name. An entry whose meta.json
+// cannot be read still counts by its directory name, which is its id; `pnpm check`
+// reports such entries.
+export async function indexed(root: string): Promise<{ repos: Map<string, string>; ids: Set<string>; names: IndexedName[] }> {
   const repos = new Map<string, string>();
   const ids = new Set<string>();
+  const names: IndexedName[] = [];
   for (const { name } of await listEntries(root)) {
     ids.add(name.toLowerCase());
     try {
       const meta = JSON.parse(await readFile(join(root, name, "meta.json"), "utf8"));
       const repo = repoName(meta?.repoUrl);
-      if (repo) repos.set(repo, name);
+      if (!repo) continue;
+      repos.set(repo, name);
+      const [owner, repoPart] = repo.split("/");
+      names.push({ owner, repoPart, ...(typeof meta.name === "string" && { name: meta.name }) });
     } catch {
       // Not readable, so only the id counts.
     }
   }
-  return { repos, ids };
+  return { repos, ids, names };
 }
 
 // The lowercase owner/repo of a URL, from the first two parts of its path, on any host.

@@ -309,7 +309,7 @@ function tokenEnv(): Record<string, string> {
 export interface PushBase {
   branch: string;
   commit: string;
-  index: Awaited<ReturnType<typeof indexed>>;
+  index: Pick<Awaited<ReturnType<typeof indexed>>, "repos" | "ids">;
 }
 
 // Fetches the default branch `base` from `remote` and reads the index at the fetched
@@ -323,7 +323,7 @@ export async function fetchBase(options: { gitDir: string; remote?: string; base
   return { branch: base, commit, index: await indexAt(git, base, commit) };
 }
 
-// The index at `commit`, in the shape of `indexed`: each folder under plugins/ whose name
+// The index at `commit`, in the shape of `indexed` less its names: each folder under plugins/ whose name
 // does not start with "." is an entry, and a meta.json in it that is JSON names its repo.
 // Two git processes read it: one ls-tree, from the repo root whatever the checkout's
 // current folder, and one cat-file for every meta.json.

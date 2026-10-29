@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import { Ajv } from "ajv";
 import { duration } from "../upstream/time-limit.ts";
+import { HOLD_REASONS, type HoldReason } from "./holds.ts";
 
 // A handoff is what a read job leaves for the write job: `plan.json` and one directory
 // `entries/<id>/` for each drafted entry. The read job reads repos that anyone can name,
@@ -29,6 +30,8 @@ export interface PlannedEntry {
   version: string;
   strictMinVersion?: string;
   strictMaxVersion?: string;
+  // Why the pull request waits for the maintainer, in HOLD_REASONS order; empty for none.
+  holds: HoldReason[];
 }
 
 // An issue run's read step ends in one of these. `known` names a repo that an entry or a
@@ -55,7 +58,7 @@ const text = (maxLength: number) => ({ type: "string", minLength: 1, maxLength }
 const entrySchema = {
   type: "object",
   additionalProperties: false,
-  required: ["repo", "repoUrl", "id", "version"],
+  required: ["repo", "repoUrl", "id", "version", "holds"],
   properties: {
     repo: text(200),
     repoUrl: text(300),
@@ -63,6 +66,7 @@ const entrySchema = {
     version: text(500),
     strictMinVersion: text(500),
     strictMaxVersion: text(500),
+    holds: { type: "array", uniqueItems: true, items: { enum: [...HOLD_REASONS] } },
   },
 };
 const issue = (outcome: string, properties: Record<string, unknown>, optional: Record<string, unknown> = {}) => ({
@@ -234,6 +238,6 @@ async function entryDirProblem(entryDir: string, id: string): Promise<string | u
 
 // The fields of a drafted entry that the plan carries.
 export function planned(written: PlannedEntry): PlannedEntry {
-  const { repo, repoUrl, id, version, strictMinVersion, strictMaxVersion } = written;
-  return { repo, repoUrl, id, version, strictMinVersion, strictMaxVersion };
+  const { repo, repoUrl, id, version, strictMinVersion, strictMaxVersion, holds } = written;
+  return { repo, repoUrl, id, version, strictMinVersion, strictMaxVersion, holds };
 }

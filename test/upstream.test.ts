@@ -70,6 +70,7 @@ describe("readUpstream", () => {
         url: "https://github.com/windingwind/zotero-better-notes/releases/download/v3.3.3/better-notes-for-zotero.xpi",
         sha256: expect.stringMatching(/^[0-9a-f]{64}$/),
       },
+      topics: [],
     });
   });
 

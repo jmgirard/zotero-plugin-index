@@ -41,6 +41,8 @@ export interface IssueReadOptions {
   indexRepo: string;
   // The issue's number, whose body the read step reads from the API.
   issue: number;
+  // The time the owner's account age is measured to.
+  now?: Date;
 }
 
 // The read step of an issue run, which makes no GitHub write. It reads the issue's body
@@ -96,7 +98,7 @@ async function readOutcome(options: IssueReadOptions): Promise<IssueOutcome> {
   const given = githubRepo(parsed.url);
   if (known(given)) return { outcome: "known", repo: given! };
 
-  const drafted = await draftEntry(parsed.url, { ...options, ids: index.ids, pendingIds: pulls.ids });
+  const drafted = await draftEntry(parsed.url, { ...options, ids: index.ids, names: index.names, pendingIds: pulls.ids, issueRun: true });
   if (!drafted.ok) {
     const { failure, message } = drafted;
     // A rate limit, an outage, an outDir that cannot take the entry, or an entry check

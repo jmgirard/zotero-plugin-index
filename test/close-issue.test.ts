@@ -22,7 +22,7 @@ afterAll(() => {
   for (const dir of temps.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
-const entry: Written = { outcome: "written", repo: "example/alpha", repoUrl: "https://github.com/example/alpha", id: "alpha@example.org", version: "1.0.0", dir: "" };
+const entry: Written = { outcome: "written", repo: "example/alpha", repoUrl: "https://github.com/example/alpha", id: "alpha@example.org", version: "1.0.0", dir: "", holds: [] };
 // The body `pnpm propose` writes for issue 7, and for a topic run whose check output
 // holds a `Closes #7` line inside its code block.
 const issueBody = body(entry, { status: 0, output: "checked 1 entries in x, 0 problems\n" }, 7);

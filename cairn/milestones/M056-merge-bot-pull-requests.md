@@ -1,13 +1,13 @@
 # M056: Merge bot pull requests after a wait unless held
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes which plugins the published index lists and when
-- **Branch/PR:** —
+- **Branch/PR:** m056-merge-bot-pull-requests
 
 ## Goal
 
@@ -100,9 +100,9 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
 
 ## Tasks
 
-- [ ] T1: Add `holds` to `PlannedEntry` and the entry schema in `src/discover/handoff.ts` (25-67), with the
+- [x] T1: Add `holds` to `PlannedEntry` and the entry schema in `src/discover/handoff.ts` (25-67), with the
       `readHandoff` refusal and its test in `test/handoff.test.ts`.
-- [ ] T2: Compute the hold reasons in one shared function: carry `topics` from the repo read in
+- [x] T2: Compute the hold reasons in one shared function: carry `topics` from the repo read in
       `src/upstream/reader.ts` (174-218), read `GET /users/<owner>`, build the name keys from the indexed
       entries in `src/discover/discover.ts` near `draftEntry` (198), and fill `holds` for discover and issue
       runs (`discover.ts`, `issue.ts`). Tests in `test/discover.test.ts` and `test/issue.test.ts`.
@@ -133,3 +133,6 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
 - 2026-10-29: plan gate chose the `Hold: none` body line as the merge gate over the `hold` label alone because a failed label request must not let a held pull request merge; falsified by a held pull request that the job merges.
 - 2026-10-29: plan gate chose fixed hold rules over scanning the XPI's code because most plugins make network calls and run scripts, so a scan would hold nearly every candidate; falsified by a scan whose hold count on the 44 merged pull requests is below the chosen rules' 8.
 - 2026-10-29: user chose four rules over adding a 30-day repo-age rule, which would have held 16 of 44; falsified by a listed plugin found harmful whose repo was under 30 days old and passed the four rules.
+- 2026-10-29: implement started on branch m056-merge-bot-pull-requests.
+- 2026-10-29: implementation choice: the rules live in `src/discover/holds.ts` (`holdReasons`, `nameKey`, `ownerCreatedAt`), and `TOPICS` moved there from `discover.ts` so `handoff.ts` can import `HOLD_REASONS` with no import cycle; `readUpstream` returns `topics` beside `facts` so the build does not publish them; the owner read uses the client's own per-request time limit.
+- 2026-10-29: T1, T2 done: `holds` in the handoff schema and `PlannedEntry`; `draftEntry` fills it for discover and issue runs; `indexed` also returns each entry's owner, repo part, and name; `pluginRepo` fixtures carry a topic and an old owner account. New `test/holds.test.ts` (13 tests), plan.json tests in `test/propose.test.ts` and `test/issue.test.ts`, 3 refusal cases in `test/handoff.test.ts`. Planted `<=` for the 30-day rule and a dropped owner check each turned one test red. `pnpm test` 1247 passed, `pnpm check` clean.

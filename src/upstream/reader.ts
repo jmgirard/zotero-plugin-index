@@ -66,9 +66,10 @@ export type Failure =
 // `buildLevel` marks a failure that usually points at the build rather than at the plugin: a
 // request with no whole response, a GitHub API body that is not JSON, or an answer that
 // buildLevelStatus counts. The build counts such failures to decide whether to deploy. It
-// is not part of the published data.
+// is not part of the published data. Nor are `topics`, the repo's GitHub topics that are
+// strings, which the discovery bot reads.
 export type UpstreamResult =
-  | { ok: true; facts: UpstreamFacts; xpi: XpiRead }
+  | { ok: true; facts: UpstreamFacts; xpi: XpiRead; topics: string[] }
   | { ok: false; failure: Failure; message: string; buildLevel?: true };
 
 // The XPI whose manifest the reader read: the release asset's download URL, before any
@@ -167,7 +168,7 @@ function boundLookup(lookup: Lookup, signal: AbortSignal): Lookup {
   };
 }
 
-async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<{ facts: UpstreamFacts; xpi: XpiRead }> {
+async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<{ facts: UpstreamFacts; xpi: XpiRead; topics: string[] }> {
   const { owner, repo } = parseRepoUrl(repoUrl);
   const github = githubClient(fetch);
 
@@ -218,6 +219,7 @@ async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<
       archived: typeof meta.archived === "boolean" ? meta.archived : undefined,
     },
     xpi,
+    topics: Array.isArray(meta.topics) ? meta.topics.filter((topic): topic is string => typeof topic === "string") : [],
   };
 }
 
@@ -281,6 +283,7 @@ interface RepoJson {
   description?: unknown;
   created_at: string;
   open_issues_count: number;
+  topics?: unknown;
 }
 
 interface ReleaseJson {
