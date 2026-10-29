@@ -1,0 +1,8 @@
+{
+  "id": "zotero-language-categorizer@cboulanger.github.io",
+  "name": "Zotero Language Categorizer",
+  "description": "Classifies the language of item titles/abstracts and fills in the language field",
+  "homepage": "https://github.com/cboulanger/zotero-language-categorizer#readme",
+  "repoUrl": "https://github.com/cboulanger/zotero-language-categorizer",
+  "updateUrl": "https://raw.githubusercontent.com/cboulanger/zotero-language-categorizer/main/updates.json"
+}
