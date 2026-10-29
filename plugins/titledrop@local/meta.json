@@ -1,0 +1,8 @@
+{
+  "id": "titledrop@local",
+  "name": "TitleDrop",
+  "description": "Drop a paper. Keep its title. Automatic PDF naming with local extraction and identifier checks.",
+  "homepage": "https://github.com/offmor/TitleDrop",
+  "repoUrl": "https://github.com/offmor/TitleDrop",
+  "updateUrl": "https://github.com/offmor/TitleDrop/releases/latest/download/updates.json"
+}
