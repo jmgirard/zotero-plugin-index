@@ -1,0 +1,8 @@
+{
+  "id": "refdetect@hostiuc.com",
+  "name": "RefDetect",
+  "description": "Detect which reference manager was used to create citations in a Word document",
+  "homepage": "https://github.com/sorinhostiuc/refdetect",
+  "repoUrl": "https://github.com/sorinhostiuc/refdetect",
+  "updateUrl": "https://github.com/sorinhostiuc/refdetect/releases/latest/download/update.json"
+}
