@@ -1,0 +1,8 @@
+{
+  "id": "zotero-annotations-count@hotmail.com",
+  "name": "Zotero Annotations Count",
+  "description": "Add a column showing how many annotations each of your Zotero items has.",
+  "homepage": "https://github.com/Dominic-DallOsto/zotero-annotations-count",
+  "repoUrl": "https://github.com/Dominic-DallOsto/zotero-annotations-count",
+  "updateUrl": "https://github.com/Dominic-DallOsto/zotero-annotations-count/releases/download/update/update.json"
+}
