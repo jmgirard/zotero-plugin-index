@@ -1,0 +1,8 @@
+{
+  "id": "bibgenie@outlook.com",
+  "name": "BibGenie",
+  "description": "The Ultimate AI Assistant for Your Research Journey in Zotero",
+  "homepage": "https://www.bibgenie.com",
+  "repoUrl": "https://github.com/BaiRuic/BibGenie",
+  "updateUrl": "https://github.com/BaiRuic/BibGenie/releases/download/release/update.json"
+}
