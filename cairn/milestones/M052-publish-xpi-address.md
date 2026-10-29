@@ -82,6 +82,7 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
 - 2026-10-29: T2 and T3 done: verify slot green over a71164e (1072 passed, 6 skipped; `pnpm check` 56 entries, 0 problems).
 - 2026-10-29: claim audit: 14 claims read, 1 corrected — README.md and schemas/plugins.v1.schema.json said the index "links to" the file, but no site page links to it until M053, so they now say the data gives its address and the index keeps no copy; also fixed the stale `XpiRead` comment in src/upstream/reader.ts, which said the XPI read stays out of the published data. The xpiUrl tests and `tsc --noEmit` are green after the fix.
 - 2026-10-29: status review: all tasks done; the lint hook's README hits on lines 64, 78, 135, and 542 are older text outside this milestone and were left alone.
+- 2026-10-29: step-7 approval: m052-publish-xpi-address approved for merge
 
 ## Decisions
 
