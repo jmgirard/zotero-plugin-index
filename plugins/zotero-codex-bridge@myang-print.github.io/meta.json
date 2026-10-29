@@ -1,0 +1,8 @@
+{
+  "id": "zotero-codex-bridge@myang-print.github.io",
+  "name": "Zotero Codex Bridge",
+  "description": "An authenticated local bridge for safe Zotero collection, metadata, and PDF operations.",
+  "homepage": "https://github.com/Myang-print/zotero-codex-bridge",
+  "repoUrl": "https://github.com/Myang-print/zotero-codex-bridge",
+  "updateUrl": "https://github.com/Myang-print/zotero-codex-bridge/releases/latest/download/updates.json"
+}
