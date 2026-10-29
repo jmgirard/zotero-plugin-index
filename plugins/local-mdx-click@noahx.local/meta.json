@@ -1,0 +1,7 @@
+{
+  "id": "local-mdx-click@noahx.local",
+  "name": "LexiBridge · 词译桥",
+  "description": "Zotero 查词与翻译：MDX、StarDict、DSL 本地词典，四种实验性在线翻译，多来源查询与排序，独立点击/划选开关，可拖动弹窗。",
+  "repoUrl": "https://github.com/Noahxie83/zotero-lexibridge",
+  "updateUrl": "https://raw.githubusercontent.com/Noahxie83/zotero-lexibridge/main/updates.json"
+}
