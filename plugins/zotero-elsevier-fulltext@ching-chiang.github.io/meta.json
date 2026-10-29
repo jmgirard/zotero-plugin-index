@@ -1,0 +1,8 @@
+{
+  "id": "zotero-elsevier-fulltext@ching-chiang.github.io",
+  "name": "Elsevier API Full Text",
+  "description": "Download entitled Elsevier PDFs with the official Article Retrieval API and attach them to Zotero items.",
+  "homepage": "https://github.com/Ching-Chiang/zotero-elsevier-fulltext",
+  "repoUrl": "https://github.com/Ching-Chiang/zotero-elsevier-fulltext",
+  "updateUrl": "https://raw.githubusercontent.com/Ching-Chiang/zotero-elsevier-fulltext/main/updates.json"
+}
