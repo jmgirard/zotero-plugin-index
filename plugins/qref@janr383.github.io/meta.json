@@ -1,0 +1,8 @@
+{
+  "id": "qref@janr383.github.io",
+  "name": "Qualified References",
+  "description": "Directed, qualified references between Zotero items (stance, pages, comment).",
+  "homepage": "https://github.com/JanR383/zotero-qualified-references#readme",
+  "repoUrl": "https://github.com/JanR383/zotero-qualified-references",
+  "updateUrl": "https://github.com/JanR383/zotero-qualified-references/releases/download/release/update.json"
+}
