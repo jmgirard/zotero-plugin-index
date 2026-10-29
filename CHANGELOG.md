@@ -368,3 +368,9 @@
   smaller, bold, and gray, and the status line is smaller and gray. The home
   page shows the same facts, and the menu and the buttons filter the list as
   before.
+- `pnpm build` stops the read of the `report` label and the report issues
+  after 3 minutes in all. It then prints a line that names the time limit,
+  reads no plugin, writes no data file, and exits with status 1. Before,
+  only each page had a limit of 60 seconds. The command also exits once
+  its output is written. Work that a read left running, such as a host
+  lookup that a time limit cut, no longer keeps it open.

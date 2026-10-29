@@ -715,9 +715,10 @@ The command gives each plugin read 3 minutes. If a read takes longer, the
 command stops it, and the record fails with `request-failed`. The command
 starts no plugin read after 18 minutes from its start. Each entry that it
 did not read gets a record that fails with `not-read`. A plugin with
-either failure shows no facts until a later build reads it. These limits
-leave time for the other steps of the daily build, whose job GitHub stops
-at 30 minutes.
+either failure shows no facts until a later build reads it. The read of the
+`report` label and the report issues, which comes before the plugin reads,
+also counts toward the 18 minutes. These limits leave time for the other
+steps of the daily build, whose job GitHub stops at 30 minutes.
 
 A build-level failure usually comes from the build, not from the plugin.
 A plugin's own download host that is down also gives one. These failures
@@ -765,6 +766,9 @@ The command writes no data file and exits with status 1 in these cases:
 - An issue in the list of report issues has no `closed_by` field. It prints
   a line that names the field. If the issue has a number, the line also
   names that number. It reads no plugin.
+- The read of the `report` label and every page of the report issues takes
+  more than 3 minutes in all. It prints a line that names the time limit,
+  and it reads no plugin.
 - The file it built is not valid against the schema.
 - It cannot write the schema copies or the data file.
 

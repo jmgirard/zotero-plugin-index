@@ -81,7 +81,7 @@ is added to the report read (see the work log).
       (`src/upstream/reader.ts:334`) sends. Name the limit with `duration`.
 - [x] T3: Make `src/build/cli.ts` exit once stdout and stderr have
       flushed, with the exit status that `main` returns.
-- [ ] T4: Update README "Building the data", the comment at
+- [x] T4: Update README "Building the data", the comment at
       `.github/workflows/build.yml:21`, and the build lines of DESIGN.md.
       Add the CHANGELOG entry and a D-entry that annotates D-013 and D-016.
       Run `pnpm test` and `pnpm check`.
@@ -107,6 +107,7 @@ is added to the report read (see the work log).
 - 2026-10-29: T2 choices: `TimeLimits.reportsMs`, default `READ_LIMIT_MS`; one `withinLimit` around the label and issue reads, with `boundFetch` (now exported from `src/upstream/reader.ts`) under `githubClient`, so the existing failure text gains the limit reason.
 - 2026-10-29: T3 choices: `cli.ts` awaits an empty write on stdout and stderr, then calls `process.exit(code)`; the old `exitCode` comment is replaced.
 - 2026-10-29: T1–T3 share one commit, since the T1 tests stay red until T2 and T3. Verify clean: 1067 tests passed, 6 skipped; `pnpm check` 56 entries, 0 problems.
+- 2026-10-29: T4: README adds the report read to the 18-minute paragraph and to the no-file list; `build.yml` comment names the 3-minute report limit; DESIGN's build lines name the limit and the exit; CHANGELOG entry under Unreleased; D-027 annotates D-013 and D-016. The simple-english hook flagged README lines 64, 78, 135, 536 and CHANGELOG lines 174–355, all present before this branch, left as they are. Verify clean: 1067 passed, 6 skipped; `pnpm check` 0 problems.
 
 ## Decisions
 

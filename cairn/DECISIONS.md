@@ -340,3 +340,19 @@ a page. One rule of D-004 stays: each page reads in full without
 JavaScript. A part that a script runs is hidden in the HTML or is extra, as
 the home page's menu and buttons are, so a page with no JavaScript still
 shows every fact. The site still sends no browser framework (D-004).
+
+### D-027: The report issue read stops at 3 minutes and then fails the build, annotating D-013 and D-016
+
+2026-10-29, M050. D-016 records that the build's read of the report issues
+had no total limit, only 60 seconds for each page. The read of the `report`
+label and every issue page now stops after 3 minutes in all. A read that the
+limit cuts is a failed read of the report issues, so under D-013 the build
+writes no file, reads no plugin, and deploys nothing. The plan rejected a
+page cap: a cap that counts part of the list gives wrong counts, which D-013
+forbids, and a cap that fails the build would stop deploys at a list size
+that reads in seconds. The read still counts toward the 18 minutes after
+which the build starts no plugin read (D-015). The cost is that a list of
+report issues too long to read in 3 minutes stops every deploy until it is
+shorter or the limit changes. M050 also closes D-016's second gap: the build
+exits once its output is written, so a host lookup that a limit cut no longer
+holds the process open.
