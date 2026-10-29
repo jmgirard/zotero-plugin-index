@@ -1,0 +1,7 @@
+{
+  "id": "condense-info-view@example.com",
+  "name": "Condense Info View",
+  "description": "Hides empty fields in the Info panel. Important fields for each item type are shown dimmed rather than hidden.",
+  "repoUrl": "https://github.com/ppavlidis/condense-info-view",
+  "updateUrl": "https://raw.githubusercontent.com/ppavlidis/condense-info-view/main/updates.json"
+}
