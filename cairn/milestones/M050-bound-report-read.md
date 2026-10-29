@@ -1,6 +1,6 @@
 # M050: End the daily build within its time limits
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -61,7 +61,7 @@ is added to the report read (see the work log).
 ## Coverage
 
 - AC1 → T1, T2
-- AC2 → T1, T3
+- AC2 → T1, T3, T5
 - AC3 → T4
 - AC4 → T4
 
@@ -85,6 +85,8 @@ is added to the report read (see the work log).
       `.github/workflows/build.yml:21`, and the build lines of DESIGN.md.
       Add the CHANGELOG entry and a D-entry that annotates D-013 and D-016.
       Run `pnpm test` and `pnpm check`.
+- [x] T5: Review return 1: make the 64 KiB test compare the timer run's
+      data file with the plain run's, apart from `generatedAt`.
 
 ## Work log
 
@@ -113,6 +115,9 @@ is added to the report read (see the work log).
 - 2026-10-29: status review; all tasks checked, verify clean at 5ae561e (1067 passed, 6 skipped; `pnpm check` 0 problems); 623a9de changes CHANGELOG text only.
 - 2026-10-29: review return 1: AC2 — the 64 KiB test ("writes the whole stdout of over 64 KiB before it exits") does not compare the timer run's data file with the plain run's apart from `generatedAt`; add that comparison.
 - 2026-10-29: status in-progress for review return 1.
+- 2026-10-29: T5 added for review return 1 (minor amendment; Coverage AC2 → T1, T3, T5).
+- 2026-10-29: T5: `takeData` moves to the describe block; the 64 KiB test now reads the plain run's data file (asserting 1500 records, so the comparison is not two empty reads) and compares the timer run's file with it, `generatedAt` removed. Verify clean: 1067 passed, 6 skipped; `pnpm check` 0 problems.
+- 2026-10-29: status review.
 
 ## Decisions
 

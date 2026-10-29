@@ -491,23 +491,26 @@ describe("pnpm build", () => {
 describe("pnpm build with a timer still pending", () => {
   const PENDING = resolve(ROOT, "test/support/preload-pending-timer.ts");
 
+  // The data file in `out` without its generatedAt, which is then removed so the next run
+  // writes its own, or undefined when there is none.
+  function takeData(out: string) {
+    const path = join(out, "v1", "plugins.json");
+    if (!existsSync(path)) return undefined;
+    const { generatedAt: _, ...rest } = JSON.parse(readFileSync(path, "utf8"));
+    rmSync(path);
+    return rest;
+  }
+
   // Builds `tree` twice into one --out, first as is, then with a 10-minute timer pending,
   // and returns both results, both data files, and the second run's time.
   function twoRuns(tree: string, recorded: Responses) {
     const fixture = writeFixture(recorded);
     const out = tempDir();
-    const data = () => {
-      const path = join(out, "v1", "plugins.json");
-      if (!existsSync(path)) return undefined;
-      const { generatedAt: _, ...rest } = JSON.parse(readFileSync(path, "utf8"));
-      rmSync(path);
-      return rest;
-    };
     const plain = pnpmBuild([tree, "--out", out], fixture);
-    const plainData = data();
+    const plainData = takeData(out);
     const started = performance.now();
     const pending = pnpmBuild([tree, "--out", out], fixture, { NODE_OPTIONS: `--import=${PRELOAD} --import=${PENDING}` }, 40_000);
-    return { plain, plainData, pending, pendingData: data(), seconds: (performance.now() - started) / 1000 };
+    return { plain, plainData, pending, pendingData: takeData(out), seconds: (performance.now() - started) / 1000 };
   }
 
   function expectSameRun({ plain, plainData, pending, pendingData, seconds }: ReturnType<typeof twoRuns>) {
@@ -548,6 +551,8 @@ describe("pnpm build with a timer still pending", () => {
     const plain = pnpmBuild([tree, "--out", out], fixture);
     expect(Buffer.byteLength(plain.stdout)).toBeGreaterThan(64 * 1024);
     expect(plain.stdout.trimEnd().split("\n").at(-1)).toMatch(/^wrote 1500 records to /);
+    const plainData = takeData(out);
+    expect(plainData?.plugins).toHaveLength(1500);
 
     // This run's stdout is not read for its first 2 seconds, so the pipe fills and the
     // command still holds unwritten output when it is done.
@@ -565,6 +570,7 @@ describe("pnpm build with a timer still pending", () => {
     expect((performance.now() - started) / 1000).toBeLessThan(30);
     expect(status).toBe(plain.status);
     expect(stdout).toBe(plain.stdout);
+    expect(takeData(out)).toEqual(plainData);
   }, 120_000);
 });
 
