@@ -1,0 +1,8 @@
+{
+  "id": "zoterochat@bowentian",
+  "name": "ZoteroChat",
+  "description": "Zotero 侧栏论文阅读与独立笔记研究助手：论文对话，笔记内检索、批量入库与写作",
+  "homepage": "https://github.com/TianSuya/ZoteroChat",
+  "repoUrl": "https://github.com/TianSuya/ZoteroChat",
+  "updateUrl": "https://github.com/TianSuya/ZoteroChat/releases/download/release/update.json"
+}
