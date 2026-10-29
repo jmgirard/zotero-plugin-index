@@ -1,0 +1,8 @@
+{
+  "id": "fullvahti@vahtian.com",
+  "name": "FullVahti",
+  "description": "Finds open-access full-text PDFs for your Zotero items. Adds status tags and a run report, and is CiteVahti's previewable, audited, undoable write-back companion. Part of the Vahtian tool family.",
+  "homepage": "https://vahtian.com",
+  "repoUrl": "https://github.com/heidihelena/fullvahti",
+  "updateUrl": "https://raw.githubusercontent.com/heidihelena/fullvahti/main/updates.json"
+}
