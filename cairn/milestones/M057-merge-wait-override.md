@@ -1,13 +1,13 @@
 # M057: Let a dispatched merge run set its own wait
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes when the published index gains plugins and adds a workflow input
-- **Branch/PR:** —
+- **Branch/PR:** m057-merge-wait-override
 
 ## Goal
 
@@ -63,7 +63,7 @@ row "Close gaps in bot holds and merges" (6).
 
 ## Tasks
 
-- [ ] T1: In `src/discover/merge.ts` replace `WAIT_MS` in `recordProblem` with a `waitHours` option of
+- [x] T1: In `src/discover/merge.ts` replace `WAIT_MS` in `recordProblem` with a `waitHours` option of
       `MergeOptions` (default 48), and give the age condition its two reasons; parse the arguments and the new
       `USAGE` in `merge-cli.ts`. Tests in `test/merge.test.ts`.
 - [ ] T2: Add the `wait_hours` input, the `WAIT_HOURS` env line, and the run line to
@@ -89,3 +89,5 @@ row "Close gaps in bot holds and merges" (6).
 - 2026-10-29: criteria audit (full, fresh Opus reader): 14 findings, all taken: the age condition named by its README words; the arguments as none or exactly the option, with five more probes; the usage text and its order before the GITHUB_REPOSITORY check; "1 hour", and an unreadable or future `created_at` given its own reason; `ZPI_REQUESTS` named; trigger events instead of an unchanged `on:` block; no `${{` in any `run:` line and no `||`; the test clause moved to T2; the README states refused values and the README wait sentence; the backfill waits for each discover run to finish (GitHub does not promise queue order), with limit 100.
 - 2026-10-29: question set: backfill — allowed in full: merge #104 to #107 by hand, then rounds of discover (limit 100) and merge (wait 0) until no unread repos, and report merged and held counts. Round size — limit 100.
 - 2026-10-29: plan gate chose a dispatch input over merging only the four open pull requests by hand, at the user's choice, because about 378 repos are unread; falsified by a backfill that the hand route finishes in fewer steps.
+- 2026-10-29: implement started on branch m057-merge-wait-override.
+- 2026-10-29: T1 done: `DEFAULT_WAIT_HOURS` (48) and a `waitHours` option replace `WAIT_MS`; an unreadable or future `created_at` gets its own reason before the wait test; `merge-cli.ts` takes no arguments or exactly `--wait-hours <n>` and prints the new `USAGE` before the `GITHUB_REPOSITORY` check. 15 new tests in `test/merge.test.ts` (31 in the file); planted `<=`, a dropped future-time check, and a CLI that let `x` through turned 4 red.

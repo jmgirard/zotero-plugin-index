@@ -1,17 +1,22 @@
 import { join, resolve } from "node:path";
 import process, { argv } from "node:process";
-import { mergeDiscover } from "./merge.ts";
+import { DEFAULT_WAIT_HOURS, mergeDiscover } from "./merge.ts";
 import { pnpmCheck } from "./propose.ts";
 
-const USAGE = "usage: pnpm merge-discover, with GITHUB_REPOSITORY set";
+const USAGE = "usage: pnpm merge-discover [--wait-hours <n>], with GITHUB_REPOSITORY set";
 const PACKAGE_ROOT = resolve(import.meta.dirname, "../..");
 
 // Merges the bot pull requests that `mergeDiscover` passes, checking each entry beside the
-// entries in this checkout's plugins/ folder. It prints each pull request it merged or
-// skipped, and exits 1 when any pull request failed or the list of pull requests could
-// not be read.
+// entries in this checkout's plugins/ folder. `--wait-hours <n>`, a whole number from 0
+// to 9999, sets how long before the run a pull request must have opened; the default is
+// 48. It prints each pull request it merged or skipped, and exits 1 when any pull request
+// failed or the list of pull requests could not be read.
 async function main(): Promise<number> {
-  if (argv.length > 2) {
+  const args = argv.slice(2);
+  let waitHours = DEFAULT_WAIT_HOURS;
+  if (args.length === 2 && args[0] === "--wait-hours" && /^(0|[1-9]\d{0,3})$/.test(args[1])) {
+    waitHours = Number(args[1]);
+  } else if (args.length > 0) {
     console.error(USAGE);
     return 1;
   }
@@ -27,6 +32,7 @@ async function main(): Promise<number> {
       indexRepo,
       root: join(PACKAGE_ROOT, "plugins"),
       check: (dir) => pnpmCheck(dir),
+      waitHours,
     });
   } catch (error) {
     console.error(`merged nothing: ${(error as Error).message}`);
