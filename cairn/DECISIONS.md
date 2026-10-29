@@ -329,3 +329,14 @@ list is not a list of versions. Each is a fault of the site job's own files
 or of the workflow, never a start result, so D-024's rule stands: no start
 result withholds a deploy. The site job runs no plugin code, so plugin code
 cannot cause these faults.
+
+### D-026: Any page can carry a script that a feature needs, superseding D-019 and the script limits of D-014
+
+2026-10-29, M048 plan. D-014 gave the home page one script, and D-019 kept
+that one script for the version buttons and said that the other pages carry
+none. At the M048 plan the user rejected those limits: a page can carry a
+script where a feature needs one, and a feature can add a second script to
+a page. One rule of D-004 stays: each page reads in full without
+JavaScript. A part that a script runs is hidden in the HTML or is extra, as
+the home page's menu and buttons are, so a page with no JavaScript still
+shows every fact. The site still sends no browser framework (D-004).
