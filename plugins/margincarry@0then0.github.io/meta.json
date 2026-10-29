@@ -1,0 +1,8 @@
+{
+  "id": "margincarry@0then0.github.io",
+  "name": "MarginCarry",
+  "description": "Review and transfer native text annotations between two local PDF revisions in Zotero.",
+  "homepage": "https://github.com/0then0/margincarry",
+  "repoUrl": "https://github.com/0then0/margincarry",
+  "updateUrl": "https://raw.githubusercontent.com/0then0/margincarry/main/updates.json"
+}
