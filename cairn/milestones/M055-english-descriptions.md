@@ -196,3 +196,30 @@ added after this plan, which follow D-030 case by case.
 - AC7: `pnpm test` 1227 passed, 6 skipped; `pnpm check` 58 entries, 0 problems.
 - Gate: `cairn_validate` all checks passed.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: README never names `repoDescription` in "Using the data" or "Building the data" — fix now, fixed 0690b47 (new paragraph after `xpiUrl`).
+- diff-bug #2: `englishMessages` skips any refused English file (duplicate, bad compression, overflow), not only an oversize one, untested beyond oversize — fix now, fixed 0690b47 (duplicate-file test; a plant that stops the skip fails it and the oversize test).
+- diff-bug #3: the English path rethrows non-`SyntaxError` errors where the default path swallows all — reject, false: nothing else is reachable from `JSON.parse` of a string.
+- diff-bug #4: no test of a manifest share of exactly 0.5 — fix now, fixed 0690b47 ("A Zotero 插件" case; `<=` plant fails it).
+- diff-bug #5: `cjkShare` counts Script=Common kana marks as other letters and splits NFD words — follow-up, row "Close gaps in the description pick".
+- diff-bug #6: docs' override cases drop "not in English" — fix now, fixed 0690b47 (DESIGN item 3, README, About page, `index.v1` overrides prose).
+- diff-bug #7: `pattern: "\\S"` can disagree with Python's `\s` on \x1c-\x1f — reject, edge: an About text made only of those control characters, outside documented and common use; effect a validator error.
+- diff-bug #8: a whitespace-only manifest description shows an empty Details row — follow-up, row "Close gaps in the description pick".
+- diff-bug #9: DESIGN and About page omit that the GitHub text must survive the name check — fix now, fixed 0690b47.
+- diff-bug #10: name test overlaps the two-folder test — reject, planned change: AC1 lists both.
+- diff-bug #11: description and `cjkShare` cases share code paths — reject, planned change: AC3 lists them.
+- diff-bug #12: build schema test repeats a reader case — reject, planned change: it builds the record the schema check needs.
+- blame-history #1: a duplicate English `messages.json` reads with no failure, unlike M005's refusal — fix now, fixed 0690b47 (test pins the skip; zipEntry still stops its walk at the second entry, so M005's CPU bound holds; DESIGN records the skip).
+- blame-history #2: Details shows the raw manifest description that M015 hides — reject, planned change: AC4.
+- blame-history #3: three more central-directory walks and up to 3 MiB more inflation per XPI — reject, planned change: bounded by the 1 MiB cap per file; DESIGN budget text updated under prior-review #1.
+- prior-review #1: DESIGN's locale budget and "three walks" text is stale — fix now, fixed 0690b47.
+- prior-review #2: the `UNZIPPED_MAX_BYTES` comment omits the English files — fix now, fixed 0690b47.
+- prior-review #3: DESIGN item 2 names only the upstream files as the description source — fix now, fixed 0690b47.
+- prior-review #4: a saved v1 schema rejects `repoDescription` — follow-up, absorbed into row "Let old v1 schemas accept new fields".
+- ripple #1: README "The description comes from the plugin's manifest or from an index override" — fix now, fixed 0690b47.
+- ripple #2: README and `plugins.v1` override `field`/`reason` prose say only "correct"/"wrong" — fix now, fixed 0690b47.
+- ripple #3: Overrides table caption "corrects these upstream facts" and its Upstream value column — caption fix now, fixed 0690b47; the column's manifest-only value goes to row "Close gaps in the description pick".
+- ripple #4: DESIGN "up to three walks" — fix now, fixed 0690b47 (same edit as prior-review #1).
+- ripple #5: DESIGN item 2 source of truth — fix now, fixed 0690b47; the banked line "Upstream files are the source of truth" — reject, false: the GitHub About text is also upstream.
+- ripple #6: reader comment on unzipped files — fix now, fixed 0690b47 (same edit as prior-review #2).
+- ripple #7: About page "When an upstream fact is wrong" — fix now, fixed 0690b47 (the override paragraph now names the English-text cases, including "not in English").
+- After fixes: `pnpm test` 1229 passed, 6 skipped; `pnpm check` 0 problems; `cairn_validate` all checks passed. Snapshot files changed: none (no `_snaps` or `__snapshots__` path in the diff).
