@@ -1,0 +1,8 @@
+{
+  "id": "tagwiz@tsmdt.github.io",
+  "name": "TagWiz",
+  "description": "Bulk-clean Zotero tags: change case, unify, remove, and merge duplicates.",
+  "homepage": "https://github.com/tsmdt/zotero-tagwiz#readme",
+  "repoUrl": "https://github.com/tsmdt/zotero-tagwiz",
+  "updateUrl": "https://github.com/tsmdt/zotero-tagwiz/releases/download/release/update.json"
+}
