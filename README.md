@@ -714,8 +714,14 @@ failure name is `facts-invalid`. The command still writes the file.
 The command gives each plugin read 3 minutes. If a read takes longer, the
 command stops it, and the record fails with `request-failed`. The command
 starts no plugin read after 18 minutes from its start. Each entry that it
-did not read gets a record that fails with `not-read`. A plugin with
-either failure shows no facts until a later build reads it. The read of the
+did not read gets a record that fails with `not-read`. If the number of
+whole days from 1970-01-01T00:00Z to `generatedAt` is even, the command
+reads the plugins in id order. Id order sorts the entry directory names by
+character code, so capital letters come before small letters. If that
+number is odd, it reads them in reverse id order. So the entries that get
+`not-read` are the last ids on even days and the first ids on odd days. The
+file lists its records in id order on every day. A plugin with either
+failure shows no facts until a later build reads it. The read of the
 `report` label and the report issues, which comes before the plugin reads,
 also counts toward the 18 minutes. These limits leave time for the other
 steps of the daily build, whose job GitHub stops at 30 minutes.

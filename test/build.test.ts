@@ -323,7 +323,8 @@ describe("pnpm build and the report issues", () => {
 
 describe("pnpm build", () => {
   test("names an error the reader does not expect unexpected-error, goes on, and exits 1 when 2 of 3 records fail for build-level reasons and all 3 fail", () => {
-    // BETTER_NOTES is the first entry by name, so the other two are read after the error.
+    // BETTER_NOTES is the first entry by name, so the other two are read after the error on
+    // an even UTC day and before it on an odd one.
     const recorded = responses();
     recorded["https://api.github.com/repos/windingwind/zotero-better-notes"] = { unexpected: "planted reader error" };
     recorded[SECOND_UPDATE] = { status: 503, text: "Service Unavailable" };
@@ -686,10 +687,13 @@ describe("buildData", () => {
     // The second entry's XPI never answers.
     const NAMES = ["a-first", "b-stalled", "c-third"];
     const stalledXpi = "https://github.com/example/b-stalled/releases/download/v1.0.0/plugin.xpi";
-    function stalledTree(): { tree: string; recorded: Responses } {
+    // UTC days 20757 and 20758 since 1970-01-01.
+    const ODD = new Date("2026-10-31T23:30Z");
+    const EVEN = new Date("2026-11-01T00:30Z");
+    function stalledTree(names = NAMES): { tree: string; recorded: Responses } {
       const tree = tempDir();
       const recorded: Responses = { [LABEL]: { json: { name: "report" } }, [ISSUES]: { json: [] } };
-      for (const name of NAMES) {
+      for (const name of names) {
         const id = `${name}@example.org`;
         Object.assign(recorded, pluginRepo(`example/${name}`, id));
         mkdirSync(join(tree, id));
@@ -719,7 +723,7 @@ describe("buildData", () => {
       const { tree, recorded } = stalledTree();
       const { fetch, requests } = fixtureFetch(recorded);
       const limits = { readMs: 1500, buildMs: 1000, startedAt: performance.now() };
-      const result = await buildData(tree, fetch, undefined, undefined, limits);
+      const result = await buildData(tree, fetch, EVEN, undefined, limits);
       if (!result.ok) throw new Error(result.problems.join("\n"));
       expect(failures(result.text)).toEqual([
         ["a-first@example.org", "facts"],
@@ -729,6 +733,35 @@ describe("buildData", () => {
       expect(record(JSON.parse(result.text), "c-third@example.org")?.failure?.message).toContain("after 1000 ms, its time limit");
       expect(result.buildLevel).toEqual(["b-stalled@example.org", "c-third@example.org"]);
       expect(requests.map((r) => r.url)).not.toContain("https://api.github.com/repos/example/c-third");
+    });
+
+    test.each([
+      ["in reverse id order on an odd UTC day", ODD, ["c-third", "b-stalled", "a-first"]],
+      ["in id order on an even UTC day", EVEN, ["a-first", "b-stalled", "c-third"]],
+    ])("reads the plugins %s", async (_, now, order) => {
+      const { tree, recorded } = stalledTree();
+      const { fetch, requests } = fixtureFetch(recorded);
+      const result = await buildData(tree, fetch, now, undefined, { readMs: 200 });
+      if (!result.ok) throw new Error(result.problems.join("\n"));
+      const repoReads = requests.map((r) => r.url).filter((url) => /^https:\/\/api\.github\.com\/repos\/example\/[^/]+$/.test(url));
+      expect(repoReads).toEqual(order.map((name) => `https://api.github.com/repos/example/${name}`));
+    });
+
+    test("writes the records, the build-level list, and the start plan in id order on an odd UTC day that the build limit cuts", async () => {
+      // Read last to first: d-fourth and c-third are read, then b-stalled's read passes the
+      // build limit, so a-first is not read.
+      const { tree, recorded } = stalledTree([...NAMES, "d-fourth"]);
+      const limits = { readMs: 3000, buildMs: 2000, startedAt: performance.now() };
+      const result = await buildData(tree, fixtureFetch(recorded).fetch, ODD, undefined, limits);
+      if (!result.ok) throw new Error(result.problems.join("\n"));
+      expect(failures(result.text)).toEqual([
+        ["a-first@example.org", "not-read"],
+        ["b-stalled@example.org", "request-failed"],
+        ["c-third@example.org", "facts"],
+        ["d-fourth@example.org", "facts"],
+      ]);
+      expect(result.buildLevel).toEqual(["a-first@example.org", "b-stalled@example.org"]);
+      expect(result.plan.plugins.map((item) => item.entry)).toEqual(["c-third@example.org", "d-fourth@example.org"]);
     });
 
     test("names the default limit of 3 minutes in the failure of a read that passes it", async () => {

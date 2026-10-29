@@ -356,3 +356,18 @@ report issues too long to read in 3 minutes stops every deploy until it is
 shorter or the limit changes. M050 also closes D-016's second gap: the build
 exits once its output is written, so a host lookup that a limit cut no longer
 holds the process open.
+
+### D-028: The build alternates its plugin read order by UTC day, annotating D-015
+
+2026-10-29, M051. `pnpm build` reads the plugins in id order when the whole
+UTC days from 1970-01-01 to `now`, the data file's `generatedAt`, are even,
+and in reverse id order when they are odd. The data file, the build-level
+list, and the start plan keep id order. Before, the build always read in id
+order, so a build that D-015's 18-minute limit cut left the same last
+plugins unread each day. The plan chose alternation over a rotation or a
+shuffle by date. A build deploys only when at most half of its records are
+build-level, so on two consecutive days that both deploy, the forward cut
+and the reverse cut leave no entry unread on both days. A rotation or a
+shuffle can. The limit: two deployed builds on days of the same parity,
+such as two days apart with the build between them withheld, read in the
+same order and can leave the same entries unread. The rest of D-015 stands.

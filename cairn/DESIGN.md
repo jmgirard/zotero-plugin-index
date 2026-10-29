@@ -254,13 +254,16 @@ exception is a report that is abuse.
   to drop. A plugin read stops
   at 3 minutes and fails as `request-failed`. After 18 minutes from the
   command's start, the build reads no more plugins, and each entry left
-  fails as `not-read`. Both are build-level (D-015). The label and report
+  fails as `not-read`. Both are build-level (D-015). When the whole UTC days
+  from 1970-01-01 to `generatedAt` are even, it reads the plugins in id
+  order, and when they are odd, in reverse; the records, the build-level
+  list, and the start plan keep id order (D-028). The label and report
   issue read stops at 3 minutes in all, a failed report read under D-013
   (D-027). The command exits once stdout and stderr have flushed, so a host
   lookup that a limit cut cannot hold it open. Added M003;
   schemas and exit rule M006; build-level rule and summary M017; every-record
   rule M018; reports M021; time limits M029; label read and `closed_by`
-  check M041; report read limit and exit M050.
+  check M041; report read limit and exit M050; read order by day M051.
 - Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
   home page and one page per record into `dist/`, or `<dir>`, from the data
   file there. `src/site/version.ts` holds the version and range functions
