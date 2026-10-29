@@ -1,23 +1,21 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-29 (M050 done and archived; 2 candidate rows corrected; 6 lessons marked used; 1 lesson captured, 1 evicted)_
+_Last hygiene check: 2026-10-29 (M051 done and archived; 1 candidate row graduated; 5 lessons marked used; no lesson captured)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M051 | Alternate the build's plugin read order by day | review | M050 | normal | milestones/M051-alternate-read-order.md |
+| M051 | Alternate the build's plugin read order by day | done | M050 | normal | milestones/archive/M051-alternate-read-order.md |
 | M050 | End the daily build within its time limits | done | — | normal | milestones/archive/M050-bound-report-read.md |
 | M049 | Give the whole site the card look | done | M048 | normal | milestones/archive/M049-site-wide-look.md |
-| M048 | Lay out the plugin pages in card sections | done | — | normal | milestones/archive/M048-plugin-page-sections.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
 - Let old v1 schemas accept new fields: the v1 `upstream` block keeps `additionalProperties: false`, so a saved copy of the schema rejects each optional field that D-006 lets v1 gain; allowing unknown fields would let old copies accept later additions, but it changes what the schema checks; see "Keep the v1 data when v2 ships" (M013 review) — added 2026-10-26 — M013, D-007
 - Answer report issues left open: a report issue whose close failed after the bot's comment stays open until a hand rerun closes it, and a report issue whose `report` label was added more than 7 days after it opened gets no answer from a sweep (M020 review); narrowed 2026-10-28 by M040, whose daily sweep answers the report issues that no bot comment answers and whose `answerReport` sends no second comment — added 2026-10-27 — M020, M040
 - Make close-issue safe on retry and races: `pnpm close-issue` skips when a bot comment already says the pull request was closed without a merge, so a run whose comment posted and whose close failed cannot be rerun (AC2 asks for that skip); a pull request reopened, or an issue closed as completed, between the read and the close is still closed as not planned; a pull request closed before the issue run's comment lands, an issue comment that names only the branch, or a renamed repo leaves the issue open; a backtick fence whose info string holds a backtick hides the `Closes` line, and one inside an HTML comment counts (M022 review) — added 2026-10-27 — M022
-- Close gaps in the build time limits: since entries are read in sorted order, a build that the 18-minute limit cuts skips the same last plugins every day (M029 review, D-016); narrowed 2026-10-29 by M050, which stops the report issue read at 3 minutes and exits once the output has flushed (D-027) — added 2026-10-27 — M021, M029, D-016, M050 — started M051
 - Bound the whole discover workflow's time: M030 limits each `git` process of `pnpm propose` to 2 minutes and each `pnpm check` to 5, but not the whole run, so five entries whose check hangs take 25 of the write job's 30 minutes, and one issue entry can pass its job's time limit, which then posts no comment (corrected M040); the search and bot pull request reads before the read loop have only a 60-second limit per request; a host lookup whose wait a limit ended can hold the process open, since `pnpm discover` sets `exitCode` rather than exiting once its output has flushed, as `pnpm build` does since M050 (M030 review; corrected M050) — added 2026-10-27 — M030
 - [low] Catch more silent zero report counts: since M041 the build stops when the `report` label read fails or a listed issue has no `closed_by` key, but an issue list that keeps `closed_by` and sends `null` on every issue still gives counts of zero and deploys (M041 review, D-021); a renamed or deleted `works` or `broken` label also gives zero counts of that verdict, since `parseReport` refuses a report with neither label (M041 plan) — added 2026-10-28 — M021, M041, D-013, D-021
 - [low] Limit floods of report issues: anyone can open report issues without limit, each run spends the repo's shared API budget, and a build whose issue read fails withholds the deploy (D-013) (M020 review) — added 2026-10-27 — M020, D-013
