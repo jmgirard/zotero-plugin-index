@@ -1,0 +1,148 @@
+# M055: Show English descriptions where upstream has them
+
+- **Status:** planned
+- **Priority:** normal
+- **Depends on:** —
+- **Driving RR:** —
+- **Principles touched:** —
+- **Resolves:** —
+- **Surface tier:** user-facing — it changes the published data and the text every plugin row and page shows
+- **Branch/PR:** —
+
+## Goal
+
+Each plugin shows an English description when its XPI, its GitHub repo, or an index override has one.
+
+## Scope
+
+**In:** the reader reads an English `_locales` message before the default
+locale's, for the name and the description; the data publishes the GitHub
+repo's About text as `upstream.repoDescription`; `shownDescription` picks
+between the manifest text and the GitHub text by their share of CJK
+letters; the plugin page's Details card shows both texts; English
+`description` overrides, under D-030, for the plugins still weak after
+that; README, CHANGELOG, About page, DESIGN, and schema prose.
+
+**Out:** machine translation, which needs a paid service or a model, against
+DESIGN's no-paid-service line (no row: not planned); asking authors upstream
+to add English text, which is the authors' act; the registry `meta.json`
+description, which the site does not show; reading an English description
+from README files or Fluent files at build time.
+
+## Acceptance criteria
+
+- [ ] AC1: For each of a release's manifest `name` and `description` that is
+      a `__MSG_<key>__` placeholder, the published `upstream.name` or
+      `upstream.description` is the `message` of that key, matched ignoring
+      case, from the first of `_locales/en/`, `_locales/en_US/`, and
+      `_locales/en_GB/`, in that order, whose `messages.json` parses as a
+      JSON object and holds the key with a string `message` that is not
+      blank. This holds whatever `default_locale` names, and when it is
+      absent. With no such folder, the value is the default locale's
+      message, as before. `test/upstream.test.ts` covers the description
+      with: `en` only and `default_locale` `zh_CN`; `en_US` only; `en_GB`
+      only; `en` and `en_GB` both (`en` wins); `en` lacking the key and
+      `en_US` holding it; `en` not JSON and `en_US` holding it; `en` with a
+      blank message and the default locale holding text (default wins); no
+      `default_locale` and `en` holding it; no English folder; and covers
+      the name with one case of `en` holding it and `default_locale` `zh_CN`.
+- [ ] AC2: Each published record whose read succeeds carries
+      `upstream.repoDescription`, the GitHub repo response's `description`
+      with outer whitespace trimmed, when it is a string that is not blank.
+      The field is left out when that `description` is null, missing, not a
+      string, or blank. `schemas/plugins.v1.schema.json` defines it in the
+      `upstream` definition as an optional string holding at least one
+      non-whitespace character, and the schema stays version 1.
+      `test/upstream.test.ts` covers present (with outer spaces), null,
+      missing, a number, and blank; `test/build.test.ts` validates a record
+      with the field and one without against the schema.
+- [ ] AC3: `shownDescription` returns an applying `description` override
+      when there is one. Otherwise its candidates are `upstream.description`
+      (the manifest text) and `upstream.repoDescription` (the GitHub text),
+      and it drops each one that is missing, blank, or only repeats the
+      shown name (the M015 rule). A text's CJK share is the count of its
+      characters matching `\p{Script=Han}`, `\p{Script=Hiragana}`,
+      `\p{Script=Katakana}`, or `\p{Script=Hangul}` over the count matching
+      `\p{L}`, and 0 when it has no letters. It returns the manifest text
+      when it is left and its share is below 0.5; else the GitHub text when
+      it is left and either the manifest text was dropped or the GitHub
+      text's share is below 0.5; else the manifest text when it is left;
+      else undefined. `test/description.test.ts` covers: an override beside
+      both; English manifest and English GitHub (manifest); English
+      manifest and Chinese GitHub (manifest); Chinese manifest and English
+      GitHub (GitHub); Chinese manifest and mixed GitHub below 0.5
+      (GitHub); Chinese manifest and Chinese GitHub at 0.5 or more
+      (manifest); Japanese manifest with kana and English GitHub (GitHub);
+      Korean manifest and English GitHub (GitHub); name-only manifest and
+      Chinese GitHub (GitHub); both name-only (undefined); Chinese manifest
+      and name-only GitHub (manifest); Chinese manifest and no GitHub
+      (manifest); a digits-only manifest and English GitHub (manifest).
+- [ ] AC4: A plugin page's Details card shows a "Manifest description" fact
+      when `upstream.description` is present and a "GitHub description" fact
+      when `upstream.repoDescription` is present, each with its text, and
+      leaves out each fact whose field is absent. `test/site.test.ts`
+      covers a record with both, with each alone, and with neither.
+- [ ] AC5: README, CHANGELOG, the About page
+      (`site/src/pages/about.astro`), `cairn/DESIGN.md`, and the `name`,
+      `description`, and `repoDescription` prose of
+      `schemas/plugins.v1.schema.json` state that an English `_locales`
+      message is read before the default locale's for the name and the
+      description, and that the shown description is an applying override,
+      else the manifest text or the GitHub text by the AC3 rule (the
+      half-CJK threshold and the name-only drop). README and CHANGELOG also
+      say that a saved copy of the v1 schema must be fetched again (D-007).
+- [ ] AC6: The entries this criterion covers are those this procedure
+      lists: build the data from the branch with `pnpm build`, run
+      `shownDescription` over every built record, and list each record
+      whose result is undefined or has a CJK share of 0.5 or more. For each
+      listed entry, `plugins/<id>/index.json` carries a `description`
+      override with no `version` (D-030), whose `value` has a CJK share of
+      0, and whose `reason` names the upstream file or section the text was
+      drawn from and says that the upstream has no English description.
+      `pnpm check` passes.
+- [ ] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check`.
+
+## Coverage
+
+- AC1 → T1
+- AC2 → T2
+- AC3 → T3
+- AC4 → T4
+- AC5 → T5
+- AC6 → T6
+- AC7 → T7
+
+## Tasks
+
+- [ ] T1: In `src/upstream/reader.ts`, read `_locales/en/`, `en_US/`, and
+      `en_GB/` `messages.json` beside the default locale's (`readManifest`
+      near line 560) and resolve `name` and `description` through the first
+      English folder holding the key before the default (`localized`, line
+      302). Tests in `test/upstream.test.ts` per AC1.
+- [ ] T2: Add `repoDescription` to `UpstreamFacts` and the facts built from
+      `meta` (reader.ts line 205); add it to the `upstream` definition of
+      `schemas/plugins.v1.schema.json`. Tests per AC2.
+- [ ] T3: Rewrite `shownDescription` in `src/site/description.ts` with a
+      `cjkShare` helper and the AC3 order; tests in
+      `test/description.test.ts`.
+- [ ] T4: Add the two Details facts to `site/src/pages/plugins/[id]/index.astro`;
+      tests in `test/site.test.ts`.
+- [ ] T5: Update README, CHANGELOG, `site/src/pages/about.astro`,
+      `cairn/DESIGN.md` (lines ~46-49 and ~106-108), and the schema prose per AC5.
+- [ ] T6: Run `pnpm build` on the branch, list the weak records by the AC6
+      procedure, read each one's README, and write the English overrides.
+- [ ] T7: Run the `verify` slot.
+
+## Work log
+
+- 2026-10-29: created by /milestone-plan.
+- 2026-10-29: tier check: milestone — new data field, new selection rule, and a design decision on translation overrides.
+- 2026-10-29: idea vet: gap — the request assumes an English description exists upstream wherever menus are in English; 1 of 10 Chinese entries ships one in its XPI, so the plan reads the GitHub About text as a second source and asked the user (answered: both sources); flaw — a translation is not a correction under DESIGN's override rule; set answer: write the overrides under a new D-entry (D-030).
+- 2026-10-29: investigation: deployed data of 2026-10-29 had 56 records, 10 with Chinese descriptions and 7 hidden as name-only; GitHub About text is English or English-led for 4 of the 10 and informative for 5 of the 7; only Doc2X ships `_locales/en/messages.json`.
+- 2026-10-29: collision check: M015 (done) shipped the name-only rule, extended here; D-006/D-007 allow the new optional field in v1; no candidate row, planned milestone, or D-entry rejection overlaps.
+- 2026-10-29: inbox sweep: 0 open issues; 5 open bot PRs (#103-#107) add plugins and do not overlap; the AC3 rule covers them once merged.
+- 2026-10-29: lessons used: 2026-10-28 (M035) build the real site from the deployed data; 2026-10-25 (M001) run pnpm through npx; 2026-10-26 (M018) search joined copies of wrapped prose.
+- 2026-10-29: criteria audit (full mode, fresh Opus reader): 10 findings; 1-9 taken (case-insensitive keys, non-blank message, narrowed folder order with fall-through cases, trimmed repo text and fuller cases, D-007 refetch notice, script-property CJK share with 0 for no letters, reverse-direction and Hangul and kana cases, a 0.5 threshold so one Chinese text does not replace another, both texts in Details, share wording in docs); 10 (translation is not a correction) went to the question set.
+- 2026-10-29: question set: description source — English locale plus GitHub About text; hand-written English overrides — yes, under a new D-entry; English locale name — use it for the name too (the user's choice over the recommendation, since the site is English).
+- 2026-10-29: plan gate chose the GitHub About text as the fallback over hand overrides alone because it needs no upkeep for new plugins; falsified by GitHub texts that, once shown, are mostly off-topic or promotional.
+- 2026-10-29: plan gate chose a 0.5 CJK-share threshold over "lower share wins" because the latter swaps one Chinese text for another; falsified by a listed plugin whose shown text is still mostly CJK while an English-led text exists.

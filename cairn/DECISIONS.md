@@ -389,3 +389,17 @@ release file at the same address, so the file a reader downloads later can
 differ from the one the build read and the start tests checked. The plan
 rejected linking to the latest release page, which can name a newer release
 than the one the index read.
+
+### D-030: A description override can give English text for a plugin with none upstream, widening DESIGN's override rule
+
+2026-10-29, M055. DESIGN says an override corrects a fact that the author
+cannot or will not fix upstream. At the M055 question set the user chose to
+also allow a `description` override that gives English text for a plugin
+whose manifest, English locale, and GitHub About text hold no English
+description, because the site is in English. Such a text is the index's
+own wording drawn from the plugin's README or other upstream file, not a
+correction. Its `reason` names that source and says that the upstream has
+no English description. It carries no `version`, so it also hides any
+English text the author adds later until the override is removed. The plan
+rejected leaving those plugins with their Chinese or blank description,
+and rejected machine translation, which needs a paid service or a model.
