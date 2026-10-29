@@ -129,9 +129,9 @@ fixture is `test/fixtures/site/plugins.json`.
       both schemes, sizes, top bar, footer, buttons, marks); rewrite the
       color test to read the tokens and check the AC6 pairs; keep the
       M049 size test passing.
-- [ ] T6: Check the plugin pages under the new tokens: the M048 sections
+- [x] T6: Check the plugin pages under the new tokens: the M048 sections
       still render and the tests pass.
-- [ ] T7: Build from data with `xpiUrl` (lesson M035), serve it (lesson
+- [x] T7: Build from data with `xpiUrl` (lesson M035), serve it (lesson
       M015), run the width check, and save a screenshot at each width for
       the Review section.
 - [ ] T8: Update README, DESIGN, CHANGELOG; run the verify slot.
@@ -158,6 +158,11 @@ fixture is `test/fixtures/site/plugins.json`.
 - 2026-10-29: T4: the script test runs the built, minified script in node:vm against stand-in elements (the function names are mangled, so a grep for rowShows cannot work); a stand-in throws on any selector it does not know.
 - 2026-10-29: T5: the mockup's --faint and --none failed 3:1 on --surface (light 2.54 and 1.97, dark --none 2.23); changed to #8a8a84 and #8f8f88 in light and #74746d in dark; the other mockup colors pass every AC6 pair.
 - 2026-10-29: planted defects, each red then restored: no id tie-break (4 tests), first start result over newest (2), script ignoring the search box (3), no .search[hidden] rule (1), the mockup's --faint (1).
+- 2026-10-29: T7: the deployed data (generatedAt 2026-10-29T15:00:32Z, 56 records) had no xpiUrl, so a local copy gave each of the 56 read records `<repoUrl>/releases/download/v<version>/<repo>-<version>.xpi`; built and served it as m053-live on port 4328.
+- 2026-10-29: T7: width check in same-origin iframes: home 375/375 and 1280/1280 with 56 rows and 56 download links, a planted 900 px div gave 916 at 375; a plugin page 375/375 and 1280/1280; the table card's scrollWidth equals its clientWidth (341) at 375.
+- 2026-10-29: T7: in the pane, ?q=pdf&zotero=8 showed 12 of 56 rows; typing "zotmoov" showed 1 row and wrote ?q=zotmoov&zotero=8. Screenshots: scratchpad m053-shots/home-375.jpg, home-1280.jpg, plugin-1280.jpg (dark scheme; the pane's light emulation does not apply, lesson M015).
+- 2026-10-29: T6: the ZotMoov plugin page shows its M048 sections (support, start test, reports, about, Details) under the new tokens; the plugin page tests pass.
+- 2026-10-29: T7: the built home page from that data is 180,376 bytes, 16,668 gzipped (level 9), against 10,938 for the deployed page today; this passes the "about 14 KB" promotion condition of the parked row "Filter the home list before it paints", for review hygiene to read. The style element is about 2.7 KB of the gzipped size.
 
 ## Decisions
 
