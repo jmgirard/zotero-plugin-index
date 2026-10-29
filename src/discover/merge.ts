@@ -83,6 +83,8 @@ function recordProblem(pull: PullJson, indexRepo: string, now: Date, waitHours: 
 // A failed read of the default branch, the list of pull requests, or `root` throws.
 export async function mergeDiscover(options: MergeOptions): Promise<MergeResult> {
   const { fetch, indexRepo, root, check, now = new Date(), waitHours = DEFAULT_WAIT_HOURS } = options;
+  // A wait that is not a whole number of hours of at least 0 would let every age pass.
+  if (!Number.isSafeInteger(waitHours) || waitHours < 0) throw new Error(`the wait of ${waitHours} hours is not a whole number of at least 0`);
   const github = githubClient(fetch);
   const result: MergeResult = { merged: [], skipped: [], failed: [] };
   const base = await defaultBranch(fetch, indexRepo);

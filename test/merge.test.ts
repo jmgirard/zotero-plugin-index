@@ -251,6 +251,14 @@ describe("pnpm merge-discover's wait", () => {
     expect(result.skipped).toEqual([{ number: 1, reason: "it opened less than 1 hour ago" }]);
   });
 
+  test.each([Number.NaN, -1, 1.5])("refuses a wait of %s before any request", async (waitHours) => {
+    const { fetch, requests } = fixtureFetch({ ...indexRecord, [LIST]: { json: [pull(1)] }, ...entry(1) });
+    await expect(mergeDiscover({ fetch, indexRepo: "example/index", root: PLUGINS, check: passes, now: NOW, waitHours })).rejects.toThrow(
+      `the wait of ${waitHours} hours is not a whole number of at least 0`,
+    );
+    expect(requests).toEqual([]);
+  });
+
   test.each([
     ["after the run", new Date(NOW.getTime() + HOUR).toISOString()],
     ["not a date", "yesterday"],

@@ -495,7 +495,7 @@ export const HOLD_TEXT: Record<HoldReason, string> = {
 
 // The sentence after `Hold: none`.
 export const UNHELD_TEXT =
-  "The bot can merge this pull request at its first daily run at least 48 hours after it opens, unless it has the `hold` label or is closed.";
+  "The bot can merge this pull request at its first daily run at least 48 hours after it opens, or sooner in a run that the maintainer starts by hand, unless it has the `hold` label or is closed.";
 
 // The pull request body. The manifest's values and the check output are in code spans
 // and a code block, so text in them cannot mention a GitHub user. With `issue`, the body

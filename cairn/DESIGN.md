@@ -164,8 +164,8 @@ shows each one separately. A combined verdict is out of scope.
    daily job merges a pull request that says `Hold: none` and has no `hold`
    label at its first daily run at least 48 hours after it opens, once its
    entry passes `pnpm check` beside the current entries. A run started by
-   hand can set another wait, from 0 to 9999 hours (M057, D-034). Closing a bot pull
-   request still keeps the bot from proposing that repo again.
+   hand can set another wait, from 0 to 9999 hours (M057, D-034). Closing a
+   bot pull request still keeps the bot from proposing that repo again.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
    `manifest.json` in the newest stable release that has an `.xpi` file,
    the names of that XPI's locale folders whose language is not `und`,
@@ -613,7 +613,8 @@ reused._
   held pull request. `pnpm merge-discover` (`src/discover/merge.ts`) reads
   every page of open pull requests, skips each that fails a condition (the
   Hold line read outside fences with `unfencedLines`, the label in any case,
-  no draft, the default branch as base), reads the two entry files through
+  the wait, an opening time that is unreadable or after the run, no draft,
+  the default branch as base), reads the two entry files through
   the contents API at the head SHA, runs `pnpmCheck` on a copy of `plugins/`
   with them added, reads the pull request again, and sends a squash merge
   pinned to that SHA. `.github/workflows/merge-discover.yml` runs it

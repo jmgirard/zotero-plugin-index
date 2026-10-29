@@ -461,7 +461,8 @@
   the `hold` label.
   The new `Merge bot pull requests` workflow runs `pnpm merge-discover`
   daily. The command merges a bot pull request that says `Hold: none`, has
-  no `hold` label, and opened at least 48 hours before the run. Before the
+  no `hold` label, and opened at least 48 hours before the run. A run
+  started by hand can set another wait, as the next entry says. Before the
   merge, the entry must pass `pnpm check` beside the current entries. To
   stop the bot from merging one, add the `hold` label or close it.
 - A run of `Merge bot pull requests` started by hand takes a `wait_hours`
