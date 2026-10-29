@@ -1,0 +1,8 @@
+{
+  "id": "mc2zotero@hostiuc.com",
+  "name": "MC2Zotero",
+  "description": "Convert Mendeley Cite citations in Word documents to Zotero citations",
+  "homepage": "https://github.com/sorinhostiuc/mc2zotero",
+  "repoUrl": "https://github.com/sorinhostiuc/mc2zotero",
+  "updateUrl": "https://github.com/sorinhostiuc/mc2zotero/releases/latest/download/update.json"
+}
