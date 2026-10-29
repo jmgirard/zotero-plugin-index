@@ -1,0 +1,8 @@
+{
+  "id": "know-ur-zotero@euclpts.com",
+  "name": "Know Ur Zotero",
+  "description": "Status monitoring and analysis tool for Zotero.",
+  "homepage": "https://github.com/windingwind/know-ur-zotero#readme",
+  "repoUrl": "https://github.com/windingwind/know-ur-zotero",
+  "updateUrl": "https://github.com/windingwind/know-ur-zotero/releases/download/release/update.json"
+}
