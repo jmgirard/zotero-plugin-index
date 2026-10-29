@@ -1,0 +1,8 @@
+{
+  "id": "pdf-fetcher@yuric.local",
+  "name": "pdf-fetcher",
+  "description": "Fetch PDFs from JLYL services and attach them to Zotero items.",
+  "homepage": "https://github.com/HiYvri/pdf-fetcher",
+  "repoUrl": "https://github.com/HiYvri/pdf-fetcher",
+  "updateUrl": "https://github.com/HiYvri/pdf-fetcher/releases/latest/download/update.json"
+}
