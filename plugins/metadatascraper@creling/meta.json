@@ -1,0 +1,8 @@
+{
+  "id": "metadatascraper@creling",
+  "name": "Zotero Metadata Scraper",
+  "description": "A Zotero plugin to fetch metadata from multiple sources",
+  "homepage": "https://github.com/creling/zotero-metadata-scraper",
+  "repoUrl": "https://github.com/Creling/Zotero-Metadata-Scraper",
+  "updateUrl": "https://github.com/creling/zotero-metadata-scraper/releases/download/release/update.json"
+}
