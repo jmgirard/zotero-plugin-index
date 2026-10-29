@@ -1,0 +1,8 @@
+{
+  "id": "delitemwithatt@redleaf.me",
+  "name": "Del Item With Attachment",
+  "description": "Delete item(s) with attachment(s)",
+  "homepage": "https://github.com/redleafnew/delitemwithatt",
+  "repoUrl": "https://github.com/redleafnew/delitemwithatt",
+  "updateUrl": "https://github.com/redleafnew/delitemwithatt/releases/download/release/update.json"
+}
