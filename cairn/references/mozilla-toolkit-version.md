@@ -12,7 +12,7 @@ Extraction: verified 2026-10-25 against the downloaded page, examples copied fro
 https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/version/format.
 
 **Role.** Settles how the site compares a plugin's `strict_min_version` and `strict_max_version` with each
-Zotero major version that its pills show, in `majorSupport` (corrected M015). Zotero 7+ reads these manifest fields with Mozilla's version comparator, which follows this
+Zotero major version that its marks show, in `majorSupport` (corrected M015, M054). Zotero 7+ reads these manifest fields with Mozilla's version comparator, which follows this
 format. Firefox 108 and later warns on extension versions in this format. The `strict_*` fields of Zotero
 plugin manifests still use it, for example `11.*.*` and `8.0-beta.21`.
 

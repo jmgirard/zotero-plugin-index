@@ -112,7 +112,7 @@ describe("parseReport", () => {
   test.each([
     ["with no number", "latest"],
     ["below 7", "6.0.30"],
-    ["above the newest major with a pill", "11.0"],
+    ["above the newest major in ZOTERO_MAJORS", "11.0"],
   ])("names a Zotero version %s", (_, zotero) => {
     expect(parseReport(rendered({ ...valid, zotero }), ["report", "works"], IDS)).toMatchObject({
       ok: false,

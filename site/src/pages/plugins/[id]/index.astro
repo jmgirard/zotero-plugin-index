@@ -1,18 +1,26 @@
 ---
-import Support from "../../../components/Support.astro";
+import { majorSupport } from "../../../../../src/site/version.ts";
+import Icon from "../../../components/Icon.astro";
 import Base from "../../../layouts/Base.astro";
 import {
+  BASE,
+  compatMajors,
   day,
   declaredRange,
   displayName,
   languagesText,
   loadData,
+  majorReport,
+  majorStart,
   overrideUsed,
   rangeText,
   reportHref,
   safeHref,
   shownDescription,
-  startTestsText,
+  startWords,
+  SUPPORT_MARKS as MARKS,
+  SUPPORT_WORDS,
+  supportText,
   upstreamValue,
   type PluginRecord,
 } from "../../../data.ts";
@@ -23,137 +31,206 @@ export function getStaticPaths() {
 
 const { record } = Astro.props as { record: PluginRecord };
 const { upstream, failure, overrides } = record;
-// Data written before the build counted reports has no reports field.
-const reports = record.reports ?? [];
-// Data written before the start tests, and a record no tested release gave a result for, have none.
-const startTests = record.startTests ?? [];
 const repoUrl = upstream?.repoUrl ?? record.repoUrl;
 const repoHref = safeHref(repoUrl);
+const xpiHref = upstream?.xpiUrl === undefined ? undefined : safeHref(upstream.xpiUrl);
 const description = shownDescription(record);
 const { min, max } = declaredRange(record);
 ---
 
 <Base title={`${displayName(record)}: Zotero plugin index`}>
-  <div class="card page-head" data-page-head>
-    <h1>{displayName(record)}{upstream?.archived === true && <span data-archived>(archived)</span>}</h1>
-    {description && <p class="description" data-description>{description}</p>}
-  </div>
-  <section class="card" data-section="support">
-    <h2>Declared support</h2>
-    {
-      failure ? (
-        <p data-fact="failure">
-          The last build could not read this plugin: <code>{failure.name}</code>: {failure.message}
-        </p>
-      ) : (
-        <Support record={record} />
-      )
-    }
-    {
-      (min !== undefined || max !== undefined) && (
-        <p class="range">
-          Declared range: <span data-fact="declared-range">{rangeText(record)}</span>
-        </p>
-      )
-    }
-  </section>
-  {
-    upstream && startTests.length > 0 && (
-      <section class="card" data-section="start-test" data-start-tests>
-        <h2>Start test</h2>
-        <p>
-          Starts in Zotero: <span data-fact="start-tests">{startTestsText(record)}</span>
-        </p>
-        <p class="status" data-fact="start-test-note">
-          The daily build installs version {upstream.version} in a new Zotero profile on Linux and
-          waits 3 seconds. A start test does not show that the plugin works.
-        </p>
-      </section>
-    )
-  }
-  {
-    upstream && (
-      <section class="card reports" data-section="reports" data-reports>
-        <h2>User reports</h2>
-        <p data-fact="report-version">User reports on version {upstream.version}, the version the index read</p>
-        {reports.length > 0 ? (
-          <ul class="report-counts">
-            {reports.map(({ zoteroMajor, works, broken }) => (
-              <li data-report-major={zoteroMajor}>
-                Zotero {zoteroMajor}: {works} works, {broken} broken
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p class="status" data-fact="no-reports">No reports on this version yet.</p>
-        )}
-        <p class="report-links" id="report-prompt">Tried this version on Zotero? Report what you found:</p>
-        <div class="report-buttons">
-          <a data-report="works" href={reportHref(record, "works")} class="button" aria-describedby="report-prompt">Works</a>
-          <a data-report="broken" href={reportHref(record, "broken")} class="button" aria-describedby="report-prompt">Broken</a>
-        </div>
-      </section>
-    )
-  }
-  <section class="card" data-section="about">
-    <h2>About</h2>
-    {
-      upstream && (
-        <p class="languages">
-          Menus and settings in: <span data-fact="languages">{languagesText(record)}</span>
-        </p>
-      )
-    }
-    <ul class="links">
-      <li data-fact="repository">{repoHref ? <a href={repoHref}>{repoUrl}</a> : repoUrl}</li>
+  <a class="back" href={BASE} data-back><Icon name="back" />All plugins</a>
+  <div class="page-head" data-page-head>
+    <h1>
+      {displayName(record)}
       {
-        upstream && (
-          <li data-fact="releases">
-            {repoHref ? <a href={`${repoHref}/releases`}>Releases</a> : `${repoUrl}/releases`}
-          </li>
+        upstream?.archived === true && (
+          <>
+            {" "}
+            <span class="badge" data-archived>Archived</span>
+          </>
         )
       }
-    </ul>
+    </h1>
+    {description && <p class="description" data-description>{description}</p>}
+    <div class="actions" data-links>
+      {
+        upstream && xpiHref && (
+          <a class="btn" href={xpiHref} data-link="download">
+            <Icon name="download" />
+            Download {upstream.version} (.xpi)
+          </a>
+        )
+      }
+      {
+        repoHref ? (
+          <a class="btn" href={repoHref} data-link="source">
+            <Icon name="source" />
+            Source
+          </a>
+        ) : (
+          <span class="link-text" data-link="source">{repoUrl}</span>
+        )
+      }
+      {
+        upstream &&
+          (repoHref ? (
+            <a class="btn" href={`${repoHref}/releases`} data-link="releases">
+              <Icon name="releases" />
+              Releases
+            </a>
+          ) : (
+            <span class="link-text" data-link="releases">{`${repoUrl}/releases`}</span>
+          ))
+      }
+    </div>
+  </div>
+  <section class="card compat" data-section="compatibility">
+    <h2>Zotero compatibility</h2>
+    {
+      upstream ? (
+        <>
+          <p class="sub" data-fact="read-version">For version {upstream.version}, the release the index read</p>
+          <div class="table-wrap">
+            <table class="compat-table">
+              <thead>
+                <tr>
+                  <th scope="col">Zotero</th>
+                  <th scope="col">Declared</th>
+                  <th scope="col">Start test</th>
+                  <th scope="col">User reports</th>
+                </tr>
+              </thead>
+              <tbody>
+                {compatMajors(record).map((major) => {
+                  const support = majorSupport(record, major);
+                  const start = majorStart(record, major);
+                  const report = majorReport(record, major);
+                  return (
+                    <tr data-major={major}>
+                      <th scope="row">{major}</th>
+                      <td data-declared={support ?? "no-range"}>
+                        {support ? (
+                          <>
+                            <span class="mark" data-support={support} title={supportText(record, support, major)} aria-hidden="true">
+                              {MARKS[support]}
+                            </span>{" "}
+                            <span aria-hidden="true">{SUPPORT_WORDS[support]}</span>
+                            <span class="visually-hidden">{supportText(record, support, major)}</span>
+                          </>
+                        ) : (
+                          <span class="none">No range</span>
+                        )}
+                      </td>
+                      <td data-start-cell>
+                        {start ? (
+                          <>
+                            <span class="start" data-start={start.result} aria-hidden="true">
+                              {start.result === "started" ? "●" : "✕"}
+                            </span>{" "}
+                            {startWords(start.result)} <span class="note">Zotero {start.zotero}</span>
+                          </>
+                        ) : (
+                          <span class="none">Not tested</span>
+                        )}
+                      </td>
+                      <td data-reports-cell>
+                        {report ? (
+                          <>
+                            <span class="works">{report.works} works</span> <span class="broken">{report.broken} broken</span>
+                          </>
+                        ) : (
+                          <span class="none">None yet</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p class="fineprint" data-about-line>
+            {(min !== undefined || max !== undefined) && (
+              <>
+                Declared range: <span data-fact="declared-range">{rangeText(record)}</span>.{" "}
+              </>
+            )}
+            <a href={`${BASE}about/`}>How the index checks plugins</a>
+          </p>
+          <div class="report-row" data-reports>
+            <p id="report-prompt" data-fact="report-prompt">Tried version {upstream.version} on Zotero? Report what you found:</p>
+            <div class="report-buttons">
+              <a data-report="works" href={reportHref(record, "works")} class="button" aria-describedby="report-prompt">Works</a>
+              <a data-report="broken" href={reportHref(record, "broken")} class="button" aria-describedby="report-prompt">Broken</a>
+            </div>
+          </div>
+        </>
+      ) : (
+        failure && (
+          <>
+            <p data-fact="failure">
+              The last build could not read this plugin: <code>{failure.name}</code>: {failure.message}
+            </p>
+            <p class="fineprint" data-about-line>
+              <a href={`${BASE}about/`}>How the index checks plugins</a>
+            </p>
+          </>
+        )
+      )
+    }
   </section>
-  <details>
-    <summary>Details</summary>
-    <dl>
-      <dt>Plugin id</dt>
-      <dd data-fact="id"><code>{record.id}</code></dd>
+  <section class="card" data-section="details">
+    <h2>Details</h2>
+    <dl class="facts">
+      <div>
+        <dt>Plugin id</dt>
+        <dd data-fact="id"><code>{record.id}</code></dd>
+      </div>
       {
         upstream && (
           <>
             {typeof upstream.archived === "boolean" && (
-              <>
+              <div>
                 <dt>Archived on GitHub</dt>
                 <dd data-fact="archived">{upstream.archived ? "Yes" : "No"}</dd>
-              </>
+              </div>
             )}
-            <dt>Repository created</dt>
-            <dd data-fact="repo-created">{day(upstream.repoCreatedAt)}</dd>
-            <dt>Release read by the index</dt>
-            <dd data-fact="latest-release">
-              {upstream.version}, published {day(upstream.latestReleaseDate)}
-              {upstream.prerelease === true && " (prerelease)"}
-            </dd>
-            <dt>Releases with an .xpi</dt>
-            <dd data-fact="release-count">{upstream.releaseCount}</dd>
-            <dt>Open issues and pull requests</dt>
-            <dd data-fact="open-issues">{upstream.openIssues}</dd>
-            <dt>Host of update.json</dt>
-            <dd data-fact="update-host">{upstream.updateHost}</dd>
+            <div>
+              <dt>Repository created</dt>
+              <dd data-fact="repo-created">{day(upstream.repoCreatedAt)}</dd>
+            </div>
+            <div>
+              <dt>Release read by the index</dt>
+              <dd data-fact="latest-release">
+                {upstream.version}, published {day(upstream.latestReleaseDate)}
+                {upstream.prerelease === true && " (prerelease)"}
+              </dd>
+            </div>
+            <div>
+              <dt>Releases with an .xpi</dt>
+              <dd data-fact="release-count">{upstream.releaseCount}</dd>
+            </div>
+            <div>
+              <dt>Open issues and pull requests</dt>
+              <dd data-fact="open-issues">{upstream.openIssues}</dd>
+            </div>
+            <div>
+              <dt>Host of update.json</dt>
+              <dd data-fact="update-host">{upstream.updateHost}</dd>
+            </div>
+            <div>
+              <dt>Menus and settings in</dt>
+              <dd data-fact="languages">{languagesText(record)}</dd>
+            </div>
           </>
         )
       }
     </dl>
     {
       overrides.length > 0 && (
-        <section>
-          <h2>Overrides</h2>
-          <p>
-            The index corrects these upstream facts.
-            {upstream && ' An override marked "yes" under Used applies to the plugin version that the index read. The declared range above uses the strict_min_version and strict_max_version overrides marked "yes".'}
-          </p>
+        <div class="overrides" data-overrides>
+          <h3>Overrides</h3>
+          <p>The index corrects these upstream facts.</p>
           <div class="table-wrap">
             <table>
               <thead>
@@ -180,8 +257,8 @@ const { min, max } = declaredRange(record);
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
       )
     }
-  </details>
+  </section>
 </Base>

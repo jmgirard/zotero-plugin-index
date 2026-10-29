@@ -88,7 +88,8 @@ export function declaredRange(record: RangeRecord): { min?: string; max?: string
   };
 }
 
-// The Zotero major versions that get a pill on the site. Add a major when Zotero ships it.
+// The Zotero major versions that get a mark column on the home table and a row in each plugin
+// page's compatibility table. Add a major when Zotero ships it.
 export const ZOTERO_MAJORS = ["7", "8", "9", "10"];
 
 export type MajorSupport = "all" | "some" | "none";

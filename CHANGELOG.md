@@ -389,8 +389,9 @@
   new optional field does not need a new version. The schema rejects
   fields that it does not define, so fetch any saved copy of it again.
 - The site has a new look, and the home page lists the plugins in one
-  table. A top bar on every page links to the home page, to the "Add a
-  plugin" issue form, and to the data file. The table sorts the plugins by
+  table. A top bar on every page links to the home page and to a new
+  About page. It also links to the "Add a plugin" issue form and to the
+  data file. The table sorts the plugins by
   name, ignoring letter case and accents. Each row shows the name,
   "Archived" for an archived repository, and the description. Then come
   one cell for each Zotero major from 7 to 10 and the language codes. Next
@@ -410,6 +411,28 @@
   wide or less, the table hides the languages and the release month. At
   560 pixels or less, it also hides the descriptions and the source links.
   Without JavaScript, the home page shows every plugin and no search box,
-  menu, buttons, or count. The plugin pages keep their cards and take the
-  new colors and text sizes. Every page is now up to 65rem wide, not
-  50rem.
+  menu, buttons, or count. Every page is now up to 65rem wide, not 50rem.
+  Each plugin page has a new layout in place of the four cards, the pills,
+  and the closed "Details" section that the entries above describe. It has
+  two cards. It opens with
+  a link back to the home page, the name with "Archived" for an archived
+  repository, and the description. Links to the `.xpi` file, the source
+  code, and the releases follow. If the repository address does not start
+  with `http://` or `https://`, the source and releases addresses show as
+  plain text. If the `.xpi` address does not, the `.xpi` link does not
+  show. Then comes a "Zotero compatibility" table, newest major
+  first. It has one row for each Zotero major from 7 to 10. It also has a
+  row for each other major that the plugin's reports or start results
+  name. A row shows the declared mark with "Yes", "Partly", or "No". It
+  also shows the result of the newest tested release of that major and
+  the counts of "works" and "broken" reports. Under the table comes a
+  link to the About page. If the plugin declares a range, the declared
+  range comes before that link. A line that names the
+  version that the index read comes next, with the "Works" and "Broken"
+  buttons. An open "Details" card lists the plugin id, the repository
+  facts, the release that the index read, and the languages. The
+  overrides sit under their own heading in that card. The About page says
+  how the index shows the declared range, runs the start test, counts user
+  reports, and applies overrides. It also says that the index does not vet
+  the plugins it lists. The notes on the start test and the overrides that
+  the plugin pages held before are now on the About page.

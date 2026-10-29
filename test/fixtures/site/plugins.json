@@ -281,6 +281,38 @@
       "overrides": []
     },
     {
+      "id": "next-plugin@example.org",
+      "repoUrl": "https://github.com/example/next-plugin",
+      "upstream": {
+        "id": "next-plugin@example.org",
+        "name": "Next Plugin",
+        "description": "Adds a reading list.",
+        "version": "2.1.0",
+        "strictMinVersion": "8.0",
+        "strictMaxVersion": "11.*",
+        "updateUrl": "https://example.org/next-plugin/update.json",
+        "updateHost": "example.org",
+        "repoUrl": "github.com/example/next-plugin",
+        "repoCreatedAt": "2025-02-02T00:00:00Z",
+        "openIssues": 0,
+        "releaseCount": 3,
+        "latestReleaseDate": "2026-10-20T00:00:00Z",
+        "xpiUrl": "https://example.org/next-plugin/next-plugin-2.1.0.xpi",
+        "prerelease": false,
+        "languages": []
+      },
+      "reports": [
+        { "zoteroMajor": 8, "works": 1, "broken": 0 },
+        { "zoteroMajor": 11, "works": 2, "broken": 1 }
+      ],
+      "startTests": [
+        { "zotero": "8.0.3", "result": "start-error" },
+        { "zotero": "8.0.4", "result": "started" },
+        { "zotero": "12.0.1", "result": "not-installed" }
+      ],
+      "overrides": []
+    },
+    {
       "id": "ssh-plugin@example.org",
       "repoUrl": "git@github.com:example/ssh-plugin.git",
       "failure": {

@@ -7,8 +7,8 @@ it does not review or endorse plugins.
 ## The site
 
 The website <https://jmgirard.github.io/zotero-plugin-index/> shows the index.
-A top bar on every page links to the home page, to the "Add a plugin" issue
-form, and to the data file. The home page lists every plugin in one table,
+A top bar on every page links to the home page and to the About page. It
+also links to the "Add a plugin" issue form and to the data file. The home page lists every plugin in one table,
 sorted by name. The sort ignores letter case and accents, and names that
 are then equal sort by plugin id. Each row shows the plugin's name and its
 description. If the plugin's GitHub repository is archived, the row shows
@@ -105,43 +105,61 @@ The "Add a plugin" link in the top bar opens the issue form that
 "Proposing a plugin with an issue" describes. The form needs a GitHub
 account.
 
-Each plugin has its own page. A header block at the top shows the name and
-the description. Cards with headings follow. "Declared support" shows the
-pills and the declared range, the "No declared range" line, or the failure.
-"Start test" shows the
-start-test results, "User reports" shows the reports, and "About" shows
-the repository link and, when the build read the plugin, a "Menus and
-settings in" line and the releases link. The "Menus and settings in" line
-names the languages of the `languages` list that "Using the data"
-describes, which come from the plugin's locale folders. If a `languages`
-override applies to the plugin version that the index read, the override
-replaces that list. The line does not say how complete each language is.
-If no language is left, the page shows "Unknown (no translations found)".
-The description comes from the plugin's manifest or from an index override,
-so it can be in another language than the languages line names. If the
-record has a `startTests` list, the page shows a "Starts in Zotero" line.
-It names each tested Zotero version and its result in words, such as
-"Zotero 10.0.6 started". A note beside it says that the build waits 3
-seconds after the install. The note also says that a start test does not
-show that the plugin works.
-A closed "Details" section follows. It holds the plugin id, facts about the
-repository and its releases, and the overrides of the index for the plugin.
-If the last build failed to read a plugin, its page shows the failure in place
-of the pills. That page has no "Menus and settings in" line.
+Each plugin has its own page. It opens with an "All plugins" link back to
+the home page, the plugin's name, and its description. Then come up to
+three links, each with an icon and text: "Download <version> (.xpi)" to the `.xpi`
+file that the index read, "Source" to the repository, and "Releases" to
+the repository's releases page. If the download address does not start
+with `http://` or `https://`, the page has no download link. If the
+repository address does not, the page shows that address, and the releases
+address after it, as plain text. A plugin whose read failed has no download or releases link.
 
-The user reports part of a page names the plugin version that the index
-read. For each Zotero major with a counted report, it shows the number of
-"works" reports and of "broken" reports. "Using the data" says which
-reports count. If no report counts, the page says that the version has no
-reports yet. A "Works" button and a "Broken" button open the report forms on
-GitHub with the plugin id and that version filled in. The page of a plugin
-whose read failed shows no reports and no report buttons.
+A "Zotero compatibility" card follows. It names the plugin version that
+the index read and holds a table, newest major first. The table has one
+row for each Zotero major from 7 to 10. It also has a row for each other
+major that the plugin's counted reports or start-test results name. Each
+row has three cells:
+
+- Declared: the mark and the word for how much of that major the declared
+  range covers. The words are "Yes" (✓), "Partly" (◐), and "No" (a dash). If the
+  plugin declares no range, the cell shows "No range".
+- Start test: the result of the newest tested release of that major, in
+  words, with that release, such as "Started Zotero 10.0.6". A dot (●)
+  marks a start, and a cross (✕) marks a failure. If no release of that
+  major has a result, the cell shows "Not tested".
+- User reports: the number of "works" reports and of "broken" reports on
+  that major, as "Using the data" counts them. If no report counts, the
+  cell shows "None yet".
+
+Under the table, the card shows a link to the About page. If the plugin
+declares a range, the declared range comes before that link. Then a line names the plugin version that the index read, beside a
+"Works" button and a "Broken" button. The buttons open the report forms on
+GitHub with the plugin id and that version filled in. If the last build
+failed to read a plugin, the card shows the failure in place of the table,
+with no report buttons.
+
+An open "Details" card comes last. It lists the plugin id. If the build
+read the plugin, it also lists facts about the repository and the release
+that the index read. Its last fact is "Menus and settings in". That fact names the
+languages of the `languages` list that "Using the data" describes, which
+come from the plugin's locale folders. If a `languages` override applies to
+the plugin version that the index read, the override replaces that list.
+The fact does not say how complete each language is. If no language is
+left, the page shows "Unknown (no translations found)". The description
+comes from the plugin's manifest or from an index override, so it can be in
+another language than the languages fact names. If the index has overrides
+for the plugin, an "Overrides" table under its own heading in the card
+lists them.
+
+The About page says how the index shows the declared range and how the
+start test runs. It says which user reports count. It also says how
+overrides and the Used column of the Overrides table work, and that the
+index does not vet the plugins it lists.
 
 The index lists a plugin whose GitHub repository is archived. Its row on the
-home page shows "Archived" after its name, and its page shows "(archived)".
-The Details section of its page shows the fact "Archived on GitHub" with
-the value "Yes". GitHub makes an
-archived repository read-only until someone with admin access to it
+home page and the name on its page show "Archived". The Details card of its
+page shows the fact "Archived on GitHub" with the value "Yes". GitHub makes
+an archived repository read-only until someone with admin access to it
 unarchives it.
 
 ## Using the data
@@ -925,9 +943,10 @@ pnpm site
 ```
 
 The command reads `dist/v1/plugins.json`. It writes the home page,
-`dist/index.html`, and one page for each record, `dist/plugins/<id>/index.html`.
-It does not change the data file or the schemas. It replaces the `index.html`
-and `plugins/` of an earlier run, so a page for a plugin that the data no
+`dist/index.html`, the About page, `dist/about/index.html`, and one page
+for each record, `dist/plugins/<id>/index.html`. It does not change the
+data file or the schemas. It replaces the `index.html`, `about/`, and
+`plugins/` of an earlier run. So a page for a plugin that the data no
 longer lists goes away. Links between the pages, and to the data file, start
 with `/zotero-plugin-index/`, the path of the site on GitHub Pages.
 
