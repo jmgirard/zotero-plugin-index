@@ -1,0 +1,8 @@
+{
+  "id": "zotero-split-theme@diraw.github.io",
+  "name": "Zotero Split Theme",
+  "description": "Split light and dark themes between Zotero UI areas and the PDF reader.",
+  "homepage": "https://github.com/Diraw/zotero-split-theme#readme",
+  "repoUrl": "https://github.com/Diraw/zotero-split-theme",
+  "updateUrl": "https://github.com/Diraw/zotero-split-theme/releases/download/release/update.json"
+}
