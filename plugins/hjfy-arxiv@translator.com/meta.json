@@ -1,0 +1,8 @@
+{
+  "id": "hjfy-arxiv@translator.com",
+  "name": "幻觉翻译 arXiv 翻译",
+  "description": "Zotero plugin for translating arXiv articles based on LaTeX source code using hjfy.top Translation",
+  "homepage": "https://github.com/angjustinl/zotero-plugin-hjfy#readme",
+  "repoUrl": "https://github.com/ANGJustinl/zotero-plugin-hjfy",
+  "updateUrl": "https://github.com/angjustinl/zotero-plugin-hjfy/releases/download/release/update.json"
+}
