@@ -1,16 +1,15 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-29 (M048 done and archived; 10 lessons marked used, 2 captured, 2 evicted; 1 candidate row added)_
+_Last hygiene check: 2026-10-29 (M049 done and archived; M046 row pruned; 8 lessons marked used; 1 candidate row added)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M049 | Give the whole site the card look | review | M048 | normal | milestones/M049-site-wide-look.md |
+| M049 | Give the whole site the card look | done | M048 | normal | milestones/archive/M049-site-wide-look.md |
 | M048 | Lay out the plugin pages in card sections | done | — | normal | milestones/archive/M048-plugin-page-sections.md |
 | M047 | Show whether plugins start in Zotero | done | M046 | normal | milestones/archive/M047-show-start-tests.md |
-| M046 | Start one plugin in a headless Zotero | done | — | normal | milestones/archive/M046-start-one-plugin.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
