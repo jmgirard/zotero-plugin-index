@@ -185,9 +185,11 @@ jobs:
 
   # A job whose earlier jobs include a failed one is skipped unless its `if:` says
   # otherwise, so this `if:` keeps a failed start-test job from skipping the deploy.
+  # The github-pages environment accepts only the default branch, so a run dispatched
+  # on another branch skips the deploy. A scheduled run always uses the default branch.
   deploy:
     needs: site
-    if: ${{ !cancelled() && needs.site.result == 'success' }}
+    if: ${{ !cancelled() && needs.site.result == 'success' && (github.event_name == 'schedule' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
