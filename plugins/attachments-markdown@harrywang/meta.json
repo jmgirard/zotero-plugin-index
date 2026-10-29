@@ -1,0 +1,8 @@
+{
+  "id": "attachments-markdown@harrywang",
+  "name": "Attachments to Markdown",
+  "description": "Convert web snapshots, EPUBs and Word documents in Zotero into clean Markdown with front matter.",
+  "homepage": "https://github.com/harrywang/zotero-attachments-markdown",
+  "repoUrl": "https://github.com/harrywang/zotero-attachments-markdown",
+  "updateUrl": "https://raw.githubusercontent.com/harrywang/zotero-attachments-markdown/main/updates.json"
+}
