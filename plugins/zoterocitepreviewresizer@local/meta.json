@@ -1,0 +1,8 @@
+{
+  "id": "zoterocitepreviewresizer@local",
+  "name": "Zotero Cite Preview Resizer",
+  "description": "Resize Zotero cite/preview popups with drag and prefs",
+  "homepage": "https://github.com/jagaldol/zotero-cite-preview-resizer#readme",
+  "repoUrl": "https://github.com/jagaldol/zotero-cite-preview-resizer",
+  "updateUrl": "https://github.com/jagaldol/zotero-cite-preview-resizer/releases/download/release/update.json"
+}
