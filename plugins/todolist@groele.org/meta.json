@@ -1,0 +1,8 @@
+{
+  "id": "todolist@groele.org",
+  "name": "Zotero TaskFlow",
+  "description": "Turn literature reading into trackable tasks and plans.",
+  "homepage": "https://github.com/groele/Zotero-TaskFlow",
+  "repoUrl": "https://github.com/groele/Zotero-TaskFlow",
+  "updateUrl": "https://raw.githubusercontent.com/groele/Zotero-TaskFlow/main/update.json"
+}
