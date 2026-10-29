@@ -1,0 +1,8 @@
+{
+  "id": "zotero-wiki-citations@quinn.dev",
+  "name": "Zotero Wiki Citations",
+  "description": "Click in-text citations to open the cited PDF in a new tab, wiki-link style.",
+  "homepage": "https://github.com/quinn-zilly/zotero-wiki-citations#readme",
+  "repoUrl": "https://github.com/quinn-zilly/zotero-wiki-citations",
+  "updateUrl": "https://github.com/quinn-zilly/zotero-wiki-citations/releases/download/release/update.json"
+}
