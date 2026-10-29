@@ -1,0 +1,8 @@
+{
+  "id": "pdf-translate@thejieee.github.io",
+  "name": "PDF Translate",
+  "description": "划词翻译：在 Zotero 阅读器中选中 PDF/EPUB 文本后点击悬浮按钮即可查看译文。单词自动走 Google 免费接口、句子自动走 OpenAI 兼容接口，支持 MyMemory 与自动回退。",
+  "homepage": "https://github.com/TheJieee/zotero-pdf-translate",
+  "repoUrl": "https://github.com/TheJieee/zotero-pdf-translate",
+  "updateUrl": "https://github.com/TheJieee/zotero-pdf-translate/releases/latest/download/updates.json"
+}
