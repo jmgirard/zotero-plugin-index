@@ -1,0 +1,7 @@
+{
+  "id": "tag-cited@onyxaegis.github.io",
+  "name": "Tag Cited Items",
+  "description": "Tags Zotero library items cited in a Word document, and creates a 'citations in this document' saved tag search in Zotero.",
+  "repoUrl": "https://github.com/onyxaegis/zotero-tag-cited",
+  "updateUrl": "https://raw.githubusercontent.com/onyxaegis/zotero-tag-cited/main/updates.json"
+}
