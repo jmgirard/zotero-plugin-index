@@ -98,7 +98,7 @@ A script on the plugin pages stays out, because this layout needs none
 - [x] T2: Restructure `site/src/pages/plugins/[id]/index.astro` into the
       header block and the four sections. Make the Works and Broken links
       button-shaped. Run the tests and see them pass.
-- [ ] T3: In `Base.astro`, add the card properties, the section and h2
+- [x] T3: In `Base.astro`, add the card properties, the section and h2
       styles, the button styles, and the `--broken-*` pair. Make the home
       rows use the card properties. Add a test that reads the `:root`
       blocks and checks each AC6 pair.
@@ -126,6 +126,7 @@ A script on the plugin pages stays out, because this layout needs none
 - 2026-10-29: criteria re-audit (full): 6 findings on M048, all fixed. AC1 forbids any `<header>` element and names `shownDescription`. AC2 counts only the sections before `<details>`, so the Overrides h2 stays out. AC3 names the repository fact, since no fixture has an unsafe URL. Scope names the home row change. AC6 covers changed rules too. DESIGN.md's "links first" sentence joins AC8 and T5.
 - 2026-10-29: T1: the plugin page tests now check the header block, the four sections and their facts, and the Details section on each of the 9 fixture pages; the 27 new tests fail on the current page. The report link tests allow attributes after `href`, which they still match exactly.
 - 2026-10-29: T2: the page is a `div.card.page-head` and four `section.card` elements marked `data-section`; the Works and Broken links carry `class="button"` after `href` and sit under the line "Tried this version on Zotero? Report what you found:", in place of "Report that it Works or is Broken." 88 site tests pass.
+- 2026-10-29: T3: `--card-border`, `--card-radius`, and `--card-padding` join `--card`; `.card`, `.plugin`, and `details` use them. Section h2s are small uppercase `--muted` labels. Buttons are pills with a transparent border that forced colors draw. `--broken-*` is #a4261a on #fde7e5 (light) and #f5aaa1 on #44201c (dark). The new rules set only the AC6 pairs (muted h2 on card, the two button pairs, details on card). The color test failed on a planted #6a3a35 broken text (1.54:1). `pnpm test` 1050 passed, `pnpm check` 0 problems.
 
 ## Decisions
 

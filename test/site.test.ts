@@ -623,3 +623,53 @@ describe("pnpm site with no data file", () => {
     }
   }, 60_000);
 });
+
+// The color variables of one :root block of the layout.
+function colors(block: string): Map<string, string> {
+  return new Map([...block.matchAll(/(--[\w-]+):\s*(#[0-9a-f]{6});/gi)].map(([, name, value]) => [name!, value!.toLowerCase()]));
+}
+
+// WCAG 2.2 contrast ratio of two #rrggbb colors.
+function contrast(a: string, b: string): number {
+  const luminance = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map((at) => {
+      const c = parseInt(hex.slice(at, at + 2), 16) / 255;
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+  };
+  const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (light! + 0.05) / (dark! + 0.05);
+}
+
+describe("the site colors", () => {
+  const layout = readFileSync(resolve(ROOT, "site/src/layouts/Base.astro"), "utf8");
+  const light = colors(/\n {6}:root \{(.*?)\n {6}\}/s.exec(layout)![1]!);
+  const darkBlock = /@media \(prefers-color-scheme: dark\) \{\s*:root \{(.*?)\}/s.exec(layout)![1]!;
+  const dark = new Map([...light, ...colors(darkBlock)]);
+  const PAIRS = [
+    ["--text", "--card"],
+    ["--text", "--page"],
+    ["--muted", "--card"],
+    ["--muted", "--page"],
+    ["--link", "--card"],
+    ["--link", "--page"],
+    ["--all-text", "--all-bg"],
+    ["--some-text", "--some-bg"],
+    ["--none-text", "--none-bg"],
+    ["--broken-text", "--broken-bg"],
+  ];
+
+  test.each([
+    ["light", light],
+    ["dark", dark],
+  ])("gives each text and background pair a contrast of at least 4.5:1 in the %s scheme", (_, scheme) => {
+    // The dark block sets every color it uses, so none falls back to the light one.
+    expect(colors(darkBlock).size).toBe(light.size);
+    for (const [text, background] of PAIRS) {
+      expect(scheme.get(text), text).toMatch(/^#/);
+      expect(scheme.get(background), background).toMatch(/^#/);
+      expect(contrast(scheme.get(text)!, scheme.get(background)!), `${text} on ${background}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});
