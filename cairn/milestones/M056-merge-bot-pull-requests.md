@@ -144,6 +144,7 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
 - 2026-10-29: claim audit: 58 claims read, 10 corrected — README.md, CHANGELOG.md, src/discover/propose.ts. Fixed: name-match wording (like with like; ASCII runs; separate words), default port, "keep open" to "stop the bot from merging", every failure case and the `merged nothing` exit, output order, "new" bot pull requests, "read job", and a duplicated README paragraph with the merge section split from the `pnpm propose` text (section moved before "Proposing a plugin with an issue"). Declined for `UNHELD_TEXT` only: "first daily run" is AC2's fixed wording, and a by-hand run is the maintainer's act; the README says "daily or by hand". The re-read found one more gap (a missing head SHA as a failure), now listed.
 - 2026-10-29: T7: verify slot clean (`pnpm test` 1261 passed, `pnpm check` 58 entries, 0 problems). The post-merge dispatch of `merge-discover.yml` is left to `/milestone-review` after the merge, as AC5's audit disposition says. Implement complete; status review.
 - 2026-10-29: review started; main unmoved since the branch cut (origin/main 83947af is an ancestor), Copilot round off. Fixed on the branch before evidence: README and DESIGN item 1 now say "first daily run at least 48 hours after it opens", the words AC6 names (fbd1250).
+- 2026-10-29: step-7 approval: m056-merge-bot-pull-requests approved for merge
 
 ## Decisions
 
