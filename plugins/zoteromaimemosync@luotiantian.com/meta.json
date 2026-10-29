@@ -1,0 +1,8 @@
+{
+  "id": "zoteromaimemosync@luotiantian.com",
+  "name": "Zotero Maimemo Sync",
+  "description": "A Zotero plugin that syncs highlighted words from Zotero notes to Maimemo, enabling seamless vocabulary learning.",
+  "homepage": "https://github.com/bulletproof-system/zotero-maimemo-sync#readme",
+  "repoUrl": "https://github.com/bulletproof-system/zotero-maimemo-sync",
+  "updateUrl": "https://github.com/bulletproof-system/zotero-maimemo-sync/releases/download/release/update.json"
+}
