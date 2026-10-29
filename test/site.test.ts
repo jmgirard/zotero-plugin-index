@@ -231,7 +231,7 @@ describe("the report block", () => {
   });
 });
 
-// The h2 sections between the header block and <details>, each with its markup.
+// The h2 card sections before <details>, each with its markup.
 function sections(html: string): { name: string; heading: string; body: string }[] {
   const top = html.slice(0, html.indexOf("<details>"));
   return [...top.matchAll(/<section class="card[^"]*" data-section="([^"]+)"[^>]*>\s*<h2>([^<]*)<\/h2>(.*?)<\/section>/gs)].map(
@@ -663,9 +663,9 @@ describe("the site colors", () => {
   test.each([
     ["light", light],
     ["dark", dark],
-  ])("gives each text and background pair a contrast of at least 4.5:1 in the %s scheme", (_, scheme) => {
-    // The dark block sets every color it uses, so none falls back to the light one.
-    expect(colors(darkBlock).size).toBe(light.size);
+  ])("gives each listed text and background pair a contrast of at least 4.5:1 in the %s scheme", (_, scheme) => {
+    // The dark block redefines every hex color of the light block, so none falls back to it.
+    expect([...colors(darkBlock).keys()].sort()).toEqual([...light.keys()].sort());
     for (const [text, background] of PAIRS) {
       expect(scheme.get(text), text).toMatch(/^#/);
       expect(scheme.get(background), background).toMatch(/^#/);

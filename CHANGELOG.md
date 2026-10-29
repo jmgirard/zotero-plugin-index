@@ -351,9 +351,13 @@
   `pnpm build --plan <file>` writes the start plan.
 - Each plugin page has a new layout. A header block shows the name and the
   description. Cards with headings follow, in this order: "Declared
-  support" (the pills and the declared range), "Start test" (when the
-  plugin has start results), "User reports", and "About" (the "Menus and
-  settings in" line and the repository and releases links). The closed
-  "Details" section comes last. The "Works" and "Broken" report links now
-  look like buttons and open the same forms. The page shows the same facts
-  as before.
+  support" (the pills and the declared range, or the failure when the
+  build could not read the plugin), "Start test" (when the plugin has
+  start results), "User reports" (when the build read the plugin), and
+  "About" (the "Menus and settings in" line, the repository link, and the
+  releases link, the first and last only when the build read the plugin).
+  The closed "Details" section comes last. The "Works" and "Broken" report
+  links now look like buttons and open the same forms. The page shows the
+  same facts as before. The new text is the card headings and the report
+  prompt, which now reads "Tried this version on Zotero? Report what you
+  found:".

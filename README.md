@@ -74,10 +74,11 @@ account.
 
 Each plugin has its own page. A header block at the top shows the name and
 the description. Cards with headings follow. "Declared support" shows the
-pills and the declared range. "Start test" shows the start-test results,
-"User reports" shows the reports, and "About" shows a "Menus and settings
-in" line and the links. The "Menus and settings in" line names the
-languages of the `languages` list that "Using the data"
+pills and the declared range, or the failure. "Start test" shows the
+start-test results, "User reports" shows the reports, and "About" shows
+the repository link and, when the build read the plugin, a "Menus and
+settings in" line and the releases link. The "Menus and settings in" line
+names the languages of the `languages` list that "Using the data"
 describes, which come from the plugin's locale folders. If a `languages`
 override applies to the plugin version that the index read, the override
 replaces that list. The line does not say how complete each language is.
@@ -100,7 +101,7 @@ read. For each Zotero major with a counted report, it shows the number of
 reports count. If no report counts, the page says that the version has no
 reports yet. A "Works" button and a "Broken" button open the report forms on
 GitHub with the plugin id and that version filled in. The page of a plugin
-whose read failed shows no reports and no links.
+whose read failed shows no reports and no report buttons.
 
 The index lists a plugin whose GitHub repository is archived. Its row on the
 home page shows "(archived)" after its name. The Details section of its page

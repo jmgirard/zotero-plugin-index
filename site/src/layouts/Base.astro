@@ -206,7 +206,7 @@ const { generatedAt } = loadData();
         background: var(--broken-bg);
         color: var(--broken-text);
       }
-      /* Forced colors drop the backgrounds, so the transparent border shows each button's edge. */
+      /* Forced colors drop the backgrounds, so this rule draws the border in ButtonText to show each button's edge. */
       @media (forced-colors: active) {
         .button {
           border-color: ButtonText;
