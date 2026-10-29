@@ -1,0 +1,8 @@
+{
+  "id": "zoterofigure@polygon.org",
+  "name": "PDF Figure",
+  "description": "Local figure and table extraction for Zotero PDFs",
+  "homepage": "https://github.com/MuiseDestiny/zotero-figure#readme",
+  "repoUrl": "https://github.com/MuiseDestiny/zotero-figure",
+  "updateUrl": "https://raw.githubusercontent.com/MuiseDestiny/zotero-figure/bootstrap/update.json"
+}
