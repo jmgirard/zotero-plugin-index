@@ -1,0 +1,8 @@
+{
+  "id": "babeldoc-sidebyside@codex.local",
+  "name": "BabelDOC Side-by-Side",
+  "description": "A Zotero 8/9 plugin that runs BabelDOC locally and imports side-by-side bilingual PDFs back into Zotero.",
+  "homepage": "https://github.com/Babylonehy/zetero-BabelDoc",
+  "repoUrl": "https://github.com/Babylonehy/zetero-BabelDoc",
+  "updateUrl": "https://raw.githubusercontent.com/Babylonehy/zetero-BabelDoc/main/update.json"
+}
