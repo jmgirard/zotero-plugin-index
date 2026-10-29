@@ -1,13 +1,13 @@
 # M050: End the daily build within its time limits
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — `pnpm build` and the daily build that deploys the public data
-- **Branch/PR:** —
+- **Branch/PR:** m050-bound-report-read
 
 ## Goal
 
@@ -101,6 +101,7 @@ is added to the report read (see the work log).
 - 2026-10-29: changelog: one entry for this milestone, apart from M051's.
 - 2026-10-29: plan committed while the criteria audit ran, so the tree stays clean at the stop; the audit's dispositions follow in a second plan commit.
 - 2026-10-29: criteria audit (full): 6 findings on M050, all disposed. Fixed: AC2 compares runs with one `--out` and the data file apart from `generatedAt`, bounds the exit at 30 s, and adds a no-file run and a run with over 64 KiB of stdout; AC1 stalls page 2 before headers and in the body and quotes `passed its time limit of <duration>`; AC3 adds that the read counts toward the 18 minutes. Answered: AC3's no-file claim adds no CLI test hook, since the CLI's existing tested path writes no file for any `ok: false`, and the claim is narrowed to a README list entry; the D-entry, DESIGN, and `build.yml` comment stay in T4 as records.
+- 2026-10-29: status in-progress; branch m050-bound-report-read cut from main at c7d844d.
 
 ## Decisions
 

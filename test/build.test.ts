@@ -55,13 +55,13 @@ function writeFixture(recorded: Responses): string {
 
 // pnpm sets npm_execpath to its own binary when it runs `pnpm test`. The preload makes
 // the command answer its requests and host lookups from `fixture` instead of the network.
-function pnpmBuild(args: string[], fixture?: string, extra: Record<string, string> = {}) {
+function pnpmBuild(args: string[], fixture?: string, extra: Record<string, string> = {}, timeout = 50_000) {
   const pnpmPath = process.env.npm_execpath;
   if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");
   const { INIT_CWD: _outer, GITHUB_TOKEN: _token, GITHUB_REPOSITORY: _repo, ...env } = process.env;
   if (fixture) Object.assign(env, { ZPI_FIXTURE: fixture, NODE_OPTIONS: `--import=${PRELOAD}` });
   Object.assign(env, extra);
-  return spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "build", ...args], { encoding: "utf8", env, timeout: 50_000 });
+  return spawnSync(pnpmPath, ["--silent", "--dir", ROOT, "build", ...args], { encoding: "utf8", env, timeout });
 }
 
 interface Output {
@@ -488,6 +488,68 @@ describe("pnpm build", () => {
   });
 });
 
+describe("pnpm build with a timer still pending", () => {
+  const PENDING = resolve(ROOT, "test/support/preload-pending-timer.ts");
+
+  // Builds `tree` twice into one --out, first as is, then with a 10-minute timer pending,
+  // and returns both results, both data files, and the second run's time.
+  function twoRuns(tree: string, recorded: Responses) {
+    const fixture = writeFixture(recorded);
+    const out = tempDir();
+    const data = () => {
+      const path = join(out, "v1", "plugins.json");
+      if (!existsSync(path)) return undefined;
+      const { generatedAt: _, ...rest } = JSON.parse(readFileSync(path, "utf8"));
+      rmSync(path);
+      return rest;
+    };
+    const plain = pnpmBuild([tree, "--out", out], fixture);
+    const plainData = data();
+    const started = performance.now();
+    const pending = pnpmBuild([tree, "--out", out], fixture, { NODE_OPTIONS: `--import=${PRELOAD} --import=${PENDING}` }, 40_000);
+    return { plain, plainData, pending, pendingData: data(), seconds: (performance.now() - started) / 1000 };
+  }
+
+  function expectSameRun({ plain, plainData, pending, pendingData, seconds }: ReturnType<typeof twoRuns>) {
+    expect(pending.error).toBeUndefined();
+    expect(seconds).toBeLessThan(30);
+    expect(pending.status).toBe(plain.status);
+    expect(pending.stdout).toBe(plain.stdout);
+    expect(pendingData).toEqual(plainData);
+  }
+
+  test("exits with the same status, stdout, and data file after a build that writes the file", () => {
+    const runs = twoRuns(TREE, responses());
+    expect(runs.plain.status).toBe(0);
+    expect(runs.plainData).toBeDefined();
+    expectSameRun(runs);
+  }, 120_000);
+
+  test("exits with the same status and stdout after a build that writes no file", () => {
+    const runs = twoRuns(TREE, { ...responses(), [LABEL]: { status: 404, text: '{"message":"Not Found"}' } });
+    expect(runs.plain.status).toBe(1);
+    expect(runs.plainData).toBeUndefined();
+    expectSameRun(runs);
+    expect(runs.pending.stderr).toBe(runs.plain.stderr);
+  }, 120_000);
+
+  test("writes the whole stdout of over 64 KiB before it exits", () => {
+    // Each entry's repo has no recorded answer, so its read fails with HTTP 404 and adds one
+    // stdout line.
+    const tree = tempDir();
+    for (let i = 0; i < 800; i++) {
+      const id = `plugin-${String(i).padStart(4, "0")}@example.org`;
+      mkdirSync(join(tree, id));
+      writeFileSync(join(tree, id, "meta.json"), JSON.stringify({ id, repoUrl: `https://github.com/example/plugin-${i}` }));
+      writeFileSync(join(tree, id, "index.json"), JSON.stringify({ schemaVersion: 1 }));
+    }
+    const runs = twoRuns(tree, { [LABEL]: { json: { name: "report" } }, [ISSUES]: { json: [] } });
+    expect(Buffer.byteLength(runs.plain.stdout)).toBeGreaterThan(64 * 1024);
+    expect(runs.plain.stdout.trimEnd().split("\n").at(-1)).toMatch(/^wrote 800 records to /);
+    expectSameRun(runs);
+  }, 120_000);
+});
+
 describe("buildData", () => {
   const noFetch = () => Promise.reject(new Error("no request expected"));
 
@@ -661,6 +723,43 @@ describe("buildData", () => {
         expect(record(JSON.parse(result.text), "b-stalled@example.org")?.failure).toEqual({
           name: "request-failed",
           message: expect.stringContaining("passed its time limit of 3 minutes"),
+        });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    test.each([
+      ["the label read stalls before its headers", LABEL, "headers", `GET ${LABEL} failed`],
+      ["page 2 of the issues stalls before its headers", ISSUES_PAGE_2, "headers", `GET ${ISSUES_PAGE_2} failed`],
+      ["page 2 of the issues stalls in its body", ISSUES_PAGE_2, "body", `GET ${ISSUES_PAGE_2} failed while reading the body`],
+    ] as const)("stops the report read at its limit and reads no plugin when %s", async (_, url, stall, failed) => {
+      const recorded = responses();
+      recorded[url] = { ...recorded[url], stall };
+      const { fetch, requests } = fixtureFetch(recorded);
+      const result = await buildData(TREE, fetch, undefined, undefined, { reportsMs: 200 });
+      expect(result).toEqual({
+        ok: false,
+        problems: [`cannot read the report issues: request-failed: ${failed}: the read passed its time limit of 200 ms`],
+      });
+      expect(requests.map((r) => r.url).every(reportRead)).toBe(true);
+      expect(requests.map((r) => r.url)).toContain(url);
+    });
+
+    test("names the default report read limit of 3 minutes", async () => {
+      const recorded = responses();
+      recorded[LABEL] = { ...recorded[LABEL], stall: "headers" };
+      let reached!: () => void;
+      const stalled = new Promise<void>((resolve) => (reached = resolve));
+      const { fetch } = fixtureFetch(recorded, (seen) => seen.url === LABEL && reached());
+      vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+      try {
+        const pending = buildData(TREE, fetch);
+        await stalled;
+        await vi.advanceTimersByTimeAsync(3 * 60 * 1000);
+        expect(await pending).toEqual({
+          ok: false,
+          problems: [`cannot read the report issues: request-failed: GET ${LABEL} failed: the read passed its time limit of 3 minutes`],
         });
       } finally {
         vi.useRealTimers();
