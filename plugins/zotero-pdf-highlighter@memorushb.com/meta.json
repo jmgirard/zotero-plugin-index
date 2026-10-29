@@ -1,0 +1,7 @@
+{
+  "id": "zotero-pdf-highlighter@memorushb.com",
+  "name": "Zotero Smart Highlighter",
+  "description": "LLM-powered reading assistant with worth-reading highlights for academic PDFs",
+  "repoUrl": "https://github.com/MemorushB/zotero-smart-highlighter",
+  "updateUrl": "https://raw.githubusercontent.com/MemorushB/zotero-smart-highlighter/master/update.json"
+}
