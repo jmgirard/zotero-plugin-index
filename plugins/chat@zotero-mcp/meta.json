@@ -1,0 +1,8 @@
+{
+  "id": "chat@zotero-mcp",
+  "name": "Zotero Agent",
+  "description": "An AI chat panel in Zotero that runs your own agent (Claude Code, Codex, pi): chat with your PDFs, cite pages, annotate and organise your library through zotero-cli.",
+  "homepage": "https://github.com/54yyyu/zotero-mcp",
+  "repoUrl": "https://github.com/54yyyu/zotero-mcp",
+  "updateUrl": "https://raw.githubusercontent.com/54yyyu/zotero-mcp/main/plugin/updates.json"
+}
