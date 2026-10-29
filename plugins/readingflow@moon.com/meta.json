@@ -1,0 +1,8 @@
+{
+  "id": "readingflow@moon.com",
+  "name": "Zotero Reading Flow",
+  "description": "Reading bookmarks, automatic PDF positions, and independent reading status for Zotero 9 and 10.",
+  "homepage": "https://github.com/Moonweave-Research/zotero-reading-flow",
+  "repoUrl": "https://github.com/Moonweave-Research/zotero-reading-flow",
+  "updateUrl": "https://github.com/Moonweave-Research/zotero-reading-flow/releases/latest/download/updates.json"
+}
