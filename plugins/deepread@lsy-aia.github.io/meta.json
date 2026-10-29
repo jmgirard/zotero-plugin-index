@@ -1,0 +1,8 @@
+{
+  "id": "deepread@lsy-aia.github.io",
+  "name": "DeepRead",
+  "description": "AI 精读：MinerU 结构解析 + 逐段摘要/要点/翻译、AI 大纲、论文速读卡、AI 对话。使用你自己的 API Key。",
+  "homepage": "https://github.com/solsongli/deepread",
+  "repoUrl": "https://github.com/solsongli/deepread",
+  "updateUrl": "https://raw.githubusercontent.com/solsongli/deepread/main/update.json"
+}
