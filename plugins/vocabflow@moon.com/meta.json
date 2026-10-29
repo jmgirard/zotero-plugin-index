@@ -1,0 +1,7 @@
+{
+  "id": "vocabflow@moon.com",
+  "name": "Zotero Vocab Flow",
+  "description": "Build reviewable vocabulary candidates from Zotero PDF underlines.",
+  "repoUrl": "https://github.com/Moonweave-Research/zotero-vocab-flow",
+  "updateUrl": "https://raw.githubusercontent.com/Moonweave-Research/zotero-vocab-flow/main/updates.json"
+}
