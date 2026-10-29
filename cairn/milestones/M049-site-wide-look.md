@@ -1,13 +1,13 @@
 # M049: Give the whole site the card look
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** M048
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the public site's shared header, footer, and home page
-- **Branch/PR:** —
+- **Branch/PR:** m049-site-wide-look
 
 ## Goal
 
@@ -76,11 +76,11 @@ browser".
 
 ## Tasks
 
-- [ ] T1: Write the tests first: the AC1 declaration test, the AC2 style
+- [x] T1: Write the tests first: the AC1 declaration test, the AC2 style
       test, and the AC3 home row and filter checks. Make the AC1 and AC2
       tests show that they read a non-empty set of declarations and files.
       See the AC1 test fail on the literal values left after M048.
-- [ ] T2: Add the spacing and type-size properties. Restyle the header,
+- [x] T2: Add the spacing and type-size properties. Restyle the header,
       the footer, the intro, the filters, and the home rows with them.
       Extend the AC6 color-pair test of M048 with each pair this
       milestone adds.
@@ -98,6 +98,11 @@ browser".
 - 2026-10-29: question set: reach — whole site, so this milestone exists.
 - 2026-10-29: plan gate chose a whole-site restyle over plugin pages alone, at the user's choice; falsified by a home page check where the filters stop working after the restyle.
 - 2026-10-29: criteria audit (full): 8 findings, all fixed. AC1 allows `auto`, skips `.visually-hidden`, covers longhands and each value part, and drops its test-text clause (moved to T1). AC2 covers `.astro` files and `style` attributes. AC3 lists the parts and attributes the script uses, at M048's merge commit. AC4 checks each option and button and names `filterStatus`. AC5 covers changed rules. Out now says how far AC1 reaches into the plugin page rules.
+- 2026-10-29: status in-progress; branch m049-site-wide-look cut from main at fad2e7e.
+- 2026-10-29: T1: `test/support/home-facts.ts` reads the home rows' and filters' AC3 facts from built HTML by data attributes; `test/fixtures/site/home-facts.json` holds them from the fixture home page built at fad2e7e, whose site code equals the M048 merge dc1caf0. The AC1 test failed on 42 literal values before T2. Planted defects (no `hidden` on the language menu, a 1.3:1 select color, a `style` attribute in Support.astro) each turned their test red.
+- 2026-10-29: T1 and T2 share one commit, since the AC1 test stays red until T2.
+- 2026-10-29: T2 choices: `--space-N` is N eighths of a rem (1–6, 8, 12), `--text-xs/s/l`, `--radius-pill`; header and footer take the card class as `.site-head` and `.site-foot`; the home h1 and intro sit in `div.card.page-head`; the filters get no wrapper card, since they are hidden without JavaScript and an empty card would show; the select takes the version buttons' shape; plugin page values unchanged; footer top margin 2rem to 1.5rem, its paragraphs 0.25rem apart; a home row's last child loses its bottom margin.
+- 2026-10-29: T2: for AC5, a new test checks every rule that sets a text color and a background together, in both schemes, instead of extending M048's pair list; the one new pair is the select's `--text` on `--card`, already on that list. Verify clean: 1060 tests passed, 6 skipped; `pnpm check` 56 entries, 0 problems.
 
 ## Decisions
 

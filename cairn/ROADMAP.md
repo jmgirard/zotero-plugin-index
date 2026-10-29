@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-29 (M048 done and archived; 10 lessons marked used,
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M049 | Give the whole site the card look | planned | M048 | normal | milestones/M049-site-wide-look.md |
+| M049 | Give the whole site the card look | in-progress | M048 | normal | milestones/M049-site-wide-look.md |
 | M048 | Lay out the plugin pages in card sections | done | — | normal | milestones/archive/M048-plugin-page-sections.md |
 | M047 | Show whether plugins start in Zotero | done | M046 | normal | milestones/archive/M047-show-start-tests.md |
 | M046 | Start one plugin in a headless Zotero | done | — | normal | milestones/archive/M046-start-one-plugin.md |

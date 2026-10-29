@@ -9,6 +9,7 @@ import { displayName, pluginHref, rangeText, type PluginRecord } from "../site/s
 import type { PluginsFile } from "../src/build/build.ts";
 import { shownDescription } from "../src/site/description.ts";
 import { declaredRange, majorSupport, ZOTERO_MAJORS } from "../src/site/version.ts";
+import { homeFacts } from "./support/home-facts.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const FIXTURE = resolve(ROOT, "test/fixtures/site/plugins.json");
@@ -546,6 +547,13 @@ describe("the home page", () => {
     );
   });
 
+  test("keeps the facts of its rows and filters as the page had them before the restyle", () => {
+    const saved = JSON.parse(readFileSync(resolve(ROOT, "test/fixtures/site/home-facts.json"), "utf8")) as { facts: ReturnType<typeof homeFacts> };
+    expect(saved.facts.rows).toHaveLength(ids.length);
+    expect(saved.facts.buttons).toHaveLength(ZOTERO_MAJORS.length + 1);
+    expect(homeFacts(home())).toEqual(saved.facts);
+  });
+
   test("holds a hidden language menu with one option for each subtag", () => {
     const menu = /<p class="language-filter" hidden><label for="language">Menus and settings in<\/label> <select id="language" data-language-filter autocomplete="off">(.*?)<\/select><\/p>/.exec(home());
     expect(menu).not.toBeNull();
@@ -637,6 +645,61 @@ describe("pnpm site with no data file", () => {
   }, 60_000);
 });
 
+// The rules of the layout's style element, comments removed. A rule inside @media keeps
+// its own selector.
+function cssRules(layout: string): { selector: string; declarations: [string, string][] }[] {
+  const css = /<style is:global>(.*?)<\/style>/s.exec(layout)![1]!.replace(/\/\*.*?\*\//gs, "");
+  return [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, selector, body]) => ({
+    selector: selector!.trim().replace(/\s+/g, " "),
+    declarations: body!
+      .split(";")
+      .map((declaration) => declaration.trim())
+      .filter(Boolean)
+      .map((declaration) => {
+        const at = declaration.indexOf(":");
+        return [declaration.slice(0, at).trim(), declaration.slice(at + 1).trim()];
+      }),
+  }));
+}
+
+describe("the site styles", () => {
+  const layout = readFileSync(resolve(ROOT, "site/src/layouts/Base.astro"), "utf8");
+
+  test("takes each spacing, corner radius, and type size outside :root from a custom property", () => {
+    const sized = cssRules(layout)
+      .filter(({ selector }) => selector !== ":root" && selector !== ".visually-hidden")
+      .flatMap(({ selector, declarations }) =>
+        declarations
+          .filter(([property]) => /^(?:border-radius|padding(?:-[a-z-]+)?|margin(?:-[a-z-]+)?|gap|font-size)$/.test(property))
+          .map(([property, value]) => ({ selector, property, value })),
+      );
+    for (const property of ["border-radius", "padding", "margin", "margin-left", "gap", "font-size"]) {
+      expect(sized.map((declaration) => declaration.property)).toContain(property);
+    }
+    // Each value part, split at spaces outside parentheses.
+    const literal = sized.flatMap(({ selector, property, value }) =>
+      (value.match(/(?:[^\s(]+|\([^)]*\))+/g) ?? [])
+        .filter((part) => !/^(?:var\(--[\w-]+\)|0|auto)$/.test(part))
+        .map((part) => `${selector} { ${property}: ${part} }`),
+    );
+    expect(literal).toEqual([]);
+  });
+
+  test("leaves styles out of every other .astro file", () => {
+    const files = (readdirSync(resolve(ROOT, "site/src"), { recursive: true }) as string[]).filter(
+      (path) => path.endsWith(".astro") && path !== join("layouts", "Base.astro"),
+    );
+    for (const file of ["pages/index.astro", "pages/plugins/[id]/index.astro", "components/Support.astro"]) {
+      expect(files).toContain(join(file));
+    }
+    for (const file of files) {
+      const source = readFileSync(resolve(ROOT, "site/src", file), "utf8");
+      expect(source, file).not.toMatch(/<style[\s>]/);
+      expect(source, file).not.toMatch(/\sstyle=/);
+    }
+  });
+});
+
 // The color variables of one :root block of the layout.
 function colors(block: string): Map<string, string> {
   return new Map([...block.matchAll(/(--[\w-]+):\s*(#[0-9a-f]{6});/gi)].map(([, name, value]) => [name!, value!.toLowerCase()]));
@@ -686,6 +749,28 @@ describe("the site colors", () => {
 
   test("redefines every hex color of the light block in the dark block, so none falls back to it", () => {
     expect([...colors(darkBlock).keys()].sort()).toEqual([...light.keys()].sort());
+  });
+
+  // Each rule that sets a text color and a background together.
+  const together = cssRules(layout).flatMap(({ selector, declarations }) => {
+    const get = (name: string) => declarations.find(([property]) => property === name)?.[1];
+    const text = get("color");
+    const background = get("background") ?? get("background-color");
+    return text && background ? [{ selector, text, background }] : [];
+  });
+
+  test.each([
+    ["light", light],
+    ["dark", dark],
+  ])("gives the text and background that each rule sets together a contrast of at least 4.5:1 in the %s scheme", (_, scheme) => {
+    expect(together.map(({ selector }) => selector)).toEqual(expect.arrayContaining(["body", '.pill[data-support="all"]']));
+    for (const { selector, text, background } of together) {
+      const [, textName] = /^var\((--[\w-]+)\)$/.exec(text) ?? [];
+      const [, backgroundName] = /^var\((--[\w-]+)\)$/.exec(background) ?? [];
+      expect(scheme.get(textName!), `${selector} color`).toMatch(/^#/);
+      expect(scheme.get(backgroundName!), `${selector} background`).toMatch(/^#/);
+      expect(contrast(scheme.get(textName!)!, scheme.get(backgroundName!)!), selector).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   test("colors each report button from its verdict's pair", () => {
