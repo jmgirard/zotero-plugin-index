@@ -1,0 +1,7 @@
+{
+  "id": "wenxianyidu@wenxianyidu.local",
+  "name": "文献译读",
+  "description": "免费开源的 Zotero 中文文献翻译：双栏、段落对照、划词和输入翻译。",
+  "repoUrl": "https://github.com/JackBlack419/wenxian-yidu",
+  "updateUrl": "https://github.com/JackBlack419/wenxian-yidu/releases/latest/download/updates.json"
+}
