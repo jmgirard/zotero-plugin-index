@@ -1,0 +1,8 @@
+{
+  "id": "imprint@katew11.github.io",
+  "name": "Imprint",
+  "description": "Identifies a paper from the DOI printed inside its PDF, imports it, exports your annotations back out, and reconciles a folder against the library.",
+  "homepage": "https://github.com/KateW11/zotero-imprint#readme",
+  "repoUrl": "https://github.com/KateW11/Zotero-imprint",
+  "updateUrl": "https://github.com/KateW11/zotero-imprint/releases/download/release/update.json"
+}
