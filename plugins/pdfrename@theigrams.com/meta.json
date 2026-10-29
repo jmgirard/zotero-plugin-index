@@ -1,0 +1,7 @@
+{
+  "id": "pdfrename@theigrams.com",
+  "name": "Zotero PDF Rename",
+  "description": "Custom rename pdf",
+  "repoUrl": "https://github.com/Theigrams/zotero-pdf-custom-rename",
+  "updateUrl": "https://raw.githubusercontent.com/Theigrams/zotero-pdf-custom-rename/main/update.json"
+}
