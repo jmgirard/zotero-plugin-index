@@ -1,0 +1,8 @@
+{
+  "id": "zotero-voice-edge@local",
+  "name": "Zotero Voice-Edge Plugin",
+  "description": "Voice-Edge for Zotero 7+ reader.",
+  "homepage": "https://github.com/woniuzfb/zotero-voice-edge-plugin",
+  "repoUrl": "https://github.com/woniuzfb/zotero-voice-edge-plugin",
+  "updateUrl": "https://raw.githubusercontent.com/woniuzfb/zotero-voice-edge-plugin/main/updates.json"
+}
