@@ -1,0 +1,7 @@
+{
+  "id": "estravon@tiberavon.com",
+  "name": "Estravon",
+  "description": "Extract book sections to Markdown via the Marker API",
+  "repoUrl": "https://github.com/tiberavonltd/estravon-plugin",
+  "updateUrl": "https://raw.githubusercontent.com/tiberavonltd/estravon-plugin/main/update.json"
+}
