@@ -659,11 +659,24 @@ const { generatedAt } = loadData();
         font-size: var(--text-s);
         color: var(--muted);
       }
+      /* Words in the table break only at spaces, so a narrow header wraps between words. */
+      .compat-table {
+        overflow-wrap: normal;
+      }
       .compat-table th,
       .compat-table td {
         padding: var(--space-5) var(--space-6);
         border-bottom: 0;
         vertical-align: middle;
+      }
+      .compat-table td[data-declared] {
+        white-space: nowrap;
+      }
+      @media (max-width: 560px) {
+        .compat-table th,
+        .compat-table td {
+          padding: var(--space-4) var(--space-3);
+        }
       }
       .compat-table thead th {
         font-size: var(--text-xs);

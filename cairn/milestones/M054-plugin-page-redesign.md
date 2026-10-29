@@ -110,7 +110,7 @@ fixture are as M053 defines them.
 - [x] T4: Add `site/src/pages/about.astro` with the method notes from the
       plugin pages and the M053 legend, add the top bar link, cut the
       named sentences, and add the linking line; test the built pages.
-- [ ] T5: Build from data with `xpiUrl`, serve it, run the width check,
+- [x] T5: Build from data with `xpiUrl`, serve it, run the width check,
       and save a screenshot of each named page at each width for Review.
 - [ ] T6: Update README, DESIGN, and the M053 CHANGELOG entry; run the
       verify slot.
@@ -137,6 +137,8 @@ fixture are as M053 defines them.
 - 2026-10-29: T3 done: an open "Details" card (h2) with a `dl.facts` grid replaces the closed `<details>`, and the overrides table sits under an h3 in it; the test checks each page's fact labels in order, no `<details>` or `<summary>`, and the h3, and went red on the 4 pages with overrides when the h3 was planted back as an h2.
 - 2026-10-29: choice: the About page has five cards (declared range, start test, user reports, overrides, what the index does not do), written from `version.ts`, `bootstrap.js`, `start-test.ts`, `count.ts`, and README read this session; About is the first top bar link; a failed record's page has no table, so its About line sits under the failure message in the same card.
 - 2026-10-29: T4 done: `about/index.html` built, top bar link on every page, the four moved sentences gone from plugin pages, one "How the index checks plugins" line in each compatibility card; the built About page first had "and<code>" with its space dropped (Astro line breaks), fixed with `{" "}`; the text check now strips tags without adding spaces and went red when that space was planted out again.
+- 2026-10-29: T5: built from the deployed `v1/plugins.json` (generatedAt 2026-10-29T19:12:45.935Z, 56 records, all with `xpiUrl`), served on port 4329 (`m054-live` in the excluded `.claude/launch.json`); the first 375 px look showed table headers broken mid-word ("Zo ter o") under the body's `overflow-wrap: anywhere`, fixed with `overflow-wrap: normal` on the table, a no-wrap declared cell, and smaller cell padding at 560 px or less.
+- 2026-10-29: T5 done: iframe width check with `border: 0`, after the fix: DeepRead, Better BibTeX, and PDF Preview plugin pages and the About page all have scrollWidth equal to clientWidth at 375 (375/375) and 1280 (1280/1280); a planted 900 px block gave 900/375; DOMParser nesting check found no block inside a `<p>`; screenshots of the four pages at 375 and 1280 px were taken in the pane (no tool saves them to the repo; the pane keeps them in this session's tool results).
 
 ## Decisions
 
