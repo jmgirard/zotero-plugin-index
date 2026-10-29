@@ -1,0 +1,8 @@
+{
+  "id": "manuelarunge10@gmail.com",
+  "name": "Zotero Title Manager",
+  "description": "Fetch and change title case of selected items",
+  "homepage": "https://github.com/ManuelaRunge/Zotitle",
+  "repoUrl": "https://github.com/ManuelaRunge/Zotitle",
+  "updateUrl": "https://raw.githubusercontent.com/ManuelaRunge/Zotitle/master/updates.json"
+}
