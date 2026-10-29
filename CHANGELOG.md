@@ -396,18 +396,20 @@
   one cell for each Zotero major from 7 to 10 and the language codes. Next
   comes the month of the release that the index read. Last come links to
   the source code and to the `.xpi` file. A version cell shows the declared
-  mark (✓, ◐, or a dash), and under it the newest start-test result on
-  that major: a dot for started, a cross for a failure. A plugin that the
-  build failed to read shows "Not read" in place of the version cells. A
-  legend under the table names each mark and says that a declared range is
-  not a test result. The language cell shows up to 3 codes, or the first 2
-  and "+N". The home page has a search box. It shows only the plugins whose
-  name or description holds the text you type, ignoring letter case. The
-  page keeps the text in the `q` query parameter, such as `?q=pdf`. A count
-  beside the filters now always shows: "M plugins", or "N of M plugins"
-  while a filter is on. The first version button now reads "Any". On a
-  screen 760 pixels wide or less, the table hides the languages and the
-  release month. At 560 pixels or less, it also hides the descriptions and
-  the source links. Without JavaScript, the home page shows every plugin
-  and no search box, menu, buttons, or count. The plugin pages keep their
-  layout and take the new colors.
+  mark (✓, ◐, or a dash). Under it is the start-test result of the newest
+  tested release of that major: a dot for started, a cross for a failure.
+  A plugin that the build failed to read shows "Not read" in place of the
+  version cells. A legend under the table names each mark and says that a
+  declared range is not a test result. The language cell shows up to 3
+  codes, or the first 2 and "+N". The home page has a search box. It shows
+  only the plugins whose name or description holds the text you type,
+  ignoring letter case. The page keeps the text in the `q` query parameter,
+  such as `?q=pdf`. A count beside the filters now always shows: "M
+  plugins", or "N of M plugins" while a filter is on, or that no plugins
+  match. The first version button now reads "Any". On a screen 760 pixels
+  wide or less, the table hides the languages and the release month. At
+  560 pixels or less, it also hides the descriptions and the source links.
+  Without JavaScript, the home page shows every plugin and no search box,
+  menu, buttons, or count. The plugin pages keep their cards and take the
+  new colors and text sizes. Every page is now up to 65rem wide, not
+  50rem.

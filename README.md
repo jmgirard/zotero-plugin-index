@@ -28,12 +28,14 @@ as 8.999 to mean Zotero 9 and newer. The declared range uses the overrides
 that apply to the plugin version that the index read. The marks show what
 each plugin declares, not a test result.
 
-Under the declared mark, a version cell shows the newest result of the
-daily start tests on that major, which "Using the data" describes. A dot
-(●) means that the plugin started. A cross (✕) means that it failed at
-startup, did not install, or gave no answer in time. A cell with neither
-has no start result. A legend under the table names each mark. A plugin
-with no declared range shows no declared marks. If the last build failed to
+Under the declared mark, a version cell shows the result of the daily
+start tests on that major, which "Using the data" describes. If more than
+one release of that major has a result, the cell shows the result of the
+newest release. A dot (●) means that the plugin started. A cross (✕) means
+that it failed at startup, did not install, or gave no answer in time. A
+cell with neither has no start result. A legend under the table names each
+mark. A plugin with no declared range shows no declared marks. If the last
+build failed to
 read a plugin, its row shows "Not read" in place of the version cells.
 
 The languages cell shows the language codes of the plugin's languages list,

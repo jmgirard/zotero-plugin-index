@@ -65,7 +65,7 @@ describe("rowShows", () => {
     ["the language fails", "de", "8", false],
     ["the version fails", "zh", "7", false],
     ["both pass", "zh", "8", true],
-  ])("search: a matching query still hides the row when %s", (_, language, zotero, shows) => {
+  ])("search: with a matching query, the row shows only if the other filters pass: %s", (_, language, zotero, shows) => {
     expect(rowShows(row, { value: language, options: LANGUAGES }, { value: zotero, options: MAJORS }, "notes")).toBe(shows);
   });
 });

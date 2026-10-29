@@ -29,7 +29,9 @@ const MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "�
 <Base title="Zotero plugin index">
   <div class="hero">
     <h1>Plugins for Zotero 7 and later</h1>
-    <p class="intro">A daily build reads these facts from each plugin's GitHub repository and releases.</p>
+    <p class="intro">
+      A daily build reads these facts from each plugin's GitHub repository and releases, and starts the plugins in Zotero.
+    </p>
   </div>
   <div class="toolbar">
     <p class="search" hidden>
@@ -161,8 +163,8 @@ const MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "�
     <li><span class="start" data-start="started" aria-hidden="true">●</span> Started in the daily start test</li>
     <li><span class="start" data-start="start-error" aria-hidden="true">✕</span> Failed to install, start, or answer in the start test</li>
     <li data-legend-note>
-      A declared range is what the plugin's manifest says, not a test result. A start test does not show that a plugin
-      works.
+      A declared range comes from the plugin's manifest and the index's overrides, not from a test. A start test does not
+      show that a plugin works.
     </li>
   </ul>
 </Base>

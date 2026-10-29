@@ -654,7 +654,7 @@ describe("the home page", () => {
       '<span class="mark" data-support="none" aria-hidden="true">–</span> Declares none of it',
       '<span class="start" data-start="started" aria-hidden="true">●</span> Started in the daily start test',
       '<span class="start" data-start="start-error" aria-hidden="true">✕</span> Failed to install, start, or answer in the start test',
-      "A declared range is what the plugin's manifest says, not a test result. A start test does not show that a plugin works.",
+      "A declared range comes from the plugin's manifest and the index's overrides, not from a test. A start test does not show that a plugin works.",
     ]);
   });
 
@@ -812,7 +812,8 @@ function homeScript(href: string) {
 
 describe("the home page script", () => {
   const PAGE = "https://jmgirard.github.io/zotero-plugin-index/";
-  // The ids of the rows whose name or description holds the query, both lowercased, in table order.
+  // The ids of the rows whose lowercased name or description holds the query, which the
+  // caller gives in lower case, in table order.
   const matching = (query: string) =>
     [...home().matchAll(/<tr data-plugin="([^"]*)"/g)]
       .map(([, id]) => records.find((record) => record.id === unescaped(id!))!)

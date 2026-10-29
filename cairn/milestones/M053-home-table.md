@@ -1,6 +1,6 @@
 # M053: Show the home list as a table
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** M052
 - **Driving RR:** —
@@ -164,6 +164,8 @@ fixture is `test/fixtures/site/plugins.json`.
 - 2026-10-29: T6: the ZotMoov plugin page shows its M048 sections (support, start test, reports, about, Details) under the new tokens; the plugin page tests pass.
 - 2026-10-29: T7: the built home page from that data is 180,376 bytes, 16,668 gzipped (level 9), against 10,938 for the deployed page today; this passes the "about 14 KB" promotion condition of the parked row "Filter the home list before it paints", for review hygiene to read. The style element is about 2.7 KB of the gzipped size.
 - 2026-10-29: T8: README "The site" rewritten for the table, the marks, the start marks, the links, the search box, the count, and the top bar; DESIGN's site paragraphs and site build bullet updated; one CHANGELOG entry for the M053 -> M054 series, which M054 edits; added a test for the 760 px and 560 px column rules, which the entry claims; verify green (1136 tests, pnpm check 0 problems).
+- 2026-10-29: claim audit: 140 claims read, 8 corrected — README.md, CHANGELOG.md, site/src/pages/index.astro, site/src/components/Icon.astro, test/site.test.ts, test/home-filter.test.ts (reader's count approximate, counted by hand).
+- 2026-10-29: after the audit: rewrapped its README and CHANGELOG edits; the reader left the legend note open because a fix changes a tested string, so the note now says a declared range "comes from the plugin's manifest and the index's overrides, not from a test", and its test matches; verify green (1136 tests, pnpm check 0 problems).
 - 2026-10-29: T8: the simple-english lint flags README lines 107, 165, and 574 and CHANGELOG lines 174 to 355; all are in text this milestone does not change, so they stay.
 
 ## Decisions
