@@ -1,0 +1,8 @@
+{
+  "id": "zotero-title-translator@zhouyi654.github.io",
+  "name": "Zotero 标题翻译",
+  "description": "Zotero 9/10 文献标题与摘要翻译插件：支持侧边栏译文相邻显示、分类和自动翻译、术语集合及 PDF2zh Next 术语桥接。",
+  "homepage": "https://github.com/zhouyi654/zotero-title-translator",
+  "repoUrl": "https://github.com/zhouyi654/zotero-title-translator",
+  "updateUrl": "https://github.com/zhouyi654/zotero-title-translator/releases/latest/download/updates.json"
+}
