@@ -1,0 +1,8 @@
+{
+  "id": "ai-summary@local",
+  "name": "AI Summary for Zotero",
+  "description": "Bridges AI agents (Claude Code, Codex, Gemini) to Zotero notes. Receives AI-generated summaries and Pin Point Lessons as fully-formatted child notes, with images, math, and color highlights preserved.",
+  "homepage": "https://github.com/ajs7270/zotero-ai-summary",
+  "repoUrl": "https://github.com/ajs7270/zotero-ai-summary",
+  "updateUrl": "https://github.com/ajs7270/zotero-ai-summary/releases/latest/download/update.json"
+}
