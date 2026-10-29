@@ -1,0 +1,8 @@
+{
+  "id": "djvu-converter@zotero.org",
+  "name": "DJVU to PDF Converter",
+  "description": "Automatically prompts to convert DJVU attachments to PDF when added to Zotero",
+  "homepage": "https://github.com/ievlevpn/zotero-djvu-converter",
+  "repoUrl": "https://github.com/ievlevpn/zotero-djvu-converter",
+  "updateUrl": "https://raw.githubusercontent.com/ievlevpn/zotero-djvu-converter/main/updates.json"
+}
