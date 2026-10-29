@@ -1,0 +1,8 @@
+{
+  "id": "bilingual-reader@zbr.local",
+  "name": "Bilingual Reader",
+  "description": "Sentence-aligned bilingual reading for Zotero 10, with API and local agent translation.",
+  "homepage": "https://github.com/isCopyman/zotero-bilingual-reader",
+  "repoUrl": "https://github.com/isCopyman/zotero-bilingual-reader",
+  "updateUrl": "https://github.com/isCopyman/zotero-bilingual-reader/releases/download/release/update.json"
+}
