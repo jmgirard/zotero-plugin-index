@@ -1,0 +1,8 @@
+{
+  "id": "citation-graph@julianschelb.github.io",
+  "name": "Citation Graph",
+  "description": "Citation graphs of a collection, a subcollection or a single paper, inside Zotero. Edges come from the OpenAlex and Semantic Scholar reference lists of your own items.",
+  "homepage": "https://github.com/julianschelb/zotero-citation-graph",
+  "repoUrl": "https://github.com/julianschelb/zotero-citation-graph",
+  "updateUrl": "https://github.com/julianschelb/zotero-citation-graph/releases/latest/download/updates.json"
+}
