@@ -1,0 +1,8 @@
+{
+  "id": "zoteropdf@euclpts.com",
+  "name": "Zotero PDF",
+  "description": "A simple and efficient Zotero plugin for exporting PDF files from your library",
+  "homepage": "https://github.com/HRS0986/ZoteroPDF#readme",
+  "repoUrl": "https://github.com/HRS0986/ZoteroPDF",
+  "updateUrl": "https://github.com/HRS0986/ZoteroPDF/releases/download/release/update.json"
+}
