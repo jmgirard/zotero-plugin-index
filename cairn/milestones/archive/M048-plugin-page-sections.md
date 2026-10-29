@@ -1,0 +1,11 @@
+# M048: Lay out the plugin pages in card sections
+
+**Status:** done (2026-10-29, PR #97 https://github.com/jmgirard/zotero-plugin-index/pull/97)
+
+**Goal:** Each plugin page groups its facts into a header block and titled card sections, with the declared Zotero support first.
+
+**Outcome:** `site/src/pages/plugins/[id]/index.astro` opens `<main>` with `div.card.page-head` (h1 with the archived mark, the shown description), then `section.card[data-section]` cards with h2s: "Declared support" (pills, failure, or "No declared range"; declared range), "Start test" (read records with `startTests`), "User reports" (read records; counts; Works and Broken as `a.button` with `aria-describedby="report-prompt"`, the prompt now "Tried this version on Zotero? Report what you found:"), "About" (languages line, repository fact, releases link), then the closed Details. `Base.astro` adds `--card-border`, `--card-radius`, `--card-padding` and `--broken-bg`/`--broken-text` in both schemes; `.plugin, .card, details` share one card rule; card h2s are small uppercase `--muted` labels; buttons take a `currentColor` border and a forced-colors `ButtonText` edge. `site/astro.config.ts` sets `inlineStylesheets: "always"`, since the CSS passed Astro's 4 KB inline limit. Tests: header block and sections on all 9 fixture pages, button markup and colors, 4.5:1 text and 3:1 button-edge contrast in both schemes, inline styles. README, DESIGN, and CHANGELOG describe the layout. Report hrefs are unchanged.
+
+**Decisions:** D-026 (any page can carry a script a feature needs, superseding D-019; each page still reads without JavaScript), made at the plan. The plan split the whole-site restyle into M049.
+
+**Review:** Plan audits 9 and 14 findings, all fixed; claim audit 29 claims, 7 corrected. Four-lens pass: 27 findings, 13 fixed (stale CHANGELOG/DESIGN lines, invisible button edges, link purpose, untested button colors, loose section count, Details styling, external stylesheet, docs omissions), 1 follow-up, 13 rejected (planned choices or false). Candidate row "Fix the Overrides table's heading level" added. Lessons: 10 marked used M048; 2 captured (Astro's 4 KB inline limit; iframe width checks); 2 evicted at the limit: 2026-10-28 (M032), the Edit-tool escape lesson, and 2026-10-28 (M040), the githubClient pages lesson.

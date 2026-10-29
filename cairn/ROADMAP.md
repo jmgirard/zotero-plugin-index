@@ -1,17 +1,16 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-29 (M047 done and archived; row "Test plugins load in headless Zotero" graduated; 13 lessons marked used, 1 corrected, 1 captured, 1 evicted)_
+_Last hygiene check: 2026-10-29 (M048 done and archived; 10 lessons marked used, 2 captured, 2 evicted; 1 candidate row added)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M048 | Lay out the plugin pages in card sections | review | — | normal | milestones/M048-plugin-page-sections.md |
 | M049 | Give the whole site the card look | planned | M048 | normal | milestones/M049-site-wide-look.md |
+| M048 | Lay out the plugin pages in card sections | done | — | normal | milestones/archive/M048-plugin-page-sections.md |
 | M047 | Show whether plugins start in Zotero | done | M046 | normal | milestones/archive/M047-show-start-tests.md |
 | M046 | Start one plugin in a headless Zotero | done | — | normal | milestones/archive/M046-start-one-plugin.md |
-| M045 | Count more GitHub answers as build-level | done | — | normal | milestones/archive/M045-more-build-level-answers.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
