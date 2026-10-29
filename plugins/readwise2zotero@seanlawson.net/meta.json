@@ -1,0 +1,8 @@
+{
+  "id": "readwise2zotero@seanlawson.net",
+  "name": "Readwise Sync",
+  "description": "Import your full Readwise library — Reader documents plus Kindle books, podcasts, and tweets — into Zotero as items with formatted highlight notes",
+  "homepage": "https://github.com/seanlawsonphd/readwise2zotero",
+  "repoUrl": "https://github.com/seanlawsonphd/readwise2zotero",
+  "updateUrl": "https://raw.githubusercontent.com/seanlawsonphd/readwise2zotero/main/update.json"
+}
