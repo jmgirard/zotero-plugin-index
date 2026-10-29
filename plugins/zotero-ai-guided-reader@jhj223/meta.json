@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ai-guided-reader@jhj223",
+  "name": "Zotero AI 带读",
+  "description": "Zotero 9 AI 论文带读：MinerU 解析、证据回跳、图表索引、笔记与 Anki 导出",
+  "homepage": "https://github.com/jhj223/zotero-ai-guided-reader#readme",
+  "repoUrl": "https://github.com/jhj223/zotero-ai-guided-reader",
+  "updateUrl": "https://github.com/jhj223/zotero-ai-guided-reader/releases/download/release/update.json"
+}
