@@ -1,0 +1,8 @@
+{
+  "id": "pdftrim-for-llm@shengjiejin.github.io",
+  "name": "PDFTrim for LLM",
+  "description": "Trim references and appendix pages from Zotero PDFs before sending them to LLMs.",
+  "homepage": "https://github.com/ShengjieJin/pdftrim-for-llm#readme",
+  "repoUrl": "https://github.com/ShengjieJin/pdftrim-for-llm",
+  "updateUrl": "https://github.com/ShengjieJin/pdftrim-for-llm/releases/download/release/update.json"
+}
