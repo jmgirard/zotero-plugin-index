@@ -118,6 +118,7 @@ is added to the report read (see the work log).
 - 2026-10-29: T5 added for review return 1 (minor amendment; Coverage AC2 → T1, T3, T5).
 - 2026-10-29: T5: `takeData` moves to the describe block; the 64 KiB test now reads the plain run's data file (asserting 1500 records, so the comparison is not two empty reads) and compares the timer run's file with it, `generatedAt` removed. Verify clean: 1067 passed, 6 skipped; `pnpm check` 0 problems.
 - 2026-10-29: status review.
+- 2026-10-29: claim audit for return 1: no second pass; cd244aa adds test code and one test comment ("The data file in `out` without its generatedAt …"), which the review lenses read in the full diff.
 
 ## Decisions
 
