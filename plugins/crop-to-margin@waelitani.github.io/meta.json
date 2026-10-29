@@ -1,0 +1,8 @@
+{
+  "id": "crop-to-margin@waelitani.github.io",
+  "name": "Crop to Margin",
+  "description": "Zoom past a PDF's white margins so the text block fills the Zotero reader. Refits whenever the pane resizes: sidebars, split view, Focused Mode.",
+  "homepage": "https://github.com/waelitani/crop-to-margin",
+  "repoUrl": "https://github.com/waelitani/crop-to-margin",
+  "updateUrl": "https://raw.githubusercontent.com/waelitani/crop-to-margin/main/update.json"
+}
