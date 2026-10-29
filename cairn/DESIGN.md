@@ -625,8 +625,9 @@ reused._
   All styles are global in `site/src/layouts/Base.astro`, with a
   `prefers-color-scheme: dark` block, so Astro adds no scoped attributes to
   the markup the site tests match (M015). Outside its `:root` blocks and
-  `.visually-hidden`, each spacing, corner radius, and type size there comes
-  from a custom property, and no other `.astro` file holds a style (M049).
+  `.visually-hidden`, each value part of each margin, padding, gap,
+  `border-radius`, and `font-size` there is a custom property, `0`, or
+  `auto`, and no other `.astro` file holds a style (M049).
 
 ## Known issues
 

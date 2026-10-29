@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 // The facts the home page's rows and filters show, read from the built HTML. They leave out
 // classes and element nesting, so wrapping elements or changing other classes leaves them the
@@ -111,7 +112,7 @@ export function homeFacts(html: string) {
   };
 }
 
-if (import.meta.main) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const [path] = process.argv.slice(2);
   if (!path) throw new Error("usage: node test/support/home-facts.ts <index.html>");
   console.log(JSON.stringify(homeFacts(readFileSync(path, "utf8")), null, 2));

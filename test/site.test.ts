@@ -751,7 +751,6 @@ describe("the site colors", () => {
     expect([...colors(darkBlock).keys()].sort()).toEqual([...light.keys()].sort());
   });
 
-  // Each rule that sets a text color and a background together.
   const together = cssRules(layout).flatMap(({ selector, declarations }) => {
     const get = (name: string) => declarations.find(([property]) => property === name)?.[1];
     const text = get("color");
