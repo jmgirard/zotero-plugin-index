@@ -155,8 +155,16 @@ shows each one separately. A combined verdict is out of scope.
    without a merge keeps the bot from proposing that owner/repo name again
    (M009). A person can also paste one repository URL into an issue
    form, and the bot drafts the entry. A daily sweep answers such an issue
-   that no run answered, up to 3 a run (M040). The maintainer approves each
-   pull request.
+   that no run answered, up to 3 a run (M040). Each bot pull request body
+   has a Hold line (M056, D-033). The bot holds a pull request for the
+   maintainer when its name or repo name matches another owner's entry, its
+   owner's account is under 30 days old or cannot be read, its `update.json`
+   is not on github.com or raw.githubusercontent.com, or an issue proposed a
+   repo with neither topic. A held pull request gets the `hold` label. A
+   daily job merges a pull request that says `Hold: none` and has no `hold`
+   label at its first run at least 48 hours after it opens, once its entry
+   passes `pnpm check` beside the current entries. Closing a bot pull
+   request still keeps the bot from proposing that repo again.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
    `manifest.json` in the newest stable release that has an `.xpi` file,
    the names of that XPI's locale folders whose language is not `und`,
@@ -593,6 +601,20 @@ reused._
   `pull-requests: read`, sets `cache-mode: none`, and checks out the default
   branch, so it runs no code from the pull request. `test/workflows.test.ts`
   checks these facts (M022).
+- `src/discover/holds.ts` (M056) holds `TOPICS`, `HOLD_REASONS`, and
+  `holdReasons`. `draftEntry` reads `GET /users/<owner>` and the repo's
+  `topics`, which `readUpstream` returns beside `facts` and the build does not
+  publish, and fills each planned entry's `holds`, which the handoff schema
+  requires. `body()` in `propose.ts` writes `Hold: none` or the reasons with a
+  `HOLD_TEXT` sentence each, and `proposeHandoff` posts the `hold` label to a
+  held pull request. `pnpm merge-discover` (`src/discover/merge.ts`) reads
+  every page of open pull requests, skips each that fails a condition, reads
+  the two entry files through the contents API at the head SHA, runs
+  `pnpmCheck` on a copy of `plugins/` with them added, and sends a squash
+  merge pinned to that SHA. `.github/workflows/merge-discover.yml` runs it
+  daily at 05:13 UTC and on dispatch from the default branch, in the
+  `discover` group, with `contents: write`, `pull-requests: write`, and
+  `cache-mode: none`.
 - `.github/ISSUE_TEMPLATE/works.yml` and `broken.yml` are report forms with
   the inputs `plugin`, `version`, and `zotero`. Each adds the label `report`
   and its verdict label, `works` or `broken`. `.github/workflows/report-issue.yml`
