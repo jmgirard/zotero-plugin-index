@@ -18,6 +18,8 @@ export interface UpstreamFacts {
   updateUrl: string;
   updateHost: string;
   repoUrl: string;
+  // The repo's About text from GitHub, trimmed, left out when it is not a string or is blank.
+  repoDescription?: string;
   repoCreatedAt: string;
   openIssues: number;
   // Releases that carry an .xpi asset, drafts excluded.
@@ -82,8 +84,10 @@ const FETCH_TIMEOUT_MS = 60_000;
 // The largest XPI among the listed plugins was 5.5 MB (observed 2026-10-25).
 export const XPI_MAX_BYTES = 50 * 1024 * 1024;
 export const UPDATE_JSON_MAX_BYTES = 1024 * 1024;
-// Each file the reader unzips: manifest.json, the default locale's messages.json, and each
-// locale file that localeLanguages reads. A locale file over it keeps its tag.
+// Each file the reader unzips: manifest.json, the default locale's messages.json, the
+// messages.json of each English folder in ENGLISH_LOCALES, and each locale file that
+// localeLanguages reads. A locale file over it keeps its tag, and an English messages.json
+// over it is skipped.
 export const UNZIPPED_MAX_BYTES = 1024 * 1024;
 
 export class ReadFailure extends Error {
@@ -205,6 +209,7 @@ async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<
     facts: {
       ...manifestFacts,
       repoUrl: meta.html_url,
+      repoDescription: typeof meta.description === "string" && meta.description.trim() !== "" ? meta.description.trim() : undefined,
       repoCreatedAt: meta.created_at,
       openIssues: meta.open_issues_count,
       releaseCount: withXpi.length,
@@ -273,6 +278,7 @@ interface RepoJson {
   private: boolean;
   fork: boolean;
   archived?: unknown;
+  description?: unknown;
   created_at: string;
   open_issues_count: number;
 }
@@ -294,17 +300,36 @@ interface ManifestJson {
   applications?: { zotero?: Record<string, unknown> };
 }
 
-// The default locale's _locales/<locale>/messages.json.
+// One _locales/<locale>/messages.json.
 type Messages = Record<string, { message?: unknown } | null>;
 
-// A manifest string such as "__MSG_name__" names a message in the default locale's
-// messages.json; message names ignore case. An unresolved placeholder is not a value.
-function localized(value: unknown, messages: Messages): string | undefined {
+// The messages a manifest placeholder can name: those of each English folder that
+// readManifest read, in ENGLISH_LOCALES order, then the default locale's.
+interface LocaleMessages {
+  english: Messages[];
+  default: Messages;
+}
+
+// The English _locales folders whose messages come before the default locale's, in order.
+const ENGLISH_LOCALES = ["en", "en_US", "en_GB"];
+
+function message(messages: Messages, key: string): unknown {
+  const entry = Object.entries(messages).find(([name]) => name.toLowerCase() === key.toLowerCase());
+  return entry?.[1]?.message;
+}
+
+// A manifest string such as "__MSG_name__" names a message; message names ignore case. The
+// first English folder whose message is a string that is not blank gives the value, and
+// otherwise the default locale's message does. An unresolved placeholder is not a value.
+function localized(value: unknown, messages: LocaleMessages): string | undefined {
   const text = stringOrUndefined(value);
   const key = /^__MSG_(\w+)__$/.exec(text ?? "")?.[1];
   if (!key) return text;
-  const entry = Object.entries(messages).find(([name]) => name.toLowerCase() === key.toLowerCase());
-  return stringOrUndefined(entry?.[1]?.message);
+  for (const english of messages.english) {
+    const found = message(english, key);
+    if (typeof found === "string" && found.trim() !== "") return found;
+  }
+  return stringOrUndefined(message(messages.default, key));
 }
 
 // A version starts with a digit, or is "*" for any version. An absent one passes.
@@ -538,7 +563,7 @@ async function readManifest(
   download: Download,
   url: string,
   tag: string,
-): Promise<{ manifest: ManifestJson; messages: Messages; languages: string[]; sha256: string }> {
+): Promise<{ manifest: ManifestJson; messages: LocaleMessages; languages: string[]; sha256: string }> {
   const { response, from } = await download(url);
   if (!response.ok) {
     fail("xpi-unreadable", `the XPI of ${tag} at ${url} returned HTTP ${response.status}`, buildLevelStatus(response.status, from));
@@ -566,6 +591,7 @@ async function readManifest(
     // A messages.json that is not JSON leaves the placeholders unresolved.
   }
   const isObject = typeof messages === "object" && messages !== null;
+  const english = ENGLISH_LOCALES.flatMap((folder) => englishMessages(zip, folder, tag));
   let languages: string[];
   try {
     languages = localeLanguages(zip);
@@ -573,7 +599,28 @@ async function readManifest(
     fail("xpi-unreadable", `the XPI of ${tag} is not a readable zip: ${(error as Error).message}`);
   }
   const sha256 = createHash("sha256").update(zip).digest("hex");
-  return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {}, languages, sha256 };
+  return {
+    manifest: manifest as ManifestJson,
+    messages: { english, default: isObject ? (messages as Messages) : {} },
+    languages,
+    sha256,
+  };
+}
+
+// The messages of one English folder's messages.json, as a list of one, or an empty list when
+// the XPI has none, when the reader refuses the file (its size limits among other reasons), or
+// when the file is not a JSON object. Unlike the default locale's file, a refused English file
+// does not fail the read.
+function englishMessages(zip: Uint8Array, folder: string, tag: string): Messages[] {
+  let parsed: unknown;
+  try {
+    const bytes = unzipOne(zip, `_locales/${folder}/messages.json`, tag);
+    parsed = bytes && JSON.parse(strFromU8(bytes));
+  } catch (error) {
+    if (error instanceof SyntaxError || error instanceof ReadFailure) return [];
+    throw error;
+  }
+  return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) ? [parsed as Messages] : [];
 }
 
 // One language tag: a language of 2 or 3 letters other than "und" (undetermined), "zxx" (no

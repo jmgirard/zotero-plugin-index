@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "An AI co-pilot for Zotero: selection translation, side-by-side PDF translation, library-wide Q&A, one-click reference import, automation rules, and reading progress.",
+      "reason": "Copied from the opening line of README.en.md, the English README. The upstream has no English description: the manifest and the GitHub About text are in Chinese."
+    }
+  ]
 }

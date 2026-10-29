@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Cleans item fields from the right-click menu so that BibTeX exports are tidier: it replaces \";\" with \"and\" between authors and removes \"No.\" and \"Vol.\" prefixes, with a preview and undo. It can also move filtered or duplicate attachments and notes to the trash.",
+      "reason": "Translated from the introduction and feature list of README.md, which is in Chinese. The upstream has no English description: the manifest and the GitHub About text are in Chinese."
+    }
+  ]
 }

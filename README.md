@@ -53,16 +53,31 @@ On a screen 760 pixels wide or less, the table hides the languages and the
 release columns. At 560 pixels or less, it also hides the descriptions and
 the source links.
 
-The description comes from the plugin's manifest. If the manifest has no
-description, if it is blank, or if it only repeats the plugin's name, the
-site shows no description. The site checks for a repeated name this way. It
-takes the words of the description and of the name. It leaves out "zotero",
-"plugin", "addon", "add", "on", "extension", "for", "a", "an", and "the". If
-every word of the description that is left is also a word of the name, the
-description only repeats the name. For example, "Zotero Plugin for OCR" only repeats the name
-"Zotero OCR". A `description` override that applies to the plugin version
-that the index read replaces the manifest description. The name check does
-not apply to an override.
+The description comes from the plugin's manifest or from the About text of
+its GitHub repository. A manifest name or description of the form
+`__MSG_<key>__` names a message in a `_locales/<locale>/messages.json` file.
+The index first tries the English folders `_locales/en/`, `_locales/en_US/`,
+and `_locales/en_GB/`, in that order. If none of them holds a message that
+is not blank, the index reads the message of the manifest's default locale.
+
+The site drops a description that is missing, blank, or only repeats the
+plugin's name. The site checks for a repeated name this way. It takes the
+words of the description and of the name. It leaves out "zotero", "plugin",
+"addon", "add", "on", "extension", "for", "a", "an", and "the". If every word
+of the description that is left is also a word of the name, the description
+only repeats the name. For example, "Zotero Plugin for OCR" only repeats the
+name "Zotero OCR".
+
+The site then compares the share of Chinese, Japanese, and Korean text in
+the descriptions that are left. It counts each Han, Hiragana, Katakana, or
+Hangul character as one unit and each run of other letters as one unit. If
+less than half of the manifest description is such text, the site shows
+the manifest description. If not, the site shows the GitHub description in
+two cases: the site dropped the manifest description, or the GitHub
+description has a lower share. In all other cases the site shows the
+manifest description, or no description. A `description` override that
+applies to the plugin version that the index read replaces both. The name
+check does not apply to an override.
 
 The home page has a search box. It shows only the plugins whose name or
 description holds the text you type. The search ignores letter case and the
@@ -146,8 +161,10 @@ come from the plugin's locale folders. If a `languages` override applies to
 the plugin version that the index read, the override replaces that list.
 The fact does not say how complete each language is. If no language is
 left, the page shows "Unknown (no translations found)". The description
-comes from the plugin's manifest or from an index override, so it can be in
-another language than the languages fact names. If the index has overrides
+comes from the plugin's manifest, from the About text of its GitHub
+repository, or from an index override. So it can be in another language
+than the languages fact names. The card shows the manifest description and
+the GitHub description as two more facts. If the index has overrides
 for the plugin, an "Overrides" table under its own heading in the card
 lists them.
 
@@ -194,6 +211,12 @@ author's own: the data gives its address, and the index keeps no copy. An
 author can replace a release file later, so the file at the address can
 differ from the one the build read. Data written before the build wrote
 this field has none.
+
+An `upstream` block can have a `repoDescription` field. It is the About
+text of the plugin's GitHub repository, with the spaces before and after
+it removed. If GitHub gives no such text, or the text is blank, the field
+is absent. Data written before the build wrote this field has none. The
+site uses the field by the description rule above.
 
 Each `upstream` block has a `languages` list, such as `["en-US", "zh-CN"]`.
 It holds the language tags of the locale folders in the plugin's XPI, the
@@ -304,10 +327,16 @@ only registry fields. Its `id` must equal the directory name.
 - `schemaVersion`: the version of the `index.json` schema. The current version
   is `1`. This field is required.
 - `overrides`: a list of corrections to upstream facts. Use an override only
-  when the plugin author cannot or will not fix the fact upstream. Each item
-  has these fields:
-  - `field`: the fact to correct. The value is one of `name`, `description`,
-    `homepage`, `strict_min_version`, `strict_max_version`, or `languages`.
+  when the plugin author cannot or will not fix the fact upstream. A
+  `description` override can also give English text for a plugin with no
+  English description upstream. "Upstream" here means the manifest, its
+  English locale files, and the About text of the GitHub repository. A
+  description that is not in English or only repeats the name counts as
+  none. So does a description of which half or more is Chinese, Japanese,
+  or Korean, by the share that the site counts. Each item has these fields:
+  - `field`: the fact to correct or fill in. The value is one of `name`,
+    `description`, `homepage`, `strict_min_version`, `strict_max_version`,
+    or `languages`.
   - `version`: the plugin version that the override applies to. If you leave
     it out, the override applies to every version.
   - `value`: the corrected value. For `languages`, the value is one or more
@@ -316,7 +345,10 @@ only registry fields. Its `id` must equal the directory name.
     region, and variant follow, each after a `-`. Examples are `zh`,
     `zh-TW`, and `sr-Latn-RS`. A tag whose language is `und`, `zxx`, or
     `mul`, in any letter case, is not allowed.
-  - `reason`: why the upstream value is wrong. The reason must hold a
+  - `reason`: why the upstream value is wrong. For English description
+    text, the reason names the upstream file or section the text came
+    from. It also says which case above each upstream description is. The
+    reason must hold a
     character other than whitespace, as JavaScript's `\s` defines it, and
     Unicode format characters, such as U+200B.
 
@@ -383,6 +415,10 @@ host, and what it unzips from the XPI:
   deflate data inflates past the unzipped size that the zip declares fails
   with `xpi-unreadable`. The command inflates 16 KiB of that data at a time
   and stops after the first 16 KiB whose output passes that size.
+- The `messages.json` of `_locales/en/`, `_locales/en_US/`, or
+  `_locales/en_GB/` fails nothing. If the command refuses such a file under
+  the rules above, it skips the file. The rules still apply to the same
+  file as the default locale's.
 - A file in a locale folder fails nothing. The command inflates the whole
   file, 1 KiB of input at a time, and then counts its messages. For each
   file it counts the largest of the declared size, the compressed size, and

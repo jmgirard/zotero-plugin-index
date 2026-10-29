@@ -92,8 +92,14 @@
       ],
       "properties": {
         "id": { "description": "applications.zotero.id in the manifest.", "type": "string" },
-        "name": { "description": "The manifest name, with a __MSG_ name resolved.", "type": "string" },
-        "description": { "description": "The manifest description, with a __MSG_ name resolved.", "type": "string" },
+        "name": {
+          "description": "The manifest name, with a __MSG_ name resolved from the first of _locales/en/, _locales/en_US/, and _locales/en_GB/ whose message is a string that is not blank, else from the default locale.",
+          "type": "string"
+        },
+        "description": {
+          "description": "The manifest description, with a __MSG_ name resolved as for name. The site shows a description override that applies to the version read; without one, it shows this description or the repoDescription, by the rule in the README.",
+          "type": "string"
+        },
         "homepage": { "description": "homepage_url in the manifest.", "type": "string" },
         "version": { "description": "The manifest version.", "type": "string" },
         "strictMinVersion": { "description": "applications.zotero.strict_min_version in the manifest.", "type": "string" },
@@ -101,6 +107,11 @@
         "updateUrl": { "description": "applications.zotero.update_url in the manifest.", "type": "string" },
         "updateHost": { "description": "The host of updateUrl.", "type": "string" },
         "repoUrl": { "description": "The repo URL that GitHub returns.", "type": "string" },
+        "repoDescription": {
+          "description": "The repo's About text that GitHub returns, with outer whitespace trimmed. Absent when GitHub gives none, a value that is not a string, or a blank one, and in data written before the build wrote it.",
+          "type": "string",
+          "pattern": "\\S"
+        },
         "repoCreatedAt": { "description": "When the repo was created.", "type": "string" },
         "openIssues": { "description": "Open issues and pull requests in the repo.", "type": "integer", "minimum": 0 },
         "releaseCount": { "description": "Releases that carry an .xpi asset, drafts excluded.", "type": "integer", "minimum": 1 },
@@ -166,7 +177,7 @@
       },
       "properties": {
         "field": {
-          "description": "The upstream fact this override corrects: name, description, homepage (homepage_url in the manifest), strict_min_version and strict_max_version, which correct the upstream strictMinVersion and strictMaxVersion, or languages, which names the right upstream languages.",
+          "description": "The upstream fact this override corrects or, for an English description, fills in: name, description, homepage (homepage_url in the manifest), strict_min_version and strict_max_version, which correct the upstream strictMinVersion and strictMaxVersion, or languages, which names the right upstream languages.",
           "enum": ["name", "description", "homepage", "strict_min_version", "strict_max_version", "languages"]
         },
         "version": {
@@ -175,7 +186,11 @@
           "minLength": 1
         },
         "value": { "description": "The corrected value.", "type": "string", "minLength": 1 },
-        "reason": { "description": "Why the upstream value is wrong.", "type": "string", "minLength": 1 }
+        "reason": {
+          "description": "Why the upstream value is wrong, or, for English description text, its upstream source and which case each upstream description is, as schemas/index.v1.schema.json says.",
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
   }

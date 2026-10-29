@@ -1,13 +1,13 @@
 # M055: Show English descriptions where upstream has them
 
-- **Status:** planned
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes the published data and the text every plugin row and page shows
-- **Branch/PR:** —
+- **Branch/PR:** m055-english-descriptions
 
 ## Goal
 
@@ -32,7 +32,7 @@ added after this plan, which follow D-030 case by case.
 
 ## Acceptance criteria
 
-- [ ] AC1: For each of a release's manifest `name` and `description` that is
+- [x] AC1: For each of a release's manifest `name` and `description` that is
       a `__MSG_<key>__` placeholder, the published `upstream.name` or
       `upstream.description` is the `message` of that key, matched ignoring
       case, from the first of `_locales/en/`, `_locales/en_US/`, and
@@ -49,7 +49,7 @@ added after this plan, which follow D-030 case by case.
       blank `en` message, an oversize `en` file, and no English folder
       (default); another key case; no `default_locale` with and without
       `en`; the name from `en`; name and description from two folders.
-- [ ] AC2: Each published record whose read succeeds carries
+- [x] AC2: Each published record whose read succeeds carries
       `upstream.repoDescription`, the GitHub repo response's `description`
       with outer whitespace trimmed, when it is a string whose `trim()` is
       not empty. The field is left out when that `description` is null,
@@ -59,7 +59,7 @@ added after this plan, which follow D-030 case by case.
       Tests in `test/upstream.test.ts` show present (with outer spaces),
       null, missing, a number, and blank; `test/build.test.ts` validates a
       record with the field and one without against the schema.
-- [ ] AC3: `shownDescription` returns an applying `description` override
+- [x] AC3: `shownDescription` returns an applying `description` override
       when there is one. Otherwise its candidates are `upstream.description`
       (the manifest text) and `upstream.repoDescription` (the GitHub text),
       and it drops each one that is missing, blank, or only repeats the
@@ -77,13 +77,13 @@ added after this plan, which follow D-030 case by case.
       (GitHub); zh/zh of higher share, equal shares at 0.5 or more,
       zh/name-only, zh/none, digits-only/en (manifest); both name-only
       (undefined).
-- [ ] AC4: A plugin page's Details card shows a "Manifest description" fact
+- [x] AC4: A plugin page's Details card shows a "Manifest description" fact
       when `upstream.description` is present and a "GitHub description" fact
       when `upstream.repoDescription` is present, each with its text, and
       leaves out each fact whose field is absent. Tests in
       `test/site.test.ts` show a record with both, with each alone, and
       with neither.
-- [ ] AC5: README, CHANGELOG, the About page
+- [x] AC5: README, CHANGELOG, the About page
       (`site/src/pages/about.astro`), `cairn/DESIGN.md` (its description
       text and its Architecture text on the reader), and the `name`,
       `description`, and `repoDescription` prose of
@@ -92,25 +92,23 @@ added after this plan, which follow D-030 case by case.
       description, and that the shown description is an applying override,
       else the manifest text or the GitHub text by the AC3 rule. DESIGN's
       override rule (Data sources item 3) and the `reason` prose of
-      `schemas/index.v1.schema.json` state the D-030 and D-031 case. README
+      `schemas/index.v1.schema.json` state the D-030 to D-032 cases. README
       and CHANGELOG also say that a saved copy of the v1 schema must be
       fetched again (D-007).
-- [ ] AC6: Each of these eight entries, which the plan found still showing
-      no description or one with a CJK share of 0.5 or more under the AC1
-      to AC3 rules, from the deployed data and the GitHub repo texts read
-      on 2026-10-29 with overrides left out: `ai4paper-v2@cpc.dev`,
+- [x] AC6: Each of these eight entries, `ai4paper-v2@cpc.dev`,
       `bibtex-clean@ouyangjiahong.github.io`, `jasminum@linxzh.com`,
       `papermind-connector@papermind.local`, `papilot@dev.local`,
       `zotero-ocr@bib.uni-mannheim.de`, `zoterogpt-sidebar@workbuddy.local`,
       and `zoterostyle@polygon.org`, carries in `plugins/<id>/index.json` a
-      `description` override with no `version`, whose `value` has a CJK
-      share of 0 and holds at least one Latin letter, and whose `reason`
-      names the upstream file or section the text was drawn from and says
-      that the upstream has no English description or only one that
-      repeats the name. Whether each `value` is English that says what the
-      plugin does is judged by the user at the merge question. `pnpm check`
-      passes.
-- [ ] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check`.
+      `description` override with no `version`. Its `value` has a
+      `cjkShare` of 0 and matches `\p{Script=Latin}`. Its `reason` names the
+      upstream file or section the text was drawn from. For the manifest
+      description and for the GitHub About text read on 2026-10-29, the
+      reason says correctly whether that text is missing, not in English,
+      only repeats the name, or has a CJK share of 0.5 or more (D-030,
+      D-031, D-032). The user judges at the merge question whether each
+      `value` is English that says what the plugin does. `pnpm check` passes.
+- [x] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check`.
 
 ## Coverage
 
@@ -118,32 +116,35 @@ added after this plan, which follow D-030 case by case.
 - AC2 → T2
 - AC3 → T3
 - AC4 → T4
-- AC5 → T5
+- AC5 → T5, T8
 - AC6 → T6
 - AC7 → T7
 
 ## Tasks
 
-- [ ] T1: In `src/upstream/reader.ts`, read `_locales/en/`, `en_US/`, and
+- [x] T1: In `src/upstream/reader.ts`, read `_locales/en/`, `en_US/`, and
       `en_GB/` `messages.json` beside the default locale's (`readManifest`
       near line 560), skipping a file the size limits refuse, and resolve
       `name` and `description` through the first qualifying English folder
       before the default (`localized`, line 302). Tests per AC1.
-- [ ] T2: Add `repoDescription` to `UpstreamFacts` and the facts built from
+- [x] T2: Add `repoDescription` to `UpstreamFacts` and the facts built from
       `meta` (reader.ts line 205); add it to the `upstream` definition of
       `schemas/plugins.v1.schema.json`. Tests per AC2.
-- [ ] T3: Rewrite `shownDescription` in `src/site/description.ts` with a
+- [x] T3: Rewrite `shownDescription` in `src/site/description.ts` with a
       `cjkShare` helper and the AC3 order; tests in
       `test/description.test.ts`.
-- [ ] T4: Add the two Details facts to `site/src/pages/plugins/[id]/index.astro`;
+- [x] T4: Add the two Details facts to `site/src/pages/plugins/[id]/index.astro`;
       tests in `test/site.test.ts`.
-- [ ] T5: Update README, CHANGELOG, `site/src/pages/about.astro`,
+- [x] T5: Update README, CHANGELOG, `site/src/pages/about.astro`,
       `cairn/DESIGN.md` (lines ~46-49, ~106-108, ~172, and the reader's
       Architecture text), and the two schemas' prose per AC5.
-- [ ] T6: For each AC6 entry, read its README (English file or section
+- [x] T6: For each AC6 entry, read its README (English file or section
       first), write a one- or two-sentence English `description` override
       with its reason, and run `pnpm check`.
-- [ ] T7: Run the `verify` slot.
+- [x] T7: Run the `verify` slot.
+- [x] T8: Review return 1: state in the CHANGELOG entry, the About page's
+      Descriptions section, and the schema `description` prose that an
+      applying override comes before the manifest or GitHub text.
 
 ## Work log
 
@@ -160,3 +161,67 @@ added after this plan, which follow D-030 case by case.
 - 2026-10-29: re-audit of AC1 and AC6 after the name answer (full mode, fresh Opus reader): 9 findings, all taken: AC6's list froze to eight named ids, since a list built from `shownDescription` empties once overrides land; the list keeps only successful reads; the value needs a Latin letter and English is judged at the merge question; DESIGN item 3 and the `reason` schema prose join AC5; AC1 gained order, shape, case, size-limit, and no-default cases, a `trim()` blank rule, and skip-on-size; AC1 and AC2 now name behavior with tests as evidence.
 - 2026-10-29: computing the AC6 list showed that a per-letter CJK share let AskGPT and BibTeX Clean keep Chinese text, since each Latin letter counted once; AC3 now counts runs of other letters as one unit each, and a mostly-CJK manifest gives way to a GitHub text of lower share; under it 9 of the 17 weak entries get a readable text and 8 need overrides. Not re-audited by a fresh reader.
 - 2026-10-29: plan gate chose C / (C + letter runs) over a per-letter share because a Han character is closer to a word than a Latin letter is; falsified by a listed plugin whose shown text is mostly CJK while an English-led candidate exists.
+- 2026-10-29: implement started on branch m055-english-descriptions.
+- 2026-10-29: T1 done: `localized` reads `en`, `en_US`, `en_GB` messages before the default locale's; `englishMessages` skips a refused, non-JSON, or non-object file; 17 new upstream tests; planted wrong order failed 2 tests and a dropped blank check failed 1.
+- 2026-10-29: T2 done: `repoDescription` in `UpstreamFacts` and the schema (`pattern: "\\S"`); 5 reader cases and 1 schema test; a dropped blank check and a dropped pattern each failed their test. Build tests run through pnpm (M001 lesson).
+- 2026-10-29: T3 done: `shownDescription` picks per AC3 with an exported `cjkShare` (regex `v` flag set difference for the other-letter runs); 15 pick cases and 4 share cases; a `<=` tie plant failed 1 test and dropping the 0.5 threshold failed 5.
+- 2026-10-29: T4 done: "Manifest description" and "GitHub description" facts open the Details list, before "Archived on GitHub"; site fixture gives first-plugin both texts and old-plugin GitHub text only; a hidden GitHub fact failed 4 site tests.
+- 2026-10-29: T5 done: README (description rule, override case, English-file size line), CHANGELOG entry with the refetch notice, About page "Descriptions" section plus an override sentence (2 site tests), DESIGN (description text, item 3, reader Architecture, `cjkShare`), and the prose of both schemas; full `pnpm test` 1227 passed, 6 skipped.
+- 2026-10-29: T6 done: eight `description` overrides with no `version`; Jasminum and Papilot copied from their English READMEs (`doc/README-en.md`, `README.en.md`), Zotero OCR drawn from its English README, five translated from Chinese READMEs; a script found each value at CJK share 0 with a Latin letter and each reason saying the upstream has no English description; `pnpm check` 58 entries, 0 problems.
+- 2026-10-29: T7: `pnpm test` 1227 passed, 6 skipped; `pnpm check` 58 entries, 0 problems. A live `pnpm build` into the scratchpad read 58 records, 0 failed, all 58 with `repoDescription`; under `shownDescription` none shows no description or one of CJK share 0.5 or more (8 overrides, 9 GitHub texts, Doc2X from its English locale). The site built from it showed Doc2X as "doc2x-ai-translate" with both Details texts, and four pages had no sideways scroll at 375 px.
+- 2026-10-29: claim audit: 110 claims read, 6 corrected — plugins/jasminum@linxzh.com/index.json (reason said "no English description" and "copied"), plugins/ai4paper-v2@cpc.dev/index.json (source also the feature overview), README.md ("upstream" means the About text, not the whole repository), site/src/pages/about.astro (English locale applies to `__MSG_` values only), CHANGELOG.md (share wording).
+- 2026-10-29: re-audit: AC6 (full) — 3 findings: Jasminum's GitHub text holds an English sentence, so D-030 and D-031 do not cover its override and DESIGN item 3 and the `reason` prose say "no English description"; the reason clause is ambiguous over two texts; name the share and Latin-letter check. Posed to the user, since keeping Jasminum's override widens D-030.
+- 2026-10-29: user override at the stop: keep Jasminum's override; D-032 extends D-030 to upstream texts of CJK share 0.5 or more; README, CHANGELOG, About page (1 more site test line), DESIGN item 3, and both `index.v1` schema texts now name that case. Checkpoint: the amended AC6 and AC5 wording waits for its re-entry reader before it is written here.
+- 2026-10-29: re-audit: AC6 (full) — re-entry reader on the user-approved wording: all eight reasons pass; 3 tightenings taken (a "missing" case, "says correctly" for the texts read on 2026-10-29, "missing" and the CJK-share wording in the `reason` schema prose); D-032's reason sentence is read as replacing D-030's "no English description" wording; no further reader for AC6.
+- 2026-10-29: substantive amendment: AC6 reason clause now names four cases per upstream text and cites D-032; AC5 cites D-030 to D-032; override values and the eight ids unchanged.
+- 2026-10-29: T7 done: after the amendment `pnpm test` 1227 passed, 6 skipped; `pnpm check` 58 entries, 0 problems; `cairn_validate` all checks passed. Status review.
+- 2026-10-29: review return 1: AC5 fails as written: the CHANGELOG entry, the About page's Descriptions section, and the `description` prose of `schemas/plugins.v1.schema.json` do not state that an applying override comes before the manifest or GitHub text; README and DESIGN do.
+- 2026-10-29: T8 added for review return 1 (minor amendment; Coverage AC5 → T5, T8) and done: the three texts now say an applying override comes first; About test asserts the new sentences; `pnpm test` 1227 passed, 6 skipped; `pnpm check` 0 problems. claim audit: not re-run for the 4 added sentences, which restate `shownDescription`'s order; review's fresh diff-bug reviewer reads them. Status review.
+- 2026-10-29: step-7 approval: m055-english-descriptions approved for merge
+
+## Decisions
+
+## Review
+
+- Pass 1 (2026-10-29), branch level with main at b033edc; Copilot round off.
+- AC1: `test/upstream.test.ts` 290 passed; named cases cover each English folder alone, `en` over `en_GB`, `en_US` over `en_GB`, fall-through from an `en` lacking the key, not JSON, an array, or a non-string message, a blank `en` message, an oversize `en` file, and no English folder (default), another key case, no `default_locale` with and without `en`, the name from `en`, and name and description from two folders.
+- AC2: 5 reader cases (outer spaces, null, absent, number, blank) passed; `test/build.test.ts` "the schema takes an upstream with or without a repoDescription and refuses a blank one" passed.
+- AC3: `test/description.test.ts` 15 pick cases, the override case, and 4 `cjkShare` cases passed.
+- AC4: `test/site.test.ts` Details-list order test for all 13 fixture records and the 4 "shows the manifest and GitHub descriptions" cases passed.
+- AC5: FAIL — README and DESIGN state the override-first rule; CHANGELOG, the About page Descriptions section, and the schema `description` prose do not. Returned (review return 1).
+- AC6: a script over the eight files found one `description` override each, no `version`, `cjkShare` 0, a Latin letter; each reason read against the 2026-10-29 texts names its source and a true case; `pnpm check` 58 entries, 0 problems. The English judgment goes to the user at the merge question; box left unticked until then.
+- AC7: not re-run on this pass (return pending).
+- Gate: `cairn_validate` all checks passed; generic profile adds no toolchain checks; no DESIGN principle changed.
+- Pass 2 (2026-10-29), after review return 1 (T8, e16b73f); branch level with main at b033edc.
+- AC5: CHANGELOG ("A `description` override that applies to the version the index read still comes first"), About page Descriptions section ("comes first"), and the schema `description` prose ("shows a description override that applies to the version read; without one, ...") now state override-first; README ("replaces both") and DESIGN ("always shows (M015)") did already; English-locale order is in all five; DESIGN item 3 and both `index.v1` texts name the D-030 to D-032 cases; README line 203 and the CHANGELOG entry say to fetch a saved schema again.
+- AC7: `pnpm test` 1227 passed, 6 skipped; `pnpm check` 58 entries, 0 problems.
+- Gate: `cairn_validate` all checks passed.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: README never names `repoDescription` in "Using the data" or "Building the data" — fix now, fixed 0690b47 (new paragraph after `xpiUrl`).
+- diff-bug #2: `englishMessages` skips any refused English file (duplicate, bad compression, overflow), not only an oversize one, untested beyond oversize — fix now, fixed 0690b47 (duplicate-file test; a plant that stops the skip fails it and the oversize test).
+- diff-bug #3: the English path rethrows non-`SyntaxError` errors where the default path swallows all — reject, false: nothing else is reachable from `JSON.parse` of a string.
+- diff-bug #4: no test of a manifest share of exactly 0.5 — fix now, fixed 0690b47 ("A Zotero 插件" case; `<=` plant fails it).
+- diff-bug #5: `cjkShare` counts Script=Common kana marks as other letters and splits NFD words — follow-up, row "Close gaps in the description pick".
+- diff-bug #6: docs' override cases drop "not in English" — fix now, fixed 0690b47 (DESIGN item 3, README, About page, `index.v1` overrides prose).
+- diff-bug #7: `pattern: "\\S"` can disagree with Python's `\s` on \x1c-\x1f — reject, edge: an About text made only of those control characters, outside documented and common use; effect a validator error.
+- diff-bug #8: a whitespace-only manifest description shows an empty Details row — follow-up, row "Close gaps in the description pick".
+- diff-bug #9: DESIGN and About page omit that the GitHub text must survive the name check — fix now, fixed 0690b47.
+- diff-bug #10: name test overlaps the two-folder test — reject, planned change: AC1 lists both.
+- diff-bug #11: description and `cjkShare` cases share code paths — reject, planned change: AC3 lists them.
+- diff-bug #12: build schema test repeats a reader case — reject, planned change: it builds the record the schema check needs.
+- blame-history #1: a duplicate English `messages.json` reads with no failure, unlike M005's refusal — fix now, fixed 0690b47 (test pins the skip; zipEntry still stops its walk at the second entry, so M005's CPU bound holds; DESIGN records the skip).
+- blame-history #2: Details shows the raw manifest description that M015 hides — reject, planned change: AC4.
+- blame-history #3: three more central-directory walks and up to 3 MiB more inflation per XPI — reject, planned change: bounded by the 1 MiB cap per file; DESIGN budget text updated under prior-review #1.
+- prior-review #1: DESIGN's locale budget and "three walks" text is stale — fix now, fixed 0690b47.
+- prior-review #2: the `UNZIPPED_MAX_BYTES` comment omits the English files — fix now, fixed 0690b47.
+- prior-review #3: DESIGN item 2 names only the upstream files as the description source — fix now, fixed 0690b47.
+- prior-review #4: a saved v1 schema rejects `repoDescription` — follow-up, absorbed into row "Let old v1 schemas accept new fields".
+- ripple #1: README "The description comes from the plugin's manifest or from an index override" — fix now, fixed 0690b47.
+- ripple #2: README and `plugins.v1` override `field`/`reason` prose say only "correct"/"wrong" — fix now, fixed 0690b47.
+- ripple #3: Overrides table caption "corrects these upstream facts" and its Upstream value column — caption fix now, fixed 0690b47; the column's manifest-only value goes to row "Close gaps in the description pick".
+- ripple #4: DESIGN "up to three walks" — fix now, fixed 0690b47 (same edit as prior-review #1).
+- ripple #5: DESIGN item 2 source of truth — fix now, fixed 0690b47; the banked line "Upstream files are the source of truth" — reject, false: the GitHub About text is also upstream.
+- ripple #6: reader comment on unzipped files — fix now, fixed 0690b47 (same edit as prior-review #2).
+- ripple #7: About page "When an upstream fact is wrong" — fix now, fixed 0690b47 (the override paragraph now names the English-text cases, including "not in English").
+- After fixes: `pnpm test` 1229 passed, 6 skipped; `pnpm check` 0 problems; `cairn_validate` all checks passed. Snapshot files changed: none (no `_snaps` or `__snapshots__` path in the diff).
+- AC6: the user accepted the eight override texts, shown verbatim, at the merge question on 2026-10-29; the mechanical parts were recorded in pass 1.

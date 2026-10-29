@@ -45,9 +45,9 @@ the fullest tag (M034), or when one of its files is a file the reader does
 not count. They say which languages a plugin ships menu and
 settings text for. A listed language can still be incomplete, since a tag
 with half the fullest tag's messages stays. They do not say the language
-of the description, which comes from the manifest or
-an override. A `languages` override records them for a plugin whose list
-is wrong or empty. Each plugin page shows them by name in the
+of the description, which comes from the manifest, the GitHub About text,
+or an override (M055). A `languages` override records them for a plugin
+whose list is wrong or empty. Each plugin page shows them by name in the
 "Menus and settings in" fact of its Details card (M054). When no language
 is left, the fact reads "Unknown (no translations found)" (M036). The home
 page lists the plugins in one table, sorted by display name with
@@ -103,9 +103,18 @@ element, and a legend under the table names each mark and says that a
 declared range is not a test result (M053). The home table also shows the
 language subtags in list order (the first 2 and "+N" past 3), the month of
 the release read, and source and `.xpi` links that pass `safeHref` (M053).
-The site shows the manifest description unless it is blank or only repeats
-the plugin's name; a `description` override that applies to the version the
-index read always shows (M015).
+A manifest `__MSG_` name or description takes its message from
+`_locales/en/`, `en_US/`, or `en_GB/` before the default locale (M055).
+The data also carries the GitHub repo's About text as `repoDescription`.
+The site drops a manifest or GitHub description that is blank or only
+repeats the plugin's name (M015). It shows the manifest one when it is left
+and its CJK share is below 0.5, else the GitHub one when it is left and the
+manifest one was dropped or has a higher share, else the manifest one when
+it is left; the share counts each Han,
+kana, or Hangul character and each run of other letters as one unit
+(M055). A `description` override that applies to the version the index
+read always shows (M015). The plugin page's Details card shows both
+descriptions (M055).
 
 The index runs on GitHub only: GitHub Actions, GitHub Pages, and GitHub
 issues. It has no server, no database, and no paid service. Thus every
@@ -169,8 +178,16 @@ shows each one separately. A combined verdict is out of scope.
    These files
    are the source of truth for the name, the description, the versions, and
    the declared compatibility (`strict_min_version`, `strict_max_version`).
+   The repo's GitHub About text is a second source for the description
+   (M055).
 3. Overrides. An override in the index corrects a fact that the author cannot
-   or will not fix upstream. Each override states its reason.
+   or will not fix upstream. Each override states its reason. A
+   `description` override can also give English text for a plugin with no
+   English description upstream: the manifest and GitHub texts are each
+   missing, not in English, only repeat the name, or have a CJK share of
+   0.5 or more. Its
+   reason names its upstream source and which case each text is (D-030,
+   D-031, D-032).
 4. User reports. Two issue forms take a "works" or a "broken" report with
    the plugin id, the plugin version, and the Zotero version. A bot checks
    each report, comments, and closes the issue (M020), and a daily sweep
@@ -294,7 +311,7 @@ exception is a report that is abuse.
   home page, the About page (M054), and one page per record into `dist/`,
   or `<dir>`, from the data file there. `src/site/version.ts` holds the version and range functions
   that the templates use, `majorSupport` and `ZOTERO_MAJORS` among them, and
-  `src/site/description.ts` holds `shownDescription`.
+  `src/site/description.ts` holds `shownDescription` and `cjkShare`.
   `src/site/languages.ts` holds the applied languages, their names, and the
   menu options. `src/site/home-filter.ts` holds `passes`, `rowShows`,
   `chosenValue`, `filterHref`, `filterOn`, and `filterStatus`, which the
@@ -413,7 +430,9 @@ reused._
   streaming `Inflate`, 16 KiB of input at a time, and fails with
   `xpi-unreadable` once the output passes the unzipped size that the zip
   declares, because `unzipSync` decodes the whole stream however far it runs
-  past that size (M012).
+  past that size (M012). The `messages.json` of `_locales/en/`, `en_US/`,
+  and `en_GB/` goes through the same checks, but a refused English file is
+  skipped and fails nothing (M055).
   The reader walks the same central directory once more, one header at a
   time, and records as `languages` the tags of the `locale/<tag>/` and
   `chrome/locale/<tag>/` folders whose files hold messages (M027, M034). It
@@ -436,9 +455,11 @@ reused._
   its declared size, its compressed size, and its output, so the reader
   inflates at most about
   1 MiB past 8 MiB of locale files for each XPI, however small the sizes
-  the files declare. So each XPI takes up to three walks over the claimed
-  count: for `manifest.json`, the default locale's `messages.json`, and the
-  locale folders. A
+  the files declare. Outside that total, each of the three English
+  `messages.json` files inflates at most 1 MiB (M055). So each XPI takes up
+  to six walks over the claimed count: for `manifest.json`, the default
+  locale's `messages.json`, the three English `messages.json` files, and
+  the locale folders. A
   folder name is a tag when it matches `LANGUAGE_TAG`, which refuses the
   language subtags `und`, `zxx`, and `mul` in any letter case (D-018,
   M036), and its language

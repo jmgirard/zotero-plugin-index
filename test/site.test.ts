@@ -475,6 +475,8 @@ describe("the plugin page", () => {
       ["Plugin id", "id"],
       ...(upstream
         ? [
+            ...(upstream.description !== undefined ? [["Manifest description", "manifest-description"]] : []),
+            ...(upstream.repoDescription !== undefined ? [["GitHub description", "github-description"]] : []),
             ...(typeof upstream.archived === "boolean" ? [["Archived on GitHub", "archived"]] : []),
             ["Repository created", "repo-created"],
             ["Release read by the index", "latest-release"],
@@ -559,6 +561,16 @@ describe("the plugin page", () => {
     expect(fact(page(id), "archived")).toBe(text);
   });
 
+  test.each<[string, string | undefined, string | undefined]>([
+    ["first-plugin@example.org", "A plugin for the site tests.", "Tests the site &amp; its &lt;pages&gt;."],
+    ["old-plugin@example.org", undefined, "An old plugin kept for history."],
+    ["b-cafe@example.org", "Keeps a log of item edits.", undefined],
+    ["zotero6-plugin@example.org", undefined, undefined],
+  ])("shows the manifest and GitHub descriptions of %s that its record holds", (id, manifest, github) => {
+    expect(fact(page(id), "manifest-description")).toBe(manifest);
+    expect(fact(page(id), "github-description")).toBe(github);
+  });
+
   test("shows no archived fact when the record has no archived value", () => {
     expect(page("{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}")).not.toMatch(/\sdata-fact="archived"/);
   });
@@ -591,6 +603,7 @@ describe("the About page", () => {
       ["declared", "Declared range"],
       ["start-test", "Start test"],
       ["reports", "User reports"],
+      ["descriptions", "Descriptions"],
       ["overrides", "Overrides"],
       ["not-vetted", "What the index does not do"],
     ]);
@@ -619,6 +632,20 @@ describe("the About page", () => {
     const reporter = readFileSync(resolve(ROOT, "src/start-test/reporter/bootstrap.js"), "utf8");
     expect(/^const SETTLE_MS = (\d+);$/m.exec(reporter)?.[1]).toBe("3000");
     expect(START_LIMIT_MS).toBe(90 * 1000);
+  });
+
+  test("says where the description comes from and when an override gives English text", () => {
+    const text = mainText(about());
+    for (const line of [
+      "the index reads the plugin's English locale file first, if it has one.",
+      "A description override that applies to the version the index read comes first.",
+      "Without one, if less than half of the manifest description is Chinese, Japanese, or Korean, the site shows it.",
+      "the manifest description was dropped, or the GitHub description has less of that text.",
+      "A description override can also give English text for a plugin with no English description upstream.",
+      "That covers a description that is not in English, that only repeats the name, or that is half or more Chinese, Japanese, or Korean.",
+    ]) {
+      expect(text).toContain(line);
+    }
   });
 
   test("says which user reports count, how overrides and the Used column work, and that the index does not vet plugins", () => {

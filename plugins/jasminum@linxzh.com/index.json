@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "A Zotero plugin for Chinese-language literature: metadata retrieval, local attachment matching, Chinese translators and citation styles, and PDF bookmark and outline management.",
+      "reason": "Condensed from the opening paragraph of doc/README-en.md, the English README. The upstream has no description fully in English: the manifest is in Chinese, and the GitHub About text pairs a short English sentence with a Chinese one, so its CJK share is 0.5 or more."
+    }
+  ]
 }

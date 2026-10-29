@@ -415,3 +415,17 @@ stays until someone removes it. DESIGN's Data sources item 3 and the
 `reason` prose of `schemas/index.v1.schema.json` ("Why the upstream value
 is wrong") gain this case, since such an override fills a gap rather than
 correcting a wrong value. The rest of D-030 stands.
+
+### D-032: D-030 also covers upstream text that is half or more CJK, extending D-030 and D-031
+
+2026-10-29, M055. The claim audit and the AC6 re-audit found that
+Jasminum's GitHub About text opens with one short English sentence and
+then a Chinese one, so D-030's case, no English description upstream, does
+not cover its override. At the implement stop the user chose to keep the
+override. A `description` override can now give English text for a plugin
+whose manifest description and GitHub About text are each missing, only
+repeat the name, or have a CJK share of 0.5 or more, as the site's rule
+measures it, even when one of them holds some English. The `reason` says
+which of these each text is. The plan's first count of seven such plugins
+came before the CJK share counted runs of letters as one unit; that change
+added Jasminum. The rest of D-030 and D-031 stands.
