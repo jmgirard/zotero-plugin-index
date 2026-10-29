@@ -1,0 +1,7 @@
+{
+  "id": "zotero-reading-bridge@volatile.static",
+  "name": "Zotero Reading Bridge",
+  "description": "Read-only local MCP endpoint that lets AI clients such as Codex and Claude Desktop read your Zotero library and current selection.",
+  "repoUrl": "https://github.com/volatile-static/zotero-reading-bridge",
+  "updateUrl": "https://github.com/volatile-static/zotero-reading-bridge/releases/latest/download/updates.json"
+}
