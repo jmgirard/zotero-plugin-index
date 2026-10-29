@@ -84,7 +84,7 @@ browser".
       the footer, the intro, the filters, and the home rows with them.
       Extend the AC6 color-pair test of M048 with each pair this
       milestone adds.
-- [ ] T3: Serve the built fixture site at the Pages base path. Check the
+- [x] T3: Serve the built fixture site at the Pages base path. Check the
       language menu and the version buttons (AC4) and measure AC6 at both
       widths. Take screenshots.
 - [ ] T4: Add the CHANGELOG entry. Run `pnpm test` and `pnpm check`.
@@ -103,6 +103,7 @@ browser".
 - 2026-10-29: T1 and T2 share one commit, since the AC1 test stays red until T2.
 - 2026-10-29: T2 choices: `--space-N` is N eighths of a rem (1–6, 8, 12), `--text-xs/s/l`, `--radius-pill`; header and footer take the card class as `.site-head` and `.site-foot`; the home h1 and intro sit in `div.card.page-head`; the filters get no wrapper card, since they are hidden without JavaScript and an empty card would show; the select takes the version buttons' shape; plugin page values unchanged; footer top margin 2rem to 1.5rem, its paragraphs 0.25rem apart; a home row's last child loses its bottom margin.
 - 2026-10-29: T2: for AC5, a new test checks every rule that sets a text color and a background together, in both schemes, instead of extending M048's pair list; the one new pair is the select's `--text` on `--card`, already on that list. Verify clean: 1060 tests passed, 6 skipped; `pnpm check` 56 entries, 0 problems.
+- 2026-10-29: T3: fixture site at commit 4ede776 served on port 4326 under `/zotero-plugin-index/`. Each of the 6 menu options and 4 major buttons showed exactly its matching rows, with "Showing n of 9 plugins." as `filterStatus(n, 9, true)` gives; Any version reset to 9 rows and an empty status. Width in 360 and 1280 px iframes: scrollWidth equals clientWidth, also with `?language=zh&zotero=9`; a planted 900 px div gave 916 > 360. Screenshots taken at 1280 and 360 px (dark scheme), footer included.
 
 ## Decisions
 
