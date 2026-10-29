@@ -1,0 +1,7 @@
+{
+  "id": "papercompare@local.research",
+  "name": "PaperCompare",
+  "description": "Compare paper experiments with traceable PDF evidence. / 用可追溯的原文证据比较论文实验。",
+  "repoUrl": "https://github.com/luxun-spec/zotero-papercompare",
+  "updateUrl": "https://github.com/luxun-spec/zotero-papercompare/releases/latest/download/updates.json"
+}
