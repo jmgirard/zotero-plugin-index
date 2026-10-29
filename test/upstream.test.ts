@@ -119,6 +119,66 @@ describe("readUpstream", () => {
     expect(result.ok && [result.facts.name, result.facts.description]).toEqual(["Notes", "English"]);
   });
 
+  // The description read when the manifest names default_locale `locale` (none when
+  // undefined) and the XPI holds `files`.
+  async function englishDescription(locale: string | undefined, files: Record<string, unknown>) {
+    const { result } = await read((r) => {
+      Object.assign(manifest(r), { default_locale: locale, description: "__MSG_desc__" });
+      Object.assign(r[XPI].xpi!, files);
+    });
+    expect(result.ok).toBe(true);
+    return result.ok ? result.facts.description : "not read";
+  }
+  const zh = { "_locales/zh_CN/messages.json": { desc: { message: "中文" } } };
+  const en = (text: unknown) => ({ desc: { message: text } });
+
+  test.each<[string, string | undefined, Record<string, unknown>, string | undefined]>([
+    ["en alone", "zh_CN", { ...zh, "_locales/en/messages.json": en("en") }, "en"],
+    ["en_US alone", "zh_CN", { ...zh, "_locales/en_US/messages.json": en("en_US") }, "en_US"],
+    ["en_GB alone", "zh_CN", { ...zh, "_locales/en_GB/messages.json": en("en_GB") }, "en_GB"],
+    ["en before en_GB", "zh_CN", { ...zh, "_locales/en_GB/messages.json": en("en_GB"), "_locales/en/messages.json": en("en") }, "en"],
+    ["en_US before en_GB", "zh_CN", { ...zh, "_locales/en_GB/messages.json": en("en_GB"), "_locales/en_US/messages.json": en("en_US") }, "en_US"],
+    ["en_US after an en without the key", "zh_CN", { ...zh, "_locales/en/messages.json": {}, "_locales/en_US/messages.json": en("en_US") }, "en_US"],
+    ["en_US after an en that is not JSON", "zh_CN", { ...zh, "_locales/en/messages.json": "{", "_locales/en_US/messages.json": en("en_US") }, "en_US"],
+    ["en_US after an en that is an array", "zh_CN", { ...zh, "_locales/en/messages.json": [en("en")], "_locales/en_US/messages.json": en("en_US") }, "en_US"],
+    ["en_US after an en whose message is a number", "zh_CN", { ...zh, "_locales/en/messages.json": en(1), "_locales/en_US/messages.json": en("en_US") }, "en_US"],
+    ["the default after a blank en message", "zh_CN", { ...zh, "_locales/en/messages.json": en(" \n") }, "中文"],
+    ["en with the key in another case", "zh_CN", { ...zh, "_locales/en/messages.json": { DESC: { message: "en" } } }, "en"],
+    ["en with no default_locale", undefined, { "_locales/en/messages.json": en("en") }, "en"],
+    ["nothing with no default_locale and no English folder", undefined, zh, undefined],
+    ["the default with no English folder", "zh_CN", zh, "中文"],
+  ])("reads %s", async (_name, locale, files, description) => {
+    expect(await englishDescription(locale, files)).toBe(description);
+  });
+
+  test("skips an English messages.json over 1 MiB and reads the default locale", async () => {
+    const big = JSON.stringify(en("en")) + " ".repeat(1024 * 1024);
+    expect(await englishDescription("zh_CN", { ...zh, "_locales/en/messages.json": big })).toBe("中文");
+  });
+
+  test("reads the name from an English folder before the default locale", async () => {
+    const { result } = await read((r) => {
+      Object.assign(manifest(r), { default_locale: "zh_CN", name: "__MSG_name__" });
+      Object.assign(r[XPI].xpi!, {
+        "_locales/zh_CN/messages.json": { name: { message: "名称" } },
+        "_locales/en/messages.json": { name: { message: "Name" } },
+      });
+    });
+    expect(result.ok && result.facts.name).toBe("Name");
+  });
+
+  test("reads the name and the description from the first English folder that holds each", async () => {
+    const { result } = await read((r) => {
+      Object.assign(manifest(r), { default_locale: "zh_CN", name: "__MSG_name__", description: "__MSG_desc__" });
+      Object.assign(r[XPI].xpi!, {
+        "_locales/zh_CN/messages.json": { name: { message: "名称" }, desc: { message: "中文" } },
+        "_locales/en/messages.json": en("English"),
+        "_locales/en_US/messages.json": { name: { message: "Name" } },
+      });
+    });
+    expect(result.ok && [result.facts.name, result.facts.description]).toEqual(["Name", "English"]);
+  });
+
   test.each<[string, Record<string, unknown>]>([
     ["no messages.json", {}],
     ["an unreadable messages.json", { "_locales/en/messages.json": "{" }],

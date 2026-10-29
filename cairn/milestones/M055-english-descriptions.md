@@ -1,13 +1,13 @@
 # M055: Show English descriptions where upstream has them
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes the published data and the text every plugin row and page shows
-- **Branch/PR:** —
+- **Branch/PR:** m055-english-descriptions
 
 ## Goal
 
@@ -124,7 +124,7 @@ added after this plan, which follow D-030 case by case.
 
 ## Tasks
 
-- [ ] T1: In `src/upstream/reader.ts`, read `_locales/en/`, `en_US/`, and
+- [x] T1: In `src/upstream/reader.ts`, read `_locales/en/`, `en_US/`, and
       `en_GB/` `messages.json` beside the default locale's (`readManifest`
       near line 560), skipping a file the size limits refuse, and resolve
       `name` and `description` through the first qualifying English folder
@@ -160,3 +160,5 @@ added after this plan, which follow D-030 case by case.
 - 2026-10-29: re-audit of AC1 and AC6 after the name answer (full mode, fresh Opus reader): 9 findings, all taken: AC6's list froze to eight named ids, since a list built from `shownDescription` empties once overrides land; the list keeps only successful reads; the value needs a Latin letter and English is judged at the merge question; DESIGN item 3 and the `reason` schema prose join AC5; AC1 gained order, shape, case, size-limit, and no-default cases, a `trim()` blank rule, and skip-on-size; AC1 and AC2 now name behavior with tests as evidence.
 - 2026-10-29: computing the AC6 list showed that a per-letter CJK share let AskGPT and BibTeX Clean keep Chinese text, since each Latin letter counted once; AC3 now counts runs of other letters as one unit each, and a mostly-CJK manifest gives way to a GitHub text of lower share; under it 9 of the 17 weak entries get a readable text and 8 need overrides. Not re-audited by a fresh reader.
 - 2026-10-29: plan gate chose C / (C + letter runs) over a per-letter share because a Han character is closer to a word than a Latin letter is; falsified by a listed plugin whose shown text is mostly CJK while an English-led candidate exists.
+- 2026-10-29: implement started on branch m055-english-descriptions.
+- 2026-10-29: T1 done: `localized` reads `en`, `en_US`, `en_GB` messages before the default locale's; `englishMessages` skips a refused, non-JSON, or non-object file; 17 new upstream tests; planted wrong order failed 2 tests and a dropped blank check failed 1.
