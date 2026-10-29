@@ -80,7 +80,7 @@ function recordProblem(pull: PullJson, indexRepo: string, now: Date, waitHours: 
 // for another base branch, and one whose record changed during the run are skipped
 // too. A failed read of a pull request's files or contents, a failed or timed-out check,
 // or a refused merge request fails that pull request, and the run goes on to the next.
-// A failed read of the list of pull requests or of the default branch throws.
+// A failed read of the default branch, the list of pull requests, or `root` throws.
 export async function mergeDiscover(options: MergeOptions): Promise<MergeResult> {
   const { fetch, indexRepo, root, check, now = new Date(), waitHours = DEFAULT_WAIT_HOURS } = options;
   const github = githubClient(fetch);

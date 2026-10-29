@@ -1,6 +1,6 @@
 # M057: Let a dispatched merge run set its own wait
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
@@ -95,3 +95,5 @@ row "Close gaps in bot holds and merges" (6).
 - 2026-10-29: T3 done: README's conditions list and merge sentence name the dispatched wait, a new paragraph covers `wait_hours`, scheduled runs, refused values, and `--wait-hours`, and numbered backfill steps wait for each discover run to finish; a CHANGELOG entry; DESIGN item 1 and the merge Architecture bullet name M057 and D-034. D-034 landed with the plan commit.
 - 2026-10-29: T4 done: `pnpm test` 1287 passed, 6 skipped; `pnpm check` 58 entries, 0 problems.
 - 2026-10-29: claim audit: not owed is false (user-facing, lines added); spawned below.
+- 2026-10-29: claim audit: 30 claims read, 8 corrected — src/discover/merge.ts, src/discover/merge-cli.ts, .github/workflows/merge-discover.yml, README.md, CHANGELOG.md, cairn/DESIGN.md. Fixed: the NaN reason in the opening-time comment, the README wait bullet and merge sentence (a hand run uses its own wait, not either), "rounds" in the CHANGELOG, DESIGN's 0 to 9999 range and the CLI as the default's source, the CLI's exit cases, and how GitHub formats the number. The re-read found all corrected and one more stale comment (`mergeDiscover`'s throws), fixed. The previous line's wording was a slip: this line is the audit record.
+- 2026-10-29: main moved to 136e4b0 (a candidate row added at the user's request); review step 1 merges it.
