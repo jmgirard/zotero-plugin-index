@@ -1,16 +1,15 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-29 (M054 done and archived; 1 row graduated, 1 corrected, 1 added; 8 lessons marked used, 1 extended; 1 lesson captured, 1 evicted)_
+_Last hygiene check: 2026-10-29 (M055 done and archived; 1 row added, 1 extended; M052 row pruned; 8 lessons marked used, none captured)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M055 | Show English descriptions where upstream has them | review | — | normal | milestones/M055-english-descriptions.md |
+| M055 | Show English descriptions where upstream has them | done | — | normal | milestones/archive/M055-english-descriptions.md |
 | M054 | Rebuild the plugin page and add an About page | done | M053 | normal | milestones/archive/M054-plugin-page-redesign.md |
 | M053 | Show the home list as a table | done | M052 | normal | milestones/archive/M053-home-table.md |
-| M052 | Publish each plugin's XPI address | done | — | normal | milestones/archive/M052-publish-xpi-address.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
