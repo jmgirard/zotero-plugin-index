@@ -79,5 +79,9 @@ async function main(): Promise<number> {
   return tooManyBuildLevel || allFailed ? 1 : 0;
 }
 
-// Set exitCode rather than calling exit(), so piped output is not cut off.
-process.exitCode = await main();
+// A host lookup whose wait a time limit ended keeps running, since dns.lookup cannot be
+// canceled, and it would hold the process open. So exit once stdout and stderr have
+// written everything before them; an exit before that could cut off piped output.
+const code = await main();
+await Promise.all([process.stdout, process.stderr].map((stream) => new Promise<void>((done) => stream.write("", () => done()))));
+process.exit(code);

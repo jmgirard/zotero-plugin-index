@@ -142,7 +142,7 @@ export async function readUpstream(
 
 // Each request also aborts when `signal` does. fetch then rejects with the signal's
 // reason, and a body being read errors with it.
-function boundFetch(fetch: Fetch, signal: AbortSignal): Fetch {
+export function boundFetch(fetch: Fetch, signal: AbortSignal): Fetch {
   return (url, init = {}) => fetch(url, { ...init, signal: init.signal ? AbortSignal.any([init.signal, signal]) : signal });
 }
 

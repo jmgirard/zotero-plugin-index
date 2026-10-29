@@ -67,19 +67,19 @@ is added to the report read (see the work log).
 
 ## Tasks
 
-- [ ] T1: Write the tests first. Add the AC1 cases to the "with time
+- [x] T1: Write the tests first. Add the AC1 cases to the "with time
       limits" block of `test/build.test.ts`, with the label or page 2 set
       to stall. Add the AC2 command tests and a preload that starts the
       timer; build the large-stdout tree and fixture in a temp dir. Give
       the AC2 tests a timeout that leaves room for two runs. See each fail
       on main, and check that it fails at the stalled read or the pending
       timer, not elsewhere.
-- [ ] T2: Add a report read limit to `TimeLimits` in
+- [x] T2: Add a report read limit to `TimeLimits` in
       `src/build/build.ts`, 3 minutes by default (`READ_LIMIT_MS`). Run the
       label and issue reads (`build.ts:118-128`) under `withinLimit`, with
       its signal on each request that `githubClient`
       (`src/upstream/reader.ts:334`) sends. Name the limit with `duration`.
-- [ ] T3: Make `src/build/cli.ts` exit once stdout and stderr have
+- [x] T3: Make `src/build/cli.ts` exit once stdout and stderr have
       flushed, with the exit status that `main` returns.
 - [ ] T4: Update README "Building the data", the comment at
       `.github/workflows/build.yml:21`, and the build lines of DESIGN.md.
@@ -102,6 +102,11 @@ is added to the report read (see the work log).
 - 2026-10-29: plan committed while the criteria audit ran, so the tree stays clean at the stop; the audit's dispositions follow in a second plan commit.
 - 2026-10-29: criteria audit (full): 6 findings on M050, all disposed. Fixed: AC2 compares runs with one `--out` and the data file apart from `generatedAt`, bounds the exit at 30 s, and adds a no-file run and a run with over 64 KiB of stdout; AC1 stalls page 2 before headers and in the body and quotes `passed its time limit of <duration>`; AC3 adds that the read counts toward the 18 minutes. Answered: AC3's no-file claim adds no CLI test hook, since the CLI's existing tested path writes no file for any `ok: false`, and the claim is narrowed to a README list entry; the D-entry, DESIGN, and `build.yml` comment stay in T4 as records.
 - 2026-10-29: status in-progress; branch m050-bound-report-read cut from main at c7d844d.
+- 2026-10-29: T1: on the unchanged code the 4 report-read tests timed out at the stalled request, and the 3 exit tests' timer runs hit the 40 s spawn limit (ETIMEDOUT) while the runs without the timer finished.
+- 2026-10-29: T1: with `spawnSync` reading as fast as the build writes, the 64 KiB test passed with a planted exit that skips the flush, so the test now pauses stdout for 2 s over 1500 entries; with that plant it fails at the stdout comparison (output cut short), and with the flush it passes.
+- 2026-10-29: T2 choices: `TimeLimits.reportsMs`, default `READ_LIMIT_MS`; one `withinLimit` around the label and issue reads, with `boundFetch` (now exported from `src/upstream/reader.ts`) under `githubClient`, so the existing failure text gains the limit reason.
+- 2026-10-29: T3 choices: `cli.ts` awaits an empty write on stdout and stderr, then calls `process.exit(code)`; the old `exitCode` comment is replaced.
+- 2026-10-29: T1–T3 share one commit, since the T1 tests stay red until T2 and T3. Verify clean: 1067 tests passed, 6 skipped; `pnpm check` 56 entries, 0 problems.
 
 ## Decisions
 

@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -533,20 +533,38 @@ describe("pnpm build with a timer still pending", () => {
     expect(runs.pending.stderr).toBe(runs.plain.stderr);
   }, 120_000);
 
-  test("writes the whole stdout of over 64 KiB before it exits", () => {
+  test("writes the whole stdout of over 64 KiB before it exits", async () => {
     // Each entry's repo has no recorded answer, so its read fails with HTTP 404 and adds one
     // stdout line.
     const tree = tempDir();
-    for (let i = 0; i < 800; i++) {
+    for (let i = 0; i < 1500; i++) {
       const id = `plugin-${String(i).padStart(4, "0")}@example.org`;
       mkdirSync(join(tree, id));
       writeFileSync(join(tree, id, "meta.json"), JSON.stringify({ id, repoUrl: `https://github.com/example/plugin-${i}` }));
       writeFileSync(join(tree, id, "index.json"), JSON.stringify({ schemaVersion: 1 }));
     }
-    const runs = twoRuns(tree, { [LABEL]: { json: { name: "report" } }, [ISSUES]: { json: [] } });
-    expect(Buffer.byteLength(runs.plain.stdout)).toBeGreaterThan(64 * 1024);
-    expect(runs.plain.stdout.trimEnd().split("\n").at(-1)).toMatch(/^wrote 800 records to /);
-    expectSameRun(runs);
+    const fixture = writeFixture({ [LABEL]: { json: { name: "report" } }, [ISSUES]: { json: [] } });
+    const out = tempDir();
+    const plain = pnpmBuild([tree, "--out", out], fixture);
+    expect(Buffer.byteLength(plain.stdout)).toBeGreaterThan(64 * 1024);
+    expect(plain.stdout.trimEnd().split("\n").at(-1)).toMatch(/^wrote 1500 records to /);
+
+    // This run's stdout is not read for its first 2 seconds, so the pipe fills and the
+    // command still holds unwritten output when it is done.
+    const { INIT_CWD: _outer, GITHUB_TOKEN: _token, GITHUB_REPOSITORY: _repo, ...env } = process.env;
+    Object.assign(env, { ZPI_FIXTURE: fixture, NODE_OPTIONS: `--import=${PRELOAD} --import=${PENDING}` });
+    const started = performance.now();
+    const child = spawn(process.env.npm_execpath!, ["--silent", "--dir", ROOT, "build", tree, "--out", out], { env });
+    child.stdout.pause();
+    setTimeout(() => child.stdout.resume(), 2000);
+    let stdout = "";
+    child.stdout.setEncoding("utf8").on("data", (text: string) => (stdout += text));
+    const timer = setTimeout(() => child.kill("SIGKILL"), 40_000);
+    const status = await new Promise<number | null>((done) => child.on("close", done));
+    clearTimeout(timer);
+    expect((performance.now() - started) / 1000).toBeLessThan(30);
+    expect(status).toBe(plain.status);
+    expect(stdout).toBe(plain.stdout);
   }, 120_000);
 });
 
