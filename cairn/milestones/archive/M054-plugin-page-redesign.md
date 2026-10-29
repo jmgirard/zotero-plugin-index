@@ -1,0 +1,13 @@
+# M054: Rebuild the plugin page and add an About page
+
+**Status:** done (2026-10-29, PR #108 https://github.com/jmgirard/zotero-plugin-index/pull/108)
+
+**Goal:** Each plugin page opens with its links and one compatibility table, and a new About page holds the notes on how the index checks plugins.
+
+feature series: M053 -> M054
+
+**Outcome:** One-column plugin page: an "All plugins" back link, the name with an "Archived" badge, the description, and plain `.btn` links with icons (Download <version> (.xpi) from `upstream.xpiUrl`, Source, Releases; a repo URL failing `safeHref` shows as plain text). A "Zotero compatibility" card holds one row per major, newest first, for `ZOTERO_MAJORS` and each other major the reports or start results name (`compatMajors`, `majorReport` summing items, `majorStart`, `startWords` in `site/src/data.ts`): the declared mark and word with `supportText` as hidden text, the newest start result, and the report counts. Under it: the declared range with a "How the index checks plugins" link, then the report row; a failed record shows the failure and the link. An open "Details" card (`dl.facts`) holds the facts and languages, with the overrides under an h3. New `site/src/pages/about.astro` holds the method notes; the top bar links it on every page. `Support.astro`, `startTestsText`, the pills, and the closed `<details>` are gone. Fixture gains `next-plugin@example.org`.
+
+**Decisions:** none cross-cutting; the work log records the implementation choices (plain download button per D-029, table cell wording, About line under the failure message).
+
+**Review:** Two passes. Pass 1 routed AC5 to an amendment: "under the table" could not hold on failed records' pages; two fresh re-audits, then the user chose the strict wording (exactly one About line, under the table or the failure message; no moved string anywhere on the page). Pass 2: fan-out of 4 lenses, 48 findings: 24 fixed (`.btn` edges to `--faint` with a forced-colors edge and a 3:1 test on `--surface` and `--bg`; the declared cell's spoken text; a space before the h1 badge; `majorReport` sums; stale "pill" text; test tidying), 4 to the new row "Close small gaps on the site pages", 20 rejected. AC6 width check passed on deployed data at 375 and 1280 px. Claim audit: 99 claims, 3 corrected. Hygiene: row "Fix the Overrides table's heading level" graduated; row "Label cut reads on plugin pages" corrected; lessons M001, M010, M015, M021 (extended), M035, M036, M037, M048 marked used; 1 lesson captured (table `overflow-wrap`); evicted by rank: 2026-10-27 (M030, used M046) on killing a `pnpm` child's process group.
