@@ -219,7 +219,14 @@ export async function issueAnswer(options: IssueAnswerOptions): Promise<IssueRun
 
   const written: Written = { ...entry, outcome: "written", dir: read.dir! };
   const result = await propose({ ...options, pushBase, written: [written], issue });
-  if (result.failed.length > 0) return failed(result.failed[0].message);
+  const failure = result.failed[0];
+  // The pull request opened, and only its hold label failed: the issue gets the usual
+  // answer, which `pnpm close-issue` needs, and the run still fails.
+  if (failure?.url) {
+    errors.push(failure.message);
+    return answer(openedComment(failure.url));
+  }
+  if (failure) return failed(failure.message);
   const { url, branch } = result.proposed[0];
   // The create request's answer can lack the URL; the branch still names the pull request.
   // `pnpm close-issue` closes the issue only when this comment holds the URL.

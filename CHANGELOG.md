@@ -311,8 +311,9 @@
   with `entry-exists`. If the fetched commit has no `plugins/` folder, every
   entry fails. An issue run then leaves the issue open with its "could not
   finish" comment.
-- Runs of `Discover plugins` and `Add a plugin from an issue` wait in turn in
-  their shared concurrency group, up to 100 pending. GitHub does not promise
+- Runs of `Discover plugins`, `Add a plugin from an issue`, and
+  `Merge bot pull requests` wait in turn in their shared concurrency group,
+  up to 100 pending. GitHub does not promise
   their order. If 100 runs already wait, GitHub cancels a new run, and a
   later sweep can answer its issue, as for any unanswered issue. Before, a
   new run in the group canceled the run that waited, for example a waiting

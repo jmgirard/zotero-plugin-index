@@ -560,6 +560,21 @@ describe("the write step of an issue run", () => {
     dir: tempDir(),
   });
 
+  test("answers with the pull request, and fails the run, when only the hold label request fails", async () => {
+    const dir = tempDir();
+    for (const file of ["meta.json", "index.json"]) writeFileSync(join(dir, file), "{}\n");
+    const read = { outcome: { outcome: "entry" as const, entry: { ...drafted("gamma").outcome.entry, holds: ["issue-no-topic" as const] } }, dir };
+    const { result, sent } = await answer(read, {
+      ...indexRepo,
+      [`POST ${PULLS}`]: { status: 201, json: { html_url: "https://github.com/example/index/pull/9", number: 9 } },
+      [`POST ${INDEX}/issues/9/labels`]: { status: 403, json: { message: "Resource not accessible by integration" } },
+    });
+    expect(result.status).toBe(1);
+    expect(result.errors).toEqual([expect.stringMatching(/^opened https:\/\/github\.com\/example\/index\/pull\/9 but could not add the hold label: .*HTTP 403/)]);
+    expect(sent.map(({ url }) => url)).toEqual([PULLS, `${INDEX}/issues/9/labels`, COMMENTS]);
+    expect(sent[2].body).toMatch(/^The bot opened https:\/\/github\.com\/example\/index\/pull\/9\. This issue closes when that pull request merges\./);
+  });
+
   test("names the entry and closes the issue as completed when only main, after the checkout, holds an entry for the repo", async () => {
     const { result, sent } = await answer(drafted("alpha"), { ...indexRepo, ...opened }, undefined, {
       files: { "plugins/other@example.org/meta.json": JSON.stringify({ repoUrl: "https://github.com/Example/Alpha" }) },

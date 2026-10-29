@@ -80,6 +80,8 @@ export interface ProposeFailure {
   repo: string;
   id: string;
   message: string;
+  // The pull request that opened before the failure, when the hold label request failed.
+  url?: string;
 }
 
 export interface DiscoverReadOptions {
@@ -230,10 +232,19 @@ interface PullJson {
 }
 
 // The issue numbers of the lines that are exactly `Closes #<n>`, outside fenced code
-// blocks. A fence closes on a line of the same character, at least as long, with
-// nothing else on the line but whitespace.
+// blocks.
 export function closesLines(body: string): number[] {
-  const numbers: number[] = [];
+  return unfencedLines(body).flatMap((line) => {
+    const closes = /^Closes #([1-9]\d*)$/.exec(line)?.[1];
+    return closes ? [Number(closes)] : [];
+  });
+}
+
+// The lines of a body outside fenced code blocks, such as the block that quotes the check
+// output. A fence closes on a line of the same character, at least as long, with nothing
+// else on the line but whitespace.
+export function unfencedLines(body: string): string[] {
+  const lines: string[] = [];
   let fence: string | undefined;
   for (const line of body.split(/\r?\n/)) {
     if (fence) {
@@ -246,10 +257,9 @@ export function closesLines(body: string): number[] {
       fence = open;
       continue;
     }
-    const closes = /^Closes #([1-9]\d*)$/.exec(line)?.[1];
-    if (closes) numbers.push(Number(closes));
+    lines.push(line);
   }
-  return numbers;
+  return lines;
 }
 
 export async function defaultBranch(fetch: Fetch, indexRepo: string): Promise<string> {
@@ -441,12 +451,15 @@ export async function propose(options: ProposeOptions): Promise<{ proposed: Prop
         const url = typeof pull?.html_url === "string" ? pull.html_url : "";
         if (entry.holds.length > 0) {
           // The body's Hold line keeps `pnpm merge-discover` from merging a held pull
-          // request even when this label request fails.
+          // request even when this label request fails. The failure carries the URL, so
+          // an issue run can still answer with the pull request.
           try {
             if (!Number.isSafeInteger(pull?.number)) throw new Error("the create request's answer has no pull request number");
             await github.post(`${API}/repos/${indexRepo}/issues/${pull.number}/labels`, { labels: [HOLD_LABEL] });
           } catch (error) {
-            throw new Error(`opened ${url || branch} but could not add the ${HOLD_LABEL} label: ${(error as Error).message}`);
+            const message = `opened ${url || branch} but could not add the ${HOLD_LABEL} label: ${(error as Error).message}`;
+            failed.push({ repo, id, message, ...(url && { url }) });
+            continue;
           }
         }
         proposed.push({ repo, id, branch, url });

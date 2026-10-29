@@ -1,8 +1,8 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
-import { draftEntry } from "../src/discover/discover.ts";
+import { draftEntry, indexed } from "../src/discover/discover.ts";
 import type { IndexedName } from "../src/discover/holds.ts";
 import { fixtureFetch, type Responses } from "./support/fixture-fetch.ts";
 import { pluginRepo } from "./support/plugin-repo.ts";
@@ -76,6 +76,19 @@ describe("the hold reasons", () => {
 
   test("a discover run's repo with neither topic does not hold", async () => {
     expect(await holds("bob/zotero-tagger", pluginRepo("bob/zotero-tagger", "x@example.org", { name: "Tagger", topics: [] }))).toEqual([]);
+  });
+
+  test("name-match reads the owners, repo parts, and names that indexed() gives for the entries under a root", async () => {
+    // test/fixtures/build/plugins holds "Second Plugin" from example/second-plugin.
+    const { names } = await indexed(resolve(import.meta.dirname, "fixtures/build/plugins"));
+    const draft = async (repo: string, name: string) => {
+      const { fetch } = fixtureFetch(pluginRepo(repo, "x@example.org", { name }));
+      const drafted = await draftEntry(`https://github.com/${repo}`, { fetch, lookup: publicLookup, outDir: tempDir(), ids: new Set(), names, now: NOW });
+      return drafted.ok ? drafted.holds : drafted.message;
+    };
+    expect(await draft("bob/zotero-second-plugin", "Tagger")).toEqual(["name-match"]);
+    expect(await draft("bob/tagger", "Zotero Second")).toEqual(["name-match"]);
+    expect(await draft("example/tagger", "Second")).toEqual([]);
   });
 
   test("an entry that meets several reasons gets them in order", async () => {

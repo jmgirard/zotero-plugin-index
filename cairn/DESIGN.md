@@ -240,7 +240,8 @@ exception is a report that is abuse.
   a UTF-8 byte-order mark at the start of an entry file (M032).
 - Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch, {
   lookup, signal })` returns the facts of one GitHub repo with the URL and
-  SHA-256 of the XPI it read (M047), or one named inclusion-bar failure.
+  SHA-256 of the XPI it read (M047) and the repo's topics (M056), or one
+  named inclusion-bar failure.
   `downloadXpi` downloads one XPI with the same host check (M047). The
   optional `lookup` resolves download hosts for the host check (M004).
   When the optional `signal` aborts, the read fails as a build-level
@@ -556,7 +557,7 @@ reused._
   exits 1 at the end. Both steps read the files of each open bot pull request
   (`botPulls`): discovery refuses, without recording, a repo whose plugin id
   one of them adds, and the write step skips such an entry. `githubClient` gains `post`, which fails on a redirect, and
-  M010 adds `patch`, which shares that code.
+  M010 adds `patch` and M056 `put`, which share that code.
   `.github/workflows/discover.yml` runs it daily and on dispatch on the
   default branch only, with a `limit` input, in the `discover` concurrency
   group. Its write job holds `contents: write` and `pull-requests: write`.
@@ -576,7 +577,8 @@ reused._
   handoff directory per number in one artifact, each number passed only
   through `env:` (`ISSUES`, then `ISSUE_NUMBER`), and each fails at the end
   when one of its runs fails. All three jobs set `cache-mode: none`. Both
-  workflows set `queue: max` on the `discover` group (M043), so up to 100
+  workflows, and `merge-discover.yml` since M056, set `queue: max` on the
+  `discover` group (M043), so up to 100
   runs wait and run one at a time, in an order GitHub does not promise, and
   GitHub cancels a run past that; a later sweep can answer a canceled run's
   issue while it is at most 7 days old and among the 3 oldest unanswered
@@ -608,10 +610,12 @@ reused._
   requires. `body()` in `propose.ts` writes `Hold: none` or the reasons with a
   `HOLD_TEXT` sentence each, and `proposeHandoff` posts the `hold` label to a
   held pull request. `pnpm merge-discover` (`src/discover/merge.ts`) reads
-  every page of open pull requests, skips each that fails a condition, reads
-  the two entry files through the contents API at the head SHA, runs
-  `pnpmCheck` on a copy of `plugins/` with them added, and sends a squash
-  merge pinned to that SHA. `.github/workflows/merge-discover.yml` runs it
+  every page of open pull requests, skips each that fails a condition (the
+  Hold line read outside fences with `unfencedLines`, the label in any case,
+  no draft, the default branch as base), reads the two entry files through
+  the contents API at the head SHA, runs `pnpmCheck` on a copy of `plugins/`
+  with them added, reads the pull request again, and sends a squash merge
+  pinned to that SHA. `.github/workflows/merge-discover.yml` runs it
   daily at 05:13 UTC and on dispatch from the default branch, in the
   `discover` group, with `contents: write`, `pull-requests: write`, and
   `cache-mode: none`.

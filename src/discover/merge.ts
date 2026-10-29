@@ -2,7 +2,7 @@ import { cp, mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { type Fetch, githubClient } from "../upstream/reader.ts";
-import { type CheckRunner, HOLD_LABEL, PREFIX } from "./propose.ts";
+import { type CheckRunner, defaultBranch, HOLD_LABEL, PREFIX, unfencedLines } from "./propose.ts";
 
 const API = "https://api.github.com";
 // The account that opens the bot's pull requests with the workflow's GITHUB_TOKEN.
@@ -31,11 +31,14 @@ export interface MergeResult {
 
 interface PullJson {
   number?: unknown;
+  state?: unknown;
+  draft?: unknown;
   body?: unknown;
   created_at?: unknown;
   user?: { login?: unknown } | null;
   labels?: { name?: unknown }[] | null;
   head?: { ref?: unknown; sha?: unknown; repo?: { full_name?: unknown } | null } | null;
+  base?: { ref?: unknown } | null;
 }
 
 interface FileJson {
@@ -43,17 +46,39 @@ interface FileJson {
   status?: unknown;
 }
 
+// The first of the conditions on a pull request's own record that it fails, or undefined.
+// The body's one Hold line outside fenced code must be `Hold: none`, so a line in the
+// quoted check output cannot stand in for it.
+function recordProblem(pull: PullJson, indexRepo: string, now: Date): string | undefined {
+  const ref = pull.head?.ref;
+  const headRepo = pull.head?.repo?.full_name;
+  if (typeof ref !== "string" || !ref.startsWith(PREFIX)) return `its head branch does not start with ${PREFIX}`;
+  if (typeof headRepo !== "string" || headRepo.toLowerCase() !== indexRepo.toLowerCase()) return `its head branch is not in ${indexRepo}`;
+  if (pull.user?.login !== BOT_LOGIN) return `its author is not ${BOT_LOGIN}`;
+  const holdLines = typeof pull.body === "string" ? unfencedLines(pull.body).filter((line) => line.startsWith("Hold:")) : [];
+  if (holdLines.join("\n") !== "Hold: none") return "its body has no Hold: none line";
+  // GitHub label names are unique ignoring case.
+  if ((pull.labels ?? []).some((label) => typeof label?.name === "string" && label.name.toLowerCase() === HOLD_LABEL)) {
+    return `it has the ${HOLD_LABEL} label`;
+  }
+  const opened = typeof pull.created_at === "string" ? Date.parse(pull.created_at) : Number.NaN;
+  if (!(now.getTime() - opened >= WAIT_MS)) return "it opened less than 48 hours ago";
+  return undefined;
+}
+
 // Squash-merges each open bot pull request that says `Hold: none`, has no hold label,
 // opened at least WAIT_MS before `now`, and adds exactly one new entry, once that entry
 // passes `check` beside the checkout's entries and those this run merged. Each other open
-// pull request is skipped with the first condition it fails. A failed read of a pull
-// request's files or contents, a failed or timed-out check, or a refused merge request
-// fails that pull request, and the run goes on to the next. A failed read of the list of
-// pull requests throws.
+// pull request is skipped with the first condition it fails; a draft, a pull request
+// for another base branch, and one whose record changed during the run are skipped
+// too. A failed read of a pull request's files or contents, a failed or timed-out check,
+// or a refused merge request fails that pull request, and the run goes on to the next.
+// A failed read of the list of pull requests or of the default branch throws.
 export async function mergeDiscover(options: MergeOptions): Promise<MergeResult> {
   const { fetch, indexRepo, root, check, now = new Date() } = options;
   const github = githubClient(fetch);
   const result: MergeResult = { merged: [], skipped: [], failed: [] };
+  const base = await defaultBranch(fetch, indexRepo);
   const pulls = (await github.pages(`${API}/repos/${indexRepo}/pulls?state=open&per_page=100`)) as PullJson[];
   const taken = new Set((await entryNames(root)).map((name) => name.toLowerCase()));
   // The entries this run merged, which later checks see beside the checkout's.
@@ -63,31 +88,9 @@ export async function mergeDiscover(options: MergeOptions): Promise<MergeResult>
     if (!Number.isSafeInteger(pull?.number)) continue;
     const number = pull.number as number;
     const skip = (reason: string) => result.skipped.push({ number, reason });
-    const ref = pull.head?.ref;
-    const headRepo = pull.head?.repo?.full_name;
-    if (typeof ref !== "string" || !ref.startsWith(PREFIX)) {
-      skip(`its head branch does not start with ${PREFIX}`);
-      continue;
-    }
-    if (typeof headRepo !== "string" || headRepo.toLowerCase() !== indexRepo.toLowerCase()) {
-      skip(`its head branch is not in ${indexRepo}`);
-      continue;
-    }
-    if (pull.user?.login !== BOT_LOGIN) {
-      skip(`its author is not ${BOT_LOGIN}`);
-      continue;
-    }
-    if (typeof pull.body !== "string" || !pull.body.split(/\r?\n/).includes("Hold: none")) {
-      skip("its body has no Hold: none line");
-      continue;
-    }
-    if ((pull.labels ?? []).some((label) => label?.name === HOLD_LABEL)) {
-      skip(`it has the ${HOLD_LABEL} label`);
-      continue;
-    }
-    const opened = typeof pull.created_at === "string" ? Date.parse(pull.created_at) : Number.NaN;
-    if (!(now.getTime() - opened >= WAIT_MS)) {
-      skip("it opened less than 48 hours ago");
+    const problem = recordProblem(pull, indexRepo, now);
+    if (problem) {
+      skip(problem);
       continue;
     }
     let files: FileJson[];
@@ -104,6 +107,14 @@ export async function mergeDiscover(options: MergeOptions): Promise<MergeResult>
     }
     if (taken.has(id.toLowerCase())) {
       skip(`the default branch already has plugins/${id} in some letter case`);
+      continue;
+    }
+    if (pull.draft === true) {
+      skip("it is a draft");
+      continue;
+    }
+    if (pull.base?.ref !== base) {
+      skip(`it does not target the default branch ${base}`);
       continue;
     }
     const sha = pull.head?.sha;
@@ -127,6 +138,20 @@ export async function mergeDiscover(options: MergeOptions): Promise<MergeResult>
       }
       const checked = await check(plugins);
       if (checked.status !== 0) throw new Error(`pnpm check exited with status ${checked.status}:\n${checked.output.trimEnd()}`);
+      // Read again, so a hold label, an edit, or a push made since the list read stops
+      // the merge. The merge request's sha also refuses a later push.
+      const fresh = (await github.json(`${API}/repos/${indexRepo}/pulls/${number}`)) as PullJson | null;
+      const changed =
+        fresh?.state !== "open"
+          ? "it is no longer open"
+          : (recordProblem(fresh, indexRepo, now) ??
+            (fresh.draft === true ? "it is a draft" : undefined) ??
+            (fresh.base?.ref !== base ? `it does not target the default branch ${base}` : undefined) ??
+            (fresh.head?.sha !== sha ? "its head moved" : undefined));
+      if (changed) {
+        skip(`it changed during the run: ${changed}`);
+        continue;
+      }
       await github.put(`${API}/repos/${indexRepo}/pulls/${number}/merge`, { merge_method: "squash", sha });
       result.merged.push(number);
       mergedEntries.set(id, entry);

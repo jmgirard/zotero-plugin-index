@@ -303,6 +303,7 @@ describe("the Hold line and the hold label", () => {
         repo: "example/held",
         id: "held@example.org",
         message: expect.stringMatching(/^opened https:\/\/github\.com\/example\/index\/pull\/12 but could not add the hold label: .*HTTP 403/),
+        url: "https://github.com/example/index/pull/12",
       },
     ]);
   });

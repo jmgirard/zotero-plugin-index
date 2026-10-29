@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
@@ -41,6 +41,8 @@ function pull(n: number, change: Record<string, unknown> = {}) {
     user: { login: "github-actions[bot]" },
     labels: [],
     head: { ref: `discover/example/p${n}`, sha: sha(n), repo: { full_name: "example/index" } },
+    base: { ref: "main" },
+    state: "open",
     ...change,
   };
 }
@@ -69,14 +71,18 @@ function entry(n: number, entryId = id(n), metaJson: unknown = meta(n)): Respons
     },
     ...contents("index.json", '{\n  "schemaVersion": 1\n}\n'),
     ...contents("meta.json", `${JSON.stringify(metaJson, null, 2)}\n`),
+    // The read just before the merge finds the pull request unchanged.
+    [`${INDEX}/pulls/${n}`]: { json: pull(n) },
     [`PUT ${INDEX}/pulls/${n}/merge`]: { json: { merged: true } },
   };
 }
 
 const files = (n: number, list: { filename: string; status: string }[]): Responses => ({ [`${INDEX}/pulls/${n}/files?per_page=100`]: { json: list } });
 
+const indexRecord: Responses = { [INDEX]: { json: { full_name: "example/index", default_branch: "main" } } };
+
 async function run(responses: Responses, check = passes) {
-  const { fetch, requests } = fixtureFetch(responses);
+  const { fetch, requests } = fixtureFetch({ ...indexRecord, ...responses });
   const result = await mergeDiscover({ fetch, indexRepo: "example/index", root: PLUGINS, check, now: NOW });
   const merges = requests.filter(({ method }) => method === "PUT").map(({ url, body }) => ({ url, ...JSON.parse(body!) }));
   return { result, merges };
@@ -142,6 +148,43 @@ describe("pnpm merge-discover's conditions", () => {
     expect(result.merged).toEqual([1]);
   });
 
+  test.each<[string, Record<string, unknown>, string]>([
+    [
+      "a Hold: none line only inside the quoted check output",
+      { body: "Intro.\n\n```\nHold: none\n```\n" },
+      "its body has no Hold: none line",
+    ],
+    ["a Hold: none line beside another Hold line", { body: "Hold: none\n\nHold: update-host\n" }, "its body has no Hold: none line"],
+    ["the label Hold in another letter case", { labels: [{ name: "Hold" }] }, "it has the hold label"],
+    ["a draft", { draft: true }, "it is a draft"],
+    ["a pull request for another base branch", { base: { ref: "release" } }, "it does not target the default branch main"],
+  ])("skips %s", async (_name, change, reason) => {
+    const { result, merges } = await run({ [LIST]: { json: [pull(1, change)] }, ...entry(1) });
+    expect(result.skipped).toEqual([{ number: 1, reason }]);
+    expect(merges).toEqual([]);
+  });
+
+  test.each<[string, Record<string, unknown>, string]>([
+    ["a hold label added", { labels: [{ name: "hold" }] }, "it has the hold label"],
+    ["a push", { head: { ref: "discover/example/p1", sha: sha(99), repo: { full_name: "example/index" } } }, "its head moved"],
+    ["a close", { state: "closed" }, "it is no longer open"],
+  ])("skips a pull request that gets %s after the list read", async (_name, change, reason) => {
+    const { result, merges } = await run({ [LIST]: { json: [pull(1)] }, ...entry(1), [`${INDEX}/pulls/1`]: { json: pull(1, change) } });
+    expect(result.skipped).toEqual([{ number: 1, reason: `it changed during the run: ${reason}` }]);
+    expect(merges).toEqual([]);
+  });
+
+  test("checks each entry beside the entries that the run merged before it", async () => {
+    const seen: string[][] = [];
+    const check: CheckRunner = async (dir) => {
+      seen.push(readdirSync(dir).filter((name) => name.endsWith("@example.org")));
+      return passes(dir);
+    };
+    const { result } = await run({ [LIST]: { json: [pull(1), pull(2)] }, ...entry(1), ...entry(2) }, check);
+    expect(result.merged).toEqual([1, 2]);
+    expect(seen.map((names) => names.filter((name) => /^p\d/.test(name)).sort())).toEqual([[id(1)], [id(1), id(2)]]);
+  });
+
   test("a later pull request for an id that this run merged is skipped", async () => {
     const { result } = await run({ [LIST]: { json: [pull(1), pull(2)] }, ...entry(1), ...entry(2, "P1@example.org") });
     expect(result.merged).toEqual([1]);
@@ -194,6 +237,7 @@ describe("pnpm merge-discover", () => {
     const pnpmPath = process.env.npm_execpath;
     if (!pnpmPath) throw new Error("run the tests with `pnpm test`, so they can call pnpm");
     const responses: Responses = {
+      ...indexRecord,
       [LIST]: { json: [pull(1, { labels: [{ name: "hold" }] }), pull(2)] },
       [`${INDEX}/pulls/2/files?per_page=100`]: { status: 500, json: { message: "Server Error" } },
     };
