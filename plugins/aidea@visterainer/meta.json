@@ -1,0 +1,8 @@
+{
+  "id": "aidea@visterainer",
+  "name": "AIdea",
+  "description": "AIdea: Free AI assistant for Zotero — Chat with AI directly in Zotero's side panel",
+  "homepage": "https://github.com/Visterainer/aidea-zotero#readme",
+  "repoUrl": "https://github.com/Visterainer/aidea-zotero",
+  "updateUrl": "https://github.com/Visterainer/aidea-zotero/releases/download/release/update.json"
+}
