@@ -709,6 +709,7 @@ describe("pnpm propose failures", () => {
     expect(pnpm("discover", ["--handoff", handoff, "--state", join(tempDir(), "state.json")], responses, tempDir(), env).status).toBe(0);
     const result = pnpm("propose", [handoff], responses, work, env);
     expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/^2 entries failed:\n/);
     expect(result.stderr).toMatch(/- example\/q3 \(q3@example\.org\): git push failed: .*refused by the test hook/s);
     expect(result.stderr).toContain(
       `- example/q2 (q2@example.org): POST ${PULLS} returned HTTP 422: Validation Failed; A pull request already exists`,

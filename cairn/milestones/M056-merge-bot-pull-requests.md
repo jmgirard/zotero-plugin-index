@@ -27,7 +27,7 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
 
 ## Acceptance criteria
 
-- [ ] AC1: `pnpm discover --handoff` and `pnpm discover-issue --handoff` write a `holds` list in each planned
+- [x] AC1: `pnpm discover --handoff` and `pnpm discover-issue --handoff` write a `holds` list in each planned
       entry. It holds each reason below that the entry meets, in this order, and is `[]` when the entry meets
       none. `readHandoff` refuses a handoff whose entry has no `holds` list or a value outside these five. A
       name key is a text lowercased and split into runs of `a`–`z` and `0`–`9`, with the runs `zotero`,
@@ -47,7 +47,7 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
       with the same owner gets `[]`; an entry without the topics in a discover run gets `[]`; one discover run
       and one issue run each write a held entry's `holds` in `plan.json`; a handoff with a sixth value is
       refused.
-- [ ] AC2: `pnpm propose` writes the body line `Hold: none` for an entry with no hold reason, followed by "The
+- [x] AC2: `pnpm propose` writes the body line `Hold: none` for an entry with no hold reason, followed by "The
       bot can merge this pull request at its first daily run at least 48 hours after it opens, unless it has
       the `hold` label or is closed." For an entry with reasons it writes `Hold: ` and the reasons joined by
       `, `, then the fixed sentence for each reason from one map in `src/discover/propose.ts`, and, after the
@@ -55,7 +55,7 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
       failed label request is named, with the pull request URL, as that entry's failure, so the command exits
       1. Tests compare the posted bodies with the map and read the fixture request log for one held entry, one
       unheld entry, and one held entry whose label request gets a 403.
-- [ ] AC3: `pnpm merge-discover` reads every page of the index repo's open pull requests and sends
+- [x] AC3: `pnpm merge-discover` reads every page of the index repo's open pull requests and sends
       `PUT /repos/<index>/pulls/<n>/merge` with `merge_method` `squash` and `sha` set to the head SHA it read
       only for a pull request that meets all of these conditions, tested in this order: (a) its head branch
       starts with `discover/`, and its head repo is the index repo; (b) its author is `github-actions[bot]`;
@@ -69,7 +69,7 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
       count, a path, a status, and two different ids in (f)), one at 47 hours, one with a CRLF body that
       passes (c), one failed files read, a second page of results, and one that meets all; the request log
       holds merge requests only for the ones that meet all.
-- [ ] AC4: For each pull request that meets AC3's conditions, `pnpm merge-discover` first runs `pnpm check` on a
+- [x] AC4: For each pull request that meets AC3's conditions, `pnpm merge-discover` first runs `pnpm check` on a
       temporary copy of the checkout's `plugins/` plus the pull request's two files read at its head SHA. When
       that check exits non-zero or passes its time limit, or the merge request gets an error answer, the
       command sends no further request for that pull request, prints its number and the error, goes on to the
@@ -77,16 +77,16 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
       request and the output names `registry-schema`; a check that passes its time limit, by a shim, gets
       none; a 405 merge answer gives exit 1 and names the pull request; a later passing pull request is still
       merged in each case.
-- [ ] AC5: `.github/workflows/merge-discover.yml` runs `pnpm merge-discover` daily and on dispatch, only on the
+- [x] AC5: `.github/workflows/merge-discover.yml` runs `pnpm merge-discover` daily and on dispatch, only on the
       default branch, with `GITHUB_TOKEN`, the permissions `contents: write` and `pull-requests: write` and no
       others, in the `discover` concurrency group with `queue: max`. `test/workflows.test.ts` checks each.
-- [ ] AC6: README's discovery section and DESIGN.md's "Data sources and contribution" item 1 state that the bot
+- [x] AC6: README's discovery section and DESIGN.md's "Data sources and contribution" item 1 state that the bot
       can merge an unheld pull request at its first daily run at least 48 hours after it opens, the `hold`
       label, the five hold reasons, and that closing a bot pull request still keeps the bot from proposing
       that repo again. A search of joined copies of both files (LESSONS M018) finds neither "approves each
       pull request" nor "reviews each pull request". `CHANGELOG.md`'s Unreleased section has an entry for the
       change.
-- [ ] AC7: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
+- [x] AC7: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
 
 ## Coverage
 
@@ -143,3 +143,18 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
 - 2026-10-29: T6 done: README "Pull requests from the bot" gains the Hold line and the five reasons, and a new "Merging bot pull requests" section; DESIGN.md item 1 and a `src/discover/holds.ts` Architecture bullet; one CHANGELOG entry. D-033 landed with the plan commit. Joined-copy searches of README and DESIGN find 0 of "approves each pull request" and "reviews each pull request"; no added line over 80 columns. `pnpm test` 1261 passed, `pnpm check` clean.
 - 2026-10-29: claim audit: 58 claims read, 10 corrected — README.md, CHANGELOG.md, src/discover/propose.ts. Fixed: name-match wording (like with like; ASCII runs; separate words), default port, "keep open" to "stop the bot from merging", every failure case and the `merged nothing` exit, output order, "new" bot pull requests, "read job", and a duplicated README paragraph with the merge section split from the `pnpm propose` text (section moved before "Proposing a plugin with an issue"). Declined for `UNHELD_TEXT` only: "first daily run" is AC2's fixed wording, and a by-hand run is the maintainer's act; the README says "daily or by hand". The re-read found one more gap (a missing head SHA as a failure), now listed.
 - 2026-10-29: T7: verify slot clean (`pnpm test` 1261 passed, `pnpm check` 58 entries, 0 problems). The post-merge dispatch of `merge-discover.yml` is left to `/milestone-review` after the merge, as AC5's audit disposition says. Implement complete; status review.
+- 2026-10-29: review started; main unmoved since the branch cut (origin/main 83947af is an ancestor), Copilot round off. Fixed on the branch before evidence: README and DESIGN item 1 now say "first daily run at least 48 hours after it opens", the words AC6 names (fbd1250).
+
+## Decisions
+
+## Review
+
+- AC1: `pnpm test` 2026-10-29, 1261 passed. `test/holds.test.ts` (13): each reason alone, `name-match` by manifest name and by repo part, 29 days holds and exactly 30 does not, `github.com:8443` holds, none gives `[]`, same owner gives `[]`, a discover run without the topics gives `[]`, several reasons in order. `test/propose.test.ts` "writes each entry's hold reasons in the plan" (discover, `["update-host"]` in plan.json) and `test/issue.test.ts` "the read step writes the entry's hold reasons in the plan" (issue, `["issue-no-topic"]`). `test/handoff.test.ts`: no holds list, a sixth value, and an issue entry with a sixth value are refused. Implement planted `<=` and a dropped owner check; each turned a test red.
+- AC2: `UNHELD_TEXT` in `src/discover/propose.ts` is the criterion's sentence word for word; `HOLD_TEXT` is the one map. `test/propose.test.ts` "the Hold line and the hold label" (3, passed 2026-10-29): an unheld entry's body holds `\nHold: none\n\n<UNHELD_TEXT>\n` and the request log holds only the create request; a held entry's body holds `Hold: new-account, update-host` and each `HOLD_TEXT` sentence, and the log holds the create request then `POST .../issues/12/labels` with `{"labels":["hold"]}`; a 403 label answer puts the entry in `failed` with a message that opens with the pull request URL. `propose-cli.ts` exits 1 when `failed` is not empty (lines 86-90). A planted skip of the label request turned 2 tests red.
+- AC3: `test/merge.test.ts` "merges only the pull requests that meet every condition…" (passed 2026-10-29): 15 pull requests over two pages; #1 fails (a) by prefix, #2 by head repo, #3 (b), #4 (c), #5 (d), #6 (e) at 47 hours, #7 to #10 (f) by count, path, status, and two ids, #11 (g) with `Second-Plugin@example.org`; each is skipped with its condition's reason in order; #12 with a CRLF body, #14, and #15 on page 2 merge; #13's files read (HTTP 500) is in `failed`; the PUT requests are exactly #12, #14, #15, each with `merge_method` `squash` and its head `sha`. "a pull request exactly 48 hours old can merge" passed. The CLI test prints `skipped #1: it has the hold label`, `failed #2: cannot read its files: …HTTP 500`, and exits 1. Planted `split("\n")` and `> WAIT_MS` turned tests red. Condition (g) reads every name in `plugins/`, files included, which also blocks a file of that name.
+- AC4: `mergeDiscover` reads both files from the contents API at `?ref=<head sha>`, copies `root` to a temp `plugins/`, adds them, and runs `check` there before the PUT (`src/discover/merge.ts`). `test/merge.test.ts` (passed 2026-10-29): a `meta.json` with an extra field, under the real `pnpmCheck`, gets no PUT and a `failed` message holding `p1@example.org: registry-schema`, and #2 merges; a pnpm shim that sleeps while p1's entry is present, with a 1000 ms limit, fails #1 with "pnpm check passed its time limit of 1000 ms" and #2 merges; a 405 merge answer fails #1 naming "HTTP 405: Pull Request is not mergeable", and #2 merges. The CLI exits 1 when `failed` is not empty (CLI test). A planted skipped check turned 2 tests red.
+- AC5: `test/workflows.test.ts` "merge-discover.yml" (4, passed 2026-10-29): triggers are the `13 5 * * *` schedule and `workflow_dispatch`; one job, `merge`, whose `if:` admits a schedule or a dispatch whose `github.ref` is the default branch's `refs/heads/` name; top-level `permissions: {}` and job permissions exactly `contents: write` and `pull-requests: write`; the step `run: pnpm merge-discover` with `GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}` and no other secret; the `discover` group with `cancel-in-progress: false` and `queue: max`; `cache-mode: none` and no cache step. Ruby's YAML parse gives the same permissions, group, and triggers. A planted `issues: write` turned the permissions test red.
+- AC6: joined copies (LESSONS M018) on 2026-10-29 after fbd1250: README and DESIGN.md each hold "first daily run at least 48 hours after it opens" once, "`hold` label" (README 2, DESIGN 3), and the closing rule (README "close a bot pull request without a merge"; DESIGN "Closing a bot pull request still keeps the bot from proposing that repo again"); README names each of the five reasons once in backticks, and DESIGN item 1 names them in words (name match, account under 30 days or unreadable, update.json off the two hosts, issue repo with neither topic); "approves each pull request" and "reviews each pull request" each count 0 in both. `CHANGELOG.md`'s Unreleased section holds the entry "The bot now merges its own pull requests" once.
+- AC7: 2026-10-29 on the branch with the review's propose-cli fix: `npx -y pnpm@12.15.0 test` (tsc, then Vitest) 24 files passed, 1 skipped, 1261 tests passed, 6 skipped; `npx -y pnpm@12.15.0 check` "checked 58 entries in plugins, 0 problems".
+- consistency gate: `cairn_validate.py` all checks passed (2026-10-29); no principle changed, so no `cairn_impact`; the `generic` profile's consistency-gate slot names no toolchain checks.
+- review (own read, before the fan-out): `pnpm propose` printed "opened no pull request for N entries" above each failed entry, which is false for a held entry whose label request failed after its pull request opened — fix now: the line reads "N entries failed", and the CLI failure test asserts it.
