@@ -29,14 +29,44 @@ describe("passes", () => {
 });
 
 describe("rowShows", () => {
-  const row = { languages: "en zh", zotero: "8 9" };
+  const row = { languages: "en zh", zotero: "8 9", name: "Better Notes", description: "Edits PDF annotations." };
+  const ANY = { value: "", options: LANGUAGES };
+  const ANY_MAJOR = { value: "", options: MAJORS };
 
   test.each([
     ["both filters pass", "zh", "9", true],
     ["only the language passes", "zh", "7", false],
     ["only the version passes", "de", "8", false],
   ])("%s", (_, language, zotero, shows) => {
-    expect(rowShows(row, { value: language, options: LANGUAGES }, { value: zotero, options: MAJORS })).toBe(shows);
+    expect(rowShows(row, { value: language, options: LANGUAGES }, { value: zotero, options: MAJORS }, "")).toBe(shows);
+  });
+
+  test.each([
+    ["an empty query", "", true],
+    ["a query of spaces only", "   ", true],
+    ["part of the name", "ter no", true],
+    ["part of the description only", "pdf annot", true],
+    ["the name in another letter case", "BETTER", true],
+    ["a query with outer spaces", "  notes ", true],
+    ["text in neither", "zotfile", false],
+    ["text that spans the name and the description", "notes edits", false],
+    ["inner spaces that the name does not have", "better  notes", false],
+  ])("search: %s", (_, query, shows) => {
+    expect(rowShows(row, ANY, ANY_MAJOR, query)).toBe(shows);
+  });
+
+  test("search: a row with no description matches on its name only", () => {
+    const bare = { ...row, description: "" };
+    expect(rowShows(bare, ANY, ANY_MAJOR, "better")).toBe(true);
+    expect(rowShows(bare, ANY, ANY_MAJOR, "pdf")).toBe(false);
+  });
+
+  test.each([
+    ["the language fails", "de", "8", false],
+    ["the version fails", "zh", "7", false],
+    ["both pass", "zh", "8", true],
+  ])("search: a matching query still hides the row when %s", (_, language, zotero, shows) => {
+    expect(rowShows(row, { value: language, options: LANGUAGES }, { value: zotero, options: MAJORS }, "notes")).toBe(shows);
   });
 });
 
@@ -62,11 +92,12 @@ describe("filterOn", () => {
 
 describe("filterStatus", () => {
   test.each([
-    ["no filter is on", 42, 42, false, ""],
+    ["no filter is on", 42, 42, false, "42 plugins"],
+    ["no filter is on and the table holds one row", 1, 1, false, "1 plugin"],
     ["a filter hides every row", 0, 42, true, "No plugins match these filters."],
-    ["a filter shows some rows", 8, 42, true, "Showing 8 of 42 plugins."],
-    ["the list holds one row", 1, 1, true, "Showing 1 of 1 plugin."],
-  ])("says the line when %s", (_, shown, total, filtering, text) => {
+    ["a filter shows some rows", 8, 42, true, "8 of 42 plugins"],
+    ["the table holds one row", 1, 1, true, "1 of 1 plugin"],
+  ])("says the count when %s", (_, shown, total, filtering, text) => {
     expect(filterStatus(shown, total, filtering)).toBe(text);
   });
 });
@@ -91,6 +122,19 @@ describe("filterHref", () => {
     ["a value no button has", "6"],
   ])("removes a held zotero parameter (%s) when the value is \"\" and keeps the language parameter", (_, held) => {
     expect(filterHref(`${PAGE}?zotero=${held}&language=zh`, "zotero", "")).toBe(`${PAGE}?language=zh`);
+  });
+
+  test("writes the search query to q and keeps the other parameters", () => {
+    expect(filterHref(`${PAGE}?language=zh`, "q", "pdf notes")).toBe(`${PAGE}?language=zh&q=pdf+notes`);
+  });
+
+  test("removes q for an empty query and keeps the other parameters", () => {
+    expect(filterHref(`${PAGE}?q=pdf&zotero=8`, "q", "")).toBe(`${PAGE}?zotero=8`);
+  });
+
+  test("reads back a query that it wrote", () => {
+    const query = "café & co?";
+    expect(new URL(filterHref(PAGE, "q", query)).searchParams.get("q")).toBe(query);
   });
 
   test.each([

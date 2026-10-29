@@ -32,6 +32,12 @@ export function rowLanguages(record: LanguageRecord): string {
   return subtags(record).join(" ");
 }
 
+// The language subtag of each applied tag, once, in the order of its first tag in the list,
+// so fr-FR, de, fr-CA give fr, de.
+export function listedSubtags(record: LanguageRecord): string[] {
+  return [...new Set(appliedLanguages(record).map((tag) => new Intl.Locale(tag).language))];
+}
+
 // One menu option for each subtag that some row carries. Its text is the subtag's name and
 // the number of rows that carry it, such as "Chinese (2)". The options are in order of that
 // number, largest first, and options with the same number in code-unit order of their name.

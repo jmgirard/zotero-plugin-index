@@ -1,13 +1,13 @@
 # M053: Show the home list as a table
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** M052
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the public home page and the look of every page
-- **Branch/PR:** —
+- **Branch/PR:** m053-home-table
 
 ## Goal
 
@@ -113,19 +113,19 @@ fixture is `test/fixtures/site/plugins.json`.
 
 ## Tasks
 
-- [ ] T1: Add to the site fixture the records AC1 to AC3 name (a case or
+- [x] T1: Add to the site fixture the records AC1 to AC3 name (a case or
       accent twin, a ranged record with partial start results, 4+
       subtags, `xpiUrl` present, a failing repo URL, a failing `xpiUrl`),
       and refresh `test/fixtures/site/home-facts.json` if it reads them.
-- [ ] T2: Add the search match and `?q=` handling to
+- [x] T2: Add the search match and `?q=` handling to
       `src/site/home-filter.ts` (`rowShows`, `filterHref`) with unit tests.
-- [ ] T3: Rewrite `site/src/pages/index.astro` as the table (declared and
+- [x] T3: Rewrite `site/src/pages/index.astro` as the table (declared and
       start marks, legend, languages, date, links), sorted as AC1 says;
       replace the home tests in `test/site.test.ts`.
-- [ ] T4: Wire the search box into the page script beside the menu and
+- [x] T4: Wire the search box into the page script beside the menu and
       buttons; keep the controls hidden with `[hidden]` rules; test the
       built HTML, the rules, and the script's call.
-- [ ] T5: Rewrite the tokens and shared rules in `Base.astro` (palette for
+- [x] T5: Rewrite the tokens and shared rules in `Base.astro` (palette for
       both schemes, sizes, top bar, footer, buttons, marks); rewrite the
       color test to read the tokens and check the AC6 pairs; keep the
       M049 size test passing.
@@ -148,6 +148,16 @@ fixture is `test/fixtures/site/plugins.json`.
 - 2026-10-29: lessons used: 2026-10-25 (M007) script selector grep; 2026-10-26 (M015) serving the built site; 2026-10-27 (M021) Astro line breaks; 2026-10-27 (M024) empty attributes; 2026-10-28 (M035) deployed data for hand checks; 2026-10-28 (M037) block nesting; 2026-10-29 (M048) inline CSS limit; 2026-10-29 (M048) iframe width check.
 - 2026-10-29: criteria audit (full mode, fresh Opus reader): 9 findings here plus 1 shared with M054, all fixed: sort call and tie rule named, "none" split from no mark; a case or accent fixture twin; language, date, repo URL, and xpiUrl rules named, "shows" made "holds"; fixture records named for partial start results, 4+ subtags, xpiUrl, and failing links; the start mark gets its own element and a legend AC (no combined verdict); search made an if-and-only-if property of `rowShows` plus a script check; `[hidden]` rules added to the no-JS AC; the color AC now lists token pairs, since the old test reads M049 tokens; the screenshot moved to T7 and the width check runs on data with xpiUrl; the legend keeps "a declared range is not a test result" between the M053 and M054 merges. The ACs went from 7 to 8.
 - 2026-10-29: sizing: kept 8 ACs over the 7 tripwire rather than split, because the table's columns, its filters, and the shared look ship as one page change and a split would deploy a half-built table; 8 tasks, 138 plan-owned lines.
+- 2026-10-29: implement started; branch m053-home-table cut from main at 9b7211b.
+- 2026-10-29: T1-T5 in one checkpoint, because the site tests of each read the page the others build; verify green (1135 tests, pnpm check 0 problems).
+- 2026-10-29: T1: fixture adds a-cafe ("Café Tools") and b-cafe ("cafe tools"), placed so data order and code-unit order both disagree with the tie rule, a-cafe with 6 tags (5 subtags), xpiUrl, and two 8.x start results listed older first; b-cafe with an ftp: xpiUrl; ssh-plugin, a failure with a git@ repoUrl.
+- 2026-10-29: T1: deleted test/fixtures/site/home-facts.json and test/support/home-facts.ts: they froze the M049 card list's facts, which the table replaces on purpose; the new row tests check each cell.
+- 2026-10-29: T2: rowShows takes the row's name and description and the query as a fourth argument; filterStatus now always gives a count ("12 plugins", "2 of 12 plugins", or "No plugins match these filters."), the mockup's count.
+- 2026-10-29: T3: kept the existing labels "Menus and settings in" and "Declares Zotero" over the mockup's "Language" and "Zotero", and "Any" for the first button as the mockup has it; descriptions clamp at 2 lines, not the mockup's 1, and carry no title copy.
+- 2026-10-29: T3: marks are text glyphs (✓ ◐ – ● ✕) as on the plugin pages; the source and download links use inline SVG from a new Icon.astro; the source link's label says "Source code", since a failed record's repoUrl need not be GitHub.
+- 2026-10-29: T4: the script test runs the built, minified script in node:vm against stand-in elements (the function names are mangled, so a grep for rowShows cannot work); a stand-in throws on any selector it does not know.
+- 2026-10-29: T5: the mockup's --faint and --none failed 3:1 on --surface (light 2.54 and 1.97, dark --none 2.23); changed to #8a8a84 and #8f8f88 in light and #74746d in dark; the other mockup colors pass every AC6 pair.
+- 2026-10-29: planted defects, each red then restored: no id tie-break (4 tests), first start result over newest (2), script ignoring the search box (3), no .search[hidden] rule (1), the mockup's --faint (1).
 
 ## Decisions
 

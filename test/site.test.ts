@@ -2,14 +2,15 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { runInNewContext } from "node:vm";
 import { Ajv } from "ajv";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json" };
-import { displayName, pluginHref, rangeText, type PluginRecord } from "../site/src/data.ts";
+import { displayName, pluginHref, rangeText, safeHref, type PluginRecord } from "../site/src/data.ts";
 import type { PluginsFile } from "../src/build/build.ts";
 import { shownDescription } from "../src/site/description.ts";
-import { declaredRange, majorSupport, ZOTERO_MAJORS } from "../src/site/version.ts";
-import { homeFacts } from "./support/home-facts.ts";
+import { appliedLanguages, languageName } from "../src/site/languages.ts";
+import { compareVersions, declaredRange, majorSupport, ZOTERO_MAJORS } from "../src/site/version.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const FIXTURE = resolve(ROOT, "test/fixtures/site/plugins.json");
@@ -113,6 +114,11 @@ function escaped(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
+// Text as the browser reads it from the page.
+function unescaped(html: string): string {
+  return html.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+}
+
 function hasBound(record: PluginRecord): boolean {
   const { min, max } = declaredRange(record);
   return min !== undefined || max !== undefined;
@@ -168,6 +174,27 @@ describe("the site fixture", () => {
     expect(records.some((record) => (record.reports?.length ?? 0) > 0)).toBe(true);
     expect(records.some((record) => record.upstream && record.reports?.length === 0)).toBe(true);
     expect(records.some((record) => record.upstream && !("reports" in record))).toBe(true);
+  });
+
+  test("holds each shape of home table row", () => {
+    // Two names that differ only in letter case or accents, and so compare equal.
+    const names = records.map(displayName);
+    expect(
+      names.some((a, i) => names.some((b, j) => i !== j && a !== b && a.localeCompare(b, "en", { sensitivity: "base" }) === 0)),
+    ).toBe(true);
+    // A declared range whose start results cover some of its majors only.
+    expect(
+      records.some((record) => {
+        const declared = ZOTERO_MAJORS.filter((major) => majorSupport(record, major) === "all");
+        const tested = new Set((record.startTests ?? []).map(({ zotero }) => zotero.split(".")[0]));
+        return declared.some((major) => tested.has(major)) && declared.some((major) => !tested.has(major));
+      }),
+    ).toBe(true);
+    expect(records.some((record) => new Set(appliedLanguages(record).map((tag) => new Intl.Locale(tag).language)).size >= 4)).toBe(true);
+    expect(records.some((record) => record.upstream?.xpiUrl && safeHref(record.upstream.xpiUrl))).toBe(true);
+    expect(records.some((record) => record.upstream?.xpiUrl && !safeHref(record.upstream.xpiUrl))).toBe(true);
+    expect(records.some((record) => record.upstream && record.upstream.xpiUrl === undefined)).toBe(true);
+    expect(records.some((record) => !safeHref(record.upstream?.repoUrl ?? record.repoUrl))).toBe(true);
   });
 });
 
@@ -453,128 +480,407 @@ describe("the home page", () => {
     for (const id of linked) expect(existsSync(join(out, "plugins", id, "index.html")), id).toBe(true);
   });
 
-  // The row holds no other <li>, so it ends at the first </li> after it starts.
-  function row(id: string): string {
+  // The table's body rows, each with its attributes and its cells.
+  function rows() {
     const html = home();
-    const start = [...html.matchAll(/<li class="plugin"[^>]*>/g)].find(([tag]) => tag.includes(` data-plugin="${escaped(id)}"`))?.index ?? -1;
-    expect(start, id).toBeGreaterThan(-1);
-    return html.slice(start, html.indexOf("</li>", start));
+    const body = html.slice(html.indexOf("<tbody>"), html.indexOf("</tbody>"));
+    return [...body.matchAll(/<tr([^>]*)>(.*?)<\/tr>/gs)].map(([, attributes, inner]) => ({
+      attributes: attributes!,
+      id: unescaped(/^ data-plugin="([^"]*)"/.exec(attributes!)![1]!),
+      cells: [...inner!.matchAll(/<td([^>]*)>(.*?)<\/td>/gs)].map(([, cellAttributes, cell]) => ({
+        attributes: cellAttributes!,
+        html: cell!,
+      })),
+    }));
   }
 
-  test.each(ids)("shows the row of %s with its parts in order", (id) => {
-    const record = records.find((r) => r.id === id)!;
-    const html = row(id);
-    const archived = record.upstream?.archived === true;
-    const description = shownDescription(record);
-    const status = record.failure ? `Not read: ${record.failure.name}` : hasBound(record) ? 'class="pills"' : "No declared range";
-    expectInOrder(html, [
-      `<a href="${escaped(pluginHref(id))}">${escaped(displayName(record))}</a>`,
-      ...(archived ? ["<span data-archived>(archived)</span>"] : []),
-      ...(description ? [`<p class="description" data-description>${escaped(description)}</p>`] : []),
-      status,
+  function row(id: string) {
+    const found = rows().find((r) => r.id === id);
+    expect(found, id).toBeDefined();
+    return found!;
+  }
+
+  test("holds one table whose body has one row per record, by name and then by id", () => {
+    expect(home().match(/<table[\s>]/g)).toHaveLength(1);
+    expect(rows().map(({ id }) => id)).toEqual([
+      "_x-y+z.w@{v}",
+      "broken-plugin@example.org",
+      // "Café Tools" and "cafe tools" compare equal, so their ids order them.
+      "a-cafe@example.org",
+      "b-cafe@example.org",
+      "first-plugin@example.org",
+      "{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}",
+      "locale-plugin@example.org",
+      "min-only-plugin@example.org",
+      "no-range-plugin@example.org",
+      "old-plugin@example.org",
+      "ssh-plugin@example.org",
+      "zotero6-plugin@example.org",
     ]);
-    if (!archived) expect(html).not.toContain("data-archived");
-    if (!description) expect(html).not.toContain("data-description");
-    if (!record.failure && hasBound(record)) expectPills(html, record);
-    else expect(pills(html)).toEqual([]);
+  });
+
+  test.each(ids)("shows the name cell of %s", (id) => {
+    const record = records.find((r) => r.id === id)!;
+    const description = shownDescription(record);
+    expect(row(id).cells[0]!.html).toBe(
+      `<a href="${escaped(pluginHref(id))}" data-name>${escaped(displayName(record))}</a>` +
+        (record.upstream?.archived === true ? '<span class="badge" data-archived>Archived</span>' : "") +
+        (description ? `<div class="desc" data-description>${escaped(description)}</div>` : ""),
+    );
   });
 
   test("marks only the archived plugin", () => {
     expect(home().match(/\sdata-archived/g)).toHaveLength(1);
+    expect(row("old-plugin@example.org").cells[0]!.html).toContain(">Archived</span>");
+  });
+
+  // The declared mark and the start mark of one version cell.
+  const MARK = /^(?:<span class="mark" data-support="([^"]+)" title="([^"]*)"><span aria-hidden="true">([^<]*)<\/span><span class="visually-hidden">([^<]*)<\/span><\/span>)?(?:<span class="start" data-start="([^"]+)" title="([^"]*)"><span aria-hidden="true">([^<]*)<\/span><span class="visually-hidden">([^<]*)<\/span><\/span>)?$/;
+
+  // The start result for a major, found here without majorStart: the newest of the major's results.
+  function newestStart(record: PluginRecord, major: string) {
+    const results = (record.startTests ?? []).filter(({ zotero }) => zotero.split(".")[0] === major);
+    return results.sort((a, b) => compareVersions(b.zotero, a.zotero))[0];
+  }
+
+  const START_WORDS: Record<string, string> = {
+    started: "started",
+    "start-error": "failed at startup",
+    "not-installed": "did not install",
+    "timed-out": "gave no answer in time",
+  };
+
+  test.each(ids)("shows the version cells of %s: a declared mark and a start mark per major, or Not read", (id) => {
+    const record = records.find((r) => r.id === id)!;
+    const cells = row(id).cells.slice(1, record.failure ? 2 : 1 + ZOTERO_MAJORS.length);
+    if (record.failure) {
+      expect(cells[0]).toEqual({ attributes: ' class="v not-read" colspan="4" data-status="failure"', html: "Not read" });
+      expect(row(id).cells.some(({ attributes }) => attributes.includes("data-major"))).toBe(false);
+      return;
+    }
+    const marks: Record<string, string> = { all: "✓", some: "◐", none: "–" };
+    const label = (major: string, support: string) =>
+      support === "all"
+        ? `Declares all of Zotero ${major}`
+        : support === "some"
+          ? `Declares part of Zotero ${major}. Declared range: ${rangeText(record)}`
+          : `Does not declare Zotero ${major}`;
+    expect(cells.map(({ attributes }) => attributes)).toEqual(ZOTERO_MAJORS.map((major) => ` class="v" data-major="${major}"`));
+    ZOTERO_MAJORS.forEach((major, i) => {
+      const found = MARK.exec(cells[i]!.html);
+      expect(found, `${id} ${major}: ${cells[i]!.html}`).not.toBeNull();
+      const [, support, title, visible, hidden, start, startTitle, startVisible, startHidden] = found!;
+      const declared = majorSupport(record, major);
+      expect(support, major).toBe(declared);
+      if (declared) {
+        expect([title, visible, hidden]).toEqual([escaped(label(major, declared)), marks[declared], escaped(label(major, declared))]);
+      }
+      const result = newestStart(record, major);
+      expect(start, major).toBe(result?.result);
+      if (result) {
+        const words = `Zotero ${result.zotero} ${START_WORDS[result.result]}`;
+        expect([startTitle, startVisible, startHidden]).toEqual([words, result.result === "started" ? "●" : "✕", `Start test: ${words}`]);
+      }
+    });
+  });
+
+  test("shows the newest start result of a major and none for a declared major with no result", () => {
+    const cells = row("a-cafe@example.org").cells;
+    const starts = cells.slice(1, 5).map(({ html }) => /<span class="start" data-start="([^"]+)" title="([^"]*)"/.exec(html)?.slice(1));
+    expect(starts).toEqual([["started", "Zotero 7.0.32 started"], ["started", "Zotero 8.0.10 started"], undefined, undefined]);
+    expect(cells[3]!.html).toContain('data-support="all"');
+    // A record with no declared range keeps its start marks.
+    const bare = row("no-range-plugin@example.org").cells.slice(1, 5).map(({ html }) => [html.includes('class="mark"'), /data-start="([^"]+)"/.exec(html)?.[1]]);
+    expect(bare).toEqual([[false, "started"], [false, "start-error"], [false, "not-installed"], [false, "timed-out"]]);
+  });
+
+  // The language codes a row shows, found here without shortLanguages.
+  function codes(record: PluginRecord): string[] {
+    const subtags = [...new Set(appliedLanguages(record).map((tag) => new Intl.Locale(tag).language))];
+    return subtags.length <= 3 ? subtags : [...subtags.slice(0, 2), `+${subtags.length - 2}`];
+  }
+
+  test.each(ids)("shows the languages, the release date, and the links of %s", (id) => {
+    const record = records.find((r) => r.id === id)!;
+    const cells = row(id).cells;
+    const [languages, date, links] = cells.slice(-3);
+    expect(cells).toHaveLength((record.failure ? 2 : 1 + ZOTERO_MAJORS.length) + 3);
+    expect(languages!.attributes).toBe(' class="lang" data-languages-shown');
+    expect([...languages!.html.matchAll(/<abbr[^>]*>([^<]*)<\/abbr>/g)].map(([, text]) => text)).toEqual(codes(record));
+    expect(languages!.html.replace(/<abbr[^>]*>[^<]*<\/abbr>/g, "")).toBe("");
+    const released = record.upstream?.latestReleaseDate;
+    expect(date!.html).toBe(
+      released
+        ? `<time datetime="${released.slice(0, 10)}">${new Date(released).toLocaleDateString("en", { month: "short", year: "numeric", timeZone: "UTC" })}</time>`
+        : "",
+    );
+    const linked = [...links!.html.matchAll(/<a href="([^"]*)" data-link="([^"]+)"/g)].map(([, href, kind]) => [kind, unescaped(href!)]);
+    const source = safeHref(record.upstream?.repoUrl ?? record.repoUrl);
+    const xpi = record.upstream?.xpiUrl && safeHref(record.upstream.xpiUrl);
+    expect(linked).toEqual([...(source ? [["source", source]] : []), ...(xpi ? [["download", xpi]] : [])]);
+  });
+
+  test("shows the first two of four or more language codes and names the rest", () => {
+    const html = row("a-cafe@example.org").cells.at(-3)!.html;
+    expect(html).toBe('<abbr title="French">fr</abbr><abbr title="German">de</abbr><abbr class="more" title="Japanese, English, Italian">+3</abbr>');
+    expect(row("b-cafe@example.org").cells.at(-3)!.html).toBe(`<abbr title="${languageName("en")}">en</abbr>`);
+  });
+
+  test("shows the release month in UTC", () => {
+    expect(row("b-cafe@example.org").cells.at(-2)!.html).toBe('<time datetime="2025-12-31">Dec 2025</time>');
+  });
+
+  test("links a source and a download only when the address passes", () => {
+    const kinds = (id: string) => [...row(id).cells.at(-1)!.html.matchAll(/data-link="([^"]+)"/g)].map(([, kind]) => kind);
+    expect(kinds("a-cafe@example.org")).toEqual(["source", "download"]);
+    // An ftp: xpiUrl, no xpiUrl, and a repoUrl that is not a web address.
+    expect(kinds("b-cafe@example.org")).toEqual(["source"]);
+    expect(kinds("first-plugin@example.org")).toEqual(["source"]);
+    expect(kinds("ssh-plugin@example.org")).toEqual([]);
+    expect(row("a-cafe@example.org").cells.at(-1)!.html).toContain(
+      'title="Download version 2.0.0 (.xpi)" aria-label="Download Café Tools 2.0.0 (.xpi)"',
+    );
+  });
+
+  test("names each declared mark and each start mark in a legend under the table, and says a range is not a test result", () => {
+    const html = home();
+    const legend = /<ul class="legend" data-legend>(.*?)<\/ul>/s.exec(html);
+    expect(legend).not.toBeNull();
+    expect(html.indexOf("<ul class=\"legend\"")).toBeGreaterThan(html.indexOf("</table>"));
+    const items = [...legend![1]!.matchAll(/<li[^>]*>(.*?)<\/li>/gs)].map(([, item]) => item!.replace(/\s+/g, " "));
+    expect(items).toEqual([
+      '<span class="mark" data-support="all" aria-hidden="true">✓</span> Declares all of that Zotero version',
+      '<span class="mark" data-support="some" aria-hidden="true">◐</span> Declares part of it',
+      '<span class="mark" data-support="none" aria-hidden="true">–</span> Declares none of it',
+      '<span class="start" data-start="started" aria-hidden="true">●</span> Started in the daily start test',
+      '<span class="start" data-start="start-error" aria-hidden="true">✕</span> Failed to install, start, or answer in the start test',
+      "A declared range is what the plugin's manifest says, not a test result. A start test does not show that a plugin works.",
+    ]);
   });
 
   test("gives each row the language subtags it applies", () => {
-    const rows = [...home().matchAll(/<li class="plugin"[^>]*>/g)].map(([tag]) => [
-      /\sdata-plugin="([^"]*)"/.exec(tag)?.[1],
-      /\sdata-languages="([^"]*)"/.exec(tag)?.[1],
-    ]);
-    expect(rows).toEqual([
-      ["broken-plugin@example.org", ""],
-      ["first-plugin@example.org", "en es zh"],
-      ["old-plugin@example.org", ""],
-      ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", ""],
-      ["no-range-plugin@example.org", "de fr"],
-      ["min-only-plugin@example.org", "zh"],
-      ["locale-plugin@example.org", "es pt"],
+    expect(rows().map(({ id, attributes }) => [id, /\sdata-languages="([^"]*)"/.exec(attributes)?.[1]])).toEqual([
       ["_x-y+z.w@{v}", ""],
+      ["broken-plugin@example.org", ""],
+      ["a-cafe@example.org", "de en fr it ja"],
+      ["b-cafe@example.org", "en"],
+      ["first-plugin@example.org", "en es zh"],
+      ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", ""],
+      ["locale-plugin@example.org", "es pt"],
+      ["min-only-plugin@example.org", "zh"],
+      ["no-range-plugin@example.org", "de fr"],
+      ["old-plugin@example.org", ""],
+      ["ssh-plugin@example.org", ""],
       ["zotero6-plugin@example.org", ""],
     ]);
   });
 
   test("gives each row the Zotero majors it declares all or part of", () => {
-    const rows = [...home().matchAll(/<li class="plugin"[^>]*>/g)].map(([tag]) => [
-      /\sdata-plugin="([^"]*)"/.exec(tag)?.[1],
-      /\sdata-zotero="([^"]*)"/.exec(tag)?.[1],
-    ]);
-    expect(rows).toEqual([
-      ["broken-plugin@example.org", ""],
-      ["first-plugin@example.org", "7 8"],
-      ["old-plugin@example.org", "7"],
-      ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "9"],
-      ["no-range-plugin@example.org", ""],
-      ["min-only-plugin@example.org", "8 9 10"],
-      ["locale-plugin@example.org", "7 8 9"],
+    expect(rows().map(({ id, attributes }) => [id, /\sdata-zotero="([^"]*)"/.exec(attributes)?.[1]])).toEqual([
       ["_x-y+z.w@{v}", ""],
+      ["broken-plugin@example.org", ""],
+      ["a-cafe@example.org", "7 8 9"],
+      ["b-cafe@example.org", "7"],
+      ["first-plugin@example.org", "7 8"],
+      ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "9"],
+      ["locale-plugin@example.org", "7 8 9"],
+      ["min-only-plugin@example.org", "8 9 10"],
+      ["no-range-plugin@example.org", ""],
+      ["old-plugin@example.org", "7"],
+      ["ssh-plugin@example.org", ""],
       ["zotero6-plugin@example.org", ""],
     ]);
   });
 
-  test("links the intro to the Add a plugin form", () => {
-    const intro = /<p class="intro">(.*?)<\/p>/s.exec(home())![1]!;
-    const link = /<a href="([^"]*)" data-add-plugin>Add a plugin<\/a>/.exec(intro);
-    expect(link?.[1]).toBe("https://github.com/jmgirard/zotero-plugin-index/issues/new?template=add-plugin.yml");
-    const template = new URL(link![1]!).searchParams.get("template")!;
-    expect(existsSync(join(ROOT, ".github/ISSUE_TEMPLATE", template))).toBe(true);
-  });
-
-  test("holds hidden version buttons, Any version pressed, then one for each major", () => {
+  test("holds hidden version buttons, Any pressed, then one for each major", () => {
     const group = /<div class="version-filter" hidden><span id="([^"]+)">Declares Zotero<\/span><div role="group" aria-labelledby="([^"]+)" data-version-filter>(.*?)<\/div><\/div>/.exec(home());
     expect(group).not.toBeNull();
     expect(group![2]).toBe(group![1]);
     const buttons = [...group![3]!.matchAll(/<button([^>]*)>([^<]*)<\/button>/g)].map(([, attributes, text]) => [attributes, text]);
     expect(group![3]!.replace(/<button[^>]*>[^<]*<\/button>/g, "")).toBe("");
     expect(buttons).toEqual([
-      [' type="button" aria-pressed="true"', "Any version"],
+      [' type="button" aria-pressed="true"', "Any"],
       ...["7", "8", "9", "10"].map((major) => [` type="button" value="${major}" aria-pressed="false"`, major]),
     ]);
   });
 
-  test("holds one hidden status line between the version buttons and the list", () => {
-    const html = home();
-    expect(html.match(/\sdata-filter-status/g)).toHaveLength(1);
-    expect(html).toMatch(
-      /<div class="version-filter" hidden><span id="[^"]+">Declares Zotero<\/span><div role="group" aria-labelledby="[^"]+" data-version-filter>(?:<button[^>]*>[^<]*<\/button>)*<\/div><\/div><p class="filter-status" role="status" data-filter-status hidden><\/p><ul class="plugins">/,
-    );
-  });
-
-  test("keeps the facts of its rows and filters as the page had them before the restyle", () => {
-    const saved = JSON.parse(readFileSync(resolve(ROOT, "test/fixtures/site/home-facts.json"), "utf8")) as { facts: ReturnType<typeof homeFacts> };
-    expect(saved.facts.rows).toHaveLength(ids.length);
-    expect(saved.facts.buttons).toHaveLength(ZOTERO_MAJORS.length + 1);
-    expect(homeFacts(home())).toEqual(saved.facts);
-  });
-
-  test("holds a hidden language menu with one option for each subtag", () => {
+  test("holds a hidden language menu with one option for each subtag, most plugins first", () => {
     const menu = /<p class="language-filter" hidden><label for="language">Menus and settings in<\/label> <select id="language" data-language-filter autocomplete="off">(.*?)<\/select><\/p>/.exec(home());
     expect(menu).not.toBeNull();
     const options = [...menu![1]!.matchAll(/<option value="([^"]*)">([^<]*)<\/option>/g)].map(([, value, text]) => [value, text]);
     expect(options).toEqual([
       ["", "All languages"],
+      ["en", "English (3)"],
       ["zh", "Chinese (2)"],
+      ["fr", "French (2)"],
+      ["de", "German (2)"],
       ["es", "Spanish (2)"],
-      ["en", "English (1)"],
-      ["fr", "French (1)"],
-      ["de", "German (1)"],
+      ["it", "Italian (1)"],
+      ["ja", "Japanese (1)"],
       ["pt", "Portuguese (1)"],
     ]);
+  });
+
+  test("holds every row without hidden, and the search box, the menu, the buttons, and the count inside hidden elements", () => {
+    const html = home();
+    expect(rows().length).toBe(ids.length);
+    for (const { id, attributes } of rows()) expect(attributes, id).not.toMatch(/\shidden[\s=]|\shidden$/);
+    const toolbar = html.slice(html.indexOf('<div class="toolbar">') + '<div class="toolbar">'.length, html.indexOf('</div><div class="table-card">'));
+    expect(toolbar.length).toBeGreaterThan(0);
+    expect(toolbar).toMatch(/^<p class="search" hidden><label for="search" class="visually-hidden">Search plugins<\/label><svg [^]*?<\/svg><input type="search" id="search" data-search placeholder="Search plugins" autocomplete="off"><\/p>/);
+    expect(toolbar).toMatch(/<p class="language-filter" hidden><label[^>]*>[^<]*<\/label> <select[^>]*>(?:<option[^>]*>[^<]*<\/option>)+<\/select><\/p>/);
+    expect(toolbar).toMatch(/<div class="version-filter" hidden><span[^>]*>[^<]*<\/span><div role="group"[^>]*>(?:<button[^>]*>[^<]*<\/button>)+<\/div><\/div>/);
+    expect(toolbar).toMatch(/<p class="filter-status" role="status" data-filter-status hidden><\/p>$/);
+    expect(html.match(/<input[\s>]/g)).toHaveLength(1);
+    expect(html.match(/<select[\s>]/g)).toHaveLength(1);
+    expect(html.match(/<button[\s>]/g)).toHaveLength(ZOTERO_MAJORS.length + 1);
+    expect(html.match(/\sdata-filter-status/g)).toHaveLength(1);
+  });
+
+  test("hides each control's element while it has hidden, whatever display its other rules give it", () => {
+    const hiding = cssRules(readFileSync(resolve(ROOT, "site/src/layouts/Base.astro"), "utf8")).filter(({ declarations }) =>
+      declarations.some(([property, value]) => property === "display" && value === "none"),
+    );
+    const selectors = hiding.flatMap(({ selector }) => selector.split(",").map((part) => part.trim()));
+    for (const control of [".search[hidden]", ".language-filter[hidden]", ".version-filter[hidden]", ".filter-status[hidden]"]) {
+      expect(selectors, control).toContain(control);
+    }
+  });
+});
+
+// The built home page script run against stand-ins for the elements it reads, so a test can
+// type in the search box, load an address, or go Back, and read which rows it hides.
+function homeScript(href: string) {
+  const html = home();
+  const script = /<script type="module">(.*?)<\/script>/s.exec(html)![1]!;
+  const shown = new Set<string>();
+  const wrapper = (name: string) => ({ removeAttribute: (attribute: string) => attribute === "hidden" && shown.add(name) });
+  const events = new Map<string, () => void>();
+  const listen = (name: string) => (type: string, handler: () => void) => events.set(`${name}:${type}`, handler);
+  const search = { value: "", addEventListener: listen("search"), closest: () => wrapper("search") };
+  const options = [...html.matchAll(/<option value="([^"]*)">/g)].map(([, value]) => ({ value: unescaped(value!) }));
+  const select = { value: "", options, addEventListener: listen("select"), closest: () => wrapper("menu") };
+  const buttons = [...html.matchAll(/<button type="button"(?: value="([^"]*)")? aria-pressed="[^"]*">/g)].map(([, value]) => ({
+    value: value ?? "",
+    addEventListener: () => {},
+    setAttribute: () => {},
+    closest: () => wrapper("buttons"),
+  }));
+  const status = { textContent: "", removeAttribute: () => shown.add("count") };
+  const body = html.slice(html.indexOf("<tbody>"), html.indexOf("</tbody>"));
+  const tableRows = [...body.matchAll(/<tr data-plugin="([^"]*)" data-languages="([^"]*)" data-zotero="([^"]*)">(.*?)<\/tr>/gs)].map(
+    ([, plugin, languages, zotero, inner]) => {
+      const text = (attribute: string) => {
+        const found = new RegExp(`\\s${attribute}>([^<]*)<`).exec(inner!);
+        return found ? { textContent: unescaped(found[1]!) } : null;
+      };
+      return {
+        hidden: false,
+        dataset: { plugin: unescaped(plugin!), languages, zotero },
+        querySelector: (selector: string) => text(selector.slice(1, -1)),
+      };
+    },
+  );
+  const lookups: Record<string, unknown> = {
+    "input[data-search]": search,
+    "select[data-language-filter]": select,
+    "[data-filter-status]": status,
+  };
+  const lists: Record<string, unknown[]> = { "[data-version-filter] button": buttons, "tbody tr[data-plugin]": tableRows };
+  const location = { href };
+  const document = {
+    querySelector: (selector: string) => {
+      if (!(selector in lookups)) throw new Error(`the script asks for ${selector}`);
+      return lookups[selector];
+    },
+    querySelectorAll: (selector: string) => {
+      if (!(selector in lists)) throw new Error(`the script asks for all ${selector}`);
+      return lists[selector];
+    },
+  };
+  const history = { replaceState: (_state: unknown, _title: string, next: string) => (location.href = String(next)) };
+  runInNewContext(script, { document, location, history, URL, addEventListener: listen("window") });
+  return {
+    search,
+    status,
+    location,
+    shown,
+    visible: () => tableRows.filter((r) => !r.hidden).map((r) => r.dataset.plugin),
+    fire: (name: string) => events.get(name)!(),
+  };
+}
+
+describe("the home page script", () => {
+  const PAGE = "https://jmgirard.github.io/zotero-plugin-index/";
+  // The ids of the rows whose name or description holds the query, both lowercased, in table order.
+  const matching = (query: string) =>
+    [...home().matchAll(/<tr data-plugin="([^"]*)"/g)]
+      .map(([, id]) => records.find((record) => record.id === unescaped(id!))!)
+      .filter((record) => [displayName(record), shownDescription(record) ?? ""].some((text) => text.toLowerCase().includes(query)))
+      .map(({ id }) => id);
+
+  test("reads q into the search box on load and shows only the rows it matches", () => {
+    const page = homeScript(`${PAGE}?q=TOOLS`);
+    expect(page.search.value).toBe("TOOLS");
+    expect(page.visible()).toEqual(["a-cafe@example.org", "b-cafe@example.org"]);
+    expect(page.visible()).toEqual(matching("tools"));
+    expect(page.status.textContent).toBe(`2 of ${ids.length} plugins`);
+    expect([...page.shown].sort()).toEqual(["buttons", "count", "menu", "search"]);
+  });
+
+  test("passes what the visitor types to the row test and writes it to q", () => {
+    const page = homeScript(PAGE);
+    expect(page.visible()).toHaveLength(ids.length);
+    expect(page.status.textContent).toBe(`${ids.length} plugins`);
+    page.search.value = " LOG ";
+    page.fire("search:input");
+    // Only a description holds "log".
+    expect(page.visible()).toEqual(["b-cafe@example.org"]);
+    expect(page.visible()).toEqual(matching("log"));
+    expect(page.location.href).toBe(`${PAGE}?q=LOG`);
+    page.search.value = "";
+    page.fire("search:input");
+    expect(page.visible()).toHaveLength(ids.length);
+    expect(page.location.href).toBe(PAGE);
+  });
+
+  test("reads q again when Back or Forward changes the address", () => {
+    const page = homeScript(PAGE);
+    page.location.href = `${PAGE}?q=edits`;
+    page.fire("window:popstate");
+    expect(page.search.value).toBe("edits");
+    expect(page.visible()).toEqual(matching("edits"));
+    expect(page.visible()).toEqual(["b-cafe@example.org"]);
   });
 });
 
 describe("the built site", () => {
+  test("puts the top bar and the footer on every page", () => {
+    const files = htmlFiles(out);
+    expect(files).toHaveLength(ids.length + 1);
+    for (const path of files) {
+      const html = readFileSync(join(out, path), "utf8");
+      const bar = /<body><header class="topbar"><div class="topbar-inner">(.*?)<\/div><\/header><main>/s.exec(html)?.[1];
+      expect(bar, path).toBe(
+        '<a class="brand" href="/zotero-plugin-index/">Zotero plugin index</a><nav aria-label="Site">' +
+          '<a href="https://github.com/jmgirard/zotero-plugin-index/issues/new?template=add-plugin.yml" data-add-plugin>Add a plugin</a>' +
+          '<a href="/zotero-plugin-index/v1/plugins.json">Data</a></nav>',
+      );
+      const foot = /<\/main><footer class="foot"><div class="foot-inner foot-rule">(.*?)<\/div><\/footer><\/body>/s.exec(html)?.[1];
+      expect(foot, path).toBe(
+        '<p data-fact="not-vetted">This index does not vet the plugins it lists.</p>' +
+          "<p>The build read each plugin's repository and releases on 2026-10-25.</p>" +
+          '<p>Data file: <a href="/zotero-plugin-index/v1/plugins.json">v1/plugins.json</a></p>',
+      );
+    }
+    expect(existsSync(join(ROOT, ".github/ISSUE_TEMPLATE/add-plugin.yml"))).toBe(true);
+  });
+
   test("carries its styles in each page and links no stylesheet", () => {
     for (const path of htmlFiles(out)) {
       const html = readFileSync(join(out, path), "utf8");
-      expect(html, path).toMatch(/<style>[^<]*\.card[^<]*<\/style>/);
+      // The minified rules can hold "<", as in @media (width<=760px).
+      expect(/<style>(.*?)<\/style>/s.exec(html)?.[1], path).toContain(".card");
       expect(html, path).not.toMatch(/<link[^>]*rel="stylesheet"/);
     }
   });
@@ -723,27 +1029,29 @@ describe("the site colors", () => {
   const light = colors(/\n {6}:root \{(.*?)\n {6}\}/s.exec(layout)![1]!);
   const darkBlock = /@media \(prefers-color-scheme: dark\) \{\s*:root \{(.*?)\}/s.exec(layout)![1]!;
   const dark = new Map([...light, ...colors(darkBlock)]);
-  const PAIRS = [
-    ["--text", "--card"],
-    ["--text", "--page"],
-    ["--muted", "--card"],
-    ["--muted", "--page"],
-    ["--link", "--card"],
-    ["--link", "--page"],
-    ["--all-text", "--all-bg"],
-    ["--some-text", "--some-bg"],
-    ["--none-text", "--none-bg"],
-    ["--broken-text", "--broken-bg"],
+  // Each text token on each surface, and each status token on its own background and on
+  // the surface, at 4.5:1; each mark or icon token on the surface at 3:1.
+  const PAIRS: [string, string, number][] = [
+    ...["--text", "--muted", "--link"].flatMap((text) =>
+      ["--bg", "--surface", "--hover"].map((surface): [string, string, number] => [text, surface, 4.5]),
+    ),
+    ...["--ok", "--part", "--bad"].flatMap((status): [string, string, number][] => [
+      [status, `${status}-bg`, 4.5],
+      [status, "--surface", 4.5],
+    ]),
+    ["--faint", "--surface", 3],
+    ["--none", "--surface", 3],
   ];
 
   test.each([
     ["light", light],
     ["dark", dark],
-  ])("gives each listed text and background pair a contrast of at least 4.5:1 in the %s scheme", (_, scheme) => {
-    for (const [text, background] of PAIRS) {
+  ])("gives each listed token pair its contrast in the %s scheme", (_, scheme) => {
+    expect(PAIRS).toHaveLength(17);
+    for (const [text, background, least] of PAIRS) {
       expect(scheme.get(text), text).toMatch(/^#/);
       expect(scheme.get(background), background).toMatch(/^#/);
-      expect(contrast(scheme.get(text)!, scheme.get(background)!), `${text} on ${background}`).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(scheme.get(text)!, scheme.get(background)!), `${text} on ${background}`).toBeGreaterThanOrEqual(least);
     }
   });
 
@@ -762,7 +1070,9 @@ describe("the site colors", () => {
     ["light", light],
     ["dark", dark],
   ])("gives the text and background that each rule sets together a contrast of at least 4.5:1 in the %s scheme", (_, scheme) => {
-    expect(together.map(({ selector }) => selector)).toEqual(expect.arrayContaining(["body", '.pill[data-support="all"]']));
+    expect(together.map(({ selector }) => selector)).toEqual(
+      expect.arrayContaining(["body", '.pill[data-support="all"]', '.mark[data-support="all"]', '[data-version-filter] button[aria-pressed="true"]']),
+    );
     for (const { selector, text, background } of together) {
       const [, textName] = /^var\((--[\w-]+)\)$/.exec(text) ?? [];
       const [, backgroundName] = /^var\((--[\w-]+)\)$/.exec(background) ?? [];
@@ -773,18 +1083,18 @@ describe("the site colors", () => {
   });
 
   test("colors each report button from its verdict's pair", () => {
-    expect(layout).toMatch(/\.button\[data-report="works"\] \{\s*background: var\(--all-bg\);\s*color: var\(--all-text\);\s*\}/);
-    expect(layout).toMatch(/\.button\[data-report="broken"\] \{\s*background: var\(--broken-bg\);\s*color: var\(--broken-text\);\s*\}/);
+    expect(layout).toMatch(/\.button\[data-report="works"\] \{\s*background: var\(--ok-bg\);\s*color: var\(--ok\);\s*\}/);
+    expect(layout).toMatch(/\.button\[data-report="broken"\] \{\s*background: var\(--bad-bg\);\s*color: var\(--bad\);\s*\}/);
   });
 
   // A report button's border takes its text color, and WCAG 2.2 asks 3:1 for a control's edge.
   test.each([
     ["light", light],
     ["dark", dark],
-  ])("gives each report button's edge a contrast of at least 3:1 with the card in the %s scheme", (_, scheme) => {
+  ])("gives each report button's edge a contrast of at least 3:1 with the surface in the %s scheme", (_, scheme) => {
     expect(layout).toMatch(/\.button \{[^}]*border: 1px solid currentColor;/);
-    for (const border of ["--all-text", "--broken-text"]) {
-      expect(contrast(scheme.get(border)!, scheme.get("--card")!), `${border} on --card`).toBeGreaterThanOrEqual(3);
+    for (const border of ["--ok", "--bad"]) {
+      expect(contrast(scheme.get(border)!, scheme.get("--surface")!), `${border} on --surface`).toBeGreaterThanOrEqual(3);
     }
   });
 });

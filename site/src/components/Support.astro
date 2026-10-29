@@ -2,7 +2,7 @@
 // The declared support for each Zotero major: one pill per major, or a status line when
 // the record was not read or declares no range.
 import { majorSupport, ZOTERO_MAJORS, type MajorSupport } from "../../../src/site/version.ts";
-import { rangeText, type PluginRecord } from "../data.ts";
+import { supportText, type PluginRecord } from "../data.ts";
 
 interface Props {
   record: PluginRecord;
@@ -11,15 +11,9 @@ const { record } = Astro.props;
 
 const MARKS: Record<MajorSupport, string> = { all: "✓", some: "◐", none: "–" };
 
-function label(support: MajorSupport, major: string): string {
-  if (support === "all") return `Declares all of Zotero ${major}`;
-  if (support === "some") return `Declares part of Zotero ${major}. Declared range: ${rangeText(record)}`;
-  return `Does not declare Zotero ${major}`;
-}
-
 const pills = ZOTERO_MAJORS.flatMap((major) => {
   const support = majorSupport(record, major);
-  return support ? [{ major, support, text: label(support, major) }] : [];
+  return support ? [{ major, support, text: supportText(record, support, major) }] : [];
 });
 ---
 
