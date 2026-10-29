@@ -38,7 +38,7 @@ major's start result is the `startTests` item whose `zotero` release has
 that major, the newest by `compareVersions` when several do. The site
 fixture is `test/fixtures/site/plugins.json`.
 
-- [ ] AC1: The home page holds one `<table>` whose `<tbody>` has one row
+- [x] AC1: The home page holds one `<table>` whose `<tbody>` has one row
       per record in the data file, ordered by
       `a.localeCompare(b, "en", { sensitivity: "base" })` on display name,
       ties by `id`. Each row holds a link to the plugin page, an
@@ -50,7 +50,7 @@ fixture is `test/fixtures/site/plugins.json`.
       read" in place of those cells. A site test checks each row built
       from the site fixture against its record, and the fixture holds two
       records whose names differ only in letter case or accent.
-- [ ] AC2: Each version cell holds the major's start result, when one
+- [x] AC2: Each version cell holds the major's start result, when one
       exists, as a second mark in its own element with its own visually
       hidden text (started, or the failure kind), and no start mark when
       none exists. Under the table a legend names each declared mark and
@@ -58,7 +58,7 @@ fixture is `test/fixtures/site/plugins.json`.
       result. A site test checks the start marks per row and the legend,
       and the fixture holds a record with a range whose start results
       cover some majors only.
-- [ ] AC3: Each row holds the record's language subtags in the order of
+- [x] AC3: Each row holds the record's language subtags in the order of
       their first tag in `languages` (all of them when 3 or fewer, else the
       first 2 and "+N" for the rest), the `latestReleaseDate` as
       `toLocaleDateString("en", { month: "short", year: "numeric",
@@ -68,7 +68,7 @@ fixture is `test/fixtures/site/plugins.json`.
       these per row built from the site fixture, which holds a record with
       4 or more subtags, records with and without `xpiUrl`, one record
       whose repo URL fails, and one whose `xpiUrl` fails.
-- [ ] AC4: `rowShows` returns true if and only if the row's display name
+- [x] AC4: `rowShows` returns true if and only if the row's display name
       or shown description contains the trimmed query, both lowercased
       (an empty query matches every row), and the language and version
       tests also pass; `filterHref` writes the query to `?q=` (and removes
@@ -78,13 +78,13 @@ fixture is `test/fixtures/site/plugins.json`.
       first). Unit tests in `test/home-filter.test.ts` cover each clause,
       and a site test checks that the built page script passes the search
       box's value to `rowShows`.
-- [ ] AC5: The built home page's HTML holds every row with no `hidden`
+- [x] AC5: The built home page's HTML holds every row with no `hidden`
       attribute, and the search box, the menu, the buttons, and the count
       inside elements with `hidden`, and `Base.astro` has a rule that sets
       `display: none` on each of those `[hidden]` elements, so a page read
       without JavaScript shows every plugin and no control. A site test
       checks the built HTML and the rules.
-- [ ] AC6: Every page built from the site fixture has the top bar and the
+- [x] AC6: Every page built from the site fixture has the top bar and the
       footer. Sizes in `Base.astro` come from tokens by the M049 rule. In
       both color schemes, as read from `Base.astro` by the color test,
       each text token (`--text`, `--muted`, `--link`) passes 4.5:1 on each
@@ -92,12 +92,12 @@ fixture is `test/fixtures/site/plugins.json`.
       (`--ok`, `--part`, `--bad`) passes 4.5:1 on its own background
       (`--ok-bg`, `--part-bg`, `--bad-bg`) and on `--surface`, and each
       mark or icon token (`--faint`, `--none`) passes 3:1 on `--surface`.
-- [ ] AC7: In the browser pane, the home page built from data whose
+- [x] AC7: In the browser pane, the home page built from data whose
       records carry `xpiUrl` (the deployed data once a build after M052
       has run, else a local copy with `xpiUrl` added) has
       `documentElement.scrollWidth` at most `clientWidth` at 375 px and
       1280 px wide (the iframe width check).
-- [ ] AC8: README, DESIGN, and CHANGELOG under Unreleased describe the
+- [x] AC8: README, DESIGN, and CHANGELOG under Unreleased describe the
       table, the search box, and the new look; the verify slot passes.
 
 ## Coverage
@@ -171,3 +171,14 @@ fixture is `test/fixtures/site/plugins.json`.
 ## Decisions
 
 ## Review
+
+Evidence run 2026-10-29 on m053-home-table at 00da167, main unmoved at 9b7211b: `pnpm test` 1136 passed, 6 skipped; `pnpm check` 0 problems in 56 entries; verbose run of test/site.test.ts and test/home-filter.test.ts 196 passed, 0 failed.
+
+- AC1: "holds one table whose body has one row per record, by name and then by id" passed (one `<table>`, 12 rows in a literal order where "Café Tools" and "cafe tools" tie and sort by id, against data order b-cafe first); "shows the name cell of %s" 12 of 12 passed (link, Archived mark, shown description); "shows the version cells of %s" checks the mark kinds and hidden text per major and "Not read" for the 3 failure records; "holds each shape of home table row" passed (case or accent twin present).
+- AC2: "shows the version cells of %s" 12 of 12 passed, each start mark in its own `span.start` with hidden text "Start test: Zotero <release> <words>", none where no result exists, the expected result found by the test's own newest-by-compareVersions pick; "shows the newest start result of a major and none for a declared major with no result" passed (a-cafe 8 shows 8.0.10 over 8.0.3 listed first; major 9 declared all with no start mark); "names each declared mark and each start mark in a legend under the table" passed (legend after `</table>`, items for ✓ ◐ – ● ✕, note "A declared range comes from the plugin's manifest and the index's overrides, not from a test."); the fixture-shape test confirms a range with partial start results.
+- AC3: "shows the languages, the release date, and the links of %s" 12 of 12 passed (codes computed in the test from appliedLanguages in first-tag order, `<time>` text from toLocaleDateString with timeZone UTC, links from safeHref); "shows the first two of four or more language codes" passed (a-cafe "fr de +3"); "shows the release month in UTC" passed (2025-12-31T23:30Z gives "Dec 2025"); "links a source and a download only when the address passes" passed (a-cafe both, b-cafe ftp: xpiUrl source only, first-plugin no xpiUrl source only, ssh-plugin git@ repoUrl none); fixture-shape test confirms 4+ subtags, xpiUrl present, absent, and failing, and a failing repo URL.
+- AC4: test/home-filter.test.ts rowShows, filterHref, and filterStatus tests 31 passed: search on name, description only, letter case, outer spaces, spaces-only and empty query, no match, a match hidden by a failing language or version filter; `?q=` written, removed for "", and read back. "the home page script" 3 of 3 passed, running the built script in node:vm: `?q=TOOLS` on load shows a-cafe and b-cafe, typing " LOG " shows b-cafe and writes `?q=LOG`, popstate to `?q=edits` reads it back. "holds a hidden language menu with one option for each subtag, most plugins first" passed (English (3) first).
+- AC5: "holds every row without hidden, and the search box, the menu, the buttons, and the count inside hidden elements" passed (12 rows with no hidden attribute; `p.search`, `p.language-filter`, `div.version-filter`, `p.filter-status` each carry hidden and hold the one input, select, 5 buttons, and the count); "hides each control's element while it has hidden" passed (a display: none rule names each of the four `[hidden]` selectors).
+- AC6: "puts the top bar and the footer on every page" passed over all 13 built pages; the M049 size test ("takes each margin, padding, gap, corner radius, and font size ... from a custom property, 0, or auto") passed; "gives each listed token pair its contrast in the light scheme" and "in the dark scheme" passed, 17 pairs each (3 text tokens on 3 surfaces at 4.5:1, 3 status tokens on their own background and on --surface at 4.5:1, --faint and --none on --surface at 3:1); the "sets together", "redefines every hex", and report-button tests also passed.
+- AC7: rebuilt at 00da167 from the deployed data of 2026-10-29T15:00:32Z with xpiUrl added to its 56 read records (no deployed build carries xpiUrl yet), served as m053-live; in the browser pane's same-origin iframes the home page had scrollWidth 375 at clientWidth 375 and 1280 at 1280, 56 rows and 56 download links each; a planted 900 px div gave 916 at 375. Screenshots from T7: scratchpad m053-shots/home-375.jpg and home-1280.jpg.
+- AC8: README "The site" describes the table ("lists every plugin in one table"), the marks and start marks, the search box and `?q=`, the count, and the top bar; DESIGN's site paragraphs and site build bullet name the table, search box, and tokens in Base.astro; CHANGELOG line 391 under `## Unreleased` (the file's only section) holds the series entry for the new look, the table, and the search box; verify slot green as above.
