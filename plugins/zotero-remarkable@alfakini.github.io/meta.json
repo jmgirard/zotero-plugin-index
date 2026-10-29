@@ -1,0 +1,8 @@
+{
+  "id": "zotero-remarkable@alfakini.github.io",
+  "name": "reMarkable Sync for Zotero",
+  "description": "Two-way sync of Zotero PDFs and annotations with reMarkable tablets",
+  "homepage": "https://github.com/alfakini/zotero-reMarkable-plugin#readme",
+  "repoUrl": "https://github.com/alfakini/zotero-reMarkable-plugin",
+  "updateUrl": "https://github.com/alfakini/zotero-reMarkable-plugin/releases/download/release/update.json"
+}
