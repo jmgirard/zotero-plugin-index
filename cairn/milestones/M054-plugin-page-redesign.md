@@ -1,6 +1,6 @@
 # M054: Rebuild the plugin page and add an About page
 
-- **Status:** review
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** M053
 - **Driving RR:** —
@@ -35,7 +35,7 @@ by the time limit → candidate row "Label cut reads on plugin pages".
 Terms: the repo URL, "passes", a major's start result, and the site
 fixture are as M053 defines them.
 
-- [ ] AC1: Each plugin page built from the site fixture opens `<main>`
+- [x] AC1: Each plugin page built from the site fixture opens `<main>`
       with a back link to the home page, an h1 with the display name and
       an "Archived" mark when `upstream.archived` is true, the shown
       description, and then links in this order: the file
@@ -46,7 +46,7 @@ fixture are as M053 defines them.
       visible text, and the file link's text names `upstream.version`. A
       site test checks each such page, including the M053 fixture records
       whose repo URL or `xpiUrl` fails.
-- [ ] AC2: For a record with `upstream`, a "Zotero compatibility" table
+- [x] AC2: For a record with `upstream`, a "Zotero compatibility" table
       has one row per major in `ZOTERO_MAJORS` and per other major named
       by its `reports` or `startTests`, newest first. Each row's declared
       cell holds the `majorSupport` kind (or "No range" when undefined),
@@ -57,12 +57,12 @@ fixture are as M053 defines them.
       place of the table. A site test checks each page built from the site
       fixture, which gains a record with reports on major 11 and one with
       two start results for one major.
-- [ ] AC3: Under the table, for a record with `upstream`, the "Works" and
+- [x] AC3: Under the table, for a record with `upstream`, the "Works" and
       "Broken" links have hrefs equal to `reportHref(record, "works")` and
       `reportHref(record, "broken")`, after a line that names
       `upstream.version`. A site test checks the hrefs on each page built
       from the site fixture.
-- [ ] AC4: A Details section headed by an h2, with no `<details>`
+- [x] AC4: A Details section headed by an h2, with no `<details>`
       element, lists the plugin id, archived, repository created, release
       read and prerelease, releases with an .xpi, open issues and pull
       requests, host of update.json, and the languages line; when a record
@@ -80,12 +80,12 @@ fixture are as M053 defines them.
       sentences; one line under the table links to the About page. The
       footer's not-vetted line stays on every page. A site test checks the
       built pages for each of these.
-- [ ] AC6: In the browser pane, the plugin pages of DeepRead, Better
+- [x] AC6: In the browser pane, the plugin pages of DeepRead, Better
       BibTeX, and PDF Preview built from data whose records carry
       `xpiUrl`, and the About page, have `documentElement.scrollWidth` at
       most `clientWidth` at 375 px and 1280 px wide (the iframe width
       check).
-- [ ] AC7: README, DESIGN, and the series' CHANGELOG entry from M053
+- [x] AC7: README, DESIGN, and the series' CHANGELOG entry from M053
       describe the plugin page and the About page; the verify slot passes.
 
 ## Coverage
@@ -142,7 +142,20 @@ fixture are as M053 defines them.
 - 2026-10-29: T6 done: README's site section (top bar, plugin page, About page, `pnpm site` output) and DESIGN's site paragraphs, pill example, and module notes describe the new pages; the M053 CHANGELOG entry gains the About link and the plugin page and About page text, and says it replaces the layout the older Unreleased entries describe, which stay as written (no release yet); verify passes (1179 tests, 56 entries, 0 problems).
 - 2026-10-29: claim audit: 99 claims read, 3 corrected — README.md, CHANGELOG.md (the declared range shows under the table only when the plugin declares one, twice; the new layout still has two cards).
 - 2026-10-29: all tasks done; status set to review.
+- 2026-10-29: review pass 1: merged main (2ab094f, two plugin entries) into the branch; verify green; AC1–AC4, AC6, AC7 verified and ticked; gate passed.
+- 2026-10-29: amendment routed: AC5 — "one line under the table links to the About page" cannot hold on the 3 fixture pages of failed records, which have no table (AC2); their About line sits under the failure message in the same card.
 
 ## Decisions
 
 ## Review
+
+Pass 1, 2026-10-29, on c0c43dc (branch after merging main at 2ab094f; verify: 1179 tests passed, 6 skipped; `pnpm check` 58 entries, 0 problems).
+
+- AC1 evidence: `test/site.test.ts` "opens the main content of <id> with a back link, the name, the description, and the links" passes for all 13 fixture pages, plus "covers each shape of page head link" (a read record and a failed one whose repo URL fails, an `xpiUrl` that fails, one that passes): 14 of 14 passed. The test matches the back link, the h1 with the `Archived` badge only for `archived: true`, the shown description, and the download, source, and releases items in order, each link with an `aria-hidden="true"` SVG and its text, the download text naming `upstream.version`, and the plain-text source and releases fallbacks.
+- AC2 evidence: "shows the table of <id>, or the failure of a record that was not read" for all 13 pages, the pinned next-plugin rows (12, 11, 10, 9, 8, 7; 8.0.4 newest of 8.0.3 and 8.0.4; reports on 11), the mark title test, and the fixture shape test: 16 of 16 passed. The fixture gains `next-plugin@example.org`, which has reports on major 11 and two start results on major 8, and also one on 12. Each cell carries the kind in `data-declared` and on the mark's `data-support`; failed records show the failure name and message and no table.
+- AC3 evidence: "puts the report links of <id> under the table, after a line that names the version read" for all 13 pages (hrefs equal `reportHref(record, verdict)`; order `</table>`, prompt line naming the version, Works, Broken; failed records have none), plus the URL tests: 16 of 16 passed.
+- AC4 evidence: "lists the facts of <id> in an open Details section, with the overrides under an h3" for all 13 pages: 13 of 13 passed (h2 "Details", no `<details>` or `<summary>`, facts in AC4's order ending with "Menus and settings in", the overrides table under `<h3>Overrides</h3>` on the 4 pages with overrides, no h2 Overrides).
+- AC5 evidence: the About page tests, the top bar test over all 15 built pages, and the page list test: 20 of 20 passed. `about/index.html` is written; its text holds the declared range and marks, the start test on Linux in a new profile with the 3-second wait (pinned to `SETTLE_MS = 3000`) and "A start is not a report that the plugin works", the report counting, overrides and the Used column, and "This index does not vet the plugins it lists"; the four moved sentences are absent from all 13 plugin pages ("waits 3 seconds" shown present on the About page); the footer line is on every page. Not ticked: AC5 says "one line under the table links to the About page" on each plugin page, and the 3 fixture pages of failed records (`broken-plugin`, `_x-y+z.w@{v}`, `ssh-plugin`) have no table, as AC2 requires; their link line sits under the failure message. The criterion as written fails on those pages, so it goes to a gated amendment.
+- AC6 evidence: fresh deployed `v1/plugins.json` (generatedAt 2026-10-29T19:12:45.935Z, 56 records, 56 with `xpiUrl`), site rebuilt on c0c43dc and served on port 4329; iframe width check with `border: 0`: DeepRead, Better BibTeX, PDF Preview, and About pages 375/375 at 375 px and 1280/1280 at 1280 px, each plugin page with its download link; a planted 900 px block gave 900/375.
+- AC7 evidence: README, `cairn/DESIGN.md`, and CHANGELOG each name the About page (4 lines each) and the "Zotero compatibility" table; the CHANGELOG change is inside the M053 entry; verify passes as above.
+- Gate: `cairn_validate.py` all checks passed; no DESIGN principle changed, so `cairn_impact` skipped; the generic profile's consistency-gate names no toolchain checks.
