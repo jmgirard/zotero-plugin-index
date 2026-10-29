@@ -1,0 +1,8 @@
+{
+  "id": "paper-translator@danielsu.local",
+  "name": "Paper Translator",
+  "description": "Translate whole PDF papers with BabelDOC and your own OpenAI-compatible API, keeping the original layout.",
+  "homepage": "https://github.com/daniel5u/zotero-paper-translator",
+  "repoUrl": "https://github.com/daniel5u/zotero-paper-translator",
+  "updateUrl": "https://raw.githubusercontent.com/daniel5u/zotero-paper-translator/main/update.json"
+}

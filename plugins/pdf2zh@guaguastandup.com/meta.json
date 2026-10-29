@@ -1,0 +1,8 @@
+{
+  "id": "pdf2zh@guaguastandup.com",
+  "name": "Zotero PDF2zh",
+  "description": "PDF translation for Zotero with PDF2zh/PDF2zh_next, bilingual layouts, batch processing, and DeepSeek V4 support.",
+  "homepage": "https://github.com/BluesilveEmperor/PDFTranslate-Zotero#readme",
+  "repoUrl": "https://github.com/BluesilveEmperor/PDFTranslate-Zotero",
+  "updateUrl": "https://github.com/BluesilveEmperor/PDFTranslate-Zotero/releases/download/release/update.json"
+}
