@@ -1,0 +1,8 @@
+{
+  "id": "wayback-autosave@pranesh",
+  "name": "Wayback Autosave",
+  "description": "Automatically save new Zotero items to the Internet Archive Wayback Machine (Save Page Now), however they were added. Manual save via right-click menu.",
+  "homepage": "https://github.com/the-solipsist",
+  "repoUrl": "https://github.com/the-solipsist/zotero-wayback-autosave",
+  "updateUrl": "https://github.com/the-solipsist/zotero-wayback-autosave/releases/latest/download/update.json"
+}
