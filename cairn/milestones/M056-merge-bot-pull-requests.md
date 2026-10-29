@@ -157,4 +157,38 @@ milestone have no `Hold:` line, so the job never merges them; the maintainer mer
 - AC6: joined copies (LESSONS M018) on 2026-10-29 after fbd1250: README and DESIGN.md each hold "first daily run at least 48 hours after it opens" once, "`hold` label" (README 2, DESIGN 3), and the closing rule (README "close a bot pull request without a merge"; DESIGN "Closing a bot pull request still keeps the bot from proposing that repo again"); README names each of the five reasons once in backticks, and DESIGN item 1 names them in words (name match, account under 30 days or unreadable, update.json off the two hosts, issue repo with neither topic); "approves each pull request" and "reviews each pull request" each count 0 in both. `CHANGELOG.md`'s Unreleased section holds the entry "The bot now merges its own pull requests" once.
 - AC7: 2026-10-29 on the branch with the review's propose-cli fix: `npx -y pnpm@12.15.0 test` (tsc, then Vitest) 24 files passed, 1 skipped, 1261 tests passed, 6 skipped; `npx -y pnpm@12.15.0 check` "checked 58 entries in plugins, 0 problems".
 - consistency gate: `cairn_validate.py` all checks passed (2026-10-29); no principle changed, so no `cairn_impact`; the `generic` profile's consistency-gate slot names no toolchain checks.
-- review (own read, before the fan-out): `pnpm propose` printed "opened no pull request for N entries" above each failed entry, which is false for a held entry whose label request failed after its pull request opened — fix now: the line reads "N entries failed", and the CLI failure test asserts it.
+- review (own read, before the fan-out): `pnpm propose` printed "opened no pull request for N entries" above each failed entry, which is false for a held entry whose label request failed after its pull request opened — fix now: the line reads "N entries failed", and the CLI failure test asserts it, fixed 8504a2c.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: `name-match` sees only indexed entries, not open bot pull requests or entries drafted earlier in the run — follow-up, row "Close gaps in bot holds and merges" (2); Scope Out named open pull requests.
+- diff-bug #2: `nameKey` keeps only a-z and 0-9, so a name wholly in another script never matches and a homoglyph passes — follow-up, same row (2).
+- diff-bug #3: conditions come from the list read, so a `hold` label, a body edit, or a push made during the run is missed, and the files read is not pinned to the head — fix now: the pull request is read again before the PUT and skipped if it closed, fails a record condition, became a draft, changed base, or moved its head; 3 tests, fixed f8058a5.
+- diff-bug #4: the `Hold: none` test matches a line inside the fenced check output — fix now: `unfencedLines` (split from `closesLines`) and exactly one `Hold:` line outside fences; 2 tests, fixed f8058a5.
+- diff-bug #5: the label match is case-sensitive though GitHub label names are unique ignoring case — fix now, 1 test, fixed f8058a5.
+- diff-bug #6: no check of `draft` or of the base branch — fix now: both skipped, tested after AC3's (g) so AC3's first-condition order holds; 2 tests, fixed f8058a5.
+- diff-bug #7: the contents API follows a symlink, so a symlinked `meta.json` passes the check — reject (false): only an account with write access can push a `discover/` branch to the index repo, and it can commit the same symlink to the default branch directly.
+- diff-bug #8: a failed label request in an issue run answers "could not finish", not the opened comment that `pnpm close-issue` needs — fix now: the failure carries the URL and `issueAnswer` posts the opened comment, status 1; 1 test, fixed f8058a5.
+- diff-bug #9: a rate limit or 5xx on the owner read holds for good — follow-up, row (5).
+- diff-bug #10: `update-host` checks only the update.json host, not its `update_link` — reject (planned change): D-033's rule as the plan set it.
+- diff-bug #11: a merge with `GITHUB_TOKEN` starts no `ci.yml` run — reject (planned change): the plan chose this, the merge job's combined check stands in, and the README says so.
+- diff-bug #12: the `2 entries failed` assertion tests behavior outside the change — reject (false): this branch changed that message (8504a2c).
+- diff-bug #13: no test shows a later check seeing an entry the run merged, and no test drives `name-match` through `indexed()` — fix now: 2 tests, fixed f8058a5.
+- prior-review #1: an issue run answers "could not finish" after the label fails (M040) — same as diff-bug #8, fixed f8058a5.
+- prior-review #2: the merge loop has no whole-run limit and prints only at the end (M030) — follow-up, row (6).
+- prior-review #3: the merge checks against the checkout, not the commit the squash lands on (M042) — follow-up, row (7).
+- prior-review #4: the owner read sits outside the per-repo read limit (M030) — reject (edge): only a GitHub API request that hangs reaches it, outside common use, and the client's per-request timeout bounds the delay.
+- prior-review #5: a dispatch from another ref joins the `discover` group (M040) — reject (edge): the README says to start it on the default branch; such a run only waits in the queue and runs no job.
+- prior-review #6: the Hold test reads lines inside the check output (M032) — same as diff-bug #4, fixed f8058a5.
+- prior-review #7: a cut body still drops the check summary (M039) — follow-up, existing row "Keep the check summary in a cut body"; this diff does not touch it.
+- ripple #1: the follow-up row said "four fixed rules" and named a repo-age rule as new — fix now: the row reads "five fixed reasons" and keeps the repo-age rule as an alternative, retitled "Close gaps in bot holds and merges", fixed f8058a5.
+- ripple #2: README says the issue workflow and `Discover plugins` are "the two workflows" in the group — fix now, fixed f8058a5.
+- ripple #3: DESIGN says "Both workflows set `queue: max`" — fix now, fixed f8058a5.
+- ripple #4: the CHANGELOG group entry names two workflows — fix now, fixed f8058a5.
+- ripple #5: `add-plugin-issue.yml`'s group comment names only `Discover plugins` — reject (false): what it says remains true.
+- ripple #6: DESIGN lists `post` and `patch` but not `put` — fix now, fixed f8058a5.
+- ripple #7: DESIGN's `readUpstream` line omits `topics` — fix now, fixed f8058a5.
+- ripple #8: an older CHANGELOG entry lists the body without the Hold line — reject (false): it is not contradicted, and the new entry describes the Hold line.
+- blame-history #1: the Hold test is not fence-aware (M022) — same as diff-bug #4, fixed f8058a5.
+- blame-history #2: a failed label leaves the issue without the opened comment (M022) — same as diff-bug #8, fixed f8058a5.
+- blame-history #3: D-033's last sentence reads as if the user rejected the 48-hour wait — reject (false): the entry adopts the wait earlier, and the sentence lists the user's two choices; D-entries are not edited.
+- blame-history #4: README's label-failure sentence says "the command" under the propose section — fix now: names `pnpm propose`, fixed f8058a5.
+- after the fixes: `pnpm test` 1272 passed, 6 skipped; `pnpm check` 0 problems; `cairn_validate.py` all checks passed. AC1 to AC7 evidence still holds; AC3's test now also feeds the default branch and a fresh read. Planted `changed && false`, a plain `split("\n")`, a case-sensitive label, a skipped issue answer, and a wrong owner in `indexed()` each turned tests red. No finding met the return floor.
