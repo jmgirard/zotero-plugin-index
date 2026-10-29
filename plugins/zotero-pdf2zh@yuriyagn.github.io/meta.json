@@ -1,0 +1,8 @@
+{
+  "id": "zotero-pdf2zh@yuriyagn.github.io",
+  "name": "Zotero PDF 中文翻译",
+  "description": "在 Zotero 中使用 BabelDOC 将选中的 PDF 文献翻译为简体中文。",
+  "homepage": "https://github.com/Yuriyagn/zotero-pdf2zh",
+  "repoUrl": "https://github.com/Yuriyagn/zotero-pdf2zh",
+  "updateUrl": "https://github.com/Yuriyagn/zotero-pdf2zh/releases/latest/download/updates.json"
+}
