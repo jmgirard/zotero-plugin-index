@@ -185,7 +185,8 @@ const { generatedAt } = loadData();
         display: inline-block;
         min-width: 5rem;
         padding: 0.375rem 1rem;
-        border: 1px solid transparent;
+        /* The fills are close to the card color, so the text color draws each button's edge. */
+        border: 1px solid currentColor;
         border-radius: 999px;
         font-weight: 600;
         text-align: center;
@@ -206,7 +207,7 @@ const { generatedAt } = loadData();
         background: var(--broken-bg);
         color: var(--broken-text);
       }
-      /* Forced colors drop the backgrounds, so this rule draws the border in ButtonText to show each button's edge. */
+      /* Forced colors replace the text and border colors, so this rule draws each button's edge in ButtonText. */
       @media (forced-colors: active) {
         .button {
           border-color: ButtonText;

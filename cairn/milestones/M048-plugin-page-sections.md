@@ -150,3 +150,4 @@ A script on the plugin pages stays out, because this layout needs none
 - ripple #2: cairn/DESIGN.md:150 calls the report controls a "Works" link and a "Broken" link, against the file's new "button" — fix now
 - ripple #3: CHANGELOG.md:170 says the page shows a "Works" link and a "Broken" link — reject (false): they are still `<a>` links, and the new entry records that they look like buttons
 - ripple #4: cairn/LESSONS.md:23 quotes "Report that it" — reject (false): a record of the M021 bug, not a claim about the current page
+- prior-review #1: the report buttons' fills are 1.07 to 1.27:1 against the card and their border is transparent, so a button has no visible edge, the point M037's review raised for the version buttons — fix now: `.button` border is `currentColor` (the text color, at least 3:1 on `--card` in both schemes), and a new test checks the rule and those pairs; it failed on a planted transparent border

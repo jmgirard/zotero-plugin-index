@@ -672,4 +672,15 @@ describe("the site colors", () => {
       expect(contrast(scheme.get(text)!, scheme.get(background)!), `${text} on ${background}`).toBeGreaterThanOrEqual(4.5);
     }
   });
+
+  // A report button's border takes its text color, and WCAG 2.2 asks 3:1 for a control's edge.
+  test.each([
+    ["light", light],
+    ["dark", dark],
+  ])("gives each report button's edge a contrast of at least 3:1 with the card in the %s scheme", (_, scheme) => {
+    expect(layout).toMatch(/\.button \{[^}]*border: 1px solid currentColor;/);
+    for (const border of ["--all-text", "--broken-text"]) {
+      expect(contrast(scheme.get(border)!, scheme.get("--card")!), `${border} on --card`).toBeGreaterThanOrEqual(3);
+    }
+  });
 });
