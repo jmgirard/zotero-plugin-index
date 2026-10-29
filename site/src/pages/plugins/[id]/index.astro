@@ -160,51 +160,57 @@ const { min, max } = declaredRange(record);
       )
     }
   </section>
-  {
-    upstream && (
-      <section class="card" data-section="about">
-        <h2>About</h2>
-        <p class="languages">
-          Menus and settings in: <span data-fact="languages">{languagesText(record)}</span>
-        </p>
-      </section>
-    )
-  }
-  <details>
-    <summary>Details</summary>
-    <dl>
-      <dt>Plugin id</dt>
-      <dd data-fact="id"><code>{record.id}</code></dd>
+  <section class="card" data-section="details">
+    <h2>Details</h2>
+    <dl class="facts">
+      <div>
+        <dt>Plugin id</dt>
+        <dd data-fact="id"><code>{record.id}</code></dd>
+      </div>
       {
         upstream && (
           <>
             {typeof upstream.archived === "boolean" && (
-              <>
+              <div>
                 <dt>Archived on GitHub</dt>
                 <dd data-fact="archived">{upstream.archived ? "Yes" : "No"}</dd>
-              </>
+              </div>
             )}
-            <dt>Repository created</dt>
-            <dd data-fact="repo-created">{day(upstream.repoCreatedAt)}</dd>
-            <dt>Release read by the index</dt>
-            <dd data-fact="latest-release">
-              {upstream.version}, published {day(upstream.latestReleaseDate)}
-              {upstream.prerelease === true && " (prerelease)"}
-            </dd>
-            <dt>Releases with an .xpi</dt>
-            <dd data-fact="release-count">{upstream.releaseCount}</dd>
-            <dt>Open issues and pull requests</dt>
-            <dd data-fact="open-issues">{upstream.openIssues}</dd>
-            <dt>Host of update.json</dt>
-            <dd data-fact="update-host">{upstream.updateHost}</dd>
+            <div>
+              <dt>Repository created</dt>
+              <dd data-fact="repo-created">{day(upstream.repoCreatedAt)}</dd>
+            </div>
+            <div>
+              <dt>Release read by the index</dt>
+              <dd data-fact="latest-release">
+                {upstream.version}, published {day(upstream.latestReleaseDate)}
+                {upstream.prerelease === true && " (prerelease)"}
+              </dd>
+            </div>
+            <div>
+              <dt>Releases with an .xpi</dt>
+              <dd data-fact="release-count">{upstream.releaseCount}</dd>
+            </div>
+            <div>
+              <dt>Open issues and pull requests</dt>
+              <dd data-fact="open-issues">{upstream.openIssues}</dd>
+            </div>
+            <div>
+              <dt>Host of update.json</dt>
+              <dd data-fact="update-host">{upstream.updateHost}</dd>
+            </div>
+            <div>
+              <dt>Menus and settings in</dt>
+              <dd data-fact="languages">{languagesText(record)}</dd>
+            </div>
           </>
         )
       }
     </dl>
     {
       overrides.length > 0 && (
-        <section>
-          <h2>Overrides</h2>
+        <div class="overrides" data-overrides>
+          <h3>Overrides</h3>
           <p>
             The index corrects these upstream facts.
             {upstream && ' An override marked "yes" under Used applies to the plugin version that the index read. The declared range above uses the strict_min_version and strict_max_version overrides marked "yes".'}
@@ -235,8 +241,8 @@ const { min, max } = declaredRange(record);
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
       )
     }
-  </details>
+  </section>
 </Base>

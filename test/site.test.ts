@@ -329,10 +329,10 @@ describe("the report row", () => {
 
 });
 
-// The h2 card sections before <details>, each with its markup.
+// The h2 card sections of the main content, each with its markup.
 function sections(html: string): { name: string; heading: string; body: string }[] {
-  const top = html.slice(0, html.indexOf("<details>"));
-  return [...top.matchAll(/<section class="card[^"]*" data-section="([^"]+)"[^>]*>\s*<h2>([^<]*)<\/h2>(.*?)<\/section>/gs)].map(
+  const main = html.slice(html.indexOf("<main>"), html.indexOf("</main>"));
+  return [...main.matchAll(/<section class="card[^"]*" data-section="([^"]+)"[^>]*>\s*<h2>([^<]*)<\/h2>(.*?)<\/section>/gs)].map(
     ([, name, heading, body]) => ({ name: name!, heading: heading!, body: body! }),
   );
 }
@@ -397,13 +397,13 @@ describe("the plugin page", () => {
     const html = page(id);
     const read = record.upstream !== undefined;
     const found = sections(html);
-    // No other section or h2 sits between the layout's top and <details>.
-    const top = html.slice(html.indexOf("<main>"), html.indexOf("<details>"));
-    expect(top.split("<section").length - 1).toBe(found.length);
-    expect(top.split("<h2").length - 1).toBe(found.length);
+    // No other section or h2 sits in the main content.
+    const main = html.slice(html.indexOf("<main>"), html.indexOf("</main>"));
+    expect(main.split("<section").length - 1).toBe(found.length);
+    expect(main.split("<h2").length - 1).toBe(found.length);
     expect(found.map(({ name, heading }) => [name, heading])).toEqual([
       ["compatibility", "Zotero compatibility"],
-      ...(read ? [["about", "About"]] : []),
+      ["details", "Details"],
     ]);
     const body = (name: string) => found.find((section) => section.name === name)!.body;
     const holds: [string, string[]][] = [
@@ -420,7 +420,6 @@ describe("the plugin page", () => {
             ]
           : ['data-fact="failure"'],
       ],
-      ...(read ? [["about", ['data-fact="languages"']] as [string, string[]]] : []),
     ];
     for (const [name, markers] of holds) {
       expectInOrder(body(name), markers);
@@ -431,24 +430,37 @@ describe("the plugin page", () => {
     if (!read) expect(html).not.toMatch(/data-fact="languages"/);
   });
 
-  test.each(ids)("holds the minor facts of %s in a closed Details section after the sections", (id) => {
+  test.each(ids)("lists the facts of %s in an open Details section, with the overrides under an h3", (id) => {
     const record = records.find((r) => r.id === id)!;
     const html = page(id);
-    expect(html).not.toMatch(/<details\s+open/);
-    const start = html.indexOf("<details>");
-    const end = html.indexOf("</details>");
-    const inside = ['data-fact="id"'];
-    if (record.upstream) {
-      if (typeof record.upstream.archived === "boolean") inside.push('data-fact="archived"');
-      inside.push(...["repo-created", "latest-release", "release-count", "open-issues", "update-host"].map((n) => `data-fact="${n}"`));
+    expect(html).not.toMatch(/<details[\s>]|<summary[\s>]/);
+    const details = sections(html).find(({ name }) => name === "details")!.body;
+    const facts = /^\s*<dl class="facts">(.*?)<\/dl>/s.exec(details)?.[1];
+    const items = [...facts!.matchAll(/<div>\s*<dt>([^<]*)<\/dt>\s*<dd data-fact="([^"]+)">/g)].map(([, label, name]) => [label, name]);
+    expect(facts!.split("<dt>").length - 1).toBe(items.length);
+    const { upstream } = record;
+    expect(items).toEqual([
+      ["Plugin id", "id"],
+      ...(upstream
+        ? [
+            ...(typeof upstream.archived === "boolean" ? [["Archived on GitHub", "archived"]] : []),
+            ["Repository created", "repo-created"],
+            ["Release read by the index", "latest-release"],
+            ["Releases with an .xpi", "release-count"],
+            ["Open issues and pull requests", "open-issues"],
+            ["Host of update.json", "update-host"],
+            ["Menus and settings in", "languages"],
+          ]
+        : []),
+    ]);
+    if (record.overrides.length > 0) {
+      const overrides = /<div class="overrides" data-overrides>\s*<h3>Overrides<\/h3>(.*?)<\/table>/s.exec(details)?.[1];
+      expect(overrides?.split("<tr data-override=").length).toBe(record.overrides.length + 1);
+    } else {
+      expect(details).not.toMatch(/\sdata-overrides[\s>]|<h3[\s>]/);
     }
-    if (record.overrides.length > 0) inside.push("data-override=");
-    for (const marker of inside) {
-      const at = html.indexOf(marker);
-      expect(at, marker).toBeGreaterThan(start);
-      expect(at, marker).toBeLessThan(end);
-    }
-    expect(html.indexOf('data-fact="not-vetted"')).toBeGreaterThan(end);
+    expect(html).not.toMatch(/<h2>Overrides<\/h2>/);
+    expect(html.indexOf('data-fact="not-vetted"')).toBeGreaterThan(html.indexOf('data-section="details"'));
   });
 
   test("shows the declared range with the override that applies", () => {
@@ -488,7 +500,7 @@ describe("the plugin page", () => {
   });
 
   test("labels the languages fact as menus and settings", () => {
-    expect(page("first-plugin@example.org")).toContain(`<p class="languages">Menus and settings in: <span data-fact="languages">`);
+    expect(page("first-plugin@example.org")).toMatch(/<dt>Menus and settings in<\/dt>\s*<dd data-fact="languages">/);
   });
 
   test("leaves the old languages label off every plugin page", () => {

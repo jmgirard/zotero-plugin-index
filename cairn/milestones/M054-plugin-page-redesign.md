@@ -105,7 +105,7 @@ fixture are as M053 defines them.
 - [x] T2: Add the fixture records AC2 names; build the compatibility
       table and the report row (a data helper for the rows by major, in
       `site/src/data.ts`); replace the section tests in `test/site.test.ts`.
-- [ ] T3: Replace the closed Details with the h2 section and grid, and
+- [x] T3: Replace the closed Details with the h2 section and grid, and
       move the overrides table under an h3; update its tests.
 - [ ] T4: Add `site/src/pages/about.astro` with the method notes from the
       plugin pages and the M053 legend, add the top bar link, cut the
@@ -133,6 +133,8 @@ fixture are as M053 defines them.
 - 2026-10-29: T1 done: back link, head with the Archived badge, and download, source, and releases links with icons; the About card now holds only the languages line and shows only for a read record; head test checks link order, hrefs, icons, and text on every fixture page, and went red on all 13 pages with `aria-hidden` removed from the icon.
 - 2026-10-29: choice: the declared cell shows the home table's mark (hidden from screen readers, titled with `supportText`) and the mockup's words Yes, Partly, or No; the start cell shows ● or ✕, the result in words, and "Zotero <release>"; the reports cell shows "N works M broken"; helpers `compatMajors`, `majorReport`, and `startWords` in `site/src/data.ts`; `Support.astro`, `startTestsText`, and the pill styles removed as unused.
 - 2026-10-29: T2 done: one "Zotero compatibility" card replaces the Declared support, Start test, and User reports cards; it holds the version line, the table, the declared range line, and the report row; tests compare every fixture page's rows with rows built from `majorSupport` and the data, pin the next-plugin rows, and went red (24 tests) with the major order reversed and the works href swapped.
+- 2026-10-29: choice: the Details facts keep AC4's order with the languages line last; the About card that held only the languages line is gone; card h2s take the mockup's 15 px weight-650 style and the Overrides h3 takes the old small uppercase heading style.
+- 2026-10-29: T3 done: an open "Details" card (h2) with a `dl.facts` grid replaces the closed `<details>`, and the overrides table sits under an h3 in it; the test checks each page's fact labels in order, no `<details>` or `<summary>`, and the h3, and went red on the 4 pages with overrides when the h3 was planted back as an h2.
 
 ## Decisions
 
