@@ -97,3 +97,26 @@ D-010 rules out for the deploy build; no work is planned for it.
 - AC3: README.md lines 717–722, under "## Building the data" (line 679), state the even/odd rule against `generatedAt` (which is `now`), that `not-read` falls on the last ids on even days and the first ids on odd days, and that the file keeps id order. `git diff main...HEAD -- CHANGELOG.md` adds 1 entry (lines 378–384), under `## Unreleased`, stating the same rule and the same `not-read` ids. Neither claims a plugin is never unread two days running.
 - AC4: `pnpm test` (tsc --noEmit, then Vitest) at e550e78: 22 files passed, 1 skipped; 1070 tests passed, 6 skipped. `pnpm check`: checked 56 entries in plugins, 0 problems.
 - gate: `cairn_validate.py` exit 0, all checks passed (coverage complete PASS). No DESIGN.md principle changed, so `cairn_impact` skipped. The generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: on odd days the spawned "unexpected-error, goes on" test reads BETTER_NOTES last, so it no longer shows the build goes on after the error — reject (false): the comment states both days, and the fixed-date mixed-failures `buildData` test reads update-503 and xpi-reject after "unexpected" every day.
+- diff-bug #2: the new 4-entry cut test needs the d-fourth and c-third reads inside its 1000 ms `buildMs`, a narrower margin than the existing cut test — fix now (widen its limits).
+- diff-bug #3: DESIGN.md "on even UTC days since 1970-01-01, the day of `generatedAt`" reads as if 1970-01-01 were that day — fix now.
+- diff-bug #4: README "Id order is the order of the entry directory names" does not say the order is by character code, capitals first (`names.sort()`) — fix now.
+- diff-bug #5: README rewrap left a line holding only "with" — fix now.
+- diff-bug #6: an invalid `now` reads in reverse, then throws at `toISOString()` as on main — reject (edge): an invalid Date, which no caller passes (the CLI passes a fresh `new Date()`); the effect is an error.
+- diff-bug #7: dates before 1970 give negative day counts; parity stays right and the README wording does not cover them — reject (edge): a build clock before 1970, outside any use; no wrong result.
+- diff-bug #8: `new Array(n)` holes would reach the output if a future branch skipped the assignment — reject (false): every loop branch assigns `records[i]`, and an exception rejects the call.
+- diff-bug #9: a caller that mutates its Date during the build splits the order's day from `generatedAt` — reject (false): `pnpm build`, the only caller the docs describe, passes a fresh Date that nothing mutates.
+- blame-history #1: no D-entry records the alternation rule, though D-015's cost is the cost it spreads — fix now (D-028, annotating D-015).
+- blame-history #2: two deployed builds of the same parity, with a withheld day between, share the same unread tail; the plan's vet line holds only for consecutive days — fix now (D-028 states the limit; README and CHANGELOG make no two-day claim).
+- blame-history #3: DESIGN.md build bullet's provenance list does not name M051 — fix now.
+- blame-history #4: README stray "with" line — fix now (same as diff-bug #5).
+- blame-history #5: `new Array(n)` typed dense — reject (false): as diff-bug #8.
+- blame-history #6: two existing tests use the real clock's `now` — reject (false): their assertions do not depend on read order; diff-bug ran the file on both parities, 72 of 72 each.
+- prior-review #1: README stray "with" line, a wrap defect earlier reviews flagged — fix now (same as diff-bug #5).
+- prior-review #2: no DECISIONS entry for the read-order rule — fix now (same as blame-history #1).
+- prior-review #3: the 4-entry cut test's 1000 ms `buildMs` is the load-sensitive shape M038 flagged — fix now (same as diff-bug #2).
+- prior-review #4: the AC1 tests pass `readMs` 200, a short limit M030 and M050 moved away from — reject (false): each read's first request is the repo API request, which the test asserts, so a read cut early does not change the asserted order.
+- prior-review #5: the spawned CLI test runs on the real clock — reject (false): as diff-bug #1.
+- prior-review #6: DESIGN.md provenance list lacks M051 — fix now (same as blame-history #3).
+- ripple #1: ROADMAP candidate row "Close gaps in the build time limits" still says a cut build skips the same last plugins every day — fix now: post-merge hygiene removes the row, whose last gap M051 closes.
