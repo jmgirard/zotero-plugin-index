@@ -1,0 +1,8 @@
+{
+  "id": "zotero-docling@max3925vats",
+  "name": "zotero-docling",
+  "description": "Convert Zotero PDF attachments to structured markdown via Docling",
+  "homepage": "https://github.com/max3925vats/zotero-docling#readme",
+  "repoUrl": "https://github.com/max3925vats/zotero-docling",
+  "updateUrl": "https://github.com/max3925vats/zotero-docling/releases/download/release/update.json"
+}
