@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import process from "node:process";
 import { Inflate, strFromU8 } from "fflate";
 import { type Lookup, refusal, systemLookup } from "./host-guard.ts";
@@ -65,8 +66,15 @@ export type Failure =
 // buildLevelStatus counts. The build counts such failures to decide whether to deploy. It
 // is not part of the published data.
 export type UpstreamResult =
-  | { ok: true; facts: UpstreamFacts }
+  | { ok: true; facts: UpstreamFacts; xpi: XpiRead }
   | { ok: false; failure: Failure; message: string; buildLevel?: true };
+
+// The XPI whose manifest the reader read: the release asset's download URL, before any
+// redirect, and the SHA-256 of the bytes it got, in hex. It stays out of the published data.
+export interface XpiRead {
+  url: string;
+  sha256: string;
+}
 
 const API = "https://api.github.com";
 const FETCH_TIMEOUT_MS = 60_000;
@@ -123,7 +131,7 @@ export async function readUpstream(
     lookup = boundLookup(lookup, signal);
   }
   try {
-    return { ok: true, facts: await read(repoUrl, fetch, downloader(fetch, lookup, signal)) };
+    return { ok: true, ...(await read(repoUrl, fetch, downloader(fetch, lookup, signal))) };
   } catch (error) {
     if (error instanceof ReadFailure) {
       return { ok: false, failure: error.failure, message: error.message, ...(error.buildLevel && { buildLevel: true }) };
@@ -154,7 +162,7 @@ function boundLookup(lookup: Lookup, signal: AbortSignal): Lookup {
   };
 }
 
-async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<UpstreamFacts> {
+async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<{ facts: UpstreamFacts; xpi: XpiRead }> {
   const { owner, repo } = parseRepoUrl(repoUrl);
   const github = githubClient(fetch);
 
@@ -190,17 +198,20 @@ async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<
     if (!notZotero7 || !(Date.parse(newest.release.published_at) > Date.parse(stable.release.published_at))) throw error;
     facts = await readRelease(download, newest.release, newest.xpi!);
   }
-  const { release, ...manifestFacts } = facts;
+  const { release, xpi, ...manifestFacts } = facts;
 
   return {
-    ...manifestFacts,
-    repoUrl: meta.html_url,
-    repoCreatedAt: meta.created_at,
-    openIssues: meta.open_issues_count,
-    releaseCount: withXpi.length,
-    latestReleaseDate: release.published_at,
-    prerelease: release.prerelease === true,
-    archived: typeof meta.archived === "boolean" ? meta.archived : undefined,
+    facts: {
+      ...manifestFacts,
+      repoUrl: meta.html_url,
+      repoCreatedAt: meta.created_at,
+      openIssues: meta.open_issues_count,
+      releaseCount: withXpi.length,
+      latestReleaseDate: release.published_at,
+      prerelease: release.prerelease === true,
+      archived: typeof meta.archived === "boolean" ? meta.archived : undefined,
+    },
+    xpi,
   };
 }
 
@@ -219,12 +230,13 @@ type ReleaseFacts = Pick<
   | "updateUrl"
   | "updateHost"
   | "languages"
-> & { release: ReleaseJson };
+> & { release: ReleaseJson; xpi: XpiRead };
 
 // Reads the manifest and the language tags of the locale folders (see localeLanguages) in one
 // release's XPI, and checks the update.json the manifest names.
 async function readRelease(download: Download, release: ReleaseJson, xpi: { browser_download_url: string }): Promise<ReleaseFacts> {
-  const { manifest, messages, languages } = await readManifest(download, xpi.browser_download_url, release.tag_name);
+  const url = xpi.browser_download_url;
+  const { manifest, messages, languages, sha256 } = await readManifest(download, url, release.tag_name);
   const zotero = manifest.applications?.zotero;
   const id = stringOrUndefined(zotero?.id);
   if (!id) fail("no-zotero-id", `the manifest of ${release.tag_name} has no applications.zotero.id`);
@@ -250,6 +262,7 @@ async function readRelease(download: Download, release: ReleaseJson, xpi: { brow
     updateHost,
     languages,
     release,
+    xpi: { url, sha256 },
   };
 }
 
@@ -489,6 +502,25 @@ function downloader(fetch: Fetch, lookup: Lookup, signal?: AbortSignal): Downloa
   };
 }
 
+// Downloads one XPI with the reads' host check and redirect rules, and returns its bytes.
+// It throws a ReadFailure: xpi-unreadable for an HTTP error answer, xpi-too-large past
+// XPI_MAX_BYTES, and the reads' failures for a refused host or a failed request, which
+// include the abort of `signal`. `pnpm start-tests` downloads the XPI that the build read
+// with it.
+export async function downloadXpi(
+  url: string,
+  fetch: Fetch,
+  { lookup = systemLookup, signal }: { lookup?: Lookup; signal?: AbortSignal } = {},
+): Promise<Uint8Array> {
+  if (signal) {
+    fetch = boundFetch(fetch, signal);
+    lookup = boundLookup(lookup, signal);
+  }
+  const { response } = await downloader(fetch, lookup, signal)(url);
+  if (!response.ok) fail("xpi-unreadable", `the XPI at ${url} returned HTTP ${response.status}`);
+  return readCapped(response, url, XPI_MAX_BYTES, () => fail("xpi-too-large", `the XPI at ${url} is larger than ${XPI_MAX_BYTES} bytes`));
+}
+
 // The bytes of the XPI's manifest.json, or undefined when it holds none. It fails when the
 // zip claims more entries than its bytes can hold, holds more than one manifest.json, or
 // holds one over UNZIPPED_MAX_BYTES or one that inflates past its declared size.
@@ -505,7 +537,7 @@ async function readManifest(
   download: Download,
   url: string,
   tag: string,
-): Promise<{ manifest: ManifestJson; messages: Messages; languages: string[] }> {
+): Promise<{ manifest: ManifestJson; messages: Messages; languages: string[]; sha256: string }> {
   const { response, from } = await download(url);
   if (!response.ok) {
     fail("xpi-unreadable", `the XPI of ${tag} at ${url} returned HTTP ${response.status}`, buildLevelStatus(response.status, from));
@@ -539,7 +571,8 @@ async function readManifest(
   } catch (error) {
     fail("xpi-unreadable", `the XPI of ${tag} is not a readable zip: ${(error as Error).message}`);
   }
-  return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {}, languages };
+  const sha256 = createHash("sha256").update(zip).digest("hex");
+  return { manifest: manifest as ManifestJson, messages: isObject ? (messages as Messages) : {}, languages, sha256 };
 }
 
 // One language tag: a language of 2 or 3 letters other than "und" (undetermined), "zxx" (no

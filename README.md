@@ -17,8 +17,9 @@ declared range. A pill counts Zotero N as the versions from N.0 to N.9.
 Plugin authors often write a maximum such as 10.99.99 to mean every Zotero 10
 release. They also write a minimum such as 8.999 to mean Zotero 9 and newer.
 The declared range uses the overrides that apply to the plugin version that
-the index read. The site does not test plugins. The pills show what each
-plugin declares.
+the index read. The pills show what each plugin declares, not a test
+result. The daily start tests that "Using the data" describes appear only
+on each plugin's page.
 
 A plugin with no declared range shows "No declared range" in place of the
 pills. If the last build failed to read a plugin, its row shows the failure.
@@ -78,8 +79,13 @@ describes, which come from the plugin's locale folders. If a `languages`
 override applies to the plugin version that the index read, the override
 replaces that list. The line does not say how complete each language is.
 The description comes from the plugin's manifest or from an index override,
-so it can be in another language than the languages line names. The page
-also shows the user reports and links to the repository and its releases.
+so it can be in another language than the languages line names. If the
+record has a `startTests` list, the page shows a "Starts in Zotero" line.
+It names each tested Zotero version and its result in words, such as
+"Zotero 10.0.6 started". A note beside it says that the build waits 3
+seconds after the install. The note also says that a start test does not
+show that the plugin works. The page also shows the user reports and links
+to the repository and its releases.
 If no language is left, the page shows "Unknown (no translations found)".
 A closed "Details" section follows. It holds the plugin id, facts about the
 repository and its releases, and the overrides of the index for the plugin.
@@ -114,12 +120,15 @@ A daily build updates the data. If more than half of the records carry a
 build-level failure, such as a rate limit or a network error, the build
 deploys nothing. "Building the data" below says which failures are
 build-level. If every record carries a failure, whatever its name, the build
-also deploys nothing. If the build cannot read the report issues, or the
-site build fails, the build also
-deploys nothing. The data from the last good build then stays in place. "Building the data" below describes the file. A breaking
-change to the file gets a new schema version under a new path, such as `v2/`.
-By this project's rule, a new optional field does not get a new schema
-version. The schema rejects fields that it does not define. If you validate
+also deploys nothing. The build also deploys nothing in these cases: it
+cannot read the report issues, it cannot write the start plan,
+`pnpm add-start-results` fails, or the site build fails. "The daily build"
+below names the commands. A failed start test does not stop the deploy.
+The data from the last good build then stays in place. "Building the data"
+below describes the file. A breaking change to the file gets a new schema
+version under a new path, such as `v2/`. By this project's rule, a new
+optional field does not get a new schema version. The schema rejects fields
+that it does not define. If you validate
 against a saved copy of the schema, fetch it again after such a change.
 
 Each `upstream` block has a `languages` list, such as `["en-US", "zh-CN"]`.
@@ -180,6 +189,40 @@ account stays one account. If two such reports have the same creation time,
 the one with the higher issue number counts. The count follows each issue's
 current text, so a reporter who edits a closed report changes the count.
 When the index reads a new release of a plugin, its counts start over.
+
+A record with an `upstream` block can have a `startTests` list. It says
+whether the plugin version in `upstream.version` started in each tested
+Zotero release, such as
+`[{ "zotero": "7.0.32", "result": "started" }, { "zotero": "10.0.6", "result": "start-error" }]`.
+The daily build installs the plugin in a new profile of Zotero for Linux
+and waits 3 seconds. Then it reads one of four results:
+
+- `started`: Zotero lists the plugin as active, and the plugin logged no
+  startup error.
+- `start-error`: the plugin's startup threw an error, or an async startup
+  rejected, in those 3 seconds. A startup that fails later counts as
+  `started`.
+- `not-installed`: Zotero does not list the plugin, or lists it as
+  inactive.
+- `timed-out`: no result came before the start's time limit of 90 seconds.
+
+A start does not show that the plugin works. Zotero does not install a
+plugin outside the range of its manifest's `strict_min_version` and
+`strict_max_version`. So the build tests only the releases in that range.
+Overrides do not change which releases it tests. The list is ordered by
+Zotero version. If no tested release gave a result, the record has no
+`startTests` field. Data written before the start tests has none. The
+tested releases are Zotero 7.0.32, 8.0.4, 9.0.6, and 10.0.6. When Zotero
+ships a release, a maintainer adds it to the workflow. The `startTests`
+field is new in schema v1. If you validate against a saved copy of the
+schema, fetch the schema again.
+
+Plugin code runs during its start test. Code that runs in a start-test job
+can rewrite that job's results, its own included. That code can also leave
+a process running. If the process uploads results under the artifact name
+of another tested release before that release's job does, its results
+count. So a `startTests` item can be forged. "Starting plugins in Zotero"
+below says which results the build keeps.
 
 ## Plugin entries
 
@@ -655,7 +698,8 @@ block also has a `prerelease` field, `true` or `false`. It says whether
 GitHub marks the release that the reader read as a prerelease. It also has
 a `languages` list, which "Using the data" describes. Each record
 with an `upstream` block has a `reports` list, which "Using the data"
-describes.
+describes. The command writes no `startTests` list. The daily build adds
+it with `pnpm add-start-results`, as "Starting plugins in Zotero" says.
 
 If the read of a plugin fails, its record has no `upstream` block. The
 record has a `failure` block with the failure name and a message. If the
@@ -721,15 +765,102 @@ The command writes no data file and exits with status 1 in these cases:
 - It cannot write the schema copies or the data file.
 
 A data file from an earlier run then stays in place. In the last case, the
-schema copies can already be in `dist/schemas/`.
+schema copies can already be in `dist/schemas/`. The command writes the
+data file before the start plan that `--plan` names. If it cannot write the
+plan, it prints `write-failed` with the plan's path and exits with status
+1. The new data file then stays in place.
 
 To read the entries in another directory, give its path: `pnpm build <dir>`.
 To write the file under another directory, add `--out <dir>`. As with
 `pnpm add-plugin`, set `GITHUB_TOKEN` to get a higher GitHub API limit.
 
+To also write a start plan, add `--plan <file>`. The plan has one item for
+each record with an `upstream` block. Each item names the entry id, the
+plugin id and version, and the manifest's `strict_min_version` and
+`strict_max_version`. It also names the URL of the XPI that the build read
+and the SHA-256 of the bytes that it got. The plan is not part of the data
+file, and the daily build writes it outside `dist/`. Without `--plan`, the
+command writes no plan.
+
+## Starting plugins in Zotero
+
+To start one plugin in one Zotero install, run:
+
+```bash
+pnpm start-test --zotero <binary> --xpi <file> --out <file>
+```
+
+The command reads the Zotero version from the `app/application.ini` file
+beside the binary, or on macOS from `../Resources/app/application.ini`.
+It makes a new Zotero profile with a reporter plugin of the index. It
+starts Zotero with `MOZ_HEADLESS=1`. On Linux, Zotero also needs a display,
+such as the one `xvfb-run` gives. Once Zotero is ready, the reporter
+installs the XPI and waits 3 seconds. Then it reports one of the four
+results that "Using the data" lists. The command writes the result as JSON,
+such as
+`{ "id": "<plugin id>", "version": "1.0.0", "zotero": "10.0.6", "result": "started" }`,
+and exits with status 0. A start gets 90 seconds. To give it another limit
+from 1 to 3600 seconds, add `--limit <seconds>`. If the command cannot run
+the start, it writes no file. It then prints a failure name, such as
+`zotero-missing` or `reporter-not-started`, and exits with status 1. At the
+end, the command stops every process that Zotero started and removes the
+profile.
+
+To start each plugin of a start plan in one Zotero install, run:
+
+```bash
+pnpm start-tests --plan <file> --zotero <binary> --out <file>
+```
+
+The command starts only the plan items whose manifest range covers the
+binary's Zotero version. It downloads each XPI from the plan's URL with the
+same host check as the build. If the download fails, or its SHA-256 differs
+from the plan, the item gets no result. The command runs `pnpm start-test`
+for each other item. If that command exits with status 1, the item also
+gets no result. The command prints one line for each item that it tries.
+After 20 minutes, it starts no new plugin. If that leaves items in range
+unstarted, it prints a `::warning::` line with their number. It
+writes the results as a JSON array, each with its entry id beside the
+fields of `pnpm start-test`, and exits with status 0. If it cannot read
+the plan or the binary's Zotero version, it writes no file and exits with
+status 1.
+
+To add start results to a data file, run:
+
+```bash
+pnpm add-start-results --data <file> --plan <file> --results <dir> --tested <versions>
+```
+
+The command reads each file in each directory under `--results`. A
+directory named `start-results-<version>` holds the results of one Zotero
+version, as the daily build names its artifacts. `--tested` lists the Zotero
+versions to keep, joined by commas, such as `7.0.32,10.0.6`. The daily build
+passes the versions of its start-test jobs. Plugin code in a start-test job
+can upload an artifact of another name, so the list stops it from adding a
+version. If a result meets all of these conditions, the command keeps it:
+
+- Its entry id, plugin id, and plugin version match an item of the plan.
+- Its entry's record in the data file has an `upstream` block.
+- Its Zotero version is the one in its directory's name, and `--tested`
+  lists it.
+- Its Zotero version is in the range of the item's manifest.
+- Its result is one of the four names.
+
+If two or more such results name one entry and one Zotero version, the
+command drops all of them. It also drops each entry that is not a readable
+JSON array. Such an entry can be a directory, a link, or a file over 1 MiB.
+Then it writes each record's kept results into the data file as
+`startTests`, ordered by Zotero version, and prints how many it dropped. If
+`--results` does not exist, the command adds no results and exits with
+status 0. The command can fail to read the data, the plan, or the list of
+the results directories, or the schema can reject the new data. In each
+case, the command leaves the file as it was and exits with status 1.
+
 ## Building the site
 
-To build the site, first run `pnpm build`, then run:
+To build the site, first run `pnpm build`. To show start tests, also run
+`pnpm add-start-results` on `dist/v1/plugins.json`, as "Starting plugins in
+Zotero" says. Then run:
 
 ```bash
 pnpm site
@@ -749,13 +880,29 @@ page and exits with status 1.
 
 ## The daily build
 
-The `Build data` workflow runs `pnpm check`, `pnpm build`, and then
-`pnpm site` once a day, and you can also start it by hand. It keeps `dist/` as
-a workflow artifact named `plugins-data`. If all three commands succeed, the
-workflow deploys `dist/` to GitHub Pages. If `pnpm build` or `pnpm site` exits
-with status 1, the workflow deploys nothing, and the site and data from the
-last good build stay published. GitHub stops the build job at 30 minutes,
-and then the workflow also deploys nothing. The repository's
+The `Build data` workflow runs once a day, and you can also start it by
+hand. It has four jobs:
+
+1. The build job runs `pnpm check` and `pnpm build --plan start-plan.json`.
+   It keeps `dist/` as a workflow artifact named `plugins-data`, and the
+   plan as an artifact named `start-plan`. No artifact holds an XPI.
+2. The start-test job runs once for each tested Zotero release for Linux.
+   It downloads Zotero from download.zotero.org and checks the file against
+   a SHA-256 in the workflow. Then it runs `pnpm start-tests` under
+   `xvfb-run` and keeps the results as an artifact named
+   `start-results-<version>`. The job has no token permission, reads no
+   secret, keeps no git credentials, and uses no cache, since plugin code
+   runs in it.
+3. The site job runs `pnpm add-start-results` and then `pnpm site`. It runs
+   when the build job succeeded, whatever the start-test jobs' results.
+4. If the site job succeeded, the deploy job deploys `dist/` to GitHub
+   Pages, whatever the start-test jobs' results.
+
+If `pnpm build`, `pnpm add-start-results`, or `pnpm site` exits with
+status 1, the workflow deploys nothing. The site and data from the last
+good build then stay published.
+GitHub stops the build job at 30 minutes, and then the workflow also
+deploys nothing. The repository's
 `github-pages` environment, set in its GitHub settings, lets only runs on the
 `main` branch deploy.
 
@@ -765,4 +912,13 @@ To run the tests, run:
 
 ```bash
 pnpm test
+```
+
+The tests of `pnpm start-test` use a stand-in for Zotero. The test file
+`test/start-test-zotero.test.ts` starts a real Zotero. If `ZOTERO_BIN`
+is not set, the file skips its tests. The `start-test`
+job of `ci.yml` sets it. To run that file yourself, run:
+
+```bash
+ZOTERO_BIN=<binary> pnpm exec vitest run test/start-test-zotero.test.ts
 ```

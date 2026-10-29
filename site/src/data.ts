@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import type { Override, PluginRecord, PluginsFile } from "../../src/build/build.ts";
+import type { Override, PluginRecord, PluginsFile, StartTestRecord } from "../../src/build/build.ts";
 import { shownDescription } from "../../src/site/description.ts";
 import { appliedLanguages, languageName, languageOptions, rowLanguages } from "../../src/site/languages.ts";
 import { appliedValue, declaredRange, rowMajors, usedOverride } from "../../src/site/version.ts";
@@ -96,6 +96,20 @@ export function reportHref(record: PluginRecord, verdict: "works" | "broken"): s
   const fields = [`template=${verdict}.yml`, `plugin=${encodeURIComponent(record.id)}`];
   if (record.upstream) fields.push(`version=${encodeURIComponent(record.upstream.version)}`);
   return `${NEW_ISSUE}?${fields.join("&")}`;
+}
+
+// Each start-test result in words.
+const START_WORDS: Record<StartTestRecord["result"], string> = {
+  started: "started",
+  "start-error": "failed at startup",
+  "not-installed": "did not install",
+  "timed-out": "gave no answer in time",
+};
+
+// Each tested Zotero version and its result in words, such as "Zotero 7.0.32 started; Zotero
+// 8.0.4 failed at startup", in the order of the data.
+export function startTestsText(record: PluginRecord): string {
+  return (record.startTests ?? []).map(({ zotero, result }) => `Zotero ${zotero} ${START_WORDS[result]}`).join("; ");
 }
 
 // Only an http or https URL becomes a link; repoUrl in meta.json is any string.

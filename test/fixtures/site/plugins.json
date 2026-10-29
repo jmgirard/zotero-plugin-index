@@ -111,6 +111,12 @@
         "archived": false,
         "languages": ["en"]
       },
+      "startTests": [
+        { "zotero": "7.0.32", "result": "started" },
+        { "zotero": "8.0.4", "result": "start-error" },
+        { "zotero": "9.0.6", "result": "not-installed" },
+        { "zotero": "10.0.6", "result": "timed-out" }
+      ],
       "overrides": [
         {
           "field": "languages",

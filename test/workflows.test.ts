@@ -58,8 +58,39 @@ describe("build.yml", () => {
     expect(jobText(build, "build")).toMatch(/^ {4}permissions:\n {6}contents: read\n {6}issues: read\n {4}\S/m);
   });
 
-  test("sets cache-mode none on the build job", () => {
-    expect(jobText(build, "build")).toMatch(/^ {4}cache-mode: none$/m);
+  test.each(["build", "start-test", "site"])("sets cache-mode none on the %s job", (job) => {
+    expect(jobText(build, job)).toMatch(/^ {4}cache-mode: none$/m);
+  });
+
+  test("gives the start-test job no permission, no secret, and no stored git credentials", () => {
+    const job = jobText(build, "start-test");
+    expect(job).toMatch(/^ {4}permissions: \{\}$/m);
+    expect(job).not.toMatch(/secrets/);
+    expect(job).toMatch(/- uses: actions\/checkout@v7\n {8}with:\n {10}persist-credentials: false\n/);
+  });
+
+  test("checks each Zotero download against the SHA-256 of its matrix line", () => {
+    const job = jobText(build, "start-test");
+    // Quoted, since YAML reads an unquoted hash of digits as a number.
+    const hashes = [...job.matchAll(/^ {12}sha256: (\S+)$/gm)].map(([, hash]) => hash);
+    expect(hashes).toHaveLength(4);
+    for (const hash of hashes) expect(hash).toMatch(/^"[0-9a-f]{64}"$/);
+    expect(job).toContain('echo "$ZOTERO_SHA256  $RUNNER_TEMP/$ZOTERO_FILE" | sha256sum --check');
+  });
+
+  test("passes pnpm add-start-results the start-test matrix's Zotero versions as --tested", () => {
+    const matrix = [...jobText(build, "start-test").matchAll(/^ {10}- zotero: "([^"]+)"$/gm)].map(([, version]) => version);
+    expect(matrix).toHaveLength(4);
+    const tested = /^ {10}--results \S+ --tested (\S+)$/m.exec(jobText(build, "site"))?.[1].split(",");
+    expect(tested).toEqual(matrix);
+  });
+
+  test("runs the site job after a build that succeeded, whatever the start tests did, and deploys only after the site job", () => {
+    const site = jobText(build, "site");
+    expect(site).toMatch(/^ {4}needs: \[build, start-test\]$/m);
+    expect(site).toMatch(/^ {4}if: \$\{\{ !cancelled\(\) && needs\.build\.result == 'success' \}\}$/m);
+    expect(jobText(build, "deploy")).toMatch(/^ {4}needs: site$/m);
+    expect(jobText(build, "deploy")).toMatch(/^ {4}if: \$\{\{ !cancelled\(\) && needs\.site\.result == 'success' \}\}$/m);
   });
 
   test.each([

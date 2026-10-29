@@ -10,6 +10,7 @@
   },
   "scripts": {
     "add-plugin": "node src/add-plugin/cli.ts",
+    "add-start-results": "node src/start-test/add-results-cli.ts",
     "build": "node src/build/cli.ts",
     "check": "node src/check/cli.ts",
     "close-issue": "node src/discover/close-issue-cli.ts",
@@ -19,6 +20,7 @@
     "report-issue": "node src/reports/issue-cli.ts",
     "site": "node src/site/cli.ts",
     "start-test": "node src/start-test/cli.ts",
+    "start-tests": "node src/start-test/start-tests-cli.ts",
     "unanswered-issues": "node src/issues/cli.ts",
     "test": "tsc --noEmit && vitest run"
   },

@@ -28,6 +28,7 @@
       "additionalProperties": false,
       "required": ["id", "repoUrl", "overrides"],
       "oneOf": [{ "required": ["upstream"] }, { "required": ["failure"] }],
+      "dependencies": { "startTests": ["upstream"] },
       "properties": {
         "id": {
           "description": "The entry directory name. pnpm check requires it to equal the id in the entry's meta.json; the build does not check it.",
@@ -47,6 +48,12 @@
           "description": "The counted user reports on the plugin version in upstream: one item for each Zotero major with at least one counted report, ordered by major. A report is a closed issue of the index repo with the label report; README \"Using the data\" gives the counting rule. Present on each record with upstream since the build counts reports.",
           "type": "array",
           "items": { "$ref": "#/definitions/reportCount" }
+        },
+        "startTests": {
+          "description": "Whether the plugin version in upstream started in each tested Zotero release that its manifest's strict_min_version and strict_max_version cover, without overrides: one item for each such release that gave a result, ordered by Zotero version. The daily build starts the plugin in a new profile of Zotero for Linux and waits 3 seconds after the install. A start does not show that the plugin works. Absent when no tested release gave a result, and in data written before the start tests.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/startTest" }
         },
         "failure": {
           "description": "Why the upstream read failed, or why the build did not read the plugin. Present when the read fails or does not run, in place of upstream.",
@@ -125,6 +132,18 @@
         "zoteroMajor": { "description": "The Zotero major the reports name, such as 7.", "type": "integer", "minimum": 7 },
         "works": { "description": "Counted reports that the plugin works on this major.", "type": "integer", "minimum": 0 },
         "broken": { "description": "Counted reports that the plugin is broken on this major.", "type": "integer", "minimum": 0 }
+      }
+    },
+    "startTest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["zotero", "result"],
+      "properties": {
+        "zotero": { "description": "The Zotero version started, such as 10.0.6.", "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$" },
+        "result": {
+          "description": "started: Zotero listed the plugin as active and logged no startup error within 3 seconds of the install. start-error: the plugin's startup threw or rejected in that time. not-installed: Zotero did not list the plugin, or listed it as inactive. timed-out: no answer came before the start's time limit.",
+          "enum": ["started", "start-error", "not-installed", "timed-out"]
+        }
       }
     },
     "override": {

@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -443,7 +444,47 @@ describe("pnpm build", () => {
   test("prints the usage for --out with no directory", () => {
     const result = pnpmBuild(["--out"]);
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain("usage: pnpm build [<dir>] [--out <dir>]");
+    expect(result.stderr).toContain("usage: pnpm build [<dir>] [--out <dir>] [--plan <file>]");
+  });
+
+  test.each([
+    ["--plan with no file", [TREE, "--plan"]],
+    ["a repeated --out", [TREE, "--out", "a", "--out", "b"]],
+  ])("prints the usage for %s", (_name, args) => {
+    const result = pnpmBuild(args);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("usage: pnpm build [<dir>] [--out <dir>] [--plan <file>]");
+  });
+
+  test("exits 1 naming the plan file it cannot write, after writing the data", () => {
+    const dir = tempDir();
+    // A file where the plan's directory would go.
+    writeFileSync(join(dir, "blocked"), "");
+    const result = pnpmBuild([TREE, "--out", join(dir, "out"), "--plan", join(dir, "blocked", "plan.json")], writeFixture(responses()));
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(new RegExp(`^write-failed: cannot write ${join(dir, "blocked", "plan.json")}: `, "m"));
+    expect(existsSync(join(dir, "out", "v1", "plugins.json"))).toBe(true);
+  });
+
+  test("writes the start plan to the --plan file, and no plan without it", () => {
+    const dir = tempDir();
+    const out = join(dir, "out");
+    const withPlan = pnpmBuild([TREE, "--out", out, "--plan", join(dir, "plan", "start-plan.json")], writeFixture(responses()));
+    expect(withPlan.status).toBe(0);
+    const plan = JSON.parse(readFileSync(join(dir, "plan", "start-plan.json"), "utf8"));
+    // The fork has no upstream, so it has no item.
+    expect(plan.plugins.map((item: { entry: string }) => item.entry)).toEqual([BETTER_NOTES, SECOND]);
+    expect(withPlan.stdout).toContain(`wrote a start plan of 2 plugins to ${join(dir, "plan", "start-plan.json")}`);
+
+    const bare = tempDir();
+    const without = pnpmBuild([TREE, "--out", join(bare, "out")], writeFixture(responses()));
+    expect(without.status).toBe(0);
+    expect(readdirSync(bare, { recursive: true }).map(String).sort()).toEqual(
+      ["out", "out/schemas", "out/schemas/index.v1.schema.json", "out/schemas/plugins.v1.schema.json", "out/v1", "out/v1/plugins.json"].map(
+        (path) => join(...path.split("/")),
+      ),
+    );
+    expect(without.stdout).not.toContain("start plan");
   });
 });
 
@@ -498,6 +539,47 @@ describe("buildData", () => {
       if (!result.ok) throw new Error(result.problems.join("\n"));
       expect(result.text).toBe(readFileSync(resolve(ROOT, "test/fixtures/build/mixed-failures.plugins.json"), "utf8"));
     });
+  });
+
+  test("plans each record with upstream, naming the manifest range and the URL and SHA-256 of the XPI bytes it read", async () => {
+    // The fixture zips each XPI when it is requested, so the bytes are kept as they are served.
+    const served = new Map<string, Uint8Array>();
+    const { fetch } = fixtureFetch(responses());
+    const capturing = async (url: string, init?: RequestInit) => {
+      const response = await fetch(url, init);
+      if (url.endsWith(".xpi")) served.set(url, new Uint8Array(await response.clone().arrayBuffer()));
+      return response;
+    };
+    const result = await buildData(TREE, capturing);
+    if (!result.ok) throw new Error(result.problems.join("\n"));
+    const sha256 = (url: string) => createHash("sha256").update(served.get(url)!).digest("hex");
+    const notesXpi = "https://github.com/windingwind/zotero-better-notes/releases/download/v3.3.3/better-notes-for-zotero.xpi";
+    const secondXpi = "https://github.com/example/second-plugin/releases/download/v1.0.0/second-plugin.xpi";
+    expect([...served.keys()].sort()).toEqual([secondXpi, notesXpi].sort());
+    // The override of 9.* on BETTER_NOTES's strict_max_version stays out of the plan.
+    expect(result.plan).toEqual({
+      plugins: [
+        {
+          entry: BETTER_NOTES,
+          id: BETTER_NOTES,
+          version: "3.3.3",
+          strictMinVersion: "8.0-beta.21",
+          strictMaxVersion: "10.99.99",
+          xpiUrl: notesXpi,
+          sha256: sha256(notesXpi),
+        },
+        {
+          entry: SECOND,
+          id: SECOND,
+          version: "1.0.0",
+          strictMinVersion: "7.0",
+          strictMaxVersion: "8.*",
+          xpiUrl: secondXpi,
+          sha256: sha256(secondXpi),
+        },
+      ],
+    });
+    expect(result.text).not.toContain("sha256");
   });
 
   test("writes the reader's language list, with tags or empty, and the output passes the schema", async () => {

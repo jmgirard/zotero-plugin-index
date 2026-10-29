@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-28 (M046 done and archived; 1 row's token moved to 
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M047 | Show whether plugins start in Zotero | planned | M046 | normal | milestones/M047-show-start-tests.md |
+| M047 | Show whether plugins start in Zotero | review | M046 | normal | milestones/M047-show-start-tests.md |
 | M046 | Start one plugin in a headless Zotero | done | — | normal | milestones/archive/M046-start-one-plugin.md |
 | M045 | Count more GitHub answers as build-level | done | — | normal | milestones/archive/M045-more-build-level-answers.md |
 | M044 | Say how many plugins the filters show | done | — | normal | milestones/archive/M044-filter-status-line.md |

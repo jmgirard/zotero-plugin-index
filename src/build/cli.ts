@@ -1,15 +1,24 @@
 import { resolve } from "node:path";
 import process, { argv } from "node:process";
-import { buildData, writeData } from "./build.ts";
+import { buildData, writeData, writePlan } from "./build.ts";
 
-const USAGE = "usage: pnpm build [<dir>] [--out <dir>]";
+const USAGE = "usage: pnpm build [<dir>] [--out <dir>] [--plan <file>]";
 
 async function main(): Promise<number> {
   const args = argv.slice(2);
-  const outAt = args.indexOf("--out");
-  const out = outAt === -1 ? undefined : args[outAt + 1];
-  const positional = args.filter((_arg, i) => outAt === -1 || (i !== outAt && i !== outAt + 1));
-  if (positional.length > 1 || (outAt !== -1 && !out)) {
+  // Each option takes the argument after it, and may appear once.
+  const options = new Map<string, string | undefined>();
+  const positional: string[] = [];
+  let repeated = false;
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--out" || args[i] === "--plan") {
+      repeated ||= options.has(args[i]);
+      options.set(args[i], args[++i]);
+    } else positional.push(args[i]);
+  }
+  const out = options.get("--out");
+  const planFile = options.get("--plan");
+  if (repeated || positional.length > 1 || (options.has("--out") && !out) || (options.has("--plan") && !planFile)) {
     console.error(USAGE);
     return 1;
   }
@@ -37,6 +46,15 @@ async function main(): Promise<number> {
   if (!written.ok) {
     console.error(`write-failed: ${written.message}`);
     return 1;
+  }
+  // The start plan lists the XPI of each plugin that was read, for the start-test jobs.
+  if (planFile) {
+    const planned = await writePlan(resolve(cwd, planFile), built.plan);
+    if (!planned.ok) {
+      console.error(`write-failed: ${planned.message}`);
+      return 1;
+    }
+    console.log(`wrote a start plan of ${built.plan.plugins.length} plugins to ${resolve(cwd, planFile)}`);
   }
   const failed = built.data.plugins.filter((plugin) => plugin.failure);
   for (const { id, failure } of failed) console.log(`${id}: ${failure!.name}: ${oneLine(failure!.message)}`);

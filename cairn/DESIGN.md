@@ -31,8 +31,13 @@ declared range of Zotero versions, source availability, whether GitHub marks
 the repository archived (when GitHub's response says), repository age, the
 release the index read and whether it is a prerelease (corrected M014),
 release count, open issues, the host of the `update.json` file, the
-counted user reports on the release the index read (M021), and the
-languages of the plugin's menus and settings (M024).
+counted user reports on the release the index read (M021), the
+languages of the plugin's menus and settings (M024), and whether the
+release the index read starts in each tested Zotero release that its
+manifest's range covers, shown as a start and never as "works" (D-023,
+M047). For the start tests, each CI job downloads the XPI from the URL the
+build read and checks its SHA-256, and no artifact holds an XPI, so the
+index still re-serves no plugin file.
 The data also carries the interface languages that the read XPI's locale
 folders name (M023), keeping a tag only when its files hold at least one
 message, judged by file type (M027), and at least half as many messages as
@@ -57,7 +62,9 @@ While a filter is on, the same script writes a status line under the
 filters that says how many plugins show, or that none match (M044).
 The home intro links to the "Add a plugin" issue form (M037).
 The page shows the name, the description, the version pills, the declared
-range, the "Menus and settings in" line (M024, M033), the user reports on
+range, the "Menus and settings in" line (M024, M033), the "Starts in
+Zotero" line with its note when the record has `startTests` (M047), the
+user reports on
 the release the index read with a "Works" and a "Broken" link (M021), and
 the repository and releases links first. The other facts sit in a closed
 "Details" section (M015). The home list marks an
@@ -102,8 +109,8 @@ user accounts, and a combined compatibility verdict.
 
 ## Data sources and contribution
 
-Four sources feed each plugin entry. The index keeps the sources apart and
-shows each one separately.
+Five sources feed each plugin entry. The index keeps the sources apart and
+shows each one separately. A combined verdict is out of scope.
 
 1. Discovery. A scheduled bot searches GitHub for repositories with the topic
    `zotero-plugin` or `zotero-addon`. In total, 400 and 109 repositories carry
@@ -144,6 +151,13 @@ shows each one separately.
    version. The daily build reads the closed report issues and counts those
    that `github-actions[bot]`, the account the bot runs as, closed as
    completed, by D-013's rule (M021). No file in the repo holds a report.
+5. Start tests. Each day `build.yml` starts the release the build read in
+   each tested Zotero release for Linux that the manifest's
+   `strict_min_version` and `strict_max_version` cover, without overrides,
+   since Zotero installs by the manifest. A maintainer pins the releases and
+   their SHA-256 values in the workflow (D-023). The result is one of
+   `started`, `start-error`, `not-installed`, or `timed-out`, read 3 s after
+   the install, and the data keeps it in `startTests` (M046, M047).
 
 Inclusion bar: a public repository, a Zotero 7+ manifest, and at least one
 release with a readable `update.json`. The bot checks all three, and it
@@ -171,10 +185,12 @@ exception is a report that is abuse.
   characters, two overrides with the same `field` and `version`, and names
   a UTF-8 byte-order mark at the start of an entry file (M032).
 - Upstream reader (`src/upstream/`): `readUpstream(repoUrl, fetch, {
-  lookup, signal })` returns the facts of one GitHub repo, or one named
-  inclusion-bar failure. The optional `lookup` resolves download hosts for
-  the host check (M004). When the optional `signal` aborts, the read fails
-  as a build-level `request-failed` (M029). Added M002. `githubClient(fetch)` makes its GitHub
+  lookup, signal })` returns the facts of one GitHub repo with the URL and
+  SHA-256 of the XPI it read (M047), or one named inclusion-bar failure.
+  `downloadXpi` downloads one XPI with the same host check (M047). The
+  optional `lookup` resolves download hosts for the host check (M004).
+  When the optional `signal` aborts, the read fails as a build-level
+  `request-failed` (M029). Added M002. `githubClient(fetch)` makes its GitHub
   API requests and refuses a URL on another host, so the token goes to the
   API only (exported M008).
 - Entry drafting (`src/add-plugin/`): `pnpm add-plugin <github-url> [--out
@@ -218,12 +234,14 @@ exception is a report that is abuse.
   while any of the 100 newest `issues` runs of the given workflow has not
   completed. `pnpm unanswered-issues --label <l> --workflow <file> --limit
   <n>` prints them one per line. Added M040.
-- Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>]` writes
+- Data build (`src/build/`): `pnpm build [<dir>] [--out <dir>] [--plan
+  <file>]` writes
   `dist/v1/plugins.json`, one record per entry, with a failed upstream read
   kept in that entry's record, and copies the two schemas to `dist/schemas/`.
   It exits 1 when more than half of the records carry a build-level failure,
   as README "Building the data" defines it, and also when every record carries a
-  failure, whatever its name. It prints a summary of failure
+  failure, whatever its name, and, after writing the data, when it cannot
+  write the `--plan` file (M047). It prints a summary of failure
   names and a `::warning::` line for build-level failures. Before any plugin
   read it reads the `report` label and the closed report issues of
   `GITHUB_REPOSITORY`, or of `INDEX_REPO`, and writes `reports` on each
@@ -260,6 +278,23 @@ exception is a report that is abuse.
   `countReports(issues, records)` (`src/reports/count.ts`) counts the closed
   report issues for each record that has `upstream`, by Zotero major
   (M021).
+- Start tests (`src/start-test/`): `pnpm start-test --zotero --xpi --out
+  [--limit]` starts one Zotero binary with one XPI in a new profile, with
+  the reporter plugin of `src/start-test/reporter/`, and writes one of the
+  four results, or exits 1 with a failure name (M046). `pnpm start-tests
+  --plan --zotero --out` starts each item of the plan that `pnpm build
+  --plan` writes and whose manifest range covers the binary's version
+  (`inRange`, by `compareVersions`). It downloads each XPI with the
+  reader's `downloadXpi`, checks the plan's SHA-256, runs `pnpm start-test`
+  in its own process, records no result for a failed download, a hash
+  mismatch, or a failed start, and starts nothing new after 20 minutes.
+  `pnpm add-start-results --data --plan --results --tested` keeps a result
+  only when its entry, plugin id, and version match the plan, its Zotero
+  version equals the one in its artifact's name, is listed in `--tested`,
+  and falls in the range, and its result is one of the four names; it
+  drops every result of a duplicate pair and each entry that is not a
+  readable JSON array file of at most 1 MiB, and writes `startTests`
+  ordered by version (`addResults`, M047).
 
 ## Conventions
 
@@ -510,15 +545,18 @@ reused._
   report. The comment puts each value from the issue in a code span (M020).
 - `.github/workflows/ci.yml` runs `pnpm test` and `pnpm check` on every push
   and pull request, except those the built-in token makes, such as the
-  discovery bot's (M009).
+  discovery bot's (M009). Its `start-test` job downloads Zotero 10.0.6 for
+  Linux, checks its SHA-256, and runs `test/start-test-zotero.test.ts` under
+  `xvfb-run` with `ZOTERO_BIN` set; the `check` job skips that file (M046).
 - `src/build/` reads the entries, then the `report` label and every page of
   the closed report issues, runs the upstream reader on each plugin in turn,
   writes the `countReports` counts into each read record's `reports`, and checks each record and then the whole output against
   `schemas/plugins.v1.schema.json` before it writes the file.
-  `.github/workflows/build.yml` runs `pnpm check`, then the build, then
-  `pnpm site` (M007), daily and on manual dispatch, and keeps `dist/` as a
-  workflow artifact (M003). The build also copies both schemas to `dist/schemas/`, and it exits 1 after it
-  writes the file when more than half of the records carry a build-level
+  `.github/workflows/build.yml` runs `pnpm check` and the build (M007),
+  daily and on manual dispatch, and keeps the data as a workflow artifact
+  (M003); since M047 a later site job runs `pnpm site`. The build also
+  copies both schemas to `dist/schemas/`, and it exits 1 after it writes
+  the file when more than half of the records carry a build-level
   failure, as README "Building the data" defines it (M017), or when every
   record carries a failure of any name (M018, D-012). A failed read of the
   `report` label or the report issues, or a listed issue with no
@@ -527,17 +565,31 @@ reused._
   for that read, and `test/workflows.test.ts` checks both (M021). The reader
   marks a failure build-level beside its name, and `buildData` returns the
   marked ids outside the data, so the published file keeps its shape
-  (D-011). The workflow then uploads `dist/` as the Pages artifact, and a deploy job that
-  needs the build job publishes it. A failed build deploys nothing, and the
+  (D-011). Since M047 the workflow has four jobs. The build job runs
+  `pnpm build --plan start-plan.json` and uploads `dist/` as `plugins-data`
+  and the plan as `start-plan`. A `start-test` matrix job, one line per
+  tested Zotero release with its file name and SHA-256, runs
+  `pnpm start-tests` and uploads `start-results-<version>`; it holds
+  `permissions: {}`, reads no secret, checks out with
+  `persist-credentials: false`, and sets `cache-mode: none`, since plugin
+  code runs in it (D-023). The site job, whose `if:` is
+  `${{ !cancelled() && needs.build.result == 'success' }}`, runs
+  `pnpm add-start-results` and `pnpm site` and uploads `dist/` as the Pages
+  artifact. A deploy job that needs the site job publishes it; its `if:`
+  is `${{ !cancelled() && needs.site.result == 'success' }}`, since a job
+  with a failed earlier job is skipped by default, so a failed start test
+  still deploys. A failed build deploys nothing, and the
   `github-pages` environment takes deploys from `main` only (M006).
-  The build job of `build.yml` restores no Actions cache: the job sets
+  The build, start-test, and site jobs of `build.yml` restore no Actions
+  cache (M047). The build job's rule came first: the job sets
   `cache-mode: none`, which GitHub enforces with the job's cache token, and no
   step sets a `cache` input (D-010). Scheduled and dispatched runs of the
   discover read job can save caches in the default branch's scope, while
   `issues` runs get read-only cache access. `test/workflows.test.ts` fails on a
-  `cache` key or an `actions/cache` step in `build.yml`, or on a build job
-  without `cache-mode: none`; `ci.yml` keeps `cache: pnpm` (M016). It also
-  checks `report-issue.yml`: its triggers, job condition, permissions,
+  `cache` key or an `actions/cache` step in `build.yml`, or on a build,
+  start-test, or site job without `cache-mode: none` (M047); `ci.yml` keeps
+  `cache: pnpm` (M016). It also checks `report-issue.yml`: its triggers,
+  job condition, permissions,
   `cache-mode: none`, no cache line, its concurrency groups, the issue number
   through `env:`, and no use of `github.event` other than the issue number,
   its labels, and the repository's default branch (M020, M040), and that
@@ -560,9 +612,10 @@ reused._
   `type="module"` script; the other pages carry none (D-014,
   D-019). The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
-  Astro's `import.meta.env.BASE_URL`. `build.yml` runs `pnpm site` after the
-  build, so a failed site build also deploys nothing. `tsconfig.json` includes
-  `site/`, so `pnpm test` type-checks its `.ts` files; the `.astro` templates
+  Astro's `import.meta.env.BASE_URL`. `build.yml`'s site job runs `pnpm site`
+  after the build job (M047), so a failed site build also deploys nothing.
+  `tsconfig.json` includes `site/`, so `pnpm test` type-checks its `.ts`
+  files; the `.astro` templates
   are compiled by Astro without a type check (M007). A plugin page shows the
   "Archived on GitHub" fact only for a record whose `archived` is a boolean,
   and the home list's `data-archived` marker only for `archived: true` (M013).
@@ -604,3 +657,14 @@ reused._
   (Mon) on Node 26, and a Node upgrade can change which rare codes count.
   A `languages` override records such a language. Accepted at the M025
   plan, 2026-10-27.
+- Plugin code that runs in a start-test job can rewrite that job's results,
+  its own included, so the data can show a forged start. The job has no
+  token permission and no secret, and `pnpm add-start-results` keeps only
+  results whose entry, plugin id, version, and range match the plan and
+  whose Zotero version equals the artifact's name and is one of the
+  matrix's versions. A process left from a start can also upload an
+  artifact; under another job's name it wins if it uploads first, and that
+  job's own upload then fails. The command cannot tell a forged result from
+  a real one inside those bounds, and an unreadable entry drops without
+  stopping the deploy. Accepted with D-023, 2026-10-28; bounds set in the
+  M047 review.
