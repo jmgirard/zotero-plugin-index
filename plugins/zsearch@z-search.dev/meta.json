@@ -1,0 +1,8 @@
+{
+  "id": "zsearch@z-search.dev",
+  "name": "z-search",
+  "description": "Academic, web, repository, vector, patent, dataset, researcher and grant search for Zotero — standalone search plugin",
+  "homepage": "https://github.com/Liozhang/z-search#readme",
+  "repoUrl": "https://github.com/Liozhang/z-search",
+  "updateUrl": "https://github.com/Liozhang/z-search/releases/download/release/update.json"
+}
