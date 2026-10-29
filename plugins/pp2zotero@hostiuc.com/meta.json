@@ -1,0 +1,8 @@
+{
+  "id": "pp2zotero@hostiuc.com",
+  "name": "PP2Zotero",
+  "description": "Convert Paperpile citations in Word documents to Zotero citations",
+  "homepage": "https://github.com/sorinhostiuc/pp2zotero",
+  "repoUrl": "https://github.com/sorinhostiuc/pp2zotero",
+  "updateUrl": "https://github.com/sorinhostiuc/pp2zotero/releases/latest/download/update.json"
+}
