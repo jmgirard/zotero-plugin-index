@@ -1,0 +1,7 @@
+{
+  "id": "paperlens@alanzeng.local",
+  "name": "Zotero PaperLens",
+  "description": "Read a complete paper once, highlight key evidence, and translate selections with paper-wide context.",
+  "repoUrl": "https://github.com/alanzeng423/zotero-paperlens",
+  "updateUrl": "https://raw.githubusercontent.com/alanzeng423/zotero-paperlens/main/updates.json"
+}
