@@ -1,6 +1,6 @@
 # M054: Rebuild the plugin page and add an About page
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** M053
 - **Driving RR:** —
@@ -73,13 +73,15 @@ fixture are as M053 defines them.
       the 3-second wait, a start is not "works"), the counting of user
       reports, overrides and the Used column, and that the index does not
       vet plugins. The top bar of every page built from the site fixture
-      links to it. On each plugin page built from the site fixture, these
-      sentences of today's page are absent: "waits 3 seconds", "A start
-      test does not show that the plugin works", and the override
-      paragraph's "An override marked" and "The declared range above uses"
-      sentences; one line under the table links to the About page. The
-      footer's not-vetted line stays on every page. A site test checks the
-      built pages for each of these.
+      links to it. On each plugin page built from the site fixture, no
+      text contains these strings from the plugin page before M054:
+      "waits 3 seconds", "A start test does not show that the plugin
+      works", "An override marked", and "The declared range above uses";
+      exactly one line in the "Zotero compatibility" section links to the
+      About page, under the table for a record with `upstream` and under
+      the failure message for a record with `failure`. The footer's
+      not-vetted line stays on every page built from the site fixture. A
+      site test checks the built pages for each of these.
 - [x] AC6: In the browser pane, the plugin pages of DeepRead, Better
       BibTeX, and PDF Preview built from data whose records carry
       `xpiUrl`, and the About page, have `documentElement.scrollWidth` at
@@ -94,7 +96,7 @@ fixture are as M053 defines them.
 - AC2 → T2
 - AC3 → T2
 - AC4 → T3
-- AC5 → T4
+- AC5 → T4, T7
 - AC6 → T5
 - AC7 → T6
 
@@ -114,6 +116,8 @@ fixture are as M053 defines them.
       and save a screenshot of each named page at each width for Review.
 - [x] T6: Update README, DESIGN, and the M053 CHANGELOG entry; run the
       verify slot.
+- [x] T7: Test the amended AC5: the moved strings on the whole page, and
+      the About line under the failure message on failed records' pages.
 
 ## Work log
 
@@ -146,6 +150,9 @@ fixture are as M053 defines them.
 - 2026-10-29: amendment routed: AC5 — "one line under the table links to the About page" cannot hold on the 3 fixture pages of failed records, which have no table (AC2); their About line sits under the failure message in the same card.
 - 2026-10-29: re-audit: AC5 (full) — satisfiable on all 13 fixture pages (schema `oneOf` upstream/failure), no IP or D-entry conflict, no probe cited, test clause not an instrument finding, proportionate; 2 findings: the footer clause's "every page" lacks the fixture qualifier, and "today's page" drifts after the merge; both fixed toward the narrower wording; test gaps noted (no failure-message order check; moved sentences checked in `<main>` only).
 - 2026-10-29: re-audit: AC5 (full) — satisfiable on all 15 fixture pages, no IP or D-entry conflict, bounded, no probe, proportionate; 2 low findings: the four quoted "sentences" are fragments (substring or whole-sentence reading), and "one line" can read as at least one or exactly one; the same 2 test gaps; this is the second re-audit of AC5, so further wording change goes to the user.
+- 2026-10-29: user chose the strict wording at the AC5 chip (over keeping the reviewed wording or stopping); no further reader spawned for AC5.
+- 2026-10-29: amendment return: AC5 — "On each plugin page built from the site fixture, no text contains these strings from the plugin page before M054: "waits 3 seconds", "A start test does not show that the plugin works", "An override marked", and "The declared range above uses"; exactly one line in the "Zotero compatibility" section links to the About page, under the table for a record with `upstream` and under the failure message for a record with `failure`. The footer's not-vetted line stays on every page built from the site fixture."
+- 2026-10-29: minor amendment: T7 added and mapped to AC5 for the two test gaps both readers named; T7 done: the moved-strings check now reads each plugin page's whole markup and text, and failed records' pages check the failure message before the About line; moving the About line above the failure message failed the 3 failure pages; verify passes (1179 tests, 58 entries, 0 problems); status set to review.
 
 ## Decisions
 

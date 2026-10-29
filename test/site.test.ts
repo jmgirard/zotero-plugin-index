@@ -610,7 +610,12 @@ describe("the About page", () => {
 
   test.each(ids)("leaves the moved method sentences off the page of %s, and links the About page once in the compatibility card", (id) => {
     const html = page(id);
-    for (const sentence of MOVED) expect(mainText(html), sentence).not.toContain(sentence);
+    // The whole page, as markup and as text with the tags removed.
+    const text = unescaped(html.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ");
+    for (const sentence of MOVED) {
+      expect(html, sentence).not.toContain(sentence);
+      expect(text, sentence).not.toContain(sentence);
+    }
     const main = html.slice(html.indexOf("<main>"), html.indexOf("</main>"));
     expect(main.split('href="/zotero-plugin-index/about/"').length - 1).toBe(1);
     const line = /<p class="fineprint" data-about-line>(.*?)<\/p>/s.exec(main)?.[1];
@@ -618,6 +623,7 @@ describe("the About page", () => {
     const card = sections(html).find(({ name }) => name === "compatibility")!.body;
     expect(card).toContain("data-about-line");
     if (records.find((r) => r.id === id)!.upstream) expectInOrder(card, ["</table>", "data-about-line", 'data-fact="report-prompt"']);
+    else expectInOrder(card, ['data-fact="failure"', "data-about-line"]);
   });
 
   test("holds the phrase that the plugin page check looks for, so the check can fail", () => {
