@@ -84,6 +84,18 @@ describe("readUpstream", () => {
     expect(result.ok && result.facts.archived).toBe(archived);
   });
 
+  test.each<[string, (repo: Json) => void, string | undefined]>([
+    ["a string with outer spaces", (repo) => (repo.description = "  Notes in Zotero. \n"), "Notes in Zotero."],
+    ["null", (repo) => (repo.description = null), undefined],
+    ["absent", (repo) => delete repo.description, undefined],
+    ["a number", (repo) => (repo.description = 7), undefined],
+    ["blank", (repo) => (repo.description = " \t"), undefined],
+  ])("reads a repo whose description is %s", async (_name, edit, repoDescription) => {
+    const { result } = await read((r) => edit(r[REPO].json as Json));
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.facts.repoDescription).toBe(repoDescription);
+  });
+
   test("sends GITHUB_TOKEN with each GitHub API request and with no other request", async () => {
     vi.stubEnv("GITHUB_TOKEN", "test-token");
     const { result, requests } = await read();

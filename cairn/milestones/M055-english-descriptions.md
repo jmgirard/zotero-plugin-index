@@ -129,7 +129,7 @@ added after this plan, which follow D-030 case by case.
       near line 560), skipping a file the size limits refuse, and resolve
       `name` and `description` through the first qualifying English folder
       before the default (`localized`, line 302). Tests per AC1.
-- [ ] T2: Add `repoDescription` to `UpstreamFacts` and the facts built from
+- [x] T2: Add `repoDescription` to `UpstreamFacts` and the facts built from
       `meta` (reader.ts line 205); add it to the `upstream` definition of
       `schemas/plugins.v1.schema.json`. Tests per AC2.
 - [ ] T3: Rewrite `shownDescription` in `src/site/description.ts` with a
@@ -162,3 +162,4 @@ added after this plan, which follow D-030 case by case.
 - 2026-10-29: plan gate chose C / (C + letter runs) over a per-letter share because a Han character is closer to a word than a Latin letter is; falsified by a listed plugin whose shown text is mostly CJK while an English-led candidate exists.
 - 2026-10-29: implement started on branch m055-english-descriptions.
 - 2026-10-29: T1 done: `localized` reads `en`, `en_US`, `en_GB` messages before the default locale's; `englishMessages` skips a refused, non-JSON, or non-object file; 17 new upstream tests; planted wrong order failed 2 tests and a dropped blank check failed 1.
+- 2026-10-29: T2 done: `repoDescription` in `UpstreamFacts` and the schema (`pattern: "\\S"`); 5 reader cases and 1 schema test; a dropped blank check and a dropped pattern each failed their test. Build tests run through pnpm (M001 lesson).

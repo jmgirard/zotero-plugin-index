@@ -723,6 +723,21 @@ describe("buildData", () => {
     expect(checkOutput(withUrl)).toEqual([`/plugins/${index}/upstream/xpiUrl must be string`]);
   });
 
+  test("the schema takes an upstream with or without a repoDescription and refuses a blank one", async () => {
+    const recorded = responses();
+    (recorded["https://api.github.com/repos/windingwind/zotero-better-notes"].json as Record<string, unknown>).description = "Notes.";
+    const result = await buildData(TREE, fixtureFetch(recorded).fetch);
+    if (!result.ok) throw new Error(result.problems.join("\n"));
+    const output: Output = JSON.parse(result.text);
+    const index = output.plugins.findIndex((plugin) => plugin.id === BETTER_NOTES);
+    expect(output.plugins[index].upstream!.repoDescription).toBe("Notes.");
+    expect(checkOutput(output)).toEqual([]);
+    delete output.plugins[index].upstream!.repoDescription;
+    expect(checkOutput(output)).toEqual([]);
+    output.plugins[index].upstream!.repoDescription = " ";
+    expect(checkOutput(output)).toEqual([`/plugins/${index}/upstream/repoDescription must match pattern "\\S"`]);
+  });
+
   test("writes the reader's language list, with tags or empty, and the output passes the schema", async () => {
     const recorded = responses();
     const xpi = recorded["https://github.com/example/second-plugin/releases/download/v1.0.0/second-plugin.xpi"].xpi!;

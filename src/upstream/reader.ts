@@ -18,6 +18,8 @@ export interface UpstreamFacts {
   updateUrl: string;
   updateHost: string;
   repoUrl: string;
+  // The repo's About text from GitHub, trimmed, left out when it is not a string or is blank.
+  repoDescription?: string;
   repoCreatedAt: string;
   openIssues: number;
   // Releases that carry an .xpi asset, drafts excluded.
@@ -205,6 +207,7 @@ async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<
     facts: {
       ...manifestFacts,
       repoUrl: meta.html_url,
+      repoDescription: typeof meta.description === "string" && meta.description.trim() !== "" ? meta.description.trim() : undefined,
       repoCreatedAt: meta.created_at,
       openIssues: meta.open_issues_count,
       releaseCount: withXpi.length,
@@ -273,6 +276,7 @@ interface RepoJson {
   private: boolean;
   fork: boolean;
   archived?: unknown;
+  description?: unknown;
   created_at: string;
   open_issues_count: number;
 }

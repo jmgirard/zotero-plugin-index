@@ -101,6 +101,11 @@
         "updateUrl": { "description": "applications.zotero.update_url in the manifest.", "type": "string" },
         "updateHost": { "description": "The host of updateUrl.", "type": "string" },
         "repoUrl": { "description": "The repo URL that GitHub returns.", "type": "string" },
+        "repoDescription": {
+          "description": "The repo's About text that GitHub returns, with outer whitespace trimmed. Absent when GitHub gives none, a value that is not a string, or a blank one, and in data written before the build wrote it.",
+          "type": "string",
+          "pattern": "\\S"
+        },
         "repoCreatedAt": { "description": "When the repo was created.", "type": "string" },
         "openIssues": { "description": "Open issues and pull requests in the repo.", "type": "integer", "minimum": 0 },
         "releaseCount": { "description": "Releases that carry an .xpi asset, drafts excluded.", "type": "integer", "minimum": 1 },
