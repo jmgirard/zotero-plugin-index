@@ -1,0 +1,8 @@
+{
+  "id": "zontex-bridge@endoretic.github.io",
+  "name": "Zontex Bridge",
+  "description": "Support component for Zontex.",
+  "homepage": "https://github.com/endoretic/zontex-zotero-librarian",
+  "repoUrl": "https://github.com/endoretic/zontex-zotero-librarian",
+  "updateUrl": "https://github.com/endoretic/zontex-zotero-librarian/releases/latest/download/updates.json"
+}
