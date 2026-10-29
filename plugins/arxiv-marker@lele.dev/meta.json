@@ -1,0 +1,8 @@
+{
+  "id": "arxiv-marker@lele.dev",
+  "name": "arxiv-marker",
+  "description": "Resolve arXiv preprints to their real CS/ML venue (conference/journal) and CCF/CORE tier, then write the venue field back to the local library - so easyScholar / zotero-style light up. Deterministic: Semantic Scholar + OpenReview + DBLP, no LLM guessing.",
+  "homepage": "https://github.com/lelelelelelelelelelelelele/arxiv-marker",
+  "repoUrl": "https://github.com/lelelelelelelelelelelelele/arxiv-marker",
+  "updateUrl": "https://github.com/lelelelelelelelelelelelele/arxiv-marker/releases/download/release/update.json"
+}
