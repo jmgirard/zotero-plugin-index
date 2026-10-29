@@ -31,15 +31,19 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
       `upstream` definition as an optional string (absent from `required`).
       A schema test shows a record with `xpiUrl` and one without it pass,
       and a record whose `xpiUrl` is a number fail on that property.
-- [ ] AC2: For each record with `upstream`, `pnpm build` writes
-      `upstream.xpiUrl` equal to the `browser_download_url` of the `.xpi`
-      asset of the release whose manifest it read. A build test over
-      fixture repos asserts the value for a repo read at its newest stable
-      release and for a repo read at a prerelease, and asserts that a
-      record with `failure` has no `upstream` and so no `xpiUrl`.
+- [ ] AC2: `pnpm build` writes `upstream.xpiUrl` on each record with
+      `upstream`, equal to the `xpiUrl` of that entry's start plan item,
+      which is the `browser_download_url` of the first `.xpi` asset of the
+      release whose manifest the reader read. A build test asserts this for
+      every record with `upstream` in its fixture build, and that fixture
+      covers the three reader paths: the newest stable release, a repo with
+      only prereleases, and a stable release that is not a Zotero 7+ build
+      followed by a newer prerelease that is. A record with `failure` has
+      no `upstream` and so no `xpiUrl`.
 - [ ] AC3: README "Using the data", DESIGN's data description, and
       CHANGELOG under Unreleased name `xpiUrl` and say which file it
-      addresses.
+      addresses. DESIGN's out-of-scope line says that a plain link to the
+      author's own `.xpi` file is not an install button.
 - [ ] AC4: The verify slot (`pnpm test`, `pnpm check`) passes.
 
 ## Coverage
@@ -56,8 +60,9 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
       build's record type) as optional; add the schema test cases.
 - [ ] T2: In `src/build/build.ts` (`readRecord`, around line 278, and the
       record assembly near line 191), copy `xpi.url` into
-      `upstream.xpiUrl`; extend `test/build.test.ts` for the stable,
-      prerelease, and failure cases.
+      `upstream.xpiUrl`; extend `test/build.test.ts` to compare every
+      record with its start plan item, with fixtures for the three reader
+      paths and a failure.
 - [ ] T3: Update README "Using the data", DESIGN (Contract boundary and
       the data description: a link to the author's file, not a copy), and
       CHANGELOG; run the verify slot.
@@ -70,6 +75,7 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
 - 2026-10-29: question set: how to link to the XPI — a direct link, with the address added to the data as an optional field.
 - 2026-10-29: plan gate chose an optional field inside `upstream` over linking to `<repo>/releases/latest` because that page can name a newer release than the one the index read; falsified by a record whose `xpiUrl` names a file other than the one the start test downloaded.
 - 2026-10-29: lessons used: 2026-10-25 (M001) pnpm through npx; 2026-10-27 (M027) fast single-file vitest runs.
+- 2026-10-29: criteria audit (full mode, fresh Opus reader): 18 findings across M052–M054, 2 here, both fixed: AC2 now compares every fixture record with its start plan item and covers the reader's third path (stable not Zotero 7+, then a newer prerelease); AC3 now has DESIGN say that a plain link to the author's .xpi is not an install button, since DESIGN puts install buttons out of scope.
 
 ## Decisions
 

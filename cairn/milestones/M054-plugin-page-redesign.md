@@ -22,55 +22,69 @@ the plan: a back link; the name, an "Archived" mark, and the description;
 icon buttons for the XPI file, the source, and the releases; a "Zotero
 compatibility" table (declared support, start test, user reports per
 major) with the report buttons under it; an open details grid with the
-overrides table. A new About page that holds the method notes now on the
-home intro and the plugin pages, linked from the top bar of every page.
-Absorbs candidate row "Fix the Overrides table's heading level".
+overrides table. A new About page that holds the method notes, taken
+from the plugin pages and widened from the M053 legend, linked from the
+top bar of every page. Absorbs candidate row "Fix the Overrides table's
+heading level".
 
 **Out:** the home table and the shared look → M053. Labels for reads cut
 by the time limit → candidate row "Label cut reads on plugin pages".
 
 ## Acceptance criteria
 
-- [ ] AC1: Each built plugin page opens `<main>` with a back link to the
-      home page, an h1 with the display name and an "Archived" mark when
-      `upstream.archived` is true, the shown description, and then links
-      in this order: the file (`upstream.xpiUrl`, only when `safeHref`
-      passes it), the source (the `safeHref` repo URL, plain text when it
-      fails), and the releases (only for a record with `upstream`). Each
-      link holds an inline SVG marked `aria-hidden="true"` and visible
-      text, and the file link's text names `upstream.version`. A site test
-      checks every fixture page.
+Terms: the repo URL, "passes", a major's start result, and the site
+fixture are as M053 defines them.
+
+- [ ] AC1: Each plugin page built from the site fixture opens `<main>`
+      with a back link to the home page, an h1 with the display name and
+      an "Archived" mark when `upstream.archived` is true, the shown
+      description, and then links in this order: the file
+      (`upstream.xpiUrl`, only when it passes), the source (the repo URL;
+      plain text when it fails), and the releases (only for a record with
+      `upstream`; `<repo URL>/releases` as plain text when the repo URL
+      fails). Each link holds an inline SVG marked `aria-hidden="true"` and
+      visible text, and the file link's text names `upstream.version`. A
+      site test checks each such page, including the M053 fixture records
+      whose repo URL or `xpiUrl` fails.
 - [ ] AC2: For a record with `upstream`, a "Zotero compatibility" table
       has one row per major in `ZOTERO_MAJORS` and per other major named
       by its `reports` or `startTests`, newest first. Each row's declared
-      cell equals `majorSupport` (or says no range), its start cell names
-      the tested release and the result of the `startTests` item for that
-      major ("Not tested" when none), and its reports cell gives that
+      cell holds the `majorSupport` kind (or "No range" when undefined),
+      its start cell names the release and result of the major's start
+      result ("Not tested" when none), and its reports cell holds that
       major's works and broken counts ("None yet" when none). For a record
-      with `failure`, the section shows the failure name and message
-      instead of the table. A site test checks every fixture page.
+      with `failure`, the section holds the failure name and message in
+      place of the table. A site test checks each page built from the site
+      fixture, which gains a record with reports on major 11 and one with
+      two start results for one major.
 - [ ] AC3: Under the table, for a record with `upstream`, the "Works" and
-      "Broken" links keep the `reportHref` hrefs of today's pages, after a
-      line that names `upstream.version`. A site test checks the hrefs.
-- [ ] AC4: An open details section lists the facts of today's Details
-      list (plugin id, archived, repository created, release read and
-      prerelease, releases with an .xpi, open issues and pull requests,
-      host of update.json) plus the languages line, with no `<details>`
-      element. The overrides table, when a record has overrides, sits under
-      an h3 inside that section. A site test checks every fixture page.
-- [ ] AC5: The build writes `about/index.html`, whose text covers the
-      declared range and the version marks, the start test (Linux, a new
-      profile, the 3-second wait, a start is not "works"), the counting of
-      user reports, overrides, and that the index does not vet plugins.
-      The top bar of every built page links to it. A plugin page's only
-      text on method is one line under the table that links to it; the
-      "waits 3 seconds" sentence appears on the About page and on no
-      plugin page. A site test checks the built pages.
-- [ ] AC6: In the browser pane, plugin pages built from the deployed data
-      (DeepRead, Better BibTeX, and PDF Preview) and the About page have no
-      horizontal scroll at 375 px and 1280 px wide (the iframe width
-      check); each CSS rule that sets a text color and a background passes
-      4.5:1 in both color schemes by the existing color test.
+      "Broken" links have hrefs equal to `reportHref(record, "works")` and
+      `reportHref(record, "broken")`, after a line that names
+      `upstream.version`. A site test checks the hrefs on each page built
+      from the site fixture.
+- [ ] AC4: A Details section headed by an h2, with no `<details>`
+      element, lists the plugin id, archived, repository created, release
+      read and prerelease, releases with an .xpi, open issues and pull
+      requests, host of update.json, and the languages line; when a record
+      has overrides, the overrides table sits under an h3 inside it. A
+      site test checks each page built from the site fixture.
+- [ ] AC5: `pnpm site` writes `about/index.html`, whose text covers the
+      declared range and its marks, the start test (Linux, a new profile,
+      the 3-second wait, a start is not "works"), the counting of user
+      reports, overrides and the Used column, and that the index does not
+      vet plugins. The top bar of every page built from the site fixture
+      links to it. On each plugin page built from the site fixture, these
+      sentences of today's page are absent: "waits 3 seconds", "A start
+      test does not show that the plugin works", and the override
+      paragraph's "An override marked" and "The declared range above uses"
+      sentences; one line under the table links to the About page. The
+      footer's not-vetted line stays on every page. A site test checks the
+      built pages for each of these.
+- [ ] AC6: In the browser pane, the plugin pages of DeepRead, Better
+      BibTeX, and PDF Preview built from data whose records carry
+      `xpiUrl`, and the About page, have `documentElement.scrollWidth` at
+      most `clientWidth` at 375 px and 1280 px wide (the iframe width
+      check).
 - [ ] AC7: README, DESIGN, and the series' CHANGELOG entry from M053
       describe the plugin page and the About page; the verify slot passes.
 
@@ -88,16 +102,16 @@ by the time limit → candidate row "Label cut reads on plugin pages".
 
 - [ ] T1: Add the icon set to the layout and rebuild the page head in
       `site/src/pages/plugins/[id]/index.astro`; test the head and links.
-- [ ] T2: Build the compatibility table and the report row (a data
-      helper for the rows by major, in `site/src/data.ts`); replace the
-      section tests in `test/site.test.ts`.
-- [ ] T3: Replace the closed Details with the open grid and move the
-      overrides table under an h3; update its tests.
-- [ ] T4: Add `site/src/pages/about.astro` with the method notes moved
-      from the home intro and the plugin pages, add the top bar link, cut
-      the plugin page note to one linking line; test the built pages.
-- [ ] T5: Build from the deployed data, serve it, run the width check and
-      screenshots for the named pages, and run the color test.
+- [ ] T2: Add the fixture records AC2 names; build the compatibility
+      table and the report row (a data helper for the rows by major, in
+      `site/src/data.ts`); replace the section tests in `test/site.test.ts`.
+- [ ] T3: Replace the closed Details with the h2 section and grid, and
+      move the overrides table under an h3; update its tests.
+- [ ] T4: Add `site/src/pages/about.astro` with the method notes from the
+      plugin pages and the M053 legend, add the top bar link, cut the
+      named sentences, and add the linking line; test the built pages.
+- [ ] T5: Build from data with `xpiUrl`, serve it, run the width check,
+      and save a screenshot of each named page at each width for Review.
 - [ ] T6: Update README, DESIGN, and the M053 CHANGELOG entry; run the
       verify slot.
 
@@ -112,6 +126,7 @@ by the time limit → candidate row "Label cut reads on plugin pages".
 - 2026-10-29: feature series: M053 -> M054
 - 2026-10-29: absorbed candidate row "Fix the Overrides table's heading level" (AC4).
 - 2026-10-29: lessons used: 2026-10-26 (M015) serving the built site; 2026-10-27 (M021) Astro line breaks; 2026-10-28 (M035) deployed data for hand checks; 2026-10-28 (M037) block nesting; 2026-10-29 (M048) iframe width check.
+- 2026-10-29: criteria audit (full mode, fresh Opus reader): 6 findings here plus 1 shared with M053, all fixed: "every fixture page" made "each page built from the site fixture", with failing-link fixtures and the releases fallback named; a major-11 reports fixture and a two-result fixture added, newest result used; report hrefs tied to `reportHref`; Details given an h2 above the overrides h3; the method-text claim narrowed to named sentences with the footer exempt, and "the build" made `pnpm site`; the color clause dropped (M053 AC6 owns it); Scope no longer moves notes from a home intro that M053 removes. Note kept, no change: the links come before the table, as in the mockup the user chose.
 
 ## Decisions
 
