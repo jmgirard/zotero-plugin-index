@@ -1,0 +1,7 @@
+{
+  "id": "zoterojs-bridge@local",
+  "name": "Zotero JS Bridge",
+  "description": "Local-only endpoints for executing JavaScript inside Zotero. Rides on Zotero's own 127.0.0.1 server; every call needs X-ZoteroJS-Token.",
+  "repoUrl": "https://github.com/Sum-su/zotero-js-bridge",
+  "updateUrl": "https://raw.githubusercontent.com/Sum-su/zotero-js-bridge/main/updates.json"
+}
