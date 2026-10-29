@@ -131,6 +131,7 @@ A script on the plugin pages stays out, because this layout needs none
 - 2026-10-29: T5: README's plugin page paragraph, DESIGN's plugin page sentence, and a new CHANGELOG entry describe the header block, the four cards, and the report buttons; README drops its sentence on the reports and links, which the card sentence now covers. `pnpm test` 1050 passed, `pnpm check` 0 problems.
 - 2026-10-29: claim audit: 29 claims read, 7 corrected — CHANGELOG.md, README.md, site/src/layouts/Base.astro, test/site.test.ts. The re-read found one README sentence still missing the failure page; fixed with the reader's wording. The dark-block check now compares color names, not counts.
 - 2026-10-29: all tasks done; status set to review.
+- 2026-10-29: step-7 approval: m048-plugin-page-sections approved for merge
 
 ## Decisions
 
