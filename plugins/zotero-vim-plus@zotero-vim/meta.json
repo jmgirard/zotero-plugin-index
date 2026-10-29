@@ -1,0 +1,8 @@
+{
+  "id": "zotero-vim-plus@zotero-vim",
+  "name": "Zotero Vim Plus",
+  "description": "Vim-like keybindings for the Zotero PDF reader and note editors. Navigate, annotate, search and edit rich-text notes with keyboard shortcuts inspired by Vimium/Vim/LazyVim.",
+  "homepage": "https://github.com/ZorroStardust/zotero-vim-plus",
+  "repoUrl": "https://github.com/ZorroStardust/zotero-vim-plus",
+  "updateUrl": "https://raw.githubusercontent.com/ZorroStardust/zotero-vim-plus/main/updates.json"
+}
