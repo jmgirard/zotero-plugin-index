@@ -1,0 +1,7 @@
+{
+  "id": "zotagent@shzhao.local",
+  "name": "ZotAgent",
+  "description": "Run OpenCode, Codex CLI, and Claude Code as full agents inside Zotero.",
+  "repoUrl": "https://github.com/ShZhao27208/ZotAgent",
+  "updateUrl": "https://raw.githubusercontent.com/ShZhao27208/ZotAgent/main/update.json"
+}
