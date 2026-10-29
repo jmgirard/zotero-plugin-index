@@ -669,6 +669,19 @@ describe("buildData", () => {
     expect(result.text).not.toContain("sha256");
   });
 
+  test("the schema takes an upstream with or without a string xpiUrl and refuses one of another type", async () => {
+    const result = await buildData(TREE, fixtureFetch(responses()).fetch);
+    if (!result.ok) throw new Error(result.problems.join("\n"));
+    const withUrl: Output = JSON.parse(result.text);
+    const index = withUrl.plugins.findIndex((plugin) => plugin.id === BETTER_NOTES);
+    withUrl.plugins[index].upstream!.xpiUrl = "https://example.org/a.xpi";
+    expect(checkOutput(withUrl)).toEqual([]);
+    delete withUrl.plugins[index].upstream!.xpiUrl;
+    expect(checkOutput(withUrl)).toEqual([]);
+    withUrl.plugins[index].upstream!.xpiUrl = 1;
+    expect(checkOutput(withUrl)).toEqual([`/plugins/${index}/upstream/xpiUrl must be string`]);
+  });
+
   test("writes the reader's language list, with tags or empty, and the output passes the schema", async () => {
     const recorded = responses();
     const xpi = recorded["https://github.com/example/second-plugin/releases/download/v1.0.0/second-plugin.xpi"].xpi!;

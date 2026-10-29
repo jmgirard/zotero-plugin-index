@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-29 (M051 done and archived; 1 candidate row graduat
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M052 | Publish each plugin's XPI address | planned | — | normal | milestones/M052-publish-xpi-address.md |
+| M052 | Publish each plugin's XPI address | in-progress | — | normal | milestones/M052-publish-xpi-address.md |
 | M053 | Show the home list as a table | planned | M052 | normal | milestones/M053-home-table.md |
 | M054 | Rebuild the plugin page and add an About page | planned | M053 | normal | milestones/M054-plugin-page-redesign.md |
 | M051 | Alternate the build's plugin read order by day | done | M050 | normal | milestones/archive/M051-alternate-read-order.md |

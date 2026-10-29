@@ -1,13 +1,13 @@
 # M052: Publish each plugin's XPI address
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the published data file is a public API
-- **Branch/PR:** —
+- **Branch/PR:** m052-publish-xpi-address
 
 ## Goal
 
@@ -55,7 +55,7 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
 
 ## Tasks
 
-- [ ] T1: Add `xpiUrl` to the `upstream` definition in
+- [x] T1: Add `xpiUrl` to the `upstream` definition in
       `schemas/plugins.v1.schema.json` and to `UpstreamFacts` (or the
       build's record type) as optional; add the schema test cases.
 - [ ] T2: In `src/build/build.ts` (`readRecord`, around line 278, and the
@@ -76,6 +76,8 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
 - 2026-10-29: plan gate chose an optional field inside `upstream` over linking to `<repo>/releases/latest` because that page can name a newer release than the one the index read; falsified by a record whose `xpiUrl` names a file other than the one the start test downloaded.
 - 2026-10-29: lessons used: 2026-10-25 (M001) pnpm through npx; 2026-10-27 (M027) fast single-file vitest runs.
 - 2026-10-29: criteria audit (full mode, fresh Opus reader): 18 findings across M052–M054, 2 here, both fixed: AC2 now compares every fixture record with its start plan item and covers the reader's third path (stable not Zotero 7+, then a newer prerelease); AC3 now has DESIGN say that a plain link to the author's .xpi is not an install button, since DESIGN puts install buttons out of scope.
+- 2026-10-29: status in-progress on branch m052-publish-xpi-address (set late, in the T1 commit).
+- 2026-10-29: T1 done: optional `xpiUrl` string in the schema's `upstream` definition, typed as `UpstreamFacts & { xpiUrl?: string }` on the build's `PluginRecord` so the reader's facts and its tests stay unchanged; the schema test in `test/build.test.ts` fails on main's schema (an extra-property error) and passes with the field; verify slot green (1071 passed), though npx stalled about 30 minutes before Vitest started at a load near 8.
 
 ## Decisions
 

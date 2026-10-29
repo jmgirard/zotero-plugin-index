@@ -20,7 +20,9 @@ export interface Override {
 export interface PluginRecord {
   id: string;
   repoUrl: string;
-  upstream?: UpstreamFacts;
+  // `xpiUrl` addresses the XPI file that the reader read; data written before the build
+  // wrote it has none.
+  upstream?: UpstreamFacts & { xpiUrl?: string };
   // The counted user reports on the version in upstream, by Zotero major. Every record with
   // upstream that the build writes has it; data written before reports existed has none.
   reports?: ReportCount[];
