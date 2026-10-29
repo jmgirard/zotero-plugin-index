@@ -1,0 +1,8 @@
+{
+  "id": "dsh-for-zotero@zotero.cn",
+  "name": "DSH-for-Zotero",
+  "description": "Read papers with the DeepSeek Harness agent inside Zotero",
+  "homepage": "https://github.com/LiuFangshuo666/DSH-for-Zotero#readme",
+  "repoUrl": "https://github.com/LiuFangshuo666/DSH-for-Zotero",
+  "updateUrl": "https://gitee.com/laofashi666/dsh-for-zotero/raw/main/update.json"
+}
