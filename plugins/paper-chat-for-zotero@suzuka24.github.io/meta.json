@@ -1,0 +1,7 @@
+{
+  "id": "paper-chat-for-zotero@suzuka24.github.io",
+  "name": "Paper Chat for Zotero",
+  "description": "Chat with papers in Zotero by reusing your local Codex sign-in.",
+  "repoUrl": "https://github.com/Suzuka24/paper-chat-for-zotero",
+  "updateUrl": "https://raw.githubusercontent.com/Suzuka24/paper-chat-for-zotero/main/updates.json"
+}
