@@ -1,0 +1,7 @@
+{
+  "id": "knode-plugin@youngerinfo.com",
+  "name": "Knode",
+  "description": "Sync Zotero item into Knode",
+  "repoUrl": "https://github.com/zxing258974/zotero-knode-plugin",
+  "updateUrl": "https://ai.yangge.yitlink.com/download/release/updates.json"
+}
