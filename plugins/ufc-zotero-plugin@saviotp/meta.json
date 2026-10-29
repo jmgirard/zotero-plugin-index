@@ -1,0 +1,8 @@
+{
+  "id": "ufc-zotero-plugin@saviotp",
+  "name": "UFC-ABNT",
+  "description": "Plugin para Zotero 8 — Referências UFC/ABNT",
+  "homepage": "https://github.com/saviotp/ufc-zotero-plugin",
+  "repoUrl": "https://github.com/saviotp/ufc-zotero-plugin",
+  "updateUrl": "https://github.com/saviotp/ufc-zotero-plugin/releases/download/release/update.json"
+}
