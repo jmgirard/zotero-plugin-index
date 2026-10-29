@@ -108,6 +108,7 @@ browser".
 - 2026-10-29: claim audit: 21 claims read, 5 corrected — CHANGELOG.md, test/site.test.ts, test/support/home-facts.ts
 - 2026-10-29: claim audit fixes: the CHANGELOG names the bold labels; the AC1 test name lists its properties, exemptions, and allowed values; the helper's comments say which classes it still reads, that it prints the fixture's "facts" field, and which attributes it keeps. The same reader re-read the five: all true. Open concern: WebKit may not draw a rounded border on a native `<select>` without `appearance: none`; not checked in Safari. Verify clean: 1060 passed, 6 skipped; `pnpm check` 0 problems.
 - 2026-10-29: status review.
+- 2026-10-29: step-7 approval: m049-site-wide-look approved for merge
 
 ## Decisions
 
