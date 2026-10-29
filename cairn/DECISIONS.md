@@ -403,3 +403,15 @@ no English description. It carries no `version`, so it also hides any
 English text the author adds later until the override is removed. The plan
 rejected leaving those plugins with their Chinese or blank description,
 and rejected machine translation, which needs a paid service or a model.
+
+### D-031: D-030 also covers an upstream description that only repeats the name, and annotates DESIGN's override rule and the reason schema text
+
+2026-10-29, M055. A plan re-audit found that D-030's case, no English
+description upstream, leaves out plugins whose only English description
+repeats the name, which the site hides (M015). D-030 covers those too, and
+the `reason` then says that the upstream description only repeats the
+name. The no-`version` rule of D-030 is intended: a text drawn by hand
+stays until someone removes it. DESIGN's Data sources item 3 and the
+`reason` prose of `schemas/index.v1.schema.json` ("Why the upstream value
+is wrong") gain this case, since such an override fills a gap rather than
+correcting a wrong value. The rest of D-030 stands.
