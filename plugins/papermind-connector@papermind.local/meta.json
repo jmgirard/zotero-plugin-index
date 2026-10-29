@@ -1,0 +1,8 @@
+{
+  "id": "papermind-connector@papermind.local",
+  "name": "研雀 · LitFinch",
+  "description": "研雀论文阅读台：在 Zotero 中带读、翻译、追问、整理卡片与汇报；保留网页精读入口",
+  "homepage": "https://papermindapp.com",
+  "repoUrl": "https://github.com/lvyrana/papermind-zotero",
+  "updateUrl": "https://papermindapp.com/api/zotero-plugin/update.json"
+}
