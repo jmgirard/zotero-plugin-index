@@ -1,0 +1,8 @@
+{
+  "id": "zotero-folder-drop-importer@open-source",
+  "name": "Zotero Folder Drop Importer",
+  "description": "Import local folder hierarchies into Zotero collections from File, drag and drop, or a collection context menu.",
+  "homepage": "https://github.com/suraj1kc/zotero-folder-drop-importer",
+  "repoUrl": "https://github.com/suraj1kc/zotero-folder-drop-importer",
+  "updateUrl": "https://raw.githubusercontent.com/suraj1kc/zotero-folder-drop-importer/main/updates.json"
+}
