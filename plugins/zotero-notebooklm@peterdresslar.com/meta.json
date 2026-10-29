@@ -1,0 +1,8 @@
+{
+  "id": "zotero-notebooklm@peterdresslar.com",
+  "name": "Zotero Gemini Notebook",
+  "description": "Export Zotero items to Gemini Notebook (formerly NotebookLM)",
+  "homepage": "https://github.com/peterdresslar/zotero-gemini-notebook#readme",
+  "repoUrl": "https://github.com/peterdresslar/zotero-gemini-notebook",
+  "updateUrl": "https://github.com/peterdresslar/zotero-gemini-notebook/releases/download/release/update.json"
+}
