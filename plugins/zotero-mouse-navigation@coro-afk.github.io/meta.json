@@ -1,0 +1,8 @@
+{
+  "id": "zotero-mouse-navigation@coro-afk.github.io",
+  "name": "Zotero Mouse Navigation",
+  "description": "Use mouse Back and Forward buttons to navigate Zotero Reader history.",
+  "homepage": "https://github.com/coro-afk/zotero-mouse-navigation",
+  "repoUrl": "https://github.com/coro-afk/zotero-mouse-navigation",
+  "updateUrl": "https://raw.githubusercontent.com/coro-afk/zotero-mouse-navigation/main/update.json"
+}
