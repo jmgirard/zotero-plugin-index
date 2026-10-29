@@ -454,11 +454,12 @@
   have one. If you validate against a saved copy of
   `schemas/plugins.v1.schema.json`, fetch the schema again, since it
   rejects fields that it does not define.
-- The bot now merges its own pull requests. Each bot pull request body has a
-  Hold line, which names the entry's hold reasons or says `Hold: none`. The
-  README lists the five reasons. A held pull request gets the `hold` label.
+- The bot now merges its own pull requests. Each new bot pull request body
+  has a Hold line, which names the entry's hold reasons or says
+  `Hold: none`. The README lists the five reasons. A held pull request gets
+  the `hold` label.
   The new `Merge bot pull requests` workflow runs `pnpm merge-discover`
   daily. The command merges a bot pull request that says `Hold: none`, has
   no `hold` label, and opened at least 48 hours before the run. Before the
   merge, the entry must pass `pnpm check` beside the current entries. To
-  keep a bot pull request open, add the `hold` label or close it.
+  stop the bot from merging one, add the `hold` label or close it.
