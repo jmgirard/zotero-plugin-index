@@ -1,0 +1,8 @@
+{
+  "id": "zotero-pin-items@hotmail.com",
+  "name": "Zotero Pin Items",
+  "description": "Pin items to the top of your collections in Zotero",
+  "homepage": "https://github.com/Dominic-DallOsto/zotero-pin-items",
+  "repoUrl": "https://github.com/Dominic-DallOsto/zotero-pin-items",
+  "updateUrl": "https://github.com/Dominic-DallOsto/zotero-pin-items/releases/download/update/update.json"
+}
