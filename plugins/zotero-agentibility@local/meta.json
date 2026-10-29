@@ -1,0 +1,7 @@
+{
+  "id": "zotero-agentibility@local",
+  "name": "Zotero-Agentibility Bridge",
+  "description": "Modified from cli-anything-zotero: authenticated fixed-operation bridge for zotero-agentibility",
+  "repoUrl": "https://github.com/Lnearfar/zotero-agentibility",
+  "updateUrl": "https://github.com/Lnearfar/zotero-agentibility/releases/latest/download/updates.json"
+}
