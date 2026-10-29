@@ -1,0 +1,8 @@
+{
+  "id": "ccfplus@timetrapzz.site",
+  "name": "Zotero CCF Plus",
+  "description": "Zotero Plugin for easily obtaining the CCF rating, corresponding conference/journal, and citation count of a paper using a cascading Semantic Scholar + DBLP engine.",
+  "homepage": "https://github.com/Fangziyang0910/zotero-ccf-plus#readme",
+  "repoUrl": "https://github.com/Fangziyang0910/zotero-ccf-plus",
+  "updateUrl": "https://github.com/Fangziyang0910/zotero-ccf-plus/releases/download/release/update.json"
+}
