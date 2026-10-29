@@ -1,0 +1,8 @@
+{
+  "id": "zotdupe@hostiuc.com",
+  "name": "ZotDupe",
+  "description": "Semantic duplicate detector for Zotero",
+  "homepage": "https://github.com/sorinhostiuc/zotdupe",
+  "repoUrl": "https://github.com/sorinhostiuc/zotdupe",
+  "updateUrl": "https://raw.githubusercontent.com/sorinhostiuc/zotdupe/main/update.json"
+}
