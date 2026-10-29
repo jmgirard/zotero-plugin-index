@@ -1,0 +1,7 @@
+{
+  "id": "repository-detector@example.com",
+  "name": "Repository Detector",
+  "description": "A Zotero 7+ plugin that detects open-source repositories for papers and can attach small repository snapshots.",
+  "repoUrl": "https://github.com/seifer08ms/zotero-repository-detector",
+  "updateUrl": "https://github.com/seifer08ms/zotero-repository-detector/releases/latest/download/update.json"
+}
