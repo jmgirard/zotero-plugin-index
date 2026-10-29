@@ -1,0 +1,7 @@
+{
+  "id": "pdf-attachment-downloader@vic-c33.github.io",
+  "name": "PDF Attachment Downloader",
+  "description": "Manually downloads and attaches validated PDFs for selected Zotero items.",
+  "repoUrl": "https://github.com/Vic-c33/zotero-pdf-attachment-downloader",
+  "updateUrl": "https://raw.githubusercontent.com/Vic-c33/zotero-pdf-attachment-downloader/main/updates.json"
+}
