@@ -1,0 +1,8 @@
+{
+  "id": "zotero-pdf-transfer@charlesapetersen.github.io",
+  "name": "Zotero PDF Transfer",
+  "description": "Send the PDF attachments of selected items to a working folder, edit them with any tool, then return the changed ones to Zotero in place — tags, notes and item keys preserved.",
+  "homepage": "https://github.com/charlesapetersen/zotero-pdf-transfer",
+  "repoUrl": "https://github.com/charlesapetersen/zotero-pdf-transfer",
+  "updateUrl": "https://raw.githubusercontent.com/charlesapetersen/zotero-pdf-transfer/main/update.json"
+}
