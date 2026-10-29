@@ -1,108 +1,242 @@
 ---
-import { ZOTERO_MAJORS } from "../../../src/site/version.ts";
-import Support from "../components/Support.astro";
+import { majorSupport, ZOTERO_MAJORS } from "../../../src/site/version.ts";
+import Icon from "../components/Icon.astro";
 import Base from "../layouts/Base.astro";
 import {
-  ADD_PLUGIN_HREF,
+  day,
   displayName,
+  homeOrder,
+  languageName,
   languageOptions,
   loadData,
+  majorStart,
+  monthYear,
   pluginHref,
   rowLanguagesAttribute,
   rowMajorsAttribute,
+  safeHref,
+  shortLanguages,
   shownDescription,
+  startText,
+  SUPPORT_MARKS as MARKS,
+  supportText,
 } from "../data.ts";
 
 const { plugins } = loadData();
 ---
 
 <Base title="Zotero plugin index">
-  <div class="card page-head">
-    <h1>Zotero plugin index</h1>
+  <div class="hero">
+    <h1>Plugins for Zotero 7 and later</h1>
     <p class="intro">
-      Plugins for Zotero 7 and later. The pills show the Zotero versions that each plugin declares it supports: ✓ all of
-      that version, ◐ part of it, – none of it. The index reads these ranges from each plugin, so a pill is not a test
-      result. Is a plugin missing?{" "}
-      <a href={ADD_PLUGIN_HREF} data-add-plugin>Add a plugin</a>{" "}
-      with a GitHub issue form, which needs a GitHub account.
+      A daily build reads these facts from each plugin's GitHub repository and releases, and starts each plugin in the
+      tested Zotero releases that its manifest's range covers.
     </p>
   </div>
-  <p class="language-filter" hidden>
-    <label for="language">Menus and settings in</label>{" "}
-    <select id="language" data-language-filter autocomplete="off">
-      <option value="">All languages</option>
-      {languageOptions(plugins).map(({ value, text }) => <option value={value}>{text}</option>)}
-    </select>
-  </p>
-  <div class="version-filter" hidden>
-    <span id="version-filter-label">Declares Zotero</span>
-    <div role="group" aria-labelledby="version-filter-label" data-version-filter>
-      <button type="button" aria-pressed="true">Any version</button>
-      {
-        ZOTERO_MAJORS.map((major) => (
-          <button type="button" value={major} aria-pressed="false">
-            {major}
-          </button>
-        ))
-      }
+  <div class="toolbar">
+    <p class="search" hidden>
+      <label for="search" class="visually-hidden">Search plugins</label>
+      <Icon name="search" />
+      <input type="search" id="search" data-search placeholder="Search plugins" autocomplete="off" />
+    </p>
+    <p class="language-filter" hidden>
+      <label for="language">Menus and settings in</label>{" "}
+      <select id="language" data-language-filter autocomplete="off">
+        <option value="">All languages</option>
+        {languageOptions(plugins).map(({ value, text }) => <option value={value}>{text}</option>)}
+      </select>
+    </p>
+    <div class="version-filter" hidden>
+      <span id="version-filter-label">Declares Zotero</span>
+      <div role="group" aria-labelledby="version-filter-label" data-version-filter>
+        <button type="button" aria-pressed="true">Any</button>
+        {
+          ZOTERO_MAJORS.map((major) => (
+            <button type="button" value={major} aria-pressed="false">
+              {major}
+            </button>
+          ))
+        }
+      </div>
     </div>
+    <p class="filter-status" role="status" data-filter-status hidden></p>
   </div>
-  <p class="filter-status" role="status" data-filter-status hidden></p>
-  <ul class="plugins">
-    {
-      plugins.map((record) => {
-        const description = shownDescription(record);
-        return (
-          <li
-            class="plugin"
-            data-plugin={record.id}
-            data-languages={rowLanguagesAttribute(record)}
-            data-zotero={rowMajorsAttribute(record)}
-          >
-            <p class="plugin-name">
-              <a href={pluginHref(record.id)}>{displayName(record)}</a>
-              {record.upstream?.archived === true && <span data-archived>(archived)</span>}
-            </p>
-            {description && <p class="description" data-description>{description}</p>}
-            <Support record={record} />
-          </li>
-        );
-      })
-    }
+  <div class="table-card">
+    <table class="plugins">
+      <caption class="visually-hidden">Plugins in the index</caption>
+      <colgroup>
+        <col />
+        <col span={ZOTERO_MAJORS.length} />
+        <col class="lang" />
+        <col class="date" />
+        <col />
+      </colgroup>
+      <thead>
+        <tr class="group">
+          <td></td>
+          <th scope="colgroup" colspan={ZOTERO_MAJORS.length}><span>Declares Zotero</span></th>
+          <td class="lang"></td>
+          <td class="date"></td>
+          <td></td>
+        </tr>
+        <tr>
+          <th scope="col">Plugin</th>
+          {
+            ZOTERO_MAJORS.map((major) => (
+              <th scope="col" class="v">
+                {major}
+              </th>
+            ))
+          }
+          <th scope="col" class="lang">Menus and settings</th>
+          <th scope="col" class="date">Latest release</th>
+          <th scope="col"><span class="visually-hidden">Links</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          homeOrder(plugins).map((record) => {
+            const name = displayName(record);
+            const description = shownDescription(record);
+            const upstream = record.upstream;
+            const sourceHref = safeHref(upstream?.repoUrl ?? record.repoUrl);
+            const xpiHref = upstream?.xpiUrl === undefined ? undefined : safeHref(upstream.xpiUrl);
+            const { shown, rest } = shortLanguages(record);
+            const codes = [
+              ...shown.map((subtag) => ({ text: subtag, title: languageName(subtag), more: false })),
+              ...(rest.length > 0 ? [{ text: `+${rest.length}`, title: rest.map(languageName).join(", "), more: true }] : []),
+            ];
+            return (
+              <tr data-plugin={record.id} data-languages={rowLanguagesAttribute(record)} data-zotero={rowMajorsAttribute(record)}>
+                <th scope="row" class="name">
+                  <a href={pluginHref(record.id)} data-name>{name}</a>
+                  {upstream?.archived === true && <span class="badge" data-archived>Archived</span>}
+                  {description && <div class="desc" data-description>{description}</div>}
+                </th>
+                {record.failure ? (
+                  <td class="v not-read" colspan={ZOTERO_MAJORS.length} data-status="failure">
+                    Not read
+                  </td>
+                ) : (
+                  ZOTERO_MAJORS.map((major) => {
+                    const support = majorSupport(record, major);
+                    const start = majorStart(record, major);
+                    return (
+                      <td class="v" data-major={major}>
+                        {support && (
+                          <span class="mark" data-support={support} title={supportText(record, support, major)}>
+                            <span aria-hidden="true">{MARKS[support]}</span>
+                            <span class="visually-hidden">{supportText(record, support, major)}</span>
+                          </span>
+                        )}
+                        {start && (
+                          <span class="start" data-start={start.result} title={startText(start)}>
+                            <span aria-hidden="true">{start.result === "started" ? "●" : "✕"}</span>
+                            <span class="visually-hidden">Start test: {startText(start)}</span>
+                          </span>
+                        )}
+                      </td>
+                    );
+                  })
+                )}
+                <td class="lang" data-languages-shown>
+                  {
+                    codes.map(({ text, title, more }, i) => (
+                      <>
+                        {i > 0 && " "}
+                        <abbr class={more ? "more" : undefined} title={title}>
+                          {text}
+                        </abbr>
+                      </>
+                    ))
+                  }
+                </td>
+                <td class="date">{upstream && <time datetime={day(upstream.latestReleaseDate)}>{monthYear(upstream.latestReleaseDate)}</time>}</td>
+                <td class="links">
+                  {sourceHref && (
+                    <a href={sourceHref} data-link="source" title="Source code" aria-label={`Source code of ${name}`}>
+                      <Icon name="source" />
+                    </a>
+                  )}
+                  {upstream && xpiHref && (
+                    <a
+                      href={xpiHref}
+                      data-link="download"
+                      title={`Download version ${upstream.version} (.xpi)`}
+                      aria-label={`Download ${name} ${upstream.version} (.xpi)`}
+                    >
+                      <Icon name="download" />
+                    </a>
+                  )}
+                </td>
+              </tr>
+            );
+          })
+        }
+      </tbody>
+    </table>
+  </div>
+  <ul class="legend" role="list" data-legend>
+    <li><span class="mark" data-support="all" aria-hidden="true">{MARKS.all}</span> Declares all of that Zotero version</li>
+    <li><span class="mark" data-support="some" aria-hidden="true">{MARKS.some}</span> Declares part of it</li>
+    <li><span class="mark" data-support="none" aria-hidden="true">{MARKS.none}</span> Declares none of it</li>
+    <li>No mark: the plugin declares no range</li>
+    <li><span class="start" data-start="started" aria-hidden="true">●</span> Started in the daily start test</li>
+    <li><span class="start" data-start="start-error" aria-hidden="true">✕</span> Failed to install, start, or answer in the start test</li>
+    <li data-legend-note>
+      A declared range comes from the plugin's manifest and the index's overrides, not from a test. A start test does not
+      show that a plugin works.
+    </li>
   </ul>
 </Base>
 
 <script>
   import { chosenValue, filterHref, filterOn, filterStatus, rowShows } from "../../../src/site/home-filter.ts";
 
-  // The menu, the buttons, and the status line are hidden in the HTML, so a page without
-  // JavaScript shows every row, neither filter, and no status line.
+  // The search box, the menu, the buttons, and the count are hidden in the HTML, so a page
+  // without JavaScript shows every row and no control.
+  const search = document.querySelector<HTMLInputElement>("input[data-search]");
   const select = document.querySelector<HTMLSelectElement>("select[data-language-filter]");
   const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-version-filter] button")];
   const status = document.querySelector<HTMLElement>("[data-filter-status]");
-  if (select && buttons.length > 0) {
+  if (search && select && buttons.length > 0) {
     const languages = [...select.options].map((option) => option.value);
-    // The "Any version" button has no value attribute, so its value is "".
+    // The "Any" button has no value attribute, so its value is "".
     const majors = buttons.map((button) => button.value);
     let major = "";
-    const rows = [...document.querySelectorAll<HTMLElement>("li[data-languages]")];
+    const rows = [...document.querySelectorAll<HTMLElement>("tbody tr[data-plugin]")].map((row) => ({
+      row,
+      languages: row.dataset.languages ?? "",
+      zotero: row.dataset.zotero ?? "",
+      name: row.querySelector("[data-name]")?.textContent ?? "",
+      description: row.querySelector("[data-description]")?.textContent ?? "",
+    }));
     const show = () => {
       for (const button of buttons) button.setAttribute("aria-pressed", String(button.value === major));
       const language = { value: select.value, options: languages };
       const zotero = { value: major, options: majors };
-      for (const row of rows) {
-        row.hidden = !rowShows({ languages: row.dataset.languages ?? "", zotero: row.dataset.zotero ?? "" }, language, zotero);
-      }
+      for (const entry of rows) entry.row.hidden = !rowShows(entry, language, zotero, search.value);
       if (status) {
-        const shown = rows.filter((row) => !row.hidden).length;
-        status.textContent = filterStatus(shown, rows.length, filterOn(language) || filterOn(zotero));
+        const shown = rows.filter(({ row }) => !row.hidden).length;
+        status.textContent = filterStatus(shown, rows.length, search.value.trim() !== "" || filterOn(language) || filterOn(zotero));
       }
     };
-    const address = () => filterHref(filterHref(location.href, "language", select.value), "zotero", major);
-    // Reads the parameters into the menu and the buttons, on load and when Back or Forward
-    // changes the address in the same page. A parameter that names no option leaves the address.
+    const address = () =>
+      filterHref(filterHref(filterHref(location.href, "q", search.value.trim()), "language", select.value), "zotero", major);
+    // Reads the parameters into the search box, the menu, and the buttons, on load and when
+    // Back or Forward changes the address in the same page. A parameter that names no option
+    // leaves the address.
+    // Typing writes the address once the visitor stops for half a second, so a burst of keys
+    // makes one history call, not one per key.
+    let pending: ReturnType<typeof setTimeout> | undefined;
+    const write = () => {
+      clearTimeout(pending);
+      history.replaceState(null, "", address());
+    };
     const fromAddress = () => {
+      clearTimeout(pending);
       const params = new URL(location.href).searchParams;
+      search.value = params.get("q") ?? "";
       select.value = chosenValue(params.get("language"), languages);
       major = chosenValue(params.get("zotero"), majors);
       show();
@@ -111,10 +245,15 @@ const { plugins } = loadData();
     };
     const update = () => {
       show();
-      history.replaceState(null, "", address());
+      write();
     };
     fromAddress();
     addEventListener("popstate", fromAddress);
+    search.addEventListener("input", () => {
+      show();
+      clearTimeout(pending);
+      pending = setTimeout(write, 500);
+    });
     select.addEventListener("change", update);
     for (const button of buttons) {
       button.addEventListener("click", () => {
@@ -122,6 +261,7 @@ const { plugins } = loadData();
         update();
       });
     }
+    search.closest("[hidden]")?.removeAttribute("hidden");
     select.closest("[hidden]")?.removeAttribute("hidden");
     buttons[0]!.closest("[hidden]")?.removeAttribute("hidden");
     status?.removeAttribute("hidden");

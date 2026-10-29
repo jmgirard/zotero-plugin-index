@@ -225,6 +225,69 @@
       },
       "reports": [],
       "overrides": []
+    },
+    {
+      "id": "b-cafe@example.org",
+      "repoUrl": "https://github.com/example/cafe-log",
+      "upstream": {
+        "id": "b-cafe@example.org",
+        "name": "cafe tools",
+        "description": "Keeps a log of item edits.",
+        "version": "0.3.0",
+        "strictMinVersion": "7.0",
+        "strictMaxVersion": "7.*",
+        "updateUrl": "https://github.com/example/cafe-log/releases/download/release/update.json",
+        "updateHost": "github.com",
+        "repoUrl": "https://github.com/example/cafe-log",
+        "repoCreatedAt": "2025-02-02T00:00:00Z",
+        "openIssues": 0,
+        "releaseCount": 3,
+        "latestReleaseDate": "2025-12-31T23:30:00Z",
+        "xpiUrl": "ftp://example.org/cafe-log-0.3.0.xpi",
+        "prerelease": false,
+        "archived": false,
+        "languages": ["en-GB", "en-US"]
+      },
+      "overrides": []
+    },
+    {
+      "id": "a-cafe@example.org",
+      "repoUrl": "https://github.com/example/cafe-tools",
+      "upstream": {
+        "id": "a-cafe@example.org",
+        "name": "Café Tools",
+        "description": "Cleans up attachment file names.",
+        "version": "2.0.0",
+        "strictMinVersion": "7.0",
+        "strictMaxVersion": "9.*",
+        "updateUrl": "https://github.com/example/cafe-tools/releases/download/release/update.json",
+        "updateHost": "github.com",
+        "repoUrl": "https://github.com/example/cafe-tools",
+        "repoCreatedAt": "2024-08-08T00:00:00Z",
+        "openIssues": 5,
+        "releaseCount": 14,
+        "latestReleaseDate": "2026-07-01T00:30:00Z",
+        "xpiUrl": "https://github.com/example/cafe-tools/releases/download/v2.0.0/cafe-tools-2.0.0.xpi",
+        "prerelease": false,
+        "archived": false,
+        "languages": ["fr-FR", "de", "fr-CA", "ja", "en", "it"]
+      },
+      "startTests": [
+        { "zotero": "7.0.32", "result": "started" },
+        { "zotero": "8.0.3", "result": "start-error" },
+        { "zotero": "8.0.10", "result": "started" },
+        { "zotero": "8.0.4", "result": "not-installed" }
+      ],
+      "overrides": []
+    },
+    {
+      "id": "ssh-plugin@example.org",
+      "repoUrl": "git@github.com:example/ssh-plugin.git",
+      "failure": {
+        "name": "not-github-repo",
+        "message": "git@github.com:example/ssh-plugin.git is not a GitHub repo URL such as https://github.com/<owner>/<repo>"
+      },
+      "overrides": []
     }
   ]
 }
