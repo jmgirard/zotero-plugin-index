@@ -84,8 +84,10 @@ const FETCH_TIMEOUT_MS = 60_000;
 // The largest XPI among the listed plugins was 5.5 MB (observed 2026-10-25).
 export const XPI_MAX_BYTES = 50 * 1024 * 1024;
 export const UPDATE_JSON_MAX_BYTES = 1024 * 1024;
-// Each file the reader unzips: manifest.json, the default locale's messages.json, and each
-// locale file that localeLanguages reads. A locale file over it keeps its tag.
+// Each file the reader unzips: manifest.json, the default locale's messages.json, the
+// messages.json of each English folder in ENGLISH_LOCALES, and each locale file that
+// localeLanguages reads. A locale file over it keeps its tag, and an English messages.json
+// over it is skipped.
 export const UNZIPPED_MAX_BYTES = 1024 * 1024;
 
 export class ReadFailure extends Error {

@@ -161,8 +161,10 @@ come from the plugin's locale folders. If a `languages` override applies to
 the plugin version that the index read, the override replaces that list.
 The fact does not say how complete each language is. If no language is
 left, the page shows "Unknown (no translations found)". The description
-comes from the plugin's manifest or from an index override, so it can be in
-another language than the languages fact names. If the index has overrides
+comes from the plugin's manifest, from the About text of its GitHub
+repository, or from an index override. So it can be in another language
+than the languages fact names. The card shows the manifest description and
+the GitHub description as two more facts. If the index has overrides
 for the plugin, an "Overrides" table under its own heading in the card
 lists them.
 
@@ -209,6 +211,12 @@ author's own: the data gives its address, and the index keeps no copy. An
 author can replace a release file later, so the file at the address can
 differ from the one the build read. Data written before the build wrote
 this field has none.
+
+An `upstream` block can have a `repoDescription` field. It is the About
+text of the plugin's GitHub repository, with the spaces before and after
+it removed. If GitHub gives no such text, or the text is blank, the field
+is absent. Data written before the build wrote this field has none. The
+site uses the field by the description rule above.
 
 Each `upstream` block has a `languages` list, such as `["en-US", "zh-CN"]`.
 It holds the language tags of the locale folders in the plugin's XPI, the
@@ -323,11 +331,12 @@ only registry fields. Its `id` must equal the directory name.
   `description` override can also give English text for a plugin with no
   English description upstream. "Upstream" here means the manifest, its
   English locale files, and the About text of the GitHub repository. A
-  description that only repeats the name also counts as none. So does a
-  description of which half or more is Chinese, Japanese, or Korean, by the
-  share that the site counts. Each item has these fields:
-  - `field`: the fact to correct. The value is one of `name`, `description`,
-    `homepage`, `strict_min_version`, `strict_max_version`, or `languages`.
+  description that is not in English or only repeats the name counts as
+  none. So does a description of which half or more is Chinese, Japanese,
+  or Korean, by the share that the site counts. Each item has these fields:
+  - `field`: the fact to correct or fill in. The value is one of `name`,
+    `description`, `homepage`, `strict_min_version`, `strict_max_version`,
+    or `languages`.
   - `version`: the plugin version that the override applies to. If you leave
     it out, the override applies to every version.
   - `value`: the corrected value. For `languages`, the value is one or more
@@ -336,7 +345,10 @@ only registry fields. Its `id` must equal the directory name.
     region, and variant follow, each after a `-`. Examples are `zh`,
     `zh-TW`, and `sr-Latn-RS`. A tag whose language is `und`, `zxx`, or
     `mul`, in any letter case, is not allowed.
-  - `reason`: why the upstream value is wrong. The reason must hold a
+  - `reason`: why the upstream value is wrong. For English description
+    text, the reason names the upstream file or section the text came
+    from. It also says which case above each upstream description is. The
+    reason must hold a
     character other than whitespace, as JavaScript's `\s` defines it, and
     Unicode format characters, such as U+200B.
 

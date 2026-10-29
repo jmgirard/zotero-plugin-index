@@ -177,7 +177,7 @@
       },
       "properties": {
         "field": {
-          "description": "The upstream fact this override corrects: name, description, homepage (homepage_url in the manifest), strict_min_version and strict_max_version, which correct the upstream strictMinVersion and strictMaxVersion, or languages, which names the right upstream languages.",
+          "description": "The upstream fact this override corrects or, for an English description, fills in: name, description, homepage (homepage_url in the manifest), strict_min_version and strict_max_version, which correct the upstream strictMinVersion and strictMaxVersion, or languages, which names the right upstream languages.",
           "enum": ["name", "description", "homepage", "strict_min_version", "strict_max_version", "languages"]
         },
         "version": {
@@ -186,7 +186,11 @@
           "minLength": 1
         },
         "value": { "description": "The corrected value.", "type": "string", "minLength": 1 },
-        "reason": { "description": "Why the upstream value is wrong.", "type": "string", "minLength": 1 }
+        "reason": {
+          "description": "Why the upstream value is wrong, or, for English description text, its upstream source and which case each upstream description is, as schemas/index.v1.schema.json says.",
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
   }

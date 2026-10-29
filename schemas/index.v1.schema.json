@@ -12,7 +12,7 @@
       "const": 1
     },
     "overrides": {
-      "description": "Corrections to upstream facts that the plugin author cannot or will not fix upstream. A description override can also give English text for a plugin whose manifest and GitHub descriptions are each missing, only repeat the name, or are half or more Chinese, Japanese, or Korean.",
+      "description": "Corrections to upstream facts that the plugin author cannot or will not fix upstream. A description override can also give English text for a plugin whose manifest and GitHub descriptions are each missing, not in English, only repeat the name, or are half or more Chinese, Japanese, or Korean.",
       "type": "array",
       "items": {
         "type": "object",

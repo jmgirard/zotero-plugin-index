@@ -1037,6 +1037,21 @@ describe("readUpstream", () => {
     });
   });
 
+  test("skips an English messages.json that the zip holds twice and reads the default locale", async () => {
+    const { result } = await read((r) => {
+      Object.assign(manifest(r), { default_locale: "zh_CN", description: "__MSG_desc__" });
+      const json = strToU8(JSON.stringify(manifest(r)));
+      const files = {
+        "manifest.json": json,
+        "_locales/zh_CN/messages.json": strToU8(JSON.stringify({ desc: { message: "中文" } })),
+        "_locales/en/messages.json": strToU8(JSON.stringify({ desc: { message: "English" } })),
+      };
+      const zip = repeatEntry(zipSync(files), "_locales/en/messages.json", 1);
+      r[XPI] = { base64: Buffer.from(zip).toString("base64") };
+    });
+    expect(result.ok && result.facts.description).toBe("中文");
+  });
+
   test("refuses at the second of 2,000 manifest.json entries that each point at a 1 MiB stream", async () => {
     const spaces = new Uint8Array(1_048_576).fill(32);
     const zip = repeatEntry(zipSync({ "manifest.json": [spaces, { level: 9 }] }), "manifest.json", 1999);

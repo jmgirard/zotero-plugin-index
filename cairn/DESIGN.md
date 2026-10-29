@@ -107,9 +107,10 @@ A manifest `__MSG_` name or description takes its message from
 `_locales/en/`, `en_US/`, or `en_GB/` before the default locale (M055).
 The data also carries the GitHub repo's About text as `repoDescription`.
 The site drops a manifest or GitHub description that is blank or only
-repeats the plugin's name (M015). It shows the manifest one when its CJK
-share is below 0.5, else the GitHub one when the manifest one was dropped or
-has a higher share, else the manifest one; the share counts each Han,
+repeats the plugin's name (M015). It shows the manifest one when it is left
+and its CJK share is below 0.5, else the GitHub one when it is left and the
+manifest one was dropped or has a higher share, else the manifest one when
+it is left; the share counts each Han,
 kana, or Hangul character and each run of other letters as one unit
 (M055). A `description` override that applies to the version the index
 read always shows (M015). The plugin page's Details card shows both
@@ -177,11 +178,14 @@ shows each one separately. A combined verdict is out of scope.
    These files
    are the source of truth for the name, the description, the versions, and
    the declared compatibility (`strict_min_version`, `strict_max_version`).
+   The repo's GitHub About text is a second source for the description
+   (M055).
 3. Overrides. An override in the index corrects a fact that the author cannot
    or will not fix upstream. Each override states its reason. A
    `description` override can also give English text for a plugin with no
    English description upstream: the manifest and GitHub texts are each
-   missing, only repeat the name, or have a CJK share of 0.5 or more. Its
+   missing, not in English, only repeat the name, or have a CJK share of
+   0.5 or more. Its
    reason names its upstream source and which case each text is (D-030,
    D-031, D-032).
 4. User reports. Two issue forms take a "works" or a "broken" report with
@@ -451,9 +455,11 @@ reused._
   its declared size, its compressed size, and its output, so the reader
   inflates at most about
   1 MiB past 8 MiB of locale files for each XPI, however small the sizes
-  the files declare. So each XPI takes up to three walks over the claimed
-  count: for `manifest.json`, the default locale's `messages.json`, and the
-  locale folders. A
+  the files declare. Outside that total, each of the three English
+  `messages.json` files inflates at most 1 MiB (M055). So each XPI takes up
+  to six walks over the claimed count: for `manifest.json`, the default
+  locale's `messages.json`, the three English `messages.json` files, and
+  the locale folders. A
   folder name is a tag when it matches `LANGUAGE_TAG`, which refuses the
   language subtags `und`, `zxx`, and `mul` in any letter case (D-018,
   M036), and its language

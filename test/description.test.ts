@@ -65,6 +65,7 @@ describe("shownDescription", () => {
     ["English manifest and English GitHub", EN, EN_GITHUB, EN],
     ["English manifest and Chinese GitHub", EN, ZH, EN],
     ["Chinese manifest and English GitHub", ZH, EN_GITHUB, EN_GITHUB],
+    ["manifest at a share of exactly 0.5 and English GitHub", "A Zotero 插件", EN_GITHUB, EN_GITHUB],
     ["Chinese manifest with Latin product names and English GitHub", "选中文字按 Ctrl K 提问，支持 PDF HTML Markdown 附件", EN_GITHUB, EN_GITHUB],
     ["Chinese manifest and mixed GitHub of lower share", ZH_LONG, "A Zotero add-on for CNKI metadata. 中文元数据", "A Zotero add-on for CNKI metadata. 中文元数据"],
     ["Chinese manifest and Chinese GitHub of higher share", ZH, ZH_LONG, ZH],

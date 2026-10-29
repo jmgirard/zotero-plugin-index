@@ -81,8 +81,9 @@ import { SUPPORT_MARKS as MARKS } from "../data.ts";
     </p>
     <p>
       A description override that applies to the version the index read comes first. Without one, if less than half of
-      the manifest description is Chinese, Japanese, or Korean, the site shows it. If not, the site shows the GitHub
-      description in two cases: the manifest description was dropped, or the GitHub description has less of that text.
+      the manifest description is Chinese, Japanese, or Korean, the site shows it. If not, the site shows a GitHub
+      description that it kept in two cases: the manifest description was dropped, or the GitHub description has less
+      of that text.
       The Details card of a plugin page shows both descriptions.
     </p>
   </section>
@@ -93,8 +94,8 @@ import { SUPPORT_MARKS as MARKS } from "../data.ts";
       override. An override corrects one field: the name, the description, the homepage,{" "}
       <code>strict_min_version</code>, <code>strict_max_version</code>, or the languages list. It applies to one plugin
       version or to every version. A description override can also give English text for a plugin with no English
-      description upstream. That covers a description that only repeats the name or that is half or more Chinese,
-      Japanese, or Korean.
+      description upstream. That covers a description that is not in English, that only repeats the name, or that is
+      half or more Chinese, Japanese, or Korean.
     </p>
     <p>
       The Overrides table in a plugin's Details lists each override beside the upstream value. Its Used column says
