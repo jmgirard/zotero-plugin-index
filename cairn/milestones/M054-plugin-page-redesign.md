@@ -174,53 +174,54 @@ Pass 2, 2026-10-29, on 55f1f99 (main unmoved at 2ab094f; since c0c43dc only `tes
 - AC5 evidence (amended wording): the About page tests, the top bar and footer test over all 15 built pages, and the page list test: 20 of 20 passed. `about/index.html` text holds each named topic; on all 13 plugin pages none of the four strings is in the markup or the tag-stripped text; each page's `<main>` holds exactly one About href, in the `data-about-line` line of the compatibility card, after `</table>` on the 10 read records' pages and after the failure message on the 3 failed records' pages; the footer's not-vetted line is on all 15 pages. A planted swap of the failure message and the About line failed the 3 failure pages (T7).
 - Gate (pass 2): `cairn_validate.py` all checks passed.
 - spawned: diff-bug, blame-history, prior-review, ripple
-- diff-bug #1: the h1 joins the name and the "Archived" badge with no space, so the heading's text reads "Old PluginArchived" — fix now
-- diff-bug #2: `.btn` edges take `--line-strong`, 1.40 to 1.66:1 on `--bg` and `--surface`, below the 3:1 the other controls hold, and no test covers `.btn` — fix now (border `--faint`, a forced-colors ButtonText edge, `.btn` added to the edge test on `--surface` and `--bg`)
+- diff-bug #1: the h1 joins the name and the "Archived" badge with no space, so the heading's text reads "Old PluginArchived" — fix now, fixed 9007997
+- diff-bug #2: `.btn` edges take `--line-strong`, 1.40 to 1.66:1 on `--bg` and `--surface`, below the 3:1 the other controls hold, and no test covers `.btn` — fix now, fixed 9007997 (border `--faint`, a forced-colors ButtonText edge, `.btn` added to the edge test on `--surface` and `--bg`)
 - diff-bug #3: the download button shows no prerelease mark, and no page says the author can replace the file (D-029) — follow-up, row "Close small gaps on the site pages"
 - diff-bug #4: a start release with leading zeros, such as "07.0.1", gives a "7" row with no result and an "07" row; schema-valid, never written by the build — follow-up, row "Close small gaps on the site pages"
-- diff-bug #5: `majorReport` shows only the first item for a major, so a second item's counts drop; schema-valid, never written by the build — fix now (counts summed, regression test added)
-- diff-bug #6: the declared mark's support text sits in `title` on an `aria-hidden` span, so screen readers hear only "Partly" with no range — fix now (visible mark and word hidden, `supportText` in visually-hidden text, as the M015 pills had)
+- diff-bug #5: `majorReport` shows only the first item for a major, so a second item's counts drop; schema-valid, never written by the build — fix now, fixed 9007997 (counts summed, regression test added)
+- diff-bug #6: the declared mark's support text sits in `title` on an `aria-hidden` span, so screen readers hear only "Partly" with no range — fix now, fixed 9007997 (visible mark and word hidden, `supportText` in visually-hidden text, as the M015 pills had)
 - diff-bug #7: "1 works" and a `{works: 0, broken: 0}` item read oddly — reject, style: the counts keep the verdict names as the page before M054 wrote them ("3 works, 1 broken")
-- diff-bug #8: stale "pill" comments in `site/src/data.ts` and `src/site/version.ts` and the `pilled` name in the test — fix now
-- diff-bug #9: four wording gaps (the CHANGELOG fallback sentence reads as if a bad repo URL hides the `.xpi` link; README calls the plain-text fallbacks links with icons; DESIGN splits the one About line in two; About leaves out a rejected async startup) — fix now
+- diff-bug #8: stale "pill" comments in `site/src/data.ts` and `src/site/version.ts` and the `pilled` name in the test — fix now, fixed 9007997
+- diff-bug #9: four wording gaps (the CHANGELOG fallback sentence reads as if a bad repo URL hides the `.xpi` link; README calls the plain-text fallbacks links with icons; DESIGN splits the one About line in two; About leaves out a rejected async startup) — fix now, fixed 9007997
 - diff-bug #10: the About link has no `aria-current="page"` on the About page — follow-up, row "Close small gaps on the site pages"
 - diff-bug #11: a scrolling `.table-wrap` takes no keyboard focus; the overrides table had the same wrapper before M054 — follow-up, row "Close small gaps on the site pages"
 - diff-bug #12: an `http://` `xpiUrl` becomes a download link — reject, planned change: AC1 shows the file link when `xpiUrl` passes `safeHref`, the rule every site link uses
 - diff-bug #13: next-plugin's start result on 12.0.1 and its scheme-less `repoUrl` cannot come from the build — reject, false: the pages render any schema-valid record, and those shapes test the plain-text and extra-major paths AC1 and AC2 name
 - diff-bug #14: rewrapped README and CHANGELOG lines pass the files' usual line width — reject, style
-- diff-bug #15 (tests): the "holds the phrase that the plugin page check looks for" test repeats the start-test text check — fix now (removed)
-- diff-bug #16 (tests): `START_LIMIT_MS` read from the source with a regex though the module exports it — fix now (imported)
+- diff-bug #15 (tests): the "holds the phrase that the plugin page check looks for" test repeats the start-test text check — fix now, fixed 9007997 (removed)
+- diff-bug #16 (tests): `START_LIMIT_MS` read from the source with a regex though the module exports it — fix now, fixed 9007997 (imported)
 - diff-bug #17 (tests): `expectedRows` repeats the steps of `compatMajors` and `majorStart` — reject, false: it builds rows from `majorSupport` and `compareVersions`, and the pinned next-plugin and a-cafe rows are literal facts stated apart from the page code
-- diff-bug #18 (tests): the fixture check for an extra report major sits beside the stricter major-11 check — fix now (removed)
-- diff-bug #19 (tests): the report buttons' `aria-describedby` markup is asserted on all 10 read pages by one code path — fix now (one test on one page)
-- diff-bug #20 (tests): no-range-plugin's "No range" cells repeat what the per-page table test checks — fix now (removed)
-- diff-bug #21 (tests): the section test re-checks that failed pages have no languages fact — fix now (removed)
-- diff-bug #22 (tests): the top bar test re-checks that `about/index.html` exists — fix now (removed)
-- diff-bug #23 (tests): the mark test pins whole `<span>` strings with their attribute order — fix now (replaced by a test of the spoken text)
+- diff-bug #18 (tests): the fixture check for an extra report major sits beside the stricter major-11 check — fix now, fixed 9007997 (removed)
+- diff-bug #19 (tests): the report buttons' `aria-describedby` markup is asserted on all 10 read pages by one code path — fix now, fixed 9007997 (one test on one page)
+- diff-bug #20 (tests): no-range-plugin's "No range" cells repeat what the per-page table test checks — fix now, fixed 9007997 (removed)
+- diff-bug #21 (tests): the section test re-checks that failed pages have no languages fact — fix now, fixed 9007997 (removed)
+- diff-bug #22 (tests): the top bar test re-checks that `about/index.html` exists — fix now, fixed 9007997 (removed)
+- diff-bug #23 (tests): the mark test pins whole `<span>` strings with their attribute order — fix now, fixed 9007997 (replaced by a test of the spoken text)
 - diff-bug (a) and (b): no added code awaits, and no skill step is added.
-- blame-history #1: `.btn` edges below 3:1 bring back the M048 and M053 edge fix — fix now (with diff-bug #2)
-- blame-history #2: the M015 pills' hidden support text is gone — fix now (with diff-bug #6)
+- blame-history #1: `.btn` edges below 3:1 bring back the M048 and M053 edge fix — fix now, fixed 9007997 (with diff-bug #2)
+- blame-history #2: the M015 pills' hidden support text is gone — fix now, fixed 9007997 (with diff-bug #6)
 - blame-history #3: the "not works" caveat left the plugin page — reject, planned change: AC5 moves it to the About page, which the page links
 - blame-history #4: the table shows only the newest start result of each major — reject, planned change: AC2 names the major's start result as M053 defines it
 - blame-history #5: Details is open, not a closed `<details>` — reject, planned change: Scope and AC4
 - blame-history #6: "(archived)" became an "Archived" badge — reject, false: the reviewer finds no regression, the marker and the fact stay
 - blame-history #7: the Overrides heading moved from h2 to h3 — reject, planned change: AC4 and the absorbed candidate row
 - blame-history #8: a failing `xpiUrl` gives no text fallback — reject, planned change: AC1
-- prior-review #1: `.btn` edges below 3:1 again — fix now (with diff-bug #2)
+- prior-review #1: `.btn` edges below 3:1 again — fix now, fixed 9007997 (with diff-bug #2)
 - prior-review #2: the start caveat moved off the plugin page — reject, planned change: AC5
 - prior-review #3: the Used column note moved off the plugin page — reject, planned change: AC5
 - prior-review #4: an older Unreleased CHANGELOG entry quotes the old report prompt — reject, planned change: older Unreleased entries stay as written, and the series entry says it replaces that layout
 - prior-review #5: the table header reads "Declared" where the home table reads "Declares Zotero" — reject, style
 - ripple #1: the candidate row "Fix the Overrides table's heading level" describes the old page — reject, planned change: AC4 absorbs it, and post-merge hygiene removes the row
-- ripple #2: the candidate row "Label cut reads on plugin pages" quotes the removed "Not read:" text — fix now (row corrected, marked `corrected M054`)
-- ripple #3: DESIGN's `pnpm site` module note leaves out the About page — fix now
-- ripple #4: `cairn/references/mozilla-toolkit-version.md` says the site shows pills — fix now (marked `corrected M015, M054`)
-- ripple #5: the `site/src/data.ts` comment on pill hidden text — fix now (with diff-bug #8)
-- ripple #6: the `src/site/version.ts` comment on pills — fix now (with diff-bug #8)
-- ripple #7: a `test/report.test.ts` case name says "with a pill" — fix now
-- ripple #8: the `pilled` name in `test/site.test.ts` — fix now (with diff-bug #8)
+- ripple #2: the candidate row "Label cut reads on plugin pages" quotes the removed "Not read:" text — fix now, fixed 9007997 (row corrected, marked `corrected M054`)
+- ripple #3: DESIGN's `pnpm site` module note leaves out the About page — fix now, fixed 9007997
+- ripple #4: `cairn/references/mozilla-toolkit-version.md` says the site shows pills — fix now, fixed 9007997 (marked `corrected M015, M054`)
+- ripple #5: the `site/src/data.ts` comment on pill hidden text — fix now, fixed 9007997 (with diff-bug #8)
+- ripple #6: the `src/site/version.ts` comment on pills — fix now, fixed 9007997 (with diff-bug #8)
+- ripple #7: a `test/report.test.ts` case name says "with a pill" — fix now, fixed 9007997
+- ripple #8: the `pilled` name in `test/site.test.ts` — fix now, fixed 9007997 (with diff-bug #8)
 - ripple #9: CHANGELOG's site entry points to "the entry on version pills" — reject, planned change: older Unreleased entries stay as written
 - ripple #10: CHANGELOG says the home page shows "(archived)" — reject, planned change: older Unreleased entries stay as written, and the M053 entry says "Archived"
 - ripple #11: other older Unreleased entries describe pills, the closed Details section, and the old prompt — reject, planned change: same ground
 - ripple #12: the redesign mockup's wording differs from the built page — reject, false: `cairn/mockups/README.md` says the mockups are look references that no test or page reads
+- AC6 recheck after the fixes, on 9007997 with the same deployed data: the four pages are 375/375 at 375 px and 1280/1280 at 1280 px; each `.btn` computes the `--faint` border color; the PDF Preview h1 text reads "Zotero PDF Preview Archived".
 - Return floor: no finding shows a criterion failing or a load-bearing defect, so status stays `review`; fix-now work: verify passes (1180 tests, 58 entries, 0 problems), and planted defects (first item only, `--line-strong` edge, the hidden text removed) failed the new tests.
