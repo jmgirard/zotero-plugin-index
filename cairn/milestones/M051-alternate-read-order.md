@@ -27,21 +27,21 @@ D-010 rules out for the deploy build; no work is planned for it.
 
 ## Acceptance criteria
 
-- [ ] AC1: `buildData` reads the entries in the order that `listEntries`
+- [x] AC1: `buildData` reads the entries in the order that `listEntries`
       returns (id order) when the whole UTC days from 1970-01-01 to `now`
       are even, and in reverse when they are odd. A test in
       `test/build.test.ts` with `now` set to 2026-10-31T23:30Z (day 20757)
       and 2026-11-01T00:30Z (day 20758) shows the repo API requests in
       reverse order on the first date and in id order on the second.
-- [ ] AC2: On the odd date, with four entries and a build limit that
+- [x] AC2: On the odd date, with four entries and a build limit that
       leaves at least two records with `upstream` and at least one entry
       `not-read`, the data file lists its records in id order, and
       `buildLevel` and the start plan list their ids in id order.
-- [ ] AC3: README "Building the data" states the AC1 order, and that the
+- [x] AC3: README "Building the data" states the AC1 order, and that the
       entries that get `not-read` are then the last ids on even days and
       the first ids on odd days. One CHANGELOG entry under Unreleased
       states the same.
-- [ ] AC4: The profile's `verify` slot is clean: `pnpm test` and
+- [x] AC4: The profile's `verify` slot is clean: `pnpm test` and
       `pnpm check` pass.
 
 ## Coverage
@@ -90,3 +90,10 @@ D-010 rules out for the deploy build; no work is planned for it.
 ## Decisions
 
 ## Review
+
+- 2026-10-29 sync: origin/main at 17065b3, the branch's base; no merge needed. Copilot round off (no PROFILE line).
+- AC1: `vitest run test/build.test.ts -t "UTC day"` on the branch: "reads the plugins in reverse id order on an odd UTC day" (now 2026-10-31T23:30Z, day 20757) and "in id order on an even UTC day" (2026-11-01T00:30Z, day 20758) pass, asserting the `api.github.com/repos/example/<name>` request URLs in c, b, a and a, b, c order. The same test file against main's `build.ts` (detached worktree): the odd-day test fails, the even-day one passes. Code: `src/build/build.ts` reverses the `listEntries` index order when `floor(now / day) % 2 !== 0`.
+- AC2: "writes the records, the build-level list, and the start plan in id order on an odd UTC day that the build limit cuts" passes: 4 entries, now day 20757, readMs 1500, buildMs 1000; records a not-read, b request-failed, c and d with upstream (2 records with upstream, 1 not-read); `buildLevel` [a, b] (read order gives [b, a]); plan entries [c, d] (read order gives [d, c]). It fails on main's `build.ts`, and it fails on a planted branch variant that writes the records and `buildLevel` in read order.
+- AC3: README.md lines 717–722, under "## Building the data" (line 679), state the even/odd rule against `generatedAt` (which is `now`), that `not-read` falls on the last ids on even days and the first ids on odd days, and that the file keeps id order. `git diff main...HEAD -- CHANGELOG.md` adds 1 entry (lines 378–384), under `## Unreleased`, stating the same rule and the same `not-read` ids. Neither claims a plugin is never unread two days running.
+- AC4: `pnpm test` (tsc --noEmit, then Vitest) at e550e78: 22 files passed, 1 skipped; 1070 tests passed, 6 skipped. `pnpm check`: checked 56 entries in plugins, 0 problems.
+- gate: `cairn_validate.py` exit 0, all checks passed (coverage complete PASS). No DESIGN.md principle changed, so `cairn_impact` skipped. The generic profile's consistency-gate slot names no toolchain checks.
