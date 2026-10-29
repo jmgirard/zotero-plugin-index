@@ -1,0 +1,8 @@
+{
+  "id": "zotero-rag@cboulanger.github.io",
+  "name": "Zotero RAG",
+  "description": "Ask questions about your Zotero library using RAG (Retrieval-Augmented Generation)",
+  "homepage": "https://github.com/cboulanger/zotero-rag",
+  "repoUrl": "https://github.com/cboulanger/zotero-rag",
+  "updateUrl": "https://raw.githubusercontent.com/cboulanger/zotero-rag/main/updates.json"
+}
