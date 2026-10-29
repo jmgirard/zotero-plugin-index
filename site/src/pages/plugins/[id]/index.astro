@@ -189,6 +189,18 @@ const { min, max } = declaredRange(record);
       {
         upstream && (
           <>
+            {upstream.description !== undefined && (
+              <div>
+                <dt>Manifest description</dt>
+                <dd data-fact="manifest-description">{upstream.description}</dd>
+              </div>
+            )}
+            {upstream.repoDescription !== undefined && (
+              <div>
+                <dt>GitHub description</dt>
+                <dd data-fact="github-description">{upstream.repoDescription}</dd>
+              </div>
+            )}
             {typeof upstream.archived === "boolean" && (
               <div>
                 <dt>Archived on GitHub</dt>

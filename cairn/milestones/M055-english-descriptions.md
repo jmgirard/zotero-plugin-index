@@ -135,7 +135,7 @@ added after this plan, which follow D-030 case by case.
 - [x] T3: Rewrite `shownDescription` in `src/site/description.ts` with a
       `cjkShare` helper and the AC3 order; tests in
       `test/description.test.ts`.
-- [ ] T4: Add the two Details facts to `site/src/pages/plugins/[id]/index.astro`;
+- [x] T4: Add the two Details facts to `site/src/pages/plugins/[id]/index.astro`;
       tests in `test/site.test.ts`.
 - [ ] T5: Update README, CHANGELOG, `site/src/pages/about.astro`,
       `cairn/DESIGN.md` (lines ~46-49, ~106-108, ~172, and the reader's
@@ -164,3 +164,4 @@ added after this plan, which follow D-030 case by case.
 - 2026-10-29: T1 done: `localized` reads `en`, `en_US`, `en_GB` messages before the default locale's; `englishMessages` skips a refused, non-JSON, or non-object file; 17 new upstream tests; planted wrong order failed 2 tests and a dropped blank check failed 1.
 - 2026-10-29: T2 done: `repoDescription` in `UpstreamFacts` and the schema (`pattern: "\\S"`); 5 reader cases and 1 schema test; a dropped blank check and a dropped pattern each failed their test. Build tests run through pnpm (M001 lesson).
 - 2026-10-29: T3 done: `shownDescription` picks per AC3 with an exported `cjkShare` (regex `v` flag set difference for the other-letter runs); 15 pick cases and 4 share cases; a `<=` tie plant failed 1 test and dropping the 0.5 threshold failed 5.
+- 2026-10-29: T4 done: "Manifest description" and "GitHub description" facts open the Details list, before "Archived on GitHub"; site fixture gives first-plugin both texts and old-plugin GitHub text only; a hidden GitHub fact failed 4 site tests.

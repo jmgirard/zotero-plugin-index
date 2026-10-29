@@ -475,6 +475,8 @@ describe("the plugin page", () => {
       ["Plugin id", "id"],
       ...(upstream
         ? [
+            ...(upstream.description !== undefined ? [["Manifest description", "manifest-description"]] : []),
+            ...(upstream.repoDescription !== undefined ? [["GitHub description", "github-description"]] : []),
             ...(typeof upstream.archived === "boolean" ? [["Archived on GitHub", "archived"]] : []),
             ["Repository created", "repo-created"],
             ["Release read by the index", "latest-release"],
@@ -557,6 +559,16 @@ describe("the plugin page", () => {
   ])("shows whether the repo of %s is archived", (id, text) => {
     expect(page(id)).toMatch(/<dt>Archived on GitHub<\/dt>\s*<dd data-fact="archived">/);
     expect(fact(page(id), "archived")).toBe(text);
+  });
+
+  test.each<[string, string | undefined, string | undefined]>([
+    ["first-plugin@example.org", "A plugin for the site tests.", "Tests the site &amp; its &lt;pages&gt;."],
+    ["old-plugin@example.org", undefined, "An old plugin kept for history."],
+    ["b-cafe@example.org", "Keeps a log of item edits.", undefined],
+    ["zotero6-plugin@example.org", undefined, undefined],
+  ])("shows the manifest and GitHub descriptions of %s that its record holds", (id, manifest, github) => {
+    expect(fact(page(id), "manifest-description")).toBe(manifest);
+    expect(fact(page(id), "github-description")).toBe(github);
   });
 
   test("shows no archived fact when the record has no archived value", () => {
