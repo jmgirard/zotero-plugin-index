@@ -1,0 +1,8 @@
+{
+  "id": "zotero@wilddata.cn",
+  "name": "超能文献",
+  "description": "Zotero Suppr",
+  "homepage": "https://suppr.wilddata.cn/",
+  "repoUrl": "https://github.com/WildDataX/suppr-zotero-plugin",
+  "updateUrl": "https://suppr-wilddatapublic-1320403996.cos.ap-shanghai.myqcloud.com/zotero/update.json"
+}
