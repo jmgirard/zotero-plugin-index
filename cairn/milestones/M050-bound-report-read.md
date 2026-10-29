@@ -120,6 +120,7 @@ is added to the report read (see the work log).
 - 2026-10-29: status review.
 - 2026-10-29: claim audit for return 1: no second pass; cd244aa adds test code and one test comment ("The data file in `out` without its generatedAt …"), which the review lenses read in the full diff.
 - 2026-10-29: review fix-now ccec64c: the report read default moves from `READ_LIMIT_MS` to its own `REPORTS_LIMIT_MS` (also 3 minutes), a change to T2's stated default; the stall tests' limit goes from 200 to 1000 ms.
+- 2026-10-29: step-7 approval: m050-bound-report-read approved for merge
 
 ## Decisions
 
