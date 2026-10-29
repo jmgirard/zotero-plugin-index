@@ -138,7 +138,7 @@ against a saved copy of the schema, fetch it again after such a change.
 Each `upstream` block has an `xpiUrl` field. It is the GitHub address of
 the first `.xpi` file of the release whose manifest the index read. The
 start tests download the same file. The file is the author's own: the
-index links to it and keeps no copy. Data written before the build wrote
+data gives its address, and the index keeps no copy. Data written before the build wrote
 this field has none.
 
 Each `upstream` block has a `languages` list, such as `["en-US", "zh-CN"]`.

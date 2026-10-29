@@ -106,7 +106,7 @@
         "releaseCount": { "description": "Releases that carry an .xpi asset, drafts excluded.", "type": "integer", "minimum": 1 },
         "latestReleaseDate": { "description": "The publish date of the release whose manifest was read.", "type": "string" },
         "xpiUrl": {
-          "description": "The browser_download_url of the first .xpi asset of the release whose manifest was read: the author's own file on GitHub, which the index links to and does not copy. Absent in data written before the build wrote it.",
+          "description": "The browser_download_url of the first .xpi asset of the release whose manifest was read: the author's own file on GitHub, of which the index keeps no copy. Absent in data written before the build wrote it.",
           "type": "string"
         },
         "prerelease": {

@@ -70,7 +70,8 @@ export type UpstreamResult =
   | { ok: false; failure: Failure; message: string; buildLevel?: true };
 
 // The XPI whose manifest the reader read: the release asset's download URL, before any
-// redirect, and the SHA-256 of the bytes it got, in hex. It stays out of the published data.
+// redirect, and the SHA-256 of the bytes it got, in hex. The build publishes the URL as
+// `upstream.xpiUrl`; the SHA-256 stays out of the published data.
 export interface XpiRead {
   url: string;
   sha256: string;

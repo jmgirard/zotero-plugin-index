@@ -1,6 +1,6 @@
 # M052: Publish each plugin's XPI address
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -80,6 +80,8 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
 - 2026-10-29: T1 done: optional `xpiUrl` string in the schema's `upstream` definition, typed as `UpstreamFacts & { xpiUrl?: string }` on the build's `PluginRecord` so the reader's facts and its tests stay unchanged; the schema test in `test/build.test.ts` fails on main's schema (an extra-property error) and passes with the field; verify slot green (1071 passed), though npx stalled about 30 minutes before Vitest started at a load near 8.
 - 2026-10-29: checkpoint: T2 and T3 written, not yet ticked while the verify run is pending. `readRecord` sets `upstream.xpiUrl` from `read.xpi.url`; the new build test covers the three reader paths (stable, prerelease only, Zotero 6 stable then a newer prerelease whose first of two .xpi assets is read) and fails with the old line (planted); `mixed-failures.plugins.json` gains the passing record's `xpiUrl`. README, DESIGN (data source text, out-of-scope line), and CHANGELOG name the field.
 - 2026-10-29: T2 and T3 done: verify slot green over a71164e (1072 passed, 6 skipped; `pnpm check` 56 entries, 0 problems).
+- 2026-10-29: claim audit: 14 claims read, 1 corrected — README.md and schemas/plugins.v1.schema.json said the index "links to" the file, but no site page links to it until M053, so they now say the data gives its address and the index keeps no copy; also fixed the stale `XpiRead` comment in src/upstream/reader.ts, which said the XPI read stays out of the published data. The xpiUrl tests and `tsc --noEmit` are green after the fix.
+- 2026-10-29: status review: all tasks done; the lint hook's README hits on lines 64, 78, 135, and 542 are older text outside this milestone and were left alone.
 
 ## Decisions
 
