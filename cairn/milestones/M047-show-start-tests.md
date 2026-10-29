@@ -176,6 +176,7 @@ issues entry records this limit.
 - 2026-10-28: T9 code done: the two return fixes (a planted plain `readFile` failed the directory, link, and size test; a planted unfiltered artifact version failed the untested-version test), `pnpm build` refuses a repeated option, the start-test job's limit is 40 min with the measured setup time in its comment, tests for every branch the first pass named, the narrower site and build tests, README and DESIGN fixes for ripple #1 to #11, the home intro, and D-024. Verify clean (1023 passed, 42 entries checked).
 - 2026-10-28: T9 planted-hash run 40776543409 (head db9095b, 9.0.6's hash set to 64 zeros, reverted in c09716c): start-test 9.0.6 failed at "Download Zotero", the other three succeeded, the site job ran and kept 92 results, and deploy ran and failed with "Branch "m047-show-start-tests" is not allowed to deploy to github-pages due to environment protection rules.", so a failed start test no longer skips the deploy. The log showed `ZOTERO_SHA256: 0` and "sha256sum: 'standard input': no properly formatted checksum lines found": YAML read the unquoted zeros as the number 0 (Ruby `YAML.load` gives 0 too). Fixed: the four hashes are quoted, the comment says why, and the workflows test requires the quotes. Verify clean (1023 passed).
 - 2026-10-28: T9 done: run 40777702698 on head c927f6e: build, the four start-test jobs, and site succeeded, and deploy failed at the environment rule.
+- 2026-10-29: step-7 approval: m047-show-start-tests approved for merge
 
 ## Decisions
 
