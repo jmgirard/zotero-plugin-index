@@ -748,7 +748,8 @@ describe("buildData", () => {
     });
 
     test("writes the records, the build-level list, and the start plan in id order on an odd UTC day that the build limit cuts", async () => {
-      // Read last to first: d-fourth and c-third, then b-stalled passes the build limit.
+      // Read last to first: d-fourth and c-third are read, then b-stalled's read passes the
+      // build limit, so a-first is not read.
       const { tree, recorded } = stalledTree([...NAMES, "d-fourth"]);
       const limits = { readMs: 1500, buildMs: 1000, startedAt: performance.now() };
       const result = await buildData(tree, fixtureFetch(recorded).fetch, ODD, undefined, limits);

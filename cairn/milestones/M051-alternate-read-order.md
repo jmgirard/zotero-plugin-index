@@ -1,6 +1,6 @@
 # M051: Alternate the build's plugin read order by day
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** M050
 - **Driving RR:** —
@@ -84,6 +84,8 @@ D-010 rules out for the deploy build; no work is planned for it.
 - 2026-10-29: T2: `buildData` reads entry indices in id order, reversed when `floor(now / day) % 2 !== 0`, writes each record at its index, and builds `buildLevel` from the indices in id order, so `countReports`, the file, and the plan see id order. Choice: index slots over a re-sort, since ids are directory names and index order is `listEntries` order.
 - 2026-10-29: verify: `pnpm test` 1070 passed, 6 skipped, on an odd day (20755); with the parity shifted for today only, every test without a fixed date also passed (the 4 fixed-date tests failed, as the shift flips them too). `pnpm check`: 56 entries, 0 problems.
 - 2026-10-29: T3: README "Building the data" and the CHANGELOG entry state the rule against `generatedAt` (the same `now` that sets the order), the `not-read` ids on even and odd days, and that the file keeps id order; DESIGN.md's build bullet adds the rule and the id-order outputs. No two-day claim. Verify: `pnpm test` 1070 passed, 6 skipped; `pnpm check` 0 problems.
+- 2026-10-29: claim audit: 18 claims read, 1 corrected — test/build.test.ts (the cut test's comment said b-stalled passes the build limit; it now says b-stalled's read passes it, so a-first is not read; re-read TRUE). README.md, CHANGELOG.md, src/build/build.ts: no false claim.
+- 2026-10-29: implement done; status review. Verify: `pnpm test` 1070 passed, 6 skipped; `pnpm check` 56 entries, 0 problems.
 
 ## Decisions
 
