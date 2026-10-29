@@ -1,0 +1,7 @@
+{
+  "id": "zotero-memory-management@unitian",
+  "name": "zotero-memory-management",
+  "description": "Manage Zotero PDF-reader and inactive-feed memory usage.",
+  "repoUrl": "https://github.com/UniTian/zotero-memory-management",
+  "updateUrl": "https://raw.githubusercontent.com/UniTian/zotero-memory-management/main/update.json"
+}
