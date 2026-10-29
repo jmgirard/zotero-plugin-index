@@ -1,0 +1,7 @@
+{
+  "id": "zotero-reference-linker@ottersem.github.io",
+  "name": "Reference Linker",
+  "description": "Highlights PDF references and links papers already in your Zotero library.",
+  "repoUrl": "https://github.com/ottersem/zotero-reference-linker",
+  "updateUrl": "https://raw.githubusercontent.com/ottersem/zotero-reference-linker/main/updates.json"
+}
