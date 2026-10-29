@@ -1,0 +1,7 @@
+{
+  "id": "zofiles@zofiles.dev",
+  "name": "ZoFiles",
+  "description": "Export Zotero papers to organized filesystem folders with per-paper content (PDF, markdown, BibTeX, notes, Kimi review)",
+  "repoUrl": "https://github.com/X1AOX1A/ZoFiles",
+  "updateUrl": "https://github.com/X1AOX1A/ZoFiles/releases/download/release/update.json"
+}
