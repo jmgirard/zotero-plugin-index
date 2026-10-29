@@ -1,0 +1,8 @@
+{
+  "id": "llm-for-zotero-translator@cszr",
+  "name": "LLM for Zotero Translator",
+  "description": "Translate MinerU parsed markdown into Chinese in the Zotero PDF reader, with an AI provider/model settings pane matching llm-for-zotero (companion add-on for llm-for-zotero)",
+  "homepage": "https://github.com/Vithrive/llm-for-zotero-translator",
+  "repoUrl": "https://github.com/Vithrive/llm-for-zotero-translator",
+  "updateUrl": "https://github.com/Vithrive/llm-for-zotero-translator/releases/download/release/update.json"
+}
