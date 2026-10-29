@@ -1,0 +1,8 @@
+{
+  "id": "journaltags@chen7447",
+  "name": "Journal Tags",
+  "description": "EasyScholar journal tags and impact factor columns for Zotero",
+  "homepage": "https://github.com/chen7447/journal-tags",
+  "repoUrl": "https://github.com/chen7447/journal-tags",
+  "updateUrl": "https://raw.githubusercontent.com/chen7447/journal-tags/main/update.json"
+}
