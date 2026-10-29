@@ -7,22 +7,47 @@ it does not review or endorse plugins.
 ## The site
 
 The website <https://jmgirard.github.io/zotero-plugin-index/> shows the index.
-The home page lists every plugin with its name, its description, and one
-pill for each Zotero major version from 7 to 10. A pill shows how much of
-that version the plugin's declared range covers. A check mark (✓) means all
-of it, a half circle (◐) means part of it, and a dash means none of it. Hold
-the pointer over a pill to read its meaning and, for a half circle, the
-declared range. On a touch screen, open the plugin's page to read its
-declared range. A pill counts Zotero N as the versions from N.0 to N.9.
-Plugin authors often write a maximum such as 10.99.99 to mean every Zotero 10
-release. They also write a minimum such as 8.999 to mean Zotero 9 and newer.
-The declared range uses the overrides that apply to the plugin version that
-the index read. The pills show what each plugin declares, not a test
-result. The daily start tests that "Using the data" describes appear only
-on each plugin's page.
+A top bar on every page links to the home page, to the "Add a plugin" issue
+form, and to the data file. The home page lists every plugin in one table,
+sorted by name. The sort ignores letter case and accents, and names that
+are then equal sort by plugin id. Each row shows the plugin's name and its
+description. If the plugin's GitHub repository is archived, the row shows
+"Archived" after the name. Then come one cell for each Zotero major version
+from 7 to 10 and a cell for the plugin's languages. Next comes the month of
+the release that the index read. Last come links to the source code and to
+the `.xpi` file.
 
-A plugin with no declared range shows "No declared range" in place of the
-pills. If the last build failed to read a plugin, its row shows the failure.
+A version cell shows how much of that version the plugin's declared range
+covers. A check mark (✓) means all of it, a half circle (◐) means part of
+it, and a dash means none of it. Hold the pointer over a mark to read
+its meaning and, for a half circle, the declared range. On a touch screen,
+open the plugin's page to read its declared range. A mark counts Zotero N
+as the versions from N.0 to N.9. Plugin authors often write a maximum such
+as 10.99.99 to mean every Zotero 10 release. They also write a minimum such
+as 8.999 to mean Zotero 9 and newer. The declared range uses the overrides
+that apply to the plugin version that the index read. The marks show what
+each plugin declares, not a test result.
+
+Under the declared mark, a version cell shows the newest result of the
+daily start tests on that major, which "Using the data" describes. A dot
+(●) means that the plugin started. A cross (✕) means that it failed at
+startup, did not install, or gave no answer in time. A cell with neither
+has no start result. A legend under the table names each mark. A plugin
+with no declared range shows no declared marks. If the last build failed to
+read a plugin, its row shows "Not read" in place of the version cells.
+
+The languages cell shows the language codes of the plugin's languages list,
+after overrides, in list order. Regional forms such as `zh-CN` and `zh-TW`
+share one code. Hold the pointer over a code to read its name. If the list
+has more than 3 codes, the cell shows the first 2 and "+N" for the rest.
+The source link goes to the plugin's repository. The download link goes to
+the `.xpi` file that the index read, on the author's release. The author
+can replace that file later. A link whose address does not start with
+`http://` or `https://` does not show.
+
+On a screen 760 pixels wide or less, the table hides the languages and the
+release columns. At 560 pixels or less, it also hides the descriptions and
+the source links.
 
 The description comes from the plugin's manifest. If the manifest has no
 description, if it is blank, or if it only repeats the plugin's name, the
@@ -35,40 +60,44 @@ description only repeats the name. For example, "Zotero Plugin for OCR" only rep
 that the index read replaces the manifest description. The name check does
 not apply to an override.
 
+The home page has a search box. It shows only the plugins whose name or
+description holds the text you type. The search ignores letter case and the
+spaces before and after the text, but not accents. The page keeps the text
+in the `q` query parameter of its address, such as `?q=pdf`.
+
 The home page has a "Menus and settings in" menu. It lists each language on
 at least one plugin's languages list, after overrides, with the number of
 those plugins, such as "Chinese (2)". The languages with the most plugins
 come first, and languages with the same number of plugins come in order of
-their names. If you pick a language, the list shows only the plugins whose
+their names. If you pick a language, the table shows only the plugins whose
 languages list includes it. The menu groups the regional forms of a
 language, so a plugin with `zh-CN` or `zh-TW` counts under Chinese.
 "All languages" shows every plugin. The page keeps your choice in the
 `language` query parameter of its address, such as `?language=zh`, so you
-can link to the filtered list. If the parameter names no language in the
-menu, the page shows every plugin. A script runs the menu. Without
-JavaScript, the home page shows no menu and lists every plugin.
+can link to the filtered table. If the parameter names no language in the
+menu, the page shows every plugin.
 
-The home page also has "Declares Zotero" buttons: "Any version" and one
-button for each Zotero major from 7 to 10. If you press a major, the list
-shows only the plugins whose declared range covers all or part of that
-version. These are the plugins with a ✓ or ◐ pill for it. A plugin with
-no declared range, or one that the last build failed to read, does not
-show. The buttons and the language menu work together: the list shows the
-plugins that pass both. "Any version" shows every plugin that the language
-menu shows. The page keeps your choice in the `zotero` query parameter of
-its address, such as `?zotero=8`. If the parameter names no button, the
-page acts as if "Any version" is pressed and removes the parameter. The
-script that runs the menu also runs the buttons, so without JavaScript the
-home page shows no buttons and lists every plugin.
+The home page also has "Declares Zotero" buttons: "Any" and one button for
+each Zotero major from 7 to 10. If you press a major, the table shows only
+the plugins whose declared range covers all or part of that version. These
+are the plugins with a ✓ or ◐ mark for it. A plugin with no declared range,
+or one that the last build failed to read, does not show. The page keeps
+your choice in the `zotero` query parameter of its address, such as
+`?zotero=8`. If the parameter names no button, the page acts as if "Any" is
+pressed and removes the parameter.
 
-While a filter is on, a line under the filters reads "Showing N of M
-plugins." N is the number of plugins that the filters show, and M is the
-number that the page lists, shown or not. If the filters show no plugin,
-the line reads "No plugins match these filters." With "All languages" and
-"Any version", the line is empty. The same script writes the line, so
-without JavaScript the home page shows no line.
+The search box, the menu, and the buttons work together: the table shows
+the plugins that pass all three. A count beside them reads "M plugins",
+where M is the number of plugins in the table. While a filter is on, it
+reads "N of M plugins", where N is the number that the filters show. If
+the filters show no plugin, the count says that no plugins match these
+filters.
 
-The home page intro links to the "Add a plugin" issue form, which
+A script runs the search box, the menu, the buttons, and the count.
+Without JavaScript, the home page shows none of them and lists every
+plugin.
+
+The "Add a plugin" link in the top bar opens the issue form that
 "Proposing a plugin with an issue" describes. The form needs a GitHub
 account.
 
@@ -105,8 +134,9 @@ GitHub with the plugin id and that version filled in. The page of a plugin
 whose read failed shows no reports and no report buttons.
 
 The index lists a plugin whose GitHub repository is archived. Its row on the
-home page shows "(archived)" after its name. The Details section of its page
-shows the fact "Archived on GitHub" with the value "Yes". GitHub makes an
+home page shows "Archived" after its name, and its page shows "(archived)".
+The Details section of its page shows the fact "Archived on GitHub" with
+the value "Yes". GitHub makes an
 archived repository read-only until someone with admin access to it
 unarchives it.
 

@@ -991,6 +991,17 @@ describe("the site styles", () => {
     expect(literal).toEqual([]);
   });
 
+  test("hides the languages and release columns at 760 px or less, and the descriptions and source links at 560 px or less", () => {
+    expect(layout).toMatch(/@media \(max-width: 760px\) \{\s*\.plugins \.lang,\s*\.plugins \.date \{\s*display: none;\s*\}/);
+    expect(layout).toMatch(
+      /@media \(max-width: 560px\) \{\s*\.plugins \.desc,\s*\.plugins \.links a\[data-link="source"\] \{\s*display: none;\s*\}/,
+    );
+    // Each header and cell of those columns carries the class the rule names.
+    const html = home();
+    expect(html.match(/<t[dh][^>]* class="lang"/g)).toHaveLength(ids.length + 2);
+    expect(html.match(/<t[dh][^>]* class="date"/g)).toHaveLength(ids.length + 2);
+  });
+
   test("leaves styles out of every other .astro file", () => {
     const files = (readdirSync(resolve(ROOT, "site/src"), { recursive: true }) as string[]).filter(
       (path) => path.endsWith(".astro") && path !== join("layouts", "Base.astro"),

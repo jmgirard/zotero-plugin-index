@@ -50,17 +50,22 @@ an override. A `languages` override records them for a plugin whose list
 is wrong or empty. Each plugin page shows them by name in a
 "Menus and settings in" line, outside the Details section. When no language
 is left, the line reads "Unknown (no translations found)" (M036). The home
-page's "Menus and settings in" menu filters the list by language subtag,
-run by the site's one script (D-014, M024, M033). The menu lists the
+page lists the plugins in one table, sorted by display name with
+`localeCompare` at base sensitivity and then by id (M053). The home
+page's "Menus and settings in" menu filters the table by language subtag,
+run by the home page's script (D-014, D-026, M024, M033). The menu lists the
 languages with the most plugins first, and languages with the same number
 of plugins in code-unit order of their English names (M035). The home
-page's "Declares Zotero" buttons, "Any version" and one per major of
-`ZOTERO_MAJORS`, filter the list to the plugins whose pill for the pressed
+page's "Declares Zotero" buttons, "Any" and one per major of
+`ZOTERO_MAJORS`, filter the table to the plugins whose mark for the pressed
 major is all or part, one major at a time, together with the menu; the
 same script runs them and keeps the choice in `?zotero=` (D-019, M037).
-While a filter is on, the same script writes a status line under the
-filters that says how many plugins show, or that none match (M044).
-The home intro links to the "Add a plugin" issue form (M037).
+A search box filters the table to the rows whose name or description holds
+the query, both lowercased, and keeps it in `?q=` (M053). The same script
+writes a plugin count beside the filters, which says how many plugins show
+while a filter is on, or that none match (M044, M053). A top bar on every
+page links to the home page, the "Add a plugin" issue form, and the data
+file (M053).
 The page opens with a header block of the name and the description, then
 cards with headings (M048): "Declared support" holds the version pills and
 the declared range, the "No declared range" line, or the read failure;
@@ -70,17 +75,23 @@ plugin, holds the reports on the release the index read with a "Works" and
 a "Broken" button (M021); "About" holds the repository link and, when the
 build read the plugin, the "Menus and settings in" line (M024, M033) and
 the releases link. The other facts sit in a closed "Details"
-section (M015). The home list marks an
-archived plugin with "(archived)" after its name, and the data carries the
-same `archived` fact (M013).
+section (M015). The home table marks an
+archived plugin with "Archived" after its name (M053), and the data carries
+the same `archived` fact (M013).
 The Details section also shows each override beside the upstream value it
 corrects (M007, M015). Each page says that the index does not vet the plugins
 it lists.
 
-The home list and each plugin page show one pill for each Zotero major
-version in `ZOTERO_MAJORS` (7 to 10). A pill states how much of that major the
-declared range covers, counting Zotero N as N.0 to N.9: all, part, or none.
-The pills show only the declared range, so they are not a combined verdict.
+Each plugin page shows one pill, and the home table one declared mark, for
+each Zotero major version in `ZOTERO_MAJORS` (7 to 10). A pill or mark
+states how much of that major the declared range covers, counting Zotero N
+as N.0 to N.9: all, part, or none. Pills and declared marks show only the
+declared range, so they are not a combined verdict. A home table cell
+shows the major's newest start-test result as a second mark in its own
+element, and a legend under the table names each mark and says that a
+declared range is not a test result (M053). The home table also shows the
+language subtags in list order (the first 2 and "+N" past 3), the month of
+the release read, and source and `.xpi` links that pass `safeHref` (M053).
 The site shows the manifest description unless it is blank or only repeats
 the plugin's name; a `description` override that applies to the version the
 index read always shows (M015). An archived plugin's page also shows
@@ -277,11 +288,15 @@ exception is a report that is abuse.
   `src/site/languages.ts` holds the applied languages, their names, and the
   menu options. `src/site/home-filter.ts` holds `passes`, `rowShows`,
   `chosenValue`, `filterHref`, `filterOn`, and `filterStatus`, which the
-  home page's script imports for the language menu, the version buttons,
-  and the status line (renamed from `language-filter.ts`, M037); `rowMajors` in
-  `version.ts` gives each row's `data-zotero`. Added M007; pills and
-  descriptions M015; languages M024; version buttons M037; status line
-  M044.
+  home page's script imports for the search box, the language menu, the
+  version buttons, and the count (renamed from `language-filter.ts`, M037);
+  `rowMajors` in `version.ts` gives each row's `data-zotero`.
+  `site/src/data.ts` holds the template helpers, among them `homeOrder`,
+  `majorStart`, `shortLanguages`, and `monthYear` for the home table.
+  `site/src/layouts/Base.astro` holds the color and size tokens for both
+  color schemes, the shared rules, the top bar, and the footer. Added M007;
+  pills and descriptions M015; languages M024; version buttons M037; status
+  line M044; table, search box, and tokens M053.
 - Reports (`src/reports/`): `parseReport(body, labels, ids)` reads a report
   issue's plugin id, plugin version, Zotero major, and verdict, or names the
   first problem. `pnpm report-issue` reads the issue that `ISSUE_NUMBER`
@@ -623,9 +638,10 @@ reused._
   `ZOTERO_MAJORS`, `site/src/pages/index.astro`) import it. The
   pages carried no script from M015. Since M024 the home page carries one,
   for the language menu and, since M037, the version buttons and, since
-  M044, the status line under them, which Astro inlines as a
+  M044, the status line under them, and since M053 the search box and the
+  count that replaced that line, which Astro inlines as a
   `type="module"` script; the other pages carry none (D-014,
-  D-019). The templates take the Pages path
+  D-019, D-026). The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
   Astro's `import.meta.env.BASE_URL`. `build.yml`'s site job runs `pnpm site`
   after the build job (M047), so a failed site build also deploys nothing.
@@ -633,7 +649,7 @@ reused._
   files; the `.astro` templates
   are compiled by Astro without a type check (M007). A plugin page shows the
   "Archived on GitHub" fact only for a record whose `archived` is a boolean,
-  and the home list's `data-archived` marker only for `archived: true` (M013).
+  and the home table's `data-archived` marker only for `archived: true` (M013).
   All styles are global in `site/src/layouts/Base.astro`, with a
   `prefers-color-scheme: dark` block, so Astro adds no scoped attributes to
   the markup the site tests match (M015). Outside its `:root` blocks and
