@@ -1,0 +1,8 @@
+{
+  "id": "weavero@mjthoraval",
+  "name": "Weavero",
+  "description": "A Zotero plugin with filters, clickable links, bookmarks, tabs management and other improvements.",
+  "homepage": "https://github.com/mjthoraval/Weavero",
+  "repoUrl": "https://github.com/mjthoraval/Weavero",
+  "updateUrl": "https://github.com/mjthoraval/Weavero/releases/download/release/update.json"
+}
