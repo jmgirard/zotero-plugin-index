@@ -1,0 +1,7 @@
+{
+  "id": "super-scholar@Kohirus",
+  "name": "super-scholar",
+  "description": "Export Zotero PDF papers to Obsidian Markdown through MinerU.",
+  "repoUrl": "https://github.com/Kohirus/super-scholar",
+  "updateUrl": "https://github.com/Kohirus/super-scholar/releases/latest/download/updates.json"
+}
