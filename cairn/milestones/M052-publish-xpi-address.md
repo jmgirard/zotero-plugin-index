@@ -27,11 +27,11 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
 
 ## Acceptance criteria
 
-- [ ] AC1: `schemas/plugins.v1.schema.json` defines `xpiUrl` in the
+- [x] AC1: `schemas/plugins.v1.schema.json` defines `xpiUrl` in the
       `upstream` definition as an optional string (absent from `required`).
       A schema test shows a record with `xpiUrl` and one without it pass,
       and a record whose `xpiUrl` is a number fail on that property.
-- [ ] AC2: `pnpm build` writes `upstream.xpiUrl` on each record with
+- [x] AC2: `pnpm build` writes `upstream.xpiUrl` on each record with
       `upstream`, equal to the `xpiUrl` of that entry's start plan item,
       which is the `browser_download_url` of the first `.xpi` asset of the
       release whose manifest the reader read. A build test asserts this for
@@ -40,11 +40,11 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
       only prereleases, and a stable release that is not a Zotero 7+ build
       followed by a newer prerelease that is. A record with `failure` has
       no `upstream` and so no `xpiUrl`.
-- [ ] AC3: README "Using the data", DESIGN's data description, and
+- [x] AC3: README "Using the data", DESIGN's data description, and
       CHANGELOG under Unreleased name `xpiUrl` and say which file it
       addresses. DESIGN's out-of-scope line says that a plain link to the
       author's own `.xpi` file is not an install button.
-- [ ] AC4: The verify slot (`pnpm test`, `pnpm check`) passes.
+- [x] AC4: The verify slot (`pnpm test`, `pnpm check`) passes.
 
 ## Coverage
 
@@ -86,3 +86,11 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
 ## Decisions
 
 ## Review
+
+Evidence at 89d7d12, 2026-10-29, branch level with main (2d2639a).
+
+- AC1: `schemas/plugins.v1.schema.json:108` defines `upstream.xpiUrl` as `type: string`, not in `required`. The test "the schema takes an upstream with or without a string xpiUrl and refuses one of another type" passed: a string passes, an absent field passes, and a number gives exactly `/plugins/<i>/upstream/xpiUrl must be string`. Against main's schema the same test failed on its first expectation (implement plant, work log T1).
+- AC2: The test "writes on each record with upstream the XPI address of its start plan item, on each of the reader's three release paths" passed. Every record with upstream (Better Notes stable, Second prerelease only, Fallback whose Zotero 6 stable sends the reader to a newer prerelease) has `xpiUrl` equal to its start plan item's. Fallback's value is the first of its two `.xpi` assets, its version is 2.0.0-beta.1, and the forked record has no upstream. With `readRecord`'s old line, the test failed on Better Notes (implement plant, work log T2).
+- AC3: README.md:138 ("Using the data") and README.md:709, DESIGN.md:145 (data source 2) and DESIGN.md:110-113 (out-of-scope line: a plain link to the author's .xpi is not an install button), and CHANGELOG.md:385 under Unreleased each name `xpiUrl` and the file it addresses.
+- AC4: `pnpm test` passed with 1072 passed and 6 skipped across 22 files; `pnpm check` checked 56 entries with 0 problems.
+- Consistency gate: `cairn_validate.py` exit 0, with 1 advisory (M053 has 8 criteria, accepted at the plan). The profile `generic` names no toolchain checks.
