@@ -1,0 +1,8 @@
+{
+  "id": "zys-praetor@kazys.local",
+  "name": "Praetor for Zotero",
+  "description": "Local Codex and Claude item-pane chat for selected Zotero items, with library-wide search and read tools.",
+  "homepage": "https://github.com/kvarnelis/zotero-praetor",
+  "repoUrl": "https://github.com/kvarnelis/zotero-praetor",
+  "updateUrl": "https://raw.githubusercontent.com/kvarnelis/zotero-praetor/main/updates.json"
+}
