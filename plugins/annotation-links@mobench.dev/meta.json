@@ -1,0 +1,8 @@
+{
+  "id": "annotation-links@mobench.dev",
+  "name": "Annotation Links",
+  "description": "Clickable cross-reference links between PDF annotations in Zotero. Support: buymeacoffee.com/mobench",
+  "homepage": "https://github.com/mobench/zotero-annotation-links#readme",
+  "repoUrl": "https://github.com/mobench/zotero-annotation-links",
+  "updateUrl": "https://github.com/mobench/zotero-annotation-links/releases/download/release/update.json"
+}
