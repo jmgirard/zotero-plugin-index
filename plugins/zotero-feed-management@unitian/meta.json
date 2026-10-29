@@ -1,0 +1,7 @@
+{
+  "id": "zotero-feed-management@unitian",
+  "name": "zotero-feed-management",
+  "description": "Manage, refresh, export, configure, and deduplicate Zotero feed subscriptions.",
+  "repoUrl": "https://github.com/UniTian/zotero-feed-management",
+  "updateUrl": "https://raw.githubusercontent.com/UniTian/zotero-feed-management/main/update.json"
+}
