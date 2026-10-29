@@ -1,0 +1,8 @@
+{
+  "id": "random-read@zpeters",
+  "name": "Random Read",
+  "description": "Pick a random unread item, add it to ~In Progress~ and mark it To Read",
+  "homepage": "https://zpeters.github.io/zotero-random-read/",
+  "repoUrl": "https://github.com/zpeters/zotero-random-read",
+  "updateUrl": "https://github.com/zpeters/zotero-random-read/releases/latest/download/update.json"
+}
