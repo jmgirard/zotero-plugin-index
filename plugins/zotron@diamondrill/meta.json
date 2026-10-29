@@ -1,0 +1,8 @@
+{
+  "id": "zotron@diamondrill",
+  "name": "Zotron",
+  "description": "HTTP JSON-RPC API for Zotero - exposes internal API for external tools",
+  "homepage": "https://github.com/dianzuan/zotron",
+  "repoUrl": "https://github.com/dianzuan/zotron",
+  "updateUrl": "https://github.com/dianzuan/zotron/releases/download/release/update.json"
+}
