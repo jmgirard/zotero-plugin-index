@@ -442,13 +442,15 @@
   If none of them holds a message that is not blank, it reads the default
   locale. Each `upstream` block of the data file has a new optional
   `repoDescription` field: the About text of the GitHub repository,
-  trimmed. If the site keeps the manifest description and less than half
-  of it is Chinese, Japanese, or Korean, the site shows it. The README says
-  how that share is counted. In
-  other cases the site can show the GitHub description, by the rule in the
+  trimmed. A `description` override that applies to the version the index
+  read still comes first. With no such override, the site checks the
+  manifest description. If the site keeps it and less than half of it is
+  Chinese, Japanese, or Korean, the site shows it. The README says how
+  that share is counted. In other
+  cases the site can show the GitHub description, by the rule in the
   README. Each plugin page's Details card shows both descriptions. A
   `description` override can now give English text for a plugin with no
   English description upstream, as the README defines it. Eight plugins
-  have one. If you
-  validate against a saved copy of `schemas/plugins.v1.schema.json`, fetch
-  the schema again, since it rejects fields that it does not define.
+  have one. If you validate against a saved copy of
+  `schemas/plugins.v1.schema.json`, fetch the schema again, since it
+  rejects fields that it does not define.

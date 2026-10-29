@@ -1,6 +1,6 @@
 # M055: Show English descriptions where upstream has them
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -116,7 +116,7 @@ added after this plan, which follow D-030 case by case.
 - AC2 → T2
 - AC3 → T3
 - AC4 → T4
-- AC5 → T5
+- AC5 → T5, T8
 - AC6 → T6
 - AC7 → T7
 
@@ -142,6 +142,9 @@ added after this plan, which follow D-030 case by case.
       first), write a one- or two-sentence English `description` override
       with its reason, and run `pnpm check`.
 - [x] T7: Run the `verify` slot.
+- [x] T8: Review return 1: state in the CHANGELOG entry, the About page's
+      Descriptions section, and the schema `description` prose that an
+      applying override comes before the manifest or GitHub text.
 
 ## Work log
 
@@ -173,6 +176,7 @@ added after this plan, which follow D-030 case by case.
 - 2026-10-29: substantive amendment: AC6 reason clause now names four cases per upstream text and cites D-032; AC5 cites D-030 to D-032; override values and the eight ids unchanged.
 - 2026-10-29: T7 done: after the amendment `pnpm test` 1227 passed, 6 skipped; `pnpm check` 58 entries, 0 problems; `cairn_validate` all checks passed. Status review.
 - 2026-10-29: review return 1: AC5 fails as written: the CHANGELOG entry, the About page's Descriptions section, and the `description` prose of `schemas/plugins.v1.schema.json` do not state that an applying override comes before the manifest or GitHub text; README and DESIGN do.
+- 2026-10-29: T8 added for review return 1 (minor amendment; Coverage AC5 → T5, T8) and done: the three texts now say an applying override comes first; About test asserts the new sentences; `pnpm test` 1227 passed, 6 skipped; `pnpm check` 0 problems. claim audit: not re-run for the 4 added sentences, which restate `shownDescription`'s order; review's fresh diff-bug reviewer reads them. Status review.
 
 ## Decisions
 

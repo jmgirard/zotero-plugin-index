@@ -77,13 +77,13 @@ import { SUPPORT_MARKS as MARKS } from "../data.ts";
     <p>
       A plugin's description comes from its manifest or from the About text of its GitHub repository. For the manifest
       name and description that name a locale message, the index reads the plugin's English locale file first, if it
-      has one. The site drops a
-      description that is missing, blank, or only repeats the plugin's name.
+      has one. The site drops a description that is missing, blank, or only repeats the plugin's name.
     </p>
     <p>
-      If less than half of the manifest description is Chinese, Japanese, or Korean, the site shows it. If not, the
-      site shows the GitHub description in two cases: the manifest description was dropped, or the GitHub description
-      has less of that text. The Details card of a plugin page shows both descriptions.
+      A description override that applies to the version the index read comes first. Without one, if less than half of
+      the manifest description is Chinese, Japanese, or Korean, the site shows it. If not, the site shows the GitHub
+      description in two cases: the manifest description was dropped, or the GitHub description has less of that text.
+      The Details card of a plugin page shows both descriptions.
     </p>
   </section>
   <section class="card" id="overrides" data-about="overrides">

@@ -97,7 +97,7 @@
           "type": "string"
         },
         "description": {
-          "description": "The manifest description, with a __MSG_ name resolved as for name. The site shows it, the repoDescription, or an override, by the rule in the README.",
+          "description": "The manifest description, with a __MSG_ name resolved as for name. The site shows a description override that applies to the version read; without one, it shows this description or the repoDescription, by the rule in the README.",
           "type": "string"
         },
         "homepage": { "description": "homepage_url in the manifest.", "type": "string" },
