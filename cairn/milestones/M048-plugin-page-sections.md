@@ -146,3 +146,7 @@ A script on the plugin pages stays out, because this layout needs none
 - AC6: "gives each listed text and background pair a contrast of at least 4.5:1" passed in light and dark (10 pairs, dark keys equal light keys); the color declarations added in `git diff 48ef631 -- site/src/layouts/Base.astro` set only `--muted` on `--card` (h2), the two button pairs, and `--card` behind `details` text, all in the list; the forced-colors rule uses system colors.
 - AC7: fixture site rebuilt at the head and served at `/zotero-plugin-index/` (port 4324); 18 of 18 iframe loads (9 pages × 360 and 1280 px, Details open) gave `scrollWidth <= clientWidth`.
 - AC8: README plugin page paragraph (`README.md:75-80`), DESIGN plugin page sentence (`cairn/DESIGN.md:64-71`), and the CHANGELOG Unreleased entry describe the header block and the four cards; `pnpm test` 1050 passed, 6 skipped; `pnpm check` 48 entries, 0 problems.
+- ripple #1: CHANGELOG.md:134 says the repository and releases links sit "under the declared range"; they are now in About — fix now
+- ripple #2: cairn/DESIGN.md:150 calls the report controls a "Works" link and a "Broken" link, against the file's new "button" — fix now
+- ripple #3: CHANGELOG.md:170 says the page shows a "Works" link and a "Broken" link — reject (false): they are still `<a>` links, and the new entry records that they look like buttons
+- ripple #4: cairn/LESSONS.md:23 quotes "Report that it" — reject (false): a record of the M021 bug, not a claim about the current page

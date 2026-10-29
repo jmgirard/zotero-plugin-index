@@ -147,7 +147,7 @@ shows each one separately. A combined verdict is out of scope.
    the plugin id, the plugin version, and the Zotero version. A bot checks
    each report, comments, and closes the issue (M020), and a daily sweep
    answers up to 20 report issues that no run answered (M040). Each plugin
-   page has a "Works" link and a "Broken" link. Each link opens a form with the
+   page has a "Works" button and a "Broken" button. Each opens a form with the
    plugin and its version filled in, so the reporter adds only the Zotero
    version. The daily build reads the closed report issues and counts those
    that `github-actions[bot]`, the account the bot runs as, closed as

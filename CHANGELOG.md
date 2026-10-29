@@ -131,7 +131,7 @@
   and the local storage that kept its value are gone. If the manifest
   description is blank or only repeats the plugin's name, the site shows no
   description. A `description` override still replaces it. Each plugin page
-  shows its repository and releases links under the declared range. It puts
+  shows its repository and releases links. It puts
   the plugin id, the repository and release facts such as the release count,
   and the overrides in a closed "Details" section. An archived plugin shows
   "(archived)" after its name on its page too.
