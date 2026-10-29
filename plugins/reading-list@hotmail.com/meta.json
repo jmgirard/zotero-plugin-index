@@ -1,0 +1,8 @@
+{
+  "id": "reading-list@hotmail.com",
+  "name": "Zotero Reading List",
+  "description": "Keep track of whether you've read items in Zotero",
+  "homepage": "https://github.com/Dominic-DallOsto/zotero-reading-list",
+  "repoUrl": "https://github.com/Dominic-DallOsto/zotero-reading-list",
+  "updateUrl": "https://github.com/Dominic-DallOsto/zotero-reading-list/releases/download/release/update.json"
+}
