@@ -47,9 +47,9 @@ settings text for. A listed language can still be incomplete, since a tag
 with half the fullest tag's messages stays. They do not say the language
 of the description, which comes from the manifest or
 an override. A `languages` override records them for a plugin whose list
-is wrong or empty. Each plugin page shows them by name in a
-"Menus and settings in" line, outside the Details section. When no language
-is left, the line reads "Unknown (no translations found)" (M036). The home
+is wrong or empty. Each plugin page shows them by name in the
+"Menus and settings in" fact of its Details card (M054). When no language
+is left, the fact reads "Unknown (no translations found)" (M036). The home
 page lists the plugins in one table, sorted by display name with
 `localeCompare` at base sensitivity and then by id (M053). The home
 page's "Menus and settings in" menu filters the table by language subtag,
@@ -65,29 +65,39 @@ the query, both lowercased, and keeps it in `?q=` (M053). The same script
 writes a plugin count beside the filters: the total, how many plugins show
 while a filter is on, or that none match (M044, M053). Typing writes `?q=`
 once the visitor stops for half a second (M053 review). A top bar on every
-page links to the home page, the "Add a plugin" issue form, and the data
-file (M053).
-The page opens with a header block of the name and the description, then
-cards with headings (M048): "Declared support" holds the version pills and
-the declared range, the "No declared range" line, or the read failure;
-"Start test" holds the "Starts in Zotero" line with its note when the
-record has `startTests` (M047); "User reports", when the build read the
-plugin, holds the reports on the release the index read with a "Works" and
-a "Broken" button (M021); "About" holds the repository link and, when the
-build read the plugin, the "Menus and settings in" line (M024, M033) and
-the releases link. The other facts sit in a closed "Details"
-section (M015). The home table marks an
-archived plugin with "Archived" after its name (M053), and the data carries
-the same `archived` fact (M013).
-The Details section also shows each override beside the upstream value it
-corrects (M007, M015). Each page says that the index does not vet the plugins
-it lists.
+page links to the home page, the About page (M054), the "Add a plugin"
+issue form, and the data file (M053).
+A plugin page has one column (M054). It opens with an "All plugins" link
+home, the name with an "Archived" badge for an archived repository, the
+description, and links with icons: the `.xpi` file (`upstream.xpiUrl`, only
+when it passes `safeHref`, in the same plain button style as the others,
+D-029), the source, and the releases; a repo URL that fails `safeHref`
+shows as plain text. A "Zotero compatibility" card follows. For a read
+record it names the version read and holds one table row per major,
+newest first, for `ZOTERO_MAJORS` and each other major that the record's
+reports or start results name. The row's cells are the declared support,
+the major's newest start result (`majorStart`, M053), and that major's
+report counts (M021). Under the table come the declared range, a line
+linking the About page, and the "Works" and "Broken" buttons after a line
+naming the version read. For a record with a failure the card holds the
+failure and the About line. An open "Details" card (h2) lists the plugin
+id, the repository and release facts, and the "Menus and settings in"
+fact (M024, M033), with each override beside the upstream value it
+corrects under an h3 (M007, M015, M054). The About page
+(`site/src/pages/about.astro`) holds the method notes: the declared range
+and its marks, the start test, which reports count, and how overrides and
+the Used column work (M054). The home table marks an archived plugin with
+"Archived" after its name (M053), and the data carries the same `archived`
+fact (M013). Each page says that the index does not vet the plugins it
+lists.
 
-Each plugin page shows one pill, and the home table one declared mark, for
-each Zotero major version in `ZOTERO_MAJORS` (7 to 10). A pill or mark
-states how much of that major the declared range covers, counting Zotero N
-as N.0 to N.9: all, part, or none. Pills and declared marks show only the
-declared range, so they are not a combined verdict. A home table cell
+Each plugin page's table shows one row, and the home table one declared
+mark, for each Zotero major version in `ZOTERO_MAJORS` (7 to 10). A
+declared cell or mark states how much of that major the declared range
+covers, counting Zotero N as N.0 to N.9: all, part, or none. The plugin
+page's table keeps the declared range, the start result, and the reports
+in separate columns with no summary column, so it is not a combined
+verdict (M054). A home table cell
 shows the major's newest start-test result as a second mark in its own
 element, and a legend under the table names each mark and says that a
 declared range is not a test result (M053). The home table also shows the
@@ -95,8 +105,7 @@ language subtags in list order (the first 2 and "+N" past 3), the month of
 the release read, and source and `.xpi` links that pass `safeHref` (M053).
 The site shows the manifest description unless it is blank or only repeats
 the plugin's name; a `description` override that applies to the version the
-index read always shows (M015). An archived plugin's page also shows
-"(archived)" after its name, outside the Details section (M015 review).
+index read always shows (M015).
 
 The index runs on GitHub only: GitHub Actions, GitHub Pages, and GitHub
 issues. It has no server, no database, and no paid service. Thus every
@@ -187,8 +196,8 @@ spam. Inclusion is not a judgment of
 quality. The index does not list plugins for Zotero 5 or 6.
 
 A page whose declared compatibility and user reports disagree shows both
-(corrected M007, M021). For example, an 8 ✓ pill appears above "Zotero 8:
-2 works, 3 broken".
+(corrected M007, M021, M054). For example, the Zotero 8 row of the
+compatibility table shows "✓ Yes" beside "2 works 3 broken".
 
 An author can open an issue to be delisted or to correct a fact, and the
 index honors both requests. An author cannot remove user reports. The
@@ -293,11 +302,14 @@ exception is a report that is abuse.
   version buttons, and the count (renamed from `language-filter.ts`, M037);
   `rowMajors` in `version.ts` gives each row's `data-zotero`.
   `site/src/data.ts` holds the template helpers, among them `homeOrder`,
-  `majorStart`, `shortLanguages`, and `monthYear` for the home table.
+  `majorStart`, `shortLanguages`, and `monthYear` for the home table, and
+  `compatMajors`, `majorReport`, and `startWords` for the plugin page's
+  table (M054). `site/src/components/Icon.astro` draws the line icons.
   `site/src/layouts/Base.astro` holds the color and size tokens for both
   color schemes, the shared rules, the top bar, and the footer. Added M007;
   pills and descriptions M015; languages M024; version buttons M037; status
-  line M044; table, search box, and tokens M053.
+  line M044; table, search box, and tokens M053; plugin page head,
+  compatibility table, Details grid, and About page M054.
 - Reports (`src/reports/`): `parseReport(body, labels, ids)` reads a report
   issue's plugin id, plugin version, Zotero major, and verdict, or names the
   first problem. `pnpm report-issue` reads the issue that `ISSUE_NUMBER`
@@ -635,8 +647,9 @@ reused._
   format (`cairn/references/mozilla-toolkit-version.md`), finds a record's
   declared range with overrides applied, and, in `majorSupport`, how much of
   one Zotero major that range covers. The tests and the templates (through
-  `site/src/data.ts`, `site/src/components/Support.astro`, and, for
-  `ZOTERO_MAJORS` and `majorSupport`, `site/src/pages/index.astro`) import it. The
+  `site/src/data.ts`, and, for `majorSupport`, `site/src/pages/index.astro`
+  and `site/src/pages/plugins/[id]/index.astro`, and, for `ZOTERO_MAJORS`,
+  `site/src/pages/index.astro`) import it. The
   pages carried no script from M015. Since M024 the home page carries one,
   for the language menu and, since M037, the version buttons and, since
   M044, the status line under them, and since M053 the search box and the
