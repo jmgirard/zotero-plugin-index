@@ -1,0 +1,8 @@
+{
+  "id": "keyword-highlighter@zotero-plugin",
+  "name": "Keyword Highlighter",
+  "description": "Automatically highlights user-defined keywords in the Zotero PDF reader (Ctrl+Shift+H)",
+  "homepage": "https://github.com/quertt/zotero-keyword-highlighter",
+  "repoUrl": "https://github.com/quertt/zotero-keyword-highlighter",
+  "updateUrl": "https://raw.githubusercontent.com/quertt/zotero-keyword-highlighter/main/updates.json"
+}
