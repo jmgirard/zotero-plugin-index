@@ -1,0 +1,8 @@
+{
+  "id": "openalex-pdf@littview.com",
+  "name": "Zotero OpenAlex PDF Finder",
+  "description": "Find and attach open-access PDFs for your Zotero items using OpenAlex.",
+  "homepage": "https://github.com/Littview/zotero-openalex-pdf",
+  "repoUrl": "https://github.com/Littview/zotero-openalex-pdf",
+  "updateUrl": "https://raw.githubusercontent.com/Littview/zotero-openalex-pdf/main/update.json"
+}
