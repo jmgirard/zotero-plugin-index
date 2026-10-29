@@ -1,0 +1,7 @@
+{
+  "id": "paper-reading-agent@xiaoxuan.li",
+  "name": "Paper Reading Agent",
+  "description": "Chat with the open paper — the agent is a local codex CLI scoped to that paper's PDF.",
+  "repoUrl": "https://github.com/xiaoxuanli-a/zotero_agent_reader_plugin",
+  "updateUrl": "https://raw.githubusercontent.com/xiaoxuanli-a/zotero_agent_reader_plugin/main/updates.json"
+}
