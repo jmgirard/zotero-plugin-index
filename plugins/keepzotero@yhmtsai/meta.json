@@ -1,0 +1,8 @@
+{
+  "id": "keepzotero@yhmtsai",
+  "name": "KeepZotero",
+  "description": "Keep Zotero from accidental close",
+  "homepage": "https://github.com/yhmtsai/KeepZotero",
+  "repoUrl": "https://github.com/yhmtsai/KeepZotero",
+  "updateUrl": "https://raw.githubusercontent.com/yhmtsai/KeepZotero/master/keepzotero-update.json"
+}
