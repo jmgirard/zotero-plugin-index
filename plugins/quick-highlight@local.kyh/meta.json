@@ -1,0 +1,8 @@
+{
+  "id": "quick-highlight@local.kyh",
+  "name": "Quick Highlight for Zotero",
+  "description": "Compact selection menu with hover color palettes; isolate each PDF translation selection.",
+  "homepage": "https://github.com/Zotero-Flow/zotero-quick-highlight",
+  "repoUrl": "https://github.com/Zotero-Flow/zotero-quick-highlight",
+  "updateUrl": "https://github.com/Zotero-Flow/zotero-quick-highlight/releases/latest/download/updates.json"
+}
