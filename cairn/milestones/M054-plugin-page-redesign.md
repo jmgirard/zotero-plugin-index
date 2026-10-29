@@ -145,6 +145,7 @@ fixture are as M053 defines them.
 - 2026-10-29: review pass 1: merged main (2ab094f, two plugin entries) into the branch; verify green; AC1–AC4, AC6, AC7 verified and ticked; gate passed.
 - 2026-10-29: amendment routed: AC5 — "one line under the table links to the About page" cannot hold on the 3 fixture pages of failed records, which have no table (AC2); their About line sits under the failure message in the same card.
 - 2026-10-29: re-audit: AC5 (full) — satisfiable on all 13 fixture pages (schema `oneOf` upstream/failure), no IP or D-entry conflict, no probe cited, test clause not an instrument finding, proportionate; 2 findings: the footer clause's "every page" lacks the fixture qualifier, and "today's page" drifts after the merge; both fixed toward the narrower wording; test gaps noted (no failure-message order check; moved sentences checked in `<main>` only).
+- 2026-10-29: re-audit: AC5 (full) — satisfiable on all 15 fixture pages, no IP or D-entry conflict, bounded, no probe, proportionate; 2 low findings: the four quoted "sentences" are fragments (substring or whole-sentence reading), and "one line" can read as at least one or exactly one; the same 2 test gaps; this is the second re-audit of AC5, so further wording change goes to the user.
 
 ## Decisions
 
