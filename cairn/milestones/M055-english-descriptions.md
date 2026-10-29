@@ -1,6 +1,6 @@
 # M055: Show English descriptions where upstream has them
 
-- **Status:** review
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -32,7 +32,7 @@ added after this plan, which follow D-030 case by case.
 
 ## Acceptance criteria
 
-- [ ] AC1: For each of a release's manifest `name` and `description` that is
+- [x] AC1: For each of a release's manifest `name` and `description` that is
       a `__MSG_<key>__` placeholder, the published `upstream.name` or
       `upstream.description` is the `message` of that key, matched ignoring
       case, from the first of `_locales/en/`, `_locales/en_US/`, and
@@ -49,7 +49,7 @@ added after this plan, which follow D-030 case by case.
       blank `en` message, an oversize `en` file, and no English folder
       (default); another key case; no `default_locale` with and without
       `en`; the name from `en`; name and description from two folders.
-- [ ] AC2: Each published record whose read succeeds carries
+- [x] AC2: Each published record whose read succeeds carries
       `upstream.repoDescription`, the GitHub repo response's `description`
       with outer whitespace trimmed, when it is a string whose `trim()` is
       not empty. The field is left out when that `description` is null,
@@ -59,7 +59,7 @@ added after this plan, which follow D-030 case by case.
       Tests in `test/upstream.test.ts` show present (with outer spaces),
       null, missing, a number, and blank; `test/build.test.ts` validates a
       record with the field and one without against the schema.
-- [ ] AC3: `shownDescription` returns an applying `description` override
+- [x] AC3: `shownDescription` returns an applying `description` override
       when there is one. Otherwise its candidates are `upstream.description`
       (the manifest text) and `upstream.repoDescription` (the GitHub text),
       and it drops each one that is missing, blank, or only repeats the
@@ -77,7 +77,7 @@ added after this plan, which follow D-030 case by case.
       (GitHub); zh/zh of higher share, equal shares at 0.5 or more,
       zh/name-only, zh/none, digits-only/en (manifest); both name-only
       (undefined).
-- [ ] AC4: A plugin page's Details card shows a "Manifest description" fact
+- [x] AC4: A plugin page's Details card shows a "Manifest description" fact
       when `upstream.description` is present and a "GitHub description" fact
       when `upstream.repoDescription` is present, each with its text, and
       leaves out each fact whose field is absent. Tests in
@@ -172,3 +172,18 @@ added after this plan, which follow D-030 case by case.
 - 2026-10-29: re-audit: AC6 (full) — re-entry reader on the user-approved wording: all eight reasons pass; 3 tightenings taken (a "missing" case, "says correctly" for the texts read on 2026-10-29, "missing" and the CJK-share wording in the `reason` schema prose); D-032's reason sentence is read as replacing D-030's "no English description" wording; no further reader for AC6.
 - 2026-10-29: substantive amendment: AC6 reason clause now names four cases per upstream text and cites D-032; AC5 cites D-030 to D-032; override values and the eight ids unchanged.
 - 2026-10-29: T7 done: after the amendment `pnpm test` 1227 passed, 6 skipped; `pnpm check` 58 entries, 0 problems; `cairn_validate` all checks passed. Status review.
+- 2026-10-29: review return 1: AC5 fails as written: the CHANGELOG entry, the About page's Descriptions section, and the `description` prose of `schemas/plugins.v1.schema.json` do not state that an applying override comes before the manifest or GitHub text; README and DESIGN do.
+
+## Decisions
+
+## Review
+
+- Pass 1 (2026-10-29), branch level with main at b033edc; Copilot round off.
+- AC1: `test/upstream.test.ts` 290 passed; named cases cover each English folder alone, `en` over `en_GB`, `en_US` over `en_GB`, fall-through from an `en` lacking the key, not JSON, an array, or a non-string message, a blank `en` message, an oversize `en` file, and no English folder (default), another key case, no `default_locale` with and without `en`, the name from `en`, and name and description from two folders.
+- AC2: 5 reader cases (outer spaces, null, absent, number, blank) passed; `test/build.test.ts` "the schema takes an upstream with or without a repoDescription and refuses a blank one" passed.
+- AC3: `test/description.test.ts` 15 pick cases, the override case, and 4 `cjkShare` cases passed.
+- AC4: `test/site.test.ts` Details-list order test for all 13 fixture records and the 4 "shows the manifest and GitHub descriptions" cases passed.
+- AC5: FAIL — README and DESIGN state the override-first rule; CHANGELOG, the About page Descriptions section, and the schema `description` prose do not. Returned (review return 1).
+- AC6: a script over the eight files found one `description` override each, no `version`, `cjkShare` 0, a Latin letter; each reason read against the 2026-10-29 texts names its source and a true case; `pnpm check` 58 entries, 0 problems. The English judgment goes to the user at the merge question; box left unticked until then.
+- AC7: not re-run on this pass (return pending).
+- Gate: `cairn_validate` all checks passed; generic profile adds no toolchain checks; no DESIGN principle changed.
