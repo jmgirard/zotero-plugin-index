@@ -1,0 +1,8 @@
+{
+  "id": "washo-salvager@yasu.github.io",
+  "name": "和書サルベージャ",
+  "description": "ファイル名の ISBN から和書の書誌を一括解決し、未分類アイテムのコレクション配属を提案します。",
+  "homepage": "https://github.com/yasu/zotero-washo-salvager",
+  "repoUrl": "https://github.com/yasu/zotero-washo-salvager",
+  "updateUrl": "https://raw.githubusercontent.com/yasu/zotero-washo-salvager/main/updates.json"
+}
