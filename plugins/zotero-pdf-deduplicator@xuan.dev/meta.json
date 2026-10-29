@@ -1,0 +1,7 @@
+{
+  "id": "zotero-pdf-deduplicator@xuan.dev",
+  "name": "PDF Deduplicator",
+  "description": "Detect duplicate Zotero PDF attachments by SHA-256 and remove them after confirmation.",
+  "repoUrl": "https://github.com/heimi98/zotero-deduplicator",
+  "updateUrl": "https://raw.githubusercontent.com/heimi98/zotero-deduplicator/main/update.json"
+}
