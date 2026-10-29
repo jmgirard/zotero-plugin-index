@@ -29,13 +29,13 @@ browser".
 
 ## Acceptance criteria
 
-- [ ] AC1: Outside the `:root` blocks and `.visually-hidden`, each value
+- [x] AC1: Outside the `:root` blocks and `.visually-hidden`, each value
       part of each `border-radius`, `padding*`, `margin*`, `gap`, and
       `font-size` declaration in the CSS of `Base.astro` is a `var()`,
       `0`, or `auto`.
-- [ ] AC2: No `.astro` file under `site/src` other than `Base.astro` holds
+- [x] AC2: No `.astro` file under `site/src` other than `Base.astro` holds
       a `<style>` element or a `style` attribute.
-- [ ] AC3: On the built fixture home page, each row keeps, in order, the
+- [x] AC3: On the built fixture home page, each row keeps, in order, the
       name link and its `href`, the `data-archived` mark, the
       `data-description` line, and the pills (`data-major`,
       `data-support`, `title`, hidden text) or the status line. Each `li`
@@ -45,22 +45,22 @@ browser".
       keep their `id`, `data-*`, `value`, `aria-pressed`, and `role`
       attributes. Each of these matches the built page at the merge
       commit of M048.
-- [ ] AC4: On the built fixture home page, served from a local server at
+- [x] AC4: On the built fixture home page, served from a local server at
       the Pages base path in the browser pane, each non-empty menu option
       and each major button shows exactly the rows that match. For a
       major, those are the rows whose pill for it is "all" or "some". The
       status line then reads what `filterStatus(shown, total, true)`
       returns.
-- [ ] AC5: Each text and background pair that one rule added or changed by
+- [x] AC5: Each text and background pair that one rule added or changed by
       this milestone sets together has a contrast ratio of at least 4.5:1
       by the WCAG 2.2 relative-luminance formula, in the light and the
       dark `:root` blocks. The pairs are found from the diff of
       `Base.astro` against the merge commit of M048.
-- [ ] AC6: The built fixture home page, served as in AC4, shows no
+- [x] AC6: The built fixture home page, served as in AC4, shows no
       horizontal page scroll at viewport widths 360 px and 1280 px. The
       measure is `document.documentElement.scrollWidth <=
       document.documentElement.clientWidth`.
-- [ ] AC7: One `CHANGELOG.md` entry under Unreleased describes the new
+- [x] AC7: One `CHANGELOG.md` entry under Unreleased describes the new
       look of the header, the footer, and the home page. The profile's
       `verify` slot is clean: `pnpm test` and `pnpm check` pass.
 
@@ -112,3 +112,15 @@ browser".
 ## Decisions
 
 ## Review
+
+- Route (d): no PR for the branch; main at fad2e7e, the branch's base, so no sync. Copilot round off (no header line). Head a09b510.
+- Verify (2026-10-29, head a09b510): `pnpm test` 1060 passed, 6 skipped, 22 files; `pnpm check` 56 entries, 0 problems.
+- AC1: test "takes each margin, padding, gap, corner radius, and font size outside :root and .visually-hidden from a custom property, 0, or auto" passed; it found each of border-radius, padding, margin, margin-left, gap, and font-size, and no literal part. Planted literals failed it at T1 (42 parts).
+- AC2: test "leaves styles out of every other .astro file" passed over the three other files (pages/index.astro, pages/plugins/[id]/index.astro, components/Support.astro); a planted `style` attribute in Support.astro failed it at T1.
+- AC3: fixture home page built fresh at dc1caf0 (M048 merge, in a detached worktree) and at a09b510; `homeFacts` gave identical output for both (9 rows, 40 parts, the two filters' `hidden`, select, 7 options, 5 buttons, status line attributes), equal to `test/fixtures/site/home-facts.json`. Test "keeps the facts of its rows and filters as the page had them before the restyle" passed; dropping `hidden` from the language menu failed it at T1.
+- AC4: a09b510 fixture build served at `http://localhost:4326/zotero-plugin-index/` in the browser pane. Each of the 6 options (zh, es, en, fr, de, pt) and the 4 majors showed exactly the rows that match (2, 2, 1, 1, 1, 1; 3, 3, 3, 1), the majors by pills of "all" or "some"; the status line read "Showing n of 9 plugins.", which is `filterStatus(n, 9, true)` for n ≥ 1. Any version gave back 9 rows and an empty line.
+- AC5: rules of `Base.astro` at a09b510 not present verbatim at dc1caf0: 34. Those that set a text and a background together: `body` --text on --page 15.59 light, 15.47 dark; `[data-language-filter]` and `[data-version-filter] button` --text on --card 16.83 light, 13.93 dark. Both "each rule sets together" contrast tests passed; a planted 1.3:1 select color failed them at T1.
+- AC6: same served build, home page in same-origin iframes: 360 px wide, scrollWidth 360 = clientWidth 360; 1280 px wide, 1280 = 1280. At T3 a planted 900 px div gave 916 > 360.
+- AC7: `CHANGELOG.md` holds one new entry under Unreleased (the only one `git diff main` adds there), "The header, the footer, and the home page take the card look of the plugin pages…", naming the header, footer, and home page. Verify clean as above.
+- Gate: `cairn_validate.py` all checks passed (exit 0); no principle changed, so no `cairn_impact`; the generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
