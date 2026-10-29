@@ -1,0 +1,8 @@
+{
+  "id": "zotero-md-note@example.com",
+  "name": "zotero-md-note",
+  "description": "Create a Markdown note for the selected Zotero item using its PDF filename.",
+  "homepage": "https://github.com/haiyankong/zotero-md-note",
+  "repoUrl": "https://github.com/haiyankong/zotero-md-note",
+  "updateUrl": "https://raw.githubusercontent.com/haiyankong/zotero-md-note/main/updates.json"
+}
