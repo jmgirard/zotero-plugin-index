@@ -108,3 +108,30 @@ row "Close gaps in bot holds and merges" (6).
 - AC3: joined README (LESSONS M018) on 2026-10-29: the conditions bullet "in a run started by hand, at least that run's `wait_hours`" (1), the merge sentence "once its `wait_hours` (48 unless changed) passes" (1), the input paragraph ("When you start the workflow by hand, its `wait_hours` input sets the wait", "Scheduled runs have no inputs, so they always wait 48 hours", "the run fails and merges nothing", 1 each), and the backfill steps "Start `Discover plugins` by hand with `limit` 100", "After that run finishes, start `Merge bot pull requests` by hand with `wait_hours` 0", "Repeat both steps while a discover run reports unread repos" (1 each). The Unreleased CHANGELOG holds the `wait_hours` entry once.
 - AC4: 2026-10-29 after the main merge: `npx -y pnpm@12.15.0 test` 24 files passed, 1 skipped, 1287 tests passed, 6 skipped; `npx -y pnpm@12.15.0 check` "checked 58 entries in plugins, 0 problems".
 - consistency gate: `cairn_validate.py` all checks passed; no principle changed; the `generic` profile names no toolchain checks. T5 and T6 run after the merge, by the plan.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the nine CLI refusal cases run one code path, each spawning pnpm — reject (planned change): AC1 names each probe.
+- diff-bug #2: `mergeDiscover` takes any `waitHours`, so NaN or a negative value lets every age pass — fix now: it throws before any request; 3 tests, fixed b2a563c.
+- diff-bug #3: with wait 0, a runner clock behind GitHub's skips a pull request opened seconds before the run as "after the run" — reject (edge): only a pull request seconds old on a skewed runner reaches it, outside the backfill's use, where the merge starts after discovery ends; the effect is a skip that a later run undoes.
+- diff-bug #4: odd renderings of a `type: number` input (1e3, 1e+21, an empty field) — reject (false): each is refused with nothing merged or falls back to 48, as the README says.
+- diff-bug #5: a wait-0 run between the create request and the label request — reject (false): the create request already writes the Hold line, and the runs share the `discover` group.
+- diff-bug #6: values read before an await — reject (false): the re-read uses the same `now` and `waitHours`, and age only grows.
+- diff-bug #7: the "no `${{` in a `run:` line" test misses a `run: |` block — reject (false): the file has none, and AC2 binds `run:` lines.
+- diff-bug #8: the workflows test pins the input's description text — reject (style).
+- diff-bug #9: the two unreadable-time cases are distinct branches — reject (false): noted as fine.
+- diff-bug #10: a DESIGN line of 84 characters — fix now: rewrapped, fixed b2a563c.
+- diff-bug #11: the backfill relies on a discover run reporting unread repos — reject (false): the 2026-10-29 discover run log prints `"unread": 378`.
+- ripple #1: `UNHELD_TEXT` in each new bot pull request body names only the 48-hour daily run — fix now: it adds "or sooner in a run that the maintainer starts by hand", fixed b2a563c.
+- ripple #2: the M056 CHANGELOG entry states 48 hours as the rule — fix now: it points to the next entry, fixed b2a563c.
+- ripple #3: DESIGN's merge skip list omits the wait and the unreadable-time skip — fix now, fixed b2a563c.
+- ripple #4: README's "sooner" is false for `wait_hours` above 48 — fix now: "a smaller value merges it sooner", fixed b2a563c.
+- ripple #5: DESIGN item 1's daily rule — reject (false): no conflict.
+- prior-review #1: with wait 0 the backfill makes the unbounded merge loop the main path (M056 row item 6) — follow-up, existing row "Close gaps in bot holds and merges" (6); not load-bearing: each merge lands before the next, so a run cut at 30 minutes loses only its summary and the next round goes on.
+- prior-review #2: a wait-0 merge lands before the daily start-test sees the plugin (row item 1) — reject (planned change): D-034 accepts it, and Scope Out leaves that row item.
+- prior-review #3: `UNHELD_TEXT` — same as ripple #1, fixed b2a563c.
+- blame-history #1: README's conditions bullet reads as either wait being enough — fix now: "It opened at least the run's wait before the run: 48 hours, or that run's `wait_hours` in a run started by hand.", fixed b2a563c.
+- blame-history #2: `UNHELD_TEXT` — same as ripple #1, fixed b2a563c.
+- blame-history #3: `mergeDiscover` takes any `waitHours` — same as diff-bug #2, fixed b2a563c.
+- blame-history #4: D-034 accepts a merge seconds after opening — reject (planned change): the entry records it.
+- blame-history #5: the new unreadable-time reason replaces the 48-hour one for NaN — reject (false): intended, and the guard is needed.
+- blame-history #6: the DESIGN line width — same as diff-bug #10, fixed b2a563c.
+- after the fixes (b2a563c): `pnpm test` 1290 passed, 6 skipped; `pnpm check` 0 problems. AC3 still holds: the conditions bullet now reads "48 hours, or that run's `wait_hours` in a run started by hand", and the merge sentence "A run started by hand uses its own `wait_hours` (48 unless changed) instead". No finding met the return floor.
