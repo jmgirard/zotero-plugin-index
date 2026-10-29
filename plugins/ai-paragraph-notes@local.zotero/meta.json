@@ -1,0 +1,8 @@
+{
+  "id": "ai-paragraph-notes@local.zotero",
+  "name": "AI 逐段解读便签",
+  "description": "管理并批量解读 Zotero PDF 正文与图注，在对应页面写入原生便签批注。",
+  "homepage": "https://github.com/zhi-11/zotero-ai-paragraph-notes",
+  "repoUrl": "https://github.com/zhi-11/zotero-ai-paragraph-notes",
+  "updateUrl": "https://raw.githubusercontent.com/zhi-11/zotero-ai-paragraph-notes/main/update.json"
+}
