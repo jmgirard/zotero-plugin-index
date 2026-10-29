@@ -1,0 +1,8 @@
+{
+  "id": "zotero-remarkable-sync@piwowarski.fr",
+  "name": "Zotero reMarkable Sync",
+  "description": "Sync Zotero PDFs and annotations with the reMarkable tablet",
+  "homepage": "https://github.com/bpiwowar/zotero-remarkable-sync#readme",
+  "repoUrl": "https://github.com/bpiwowar/zotero-remarkable-sync",
+  "updateUrl": "https://github.com/bpiwowar/zotero-remarkable-sync/releases/download/release/update.json"
+}
