@@ -1,0 +1,8 @@
+{
+  "id": "bionicReader@euclpts.com",
+  "name": "Bionic for Zotero",
+  "description": "Bionic reading experience with Zotero.",
+  "homepage": "https://github.com/windingwind/bionic-for-zotero#readme",
+  "repoUrl": "https://github.com/windingwind/bionic-for-zotero",
+  "updateUrl": "https://github.com/windingwind/bionic-for-zotero/releases/download/release/update.json"
+}
