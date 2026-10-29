@@ -83,7 +83,7 @@ added after this plan, which follow D-030 case by case.
       leaves out each fact whose field is absent. Tests in
       `test/site.test.ts` show a record with both, with each alone, and
       with neither.
-- [ ] AC5: README, CHANGELOG, the About page
+- [x] AC5: README, CHANGELOG, the About page
       (`site/src/pages/about.astro`), `cairn/DESIGN.md` (its description
       text and its Architecture text on the reader), and the `name`,
       `description`, and `repoDescription` prose of
@@ -108,7 +108,7 @@ added after this plan, which follow D-030 case by case.
       only repeats the name, or has a CJK share of 0.5 or more (D-030,
       D-031, D-032). The user judges at the merge question whether each
       `value` is English that says what the plugin does. `pnpm check` passes.
-- [ ] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check`.
+- [x] AC7: The `verify` slot is clean: `pnpm test` and `pnpm check`.
 
 ## Coverage
 
@@ -191,3 +191,8 @@ added after this plan, which follow D-030 case by case.
 - AC6: a script over the eight files found one `description` override each, no `version`, `cjkShare` 0, a Latin letter; each reason read against the 2026-10-29 texts names its source and a true case; `pnpm check` 58 entries, 0 problems. The English judgment goes to the user at the merge question; box left unticked until then.
 - AC7: not re-run on this pass (return pending).
 - Gate: `cairn_validate` all checks passed; generic profile adds no toolchain checks; no DESIGN principle changed.
+- Pass 2 (2026-10-29), after review return 1 (T8, e16b73f); branch level with main at b033edc.
+- AC5: CHANGELOG ("A `description` override that applies to the version the index read still comes first"), About page Descriptions section ("comes first"), and the schema `description` prose ("shows a description override that applies to the version read; without one, ...") now state override-first; README ("replaces both") and DESIGN ("always shows (M015)") did already; English-locale order is in all five; DESIGN item 3 and both `index.v1` texts name the D-030 to D-032 cases; README line 203 and the CHANGELOG entry say to fetch a saved schema again.
+- AC7: `pnpm test` 1227 passed, 6 skipped; `pnpm check` 58 entries, 0 problems.
+- Gate: `cairn_validate` all checks passed.
+- spawned: diff-bug, blame-history, prior-review, ripple
