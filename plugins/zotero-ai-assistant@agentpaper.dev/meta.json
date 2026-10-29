@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ai-assistant@agentpaper.dev",
+  "name": "Deepseek Copliot",
+  "description": "Reading copilot for Zotero powered by the DeepSeek API and scoped to your local papers, PDFs, and collections.",
+  "homepage": "https://github.com/astro-koko/deepseek-copilot-for-zotero#readme",
+  "repoUrl": "https://github.com/astro-koko/deepseek-copilot-for-zotero",
+  "updateUrl": "https://github.com/astro-koko/deepseek-copilot-for-zotero/releases/download/release/update.json"
+}
