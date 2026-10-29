@@ -1,0 +1,8 @@
+{
+  "id": "zotero-glass@avi7ii.github.io",
+  "name": "Zotero Glass",
+  "description": "Native macOS NSVisualEffectView glass for Zotero. macOS only.",
+  "homepage": "https://github.com/Avi7ii/Zotero-glass",
+  "repoUrl": "https://github.com/Avi7ii/Zotero-glass",
+  "updateUrl": "https://raw.githubusercontent.com/Avi7ii/Zotero-glass/main/updates.json"
+}
