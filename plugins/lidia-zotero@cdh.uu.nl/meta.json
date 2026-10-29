@@ -1,0 +1,7 @@
+{
+  "id": "lidia-zotero@cdh.uu.nl",
+  "name": "LIDIA Annotations",
+  "description": "Structured Linguistic Diagnostics PDF annotations for the LIDIA project",
+  "repoUrl": "https://github.com/CentreForDigitalHumanities/lidia-zotero",
+  "updateUrl": "https://github.com/CentreForDigitalHumanities/lidia-zotero/releases/download/release/updates.json"
+}
