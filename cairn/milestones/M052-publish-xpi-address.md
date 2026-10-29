@@ -58,12 +58,12 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
 - [x] T1: Add `xpiUrl` to the `upstream` definition in
       `schemas/plugins.v1.schema.json` and to `UpstreamFacts` (or the
       build's record type) as optional; add the schema test cases.
-- [ ] T2: In `src/build/build.ts` (`readRecord`, around line 278, and the
+- [x] T2: In `src/build/build.ts` (`readRecord`, around line 278, and the
       record assembly near line 191), copy `xpi.url` into
       `upstream.xpiUrl`; extend `test/build.test.ts` to compare every
       record with its start plan item, with fixtures for the three reader
       paths and a failure.
-- [ ] T3: Update README "Using the data", DESIGN (Contract boundary and
+- [x] T3: Update README "Using the data", DESIGN (Contract boundary and
       the data description: a link to the author's file, not a copy), and
       CHANGELOG; run the verify slot.
 
@@ -79,6 +79,7 @@ v2 ships". Hosting or copying the file: the contract boundary rules it out.
 - 2026-10-29: status in-progress on branch m052-publish-xpi-address (set late, in the T1 commit).
 - 2026-10-29: T1 done: optional `xpiUrl` string in the schema's `upstream` definition, typed as `UpstreamFacts & { xpiUrl?: string }` on the build's `PluginRecord` so the reader's facts and its tests stay unchanged; the schema test in `test/build.test.ts` fails on main's schema (an extra-property error) and passes with the field; verify slot green (1071 passed), though npx stalled about 30 minutes before Vitest started at a load near 8.
 - 2026-10-29: checkpoint: T2 and T3 written, not yet ticked while the verify run is pending. `readRecord` sets `upstream.xpiUrl` from `read.xpi.url`; the new build test covers the three reader paths (stable, prerelease only, Zotero 6 stable then a newer prerelease whose first of two .xpi assets is read) and fails with the old line (planted); `mixed-failures.plugins.json` gains the passing record's `xpiUrl`. README, DESIGN (data source text, out-of-scope line), and CHANGELOG name the field.
+- 2026-10-29: T2 and T3 done: verify slot green over a71164e (1072 passed, 6 skipped; `pnpm check` 56 entries, 0 problems).
 
 ## Decisions
 
