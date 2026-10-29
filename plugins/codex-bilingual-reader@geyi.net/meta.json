@@ -1,0 +1,8 @@
+{
+  "id": "codex-bilingual-reader@geyi.net",
+  "name": "Codex Bilingual Reader",
+  "description": "Create an English-Chinese parallel reading view from Zotero full text using the local Codex CLI.",
+  "homepage": "https://github.com/Mengqi97/codex-bilingual-reader-for-zotero",
+  "repoUrl": "https://github.com/Mengqi97/codex-bilingual-reader-for-zotero",
+  "updateUrl": "https://github.com/Mengqi97/codex-bilingual-reader-for-zotero/releases/latest/download/update.json"
+}
