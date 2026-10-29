@@ -605,8 +605,8 @@ request that meets all of these conditions:
 - `github-actions[bot]` opened it.
 - Its body has a line that is exactly `Hold: none`.
 - It has no `hold` label.
-- It opened at least 48 hours before the run, or the `wait_hours` of a run
-  started by hand.
+- It opened at least 48 hours before the run, or, in a run started by hand,
+  at least that run's `wait_hours`.
 - Its files are exactly `plugins/<id>/meta.json` and
   `plugins/<id>/index.json` for one id, both added.
 - The checkout's `plugins/` folder has no folder of that id in any letter
@@ -620,7 +620,7 @@ branch.
 
 So the bot can merge a bot pull request without a hold reason at its first
 daily run at least 48 hours after it opens. A run started by hand can merge
-it sooner, after those 48 hours or after its own `wait_hours`. To stop the
+it sooner, once its `wait_hours` (48 unless changed) passes. To stop the
 bot from merging one, add the `hold` label or close it. Bot pull requests
 opened before the Hold line existed have no `Hold: none` line, so the
 command never merges them.

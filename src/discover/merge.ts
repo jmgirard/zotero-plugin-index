@@ -66,7 +66,8 @@ function recordProblem(pull: PullJson, indexRepo: string, now: Date, waitHours: 
     return `it has the ${HOLD_LABEL} label`;
   }
   const opened = typeof pull.created_at === "string" ? Date.parse(pull.created_at) : Number.NaN;
-  // A time after `now` would pass a wait of 0, so it is refused with an unreadable one.
+  // An unreadable time would pass any wait, since a comparison with NaN is false, and a time
+  // after `now` would get a wrong reason, so both are skipped here.
   if (Number.isNaN(opened) || opened > now.getTime()) return "its opening time is unreadable or after the run";
   if (now.getTime() - opened < waitHours * HOUR_MS) return `it opened less than ${waitHours} hour${waitHours === 1 ? "" : "s"} ago`;
   return undefined;

@@ -48,8 +48,8 @@ jobs:
           node-version: 24
       - run: pnpm install --frozen-lockfile
       # Scheduled runs have no inputs, so WAIT_HOURS is empty and the command's default of
-      # 48 hours applies. A dispatched wait reaches the command as given, 0 included, and a
-      # value the command refuses fails the run with nothing merged.
+      # 48 hours applies. A dispatched wait reaches the command as GitHub formats the number,
+      # 0 included, and a value the command refuses fails the run with nothing merged.
       - run: pnpm merge-discover ${WAIT_HOURS:+--wait-hours "$WAIT_HOURS"}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

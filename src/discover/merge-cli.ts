@@ -9,8 +9,9 @@ const PACKAGE_ROOT = resolve(import.meta.dirname, "../..");
 // Merges the bot pull requests that `mergeDiscover` passes, checking each entry beside the
 // entries in this checkout's plugins/ folder. `--wait-hours <n>`, a whole number from 0
 // to 9999, sets how long before the run a pull request must have opened; the default is
-// 48. It prints each pull request it merged or skipped, and exits 1 when any pull request
-// failed or the list of pull requests could not be read.
+// 48. It prints each pull request it merged or skipped. It exits 1 on a refused argument
+// or GITHUB_REPOSITORY, when any pull request failed, or when the default branch, the list
+// of pull requests, or the plugins/ folder could not be read.
 async function main(): Promise<number> {
   const args = argv.slice(2);
   let waitHours = DEFAULT_WAIT_HOURS;

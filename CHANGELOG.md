@@ -467,5 +467,5 @@
 - A run of `Merge bot pull requests` started by hand takes a `wait_hours`
   input, 48 unless you change it, and `pnpm merge-discover` takes
   `--wait-hours <n>`. Scheduled runs still wait 48 hours. With
-  `wait_hours` 0, a round of discovery and merging adds every clean plugin
-  at once, as the README's backfill steps say.
+  `wait_hours` 0, rounds of discovery and merging add every clean plugin
+  without the wait, as the README's backfill steps say.

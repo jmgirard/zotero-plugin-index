@@ -164,7 +164,7 @@ shows each one separately. A combined verdict is out of scope.
    daily job merges a pull request that says `Hold: none` and has no `hold`
    label at its first daily run at least 48 hours after it opens, once its
    entry passes `pnpm check` beside the current entries. A run started by
-   hand can set a shorter wait, 0 included (M057, D-034). Closing a bot pull
+   hand can set another wait, from 0 to 9999 hours (M057, D-034). Closing a bot pull
    request still keeps the bot from proposing that repo again.
 2. Upstream facts. The bot reads the repository metadata, the releases, the
    `manifest.json` in the newest stable release that has an `.xpi` file,
@@ -620,8 +620,8 @@ reused._
   daily at 05:13 UTC and on dispatch from the default branch, in the
   `discover` group, with `contents: write`, `pull-requests: write`, and
   `cache-mode: none`. A dispatch's `wait_hours` input reaches
-  `--wait-hours` through `env:`; a scheduled run has none, so `mergeDiscover`
-  keeps `DEFAULT_WAIT_HOURS`, 48 (M057).
+  `--wait-hours` through `env:`; a scheduled run has none, so
+  `pnpm merge-discover` uses `DEFAULT_WAIT_HOURS`, 48 (M057).
 - `.github/ISSUE_TEMPLATE/works.yml` and `broken.yml` are report forms with
   the inputs `plugin`, `version`, and `zotero`. Each adds the label `report`
   and its verdict label, `works` or `broken`. `.github/workflows/report-issue.yml`
