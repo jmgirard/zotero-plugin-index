@@ -1,0 +1,8 @@
+{
+  "id": "zotracer@euclpts.com",
+  "name": "ZoTracer",
+  "description": "Tracks your research activities, creates detailed timelines, and exports notes to platforms like Flomo.",
+  "homepage": "https://github.com/etShaw-zh/zotracer#readme",
+  "repoUrl": "https://github.com/etShaw-zh/zotracer",
+  "updateUrl": "https://github.com/etShaw-zh/zotracer/releases/download/release/update.json"
+}
