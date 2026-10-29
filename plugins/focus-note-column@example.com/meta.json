@@ -1,0 +1,7 @@
+{
+  "id": "focus-note-column@example.com",
+  "name": "重点内容列",
+  "description": "为 Zotero 主列表增加“重点内容”列，并允许为每个条目选择一条子笔记进行展示。",
+  "repoUrl": "https://github.com/cxrxhz/Note-display",
+  "updateUrl": "https://raw.githubusercontent.com/cxrxhz/Note-display/main/update.json"
+}
