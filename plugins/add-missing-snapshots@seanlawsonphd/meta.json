@@ -1,0 +1,8 @@
+{
+  "id": "add-missing-snapshots@seanlawsonphd",
+  "name": "Add Missing Snapshots",
+  "description": "Adds missing page snapshots to selected items and creates clean reader-view copies of snapshots, from the item context menu.",
+  "homepage": "https://github.com/seanlawsonphd/zotero-add-missing-snapshots",
+  "repoUrl": "https://github.com/seanlawsonphd/zotero-add-missing-snapshots",
+  "updateUrl": "https://raw.githubusercontent.com/seanlawsonphd/zotero-add-missing-snapshots/main/updates.json"
+}
