@@ -1,0 +1,8 @@
+{
+  "id": "csvenue@zotero-plugin",
+  "name": "CSVenue",
+  "description": "Automatically identifies Computer Science conferences, displays conference abbreviations (e.g., OSDI, SOSP) and CCF ranks in the Zotero item list, and supports online queries via DBLP.",
+  "homepage": "https://github.com/sprooc/zotero-CSVenue",
+  "repoUrl": "https://github.com/sprooc/zotero-CSVenue",
+  "updateUrl": "https://raw.githubusercontent.com/sprooc/zotero-CSVenue/main/update.json"
+}
