@@ -1,0 +1,8 @@
+{
+  "id": "paper-library-checker@he-chun.github.io",
+  "name": "Paper Library Checker",
+  "description": "A third-party add-on for Zotero that checks a local library for scholarly articles.",
+  "homepage": "https://github.com/he-chun/paper-library-checker",
+  "repoUrl": "https://github.com/he-chun/paper-library-checker",
+  "updateUrl": "https://raw.githubusercontent.com/he-chun/paper-library-checker/main/updates.json"
+}
