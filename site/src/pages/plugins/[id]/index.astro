@@ -138,11 +138,14 @@ const { min, max } = declaredRange(record);
               </tbody>
             </table>
           </div>
-          {(min !== undefined || max !== undefined) && (
-            <p class="fineprint">
-              Declared range: <span data-fact="declared-range">{rangeText(record)}</span>
-            </p>
-          )}
+          <p class="fineprint" data-about-line>
+            {(min !== undefined || max !== undefined) && (
+              <>
+                Declared range: <span data-fact="declared-range">{rangeText(record)}</span>.{" "}
+              </>
+            )}
+            <a href={`${BASE}about/`}>How the index checks plugins</a>
+          </p>
           <div class="report-row" data-reports>
             <p id="report-prompt" data-fact="report-prompt">Tried version {upstream.version} on Zotero? Report what you found:</p>
             <div class="report-buttons">
@@ -153,9 +156,14 @@ const { min, max } = declaredRange(record);
         </>
       ) : (
         failure && (
-          <p data-fact="failure">
-            The last build could not read this plugin: <code>{failure.name}</code>: {failure.message}
-          </p>
+          <>
+            <p data-fact="failure">
+              The last build could not read this plugin: <code>{failure.name}</code>: {failure.message}
+            </p>
+            <p class="fineprint" data-about-line>
+              <a href={`${BASE}about/`}>How the index checks plugins</a>
+            </p>
+          </>
         )
       )
     }
@@ -211,10 +219,7 @@ const { min, max } = declaredRange(record);
       overrides.length > 0 && (
         <div class="overrides" data-overrides>
           <h3>Overrides</h3>
-          <p>
-            The index corrects these upstream facts.
-            {upstream && ' An override marked "yes" under Used applies to the plugin version that the index read. The declared range above uses the strict_min_version and strict_max_version overrides marked "yes".'}
-          </p>
+          <p>The index corrects these upstream facts.</p>
           <div class="table-wrap">
             <table>
               <thead>

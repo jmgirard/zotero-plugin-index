@@ -1,0 +1,98 @@
+---
+import Base from "../layouts/Base.astro";
+import { SUPPORT_MARKS as MARKS } from "../data.ts";
+---
+
+<Base title="About: Zotero plugin index">
+  <div class="hero">
+    <h1>How the index checks plugins</h1>
+    <p class="intro">
+      Each day, a build reads every listed plugin's GitHub repository and releases. A plugin page shows the facts that
+      the build found for one release, the release the index read. This page says where each fact comes from and what it
+      does not show.
+    </p>
+  </div>
+  <section class="card" id="declared" data-about="declared">
+    <h2>Declared range</h2>
+    <p>
+      A plugin's manifest declares the Zotero versions that it supports, in its <code>strict_min_version</code> and{" "}
+      <code>strict_max_version</code> fields. The index shows that range for the release it read, after its overrides.
+    </p>
+    <ul class="about-list" role="list">
+      <li><span class="mark" data-support="all" aria-hidden="true">{MARKS.all}</span> The range covers all of that Zotero version.</li>
+      <li><span class="mark" data-support="some" aria-hidden="true">{MARKS.some}</span> The range covers part of it.</li>
+      <li><span class="mark" data-support="none" aria-hidden="true">{MARKS.none}</span> The range covers none of it.</li>
+    </ul>
+    <p>
+      The index counts Zotero N as the versions from N.0 to N.9. Authors often write a maximum such as 10.99.99 to mean
+      every Zotero 10 release, and a minimum such as 8.999 to mean Zotero 9 and newer. A plugin that declares no range
+      shows no mark. The range is what the author declares, not a test result.
+    </p>
+  </section>
+  <section class="card" id="start-test" data-about="start-test">
+    <h2>Start test</h2>
+    <p>
+      Each day, the build installs the plugin version that the index read in a new Zotero profile on Linux. It does
+      this once for each tested Zotero release that the manifest's range covers. It waits 3 seconds after the install,
+      and then it reads one of four results.
+    </p>
+    <ul class="about-list" role="list">
+      <li>
+        <span class="start" data-start="started" aria-hidden="true">●</span> Started: Zotero lists the plugin as active, and
+        the plugin logged no startup error.
+      </li>
+      <li>
+        <span class="start" data-start="start-error" aria-hidden="true">✕</span> Failed at startup: the plugin's startup
+        threw an error in those 3 seconds.
+      </li>
+      <li>
+        <span class="start" data-start="not-installed" aria-hidden="true">✕</span> Did not install: Zotero does not list
+        the plugin, or lists it as inactive.
+      </li>
+      <li>
+        <span class="start" data-start="timed-out" aria-hidden="true">✕</span> Gave no answer in time: no result came
+        within 90 seconds.
+      </li>
+    </ul>
+    <p data-fact="start-not-works">
+      A start is not a report that the plugin works. The test does not use the plugin, and an error after the 3 seconds
+      still counts as a start. The plugin's own code runs during its test, so a plugin can change its own result.
+    </p>
+  </section>
+  <section class="card" id="reports" data-about="reports">
+    <h2>User reports</h2>
+    <p>
+      Anyone with a GitHub account can report that a plugin version works or is broken on a Zotero version. The Works
+      and Broken buttons on a plugin page open the report forms on GitHub. A bot checks each report and closes it.
+    </p>
+    <p>
+      The index counts a report only when the bot closed it as completed and the report names the plugin version that
+      the index read. A report with the label <code>not-counted</code> does not count. Of one GitHub account's reports
+      on one plugin and Zotero major, only the newest counts. When the index reads a new release of a plugin, its counts
+      start over. The counts say what reporters found, not what the index tested.
+    </p>
+  </section>
+  <section class="card" id="overrides" data-about="overrides">
+    <h2>Overrides</h2>
+    <p>
+      When an upstream fact is wrong and the author cannot or will not fix it, the index can correct it with an
+      override. An override corrects one field: the name, the description, the homepage,{" "}
+      <code>strict_min_version</code>, <code>strict_max_version</code>, or the languages list. It applies to one plugin
+      version or to every version.
+    </p>
+    <p>
+      The Overrides table in a plugin's Details lists each override beside the upstream value. Its Used column says
+      "yes" for the override that applies to the plugin version that the index read. An override for that version wins
+      over one for every version. The declared range uses the <code>strict_min_version</code> and{" "}
+      <code>strict_max_version</code> overrides marked "yes".
+    </p>
+  </section>
+  <section class="card" id="not-vetted" data-about="not-vetted">
+    <h2>What the index does not do</h2>
+    <p>
+      This index does not vet the plugins it lists. It does not review plugin code, and it does not endorse plugins. It
+      does not host plugin files: the download link on a plugin page goes to the author's own file, which the index does
+      not copy.
+    </p>
+  </section>
+</Base>

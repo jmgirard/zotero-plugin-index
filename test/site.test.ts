@@ -80,8 +80,9 @@ describe("pnpm site", () => {
     expect(result.status).toBe(0);
   });
 
-  test("writes the home page and one page for each record under its raw id", () => {
+  test("writes the home page, the About page, and one page for each record under its raw id", () => {
     expect(existsSync(join(out, "index.html"))).toBe(true);
+    expect(readdirSync(join(out, "about"))).toEqual(["index.html"]);
     expect(readdirSync(join(out, "plugins")).sort()).toEqual([...ids].sort());
     for (const id of ids) expect(readdirSync(join(out, "plugins", id))).toEqual(["index.html"]);
   });
@@ -92,7 +93,7 @@ describe("pnpm site", () => {
 
   test("starts every link inside the site with the Pages path", () => {
     const files = htmlFiles(out);
-    expect(files).toHaveLength(ids.length + 1);
+    expect(files).toHaveLength(ids.length + 2);
     const inside = files.flatMap((file) =>
       [...readFileSync(join(out, file), "utf8").matchAll(/\s(?:href|src)="([^"]*)"/g)]
         .map((match) => match[1]!)
@@ -544,6 +545,86 @@ describe("the plugin page", () => {
   });
 });
 
+// The text of a page's main content, with tags removed, the HTML escapes undone, and spaces
+// collapsed. A tag adds no space, so text that Astro joins to an element stays joined.
+function mainText(html: string): string {
+  const main = html.slice(html.indexOf("<main>"), html.indexOf("</main>"));
+  return unescaped(main.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim();
+}
+
+describe("the About page", () => {
+  const about = () => readFileSync(join(out, "about/index.html"), "utf8");
+
+  test("has one section for each part of the method, each under its h2", () => {
+    expect([...about().matchAll(/<section class="card" id="([^"]+)" data-about="\1">\s*<h2>([^<]*)<\/h2>/g)].map(([, id, h2]) => [id, h2])).toEqual([
+      ["declared", "Declared range"],
+      ["start-test", "Start test"],
+      ["reports", "User reports"],
+      ["overrides", "Overrides"],
+      ["not-vetted", "What the index does not do"],
+    ]);
+  });
+
+  test("names each declared mark and says that a range is not a test result", () => {
+    const text = mainText(about());
+    for (const line of [
+      "✓ The range covers all of that Zotero version.",
+      "◐ The range covers part of it.",
+      "– The range covers none of it.",
+      "The index counts Zotero N as the versions from N.0 to N.9.",
+      "A plugin that declares no range shows no mark. The range is what the author declares, not a test result.",
+    ]) {
+      expect(text).toContain(line);
+    }
+  });
+
+  test("describes the start test on Linux in a new profile with a 3-second wait, and says that a start is not a report that it works", () => {
+    const text = mainText(about());
+    expect(text).toContain("installs the plugin version that the index read in a new Zotero profile on Linux");
+    expect(text).toContain("It waits 3 seconds after the install");
+    expect(text).toContain("✕ Gave no answer in time: no result came within 90 seconds.");
+    expect(text).toContain("A start is not a report that the plugin works.");
+    // The 3 seconds is the reporter's wait after the install, and the 90 the start's time limit.
+    const reporter = readFileSync(resolve(ROOT, "src/start-test/reporter/bootstrap.js"), "utf8");
+    expect(/^const SETTLE_MS = (\d+);$/m.exec(reporter)?.[1]).toBe("3000");
+    const start = readFileSync(resolve(ROOT, "src/start-test/start-test.ts"), "utf8");
+    expect(/^export const START_LIMIT_MS = (\d+) \* 1000;$/m.exec(start)?.[1]).toBe("90");
+  });
+
+  test("says which user reports count, how overrides and the Used column work, and that the index does not vet plugins", () => {
+    const text = mainText(about());
+    for (const line of [
+      "The index counts a report only when the bot closed it as completed and the report names the plugin version that the index read.",
+      "A report with the label not-counted does not count.",
+      "Of one GitHub account's reports on one plugin and Zotero major, only the newest counts.",
+      'Its Used column says "yes" for the override that applies to the plugin version that the index read.',
+      'The declared range uses the strict_min_version and strict_max_version overrides marked "yes".',
+      "This index does not vet the plugins it lists.",
+    ]) {
+      expect(text).toContain(line);
+    }
+  });
+
+  // Each sentence that moved to the About page, as it read on a plugin page before.
+  const MOVED = ["waits 3 seconds", "A start test does not show that the plugin works", "An override marked", "The declared range above uses"];
+
+  test.each(ids)("leaves the moved method sentences off the page of %s, and links the About page once in the compatibility card", (id) => {
+    const html = page(id);
+    for (const sentence of MOVED) expect(mainText(html), sentence).not.toContain(sentence);
+    const main = html.slice(html.indexOf("<main>"), html.indexOf("</main>"));
+    expect(main.split('href="/zotero-plugin-index/about/"').length - 1).toBe(1);
+    const line = /<p class="fineprint" data-about-line>(.*?)<\/p>/s.exec(main)?.[1];
+    expect(line).toMatch(/<a href="\/zotero-plugin-index\/about\/">How the index checks plugins<\/a>\s*$/);
+    const card = sections(html).find(({ name }) => name === "compatibility")!.body;
+    expect(card).toContain("data-about-line");
+    if (records.find((r) => r.id === id)!.upstream) expectInOrder(card, ["</table>", "data-about-line", 'data-fact="report-prompt"']);
+  });
+
+  test("holds the phrase that the plugin page check looks for, so the check can fail", () => {
+    expect(mainText(about())).toContain(MOVED[0]);
+  });
+});
+
 describe("the home page", () => {
   test("links each plugin to the directory of its raw id", () => {
     const html = readFileSync(join(out, "index.html"), "utf8");
@@ -967,12 +1048,14 @@ describe("the home page script", () => {
 describe("the built site", () => {
   test("puts the top bar and the footer on every page", () => {
     const files = htmlFiles(out);
-    expect(files).toHaveLength(ids.length + 1);
+    expect(files).toHaveLength(ids.length + 2);
+    expect(files).toContain(join("about", "index.html"));
     for (const path of files) {
       const html = readFileSync(join(out, path), "utf8");
       const bar = /<body><header class="topbar"><div class="topbar-inner">(.*?)<\/div><\/header><main>/s.exec(html)?.[1];
       expect(bar, path).toBe(
         '<a class="brand" href="/zotero-plugin-index/">Zotero plugin index</a><nav aria-label="Site">' +
+          '<a href="/zotero-plugin-index/about/">About</a>' +
           '<a href="https://github.com/jmgirard/zotero-plugin-index/issues/new?template=add-plugin.yml" data-add-plugin>Add a plugin</a>' +
           '<a href="/zotero-plugin-index/v1/plugins.json">Data</a></nav>',
       );

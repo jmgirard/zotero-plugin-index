@@ -679,7 +679,8 @@ const { generatedAt } = loadData();
         font-weight: 600;
         white-space: nowrap;
       }
-      .compat-table .start {
+      .compat-table .start,
+      .about-list .start {
         display: inline;
         height: auto;
         margin: 0;
@@ -718,6 +719,13 @@ const { generatedAt } = loadData();
       }
       .report-row .report-buttons {
         margin: 0;
+      }
+      .about-list {
+        display: grid;
+        gap: var(--space-3);
+        margin: var(--space-4) 0;
+        padding: 0;
+        list-style: none;
       }
       .facts {
         display: grid;
@@ -758,6 +766,7 @@ const { generatedAt } = loadData();
       <div class="topbar-inner">
         <a class="brand" href={BASE}>Zotero plugin index</a>
         <nav aria-label="Site">
+          <a href={`${BASE}about/`}>About</a>
           <a href={ADD_PLUGIN_HREF} data-add-plugin>Add a plugin</a>
           <a href={`${BASE}v1/plugins.json`}>Data</a>
         </nav>

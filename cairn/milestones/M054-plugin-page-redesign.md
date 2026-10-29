@@ -107,7 +107,7 @@ fixture are as M053 defines them.
       `site/src/data.ts`); replace the section tests in `test/site.test.ts`.
 - [x] T3: Replace the closed Details with the h2 section and grid, and
       move the overrides table under an h3; update its tests.
-- [ ] T4: Add `site/src/pages/about.astro` with the method notes from the
+- [x] T4: Add `site/src/pages/about.astro` with the method notes from the
       plugin pages and the M053 legend, add the top bar link, cut the
       named sentences, and add the linking line; test the built pages.
 - [ ] T5: Build from data with `xpiUrl`, serve it, run the width check,
@@ -135,6 +135,8 @@ fixture are as M053 defines them.
 - 2026-10-29: T2 done: one "Zotero compatibility" card replaces the Declared support, Start test, and User reports cards; it holds the version line, the table, the declared range line, and the report row; tests compare every fixture page's rows with rows built from `majorSupport` and the data, pin the next-plugin rows, and went red (24 tests) with the major order reversed and the works href swapped.
 - 2026-10-29: choice: the Details facts keep AC4's order with the languages line last; the About card that held only the languages line is gone; card h2s take the mockup's 15 px weight-650 style and the Overrides h3 takes the old small uppercase heading style.
 - 2026-10-29: T3 done: an open "Details" card (h2) with a `dl.facts` grid replaces the closed `<details>`, and the overrides table sits under an h3 in it; the test checks each page's fact labels in order, no `<details>` or `<summary>`, and the h3, and went red on the 4 pages with overrides when the h3 was planted back as an h2.
+- 2026-10-29: choice: the About page has five cards (declared range, start test, user reports, overrides, what the index does not do), written from `version.ts`, `bootstrap.js`, `start-test.ts`, `count.ts`, and README read this session; About is the first top bar link; a failed record's page has no table, so its About line sits under the failure message in the same card.
+- 2026-10-29: T4 done: `about/index.html` built, top bar link on every page, the four moved sentences gone from plugin pages, one "How the index checks plugins" line in each compatibility card; the built About page first had "and<code>" with its space dropped (Astro line breaks), fixed with `{" "}`; the text check now strips tags without adding spaces and went red when that space was planted out again.
 
 ## Decisions
 
