@@ -1,0 +1,7 @@
+{
+  "id": "zotero-tag-logic@kanhao100",
+  "name": "Zotero Tag Logic",
+  "description": "Adds an AND / OR toggle to the Tag Selector.",
+  "repoUrl": "https://github.com/kanhao100/zotero-tag-logic",
+  "updateUrl": "https://raw.githubusercontent.com/kanhao100/zotero-tag-logic/main/update.json"
+}
