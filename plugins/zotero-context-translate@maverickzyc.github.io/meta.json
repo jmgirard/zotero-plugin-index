@@ -1,0 +1,8 @@
+{
+  "id": "zotero-context-translate@maverickzyc.github.io",
+  "name": "Zotero Context Translate",
+  "description": "Context-aware translation plugin for Zotero with LLM support",
+  "homepage": "https://github.com/maverickzyc/zotero-context-translate#readme",
+  "repoUrl": "https://github.com/maverickzyc/zotero-context-translate",
+  "updateUrl": "https://github.com/maverickzyc/zotero-context-translate/releases/download/release/update.json"
+}
