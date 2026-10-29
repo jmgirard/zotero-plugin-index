@@ -95,7 +95,7 @@ added after this plan, which follow D-030 case by case.
       `schemas/index.v1.schema.json` state the D-030 to D-032 cases. README
       and CHANGELOG also say that a saved copy of the v1 schema must be
       fetched again (D-007).
-- [ ] AC6: Each of these eight entries, `ai4paper-v2@cpc.dev`,
+- [x] AC6: Each of these eight entries, `ai4paper-v2@cpc.dev`,
       `bibtex-clean@ouyangjiahong.github.io`, `jasminum@linxzh.com`,
       `papermind-connector@papermind.local`, `papilot@dev.local`,
       `zotero-ocr@bib.uni-mannheim.de`, `zoterogpt-sidebar@workbuddy.local`,
@@ -177,6 +177,7 @@ added after this plan, which follow D-030 case by case.
 - 2026-10-29: T7 done: after the amendment `pnpm test` 1227 passed, 6 skipped; `pnpm check` 58 entries, 0 problems; `cairn_validate` all checks passed. Status review.
 - 2026-10-29: review return 1: AC5 fails as written: the CHANGELOG entry, the About page's Descriptions section, and the `description` prose of `schemas/plugins.v1.schema.json` do not state that an applying override comes before the manifest or GitHub text; README and DESIGN do.
 - 2026-10-29: T8 added for review return 1 (minor amendment; Coverage AC5 → T5, T8) and done: the three texts now say an applying override comes first; About test asserts the new sentences; `pnpm test` 1227 passed, 6 skipped; `pnpm check` 0 problems. claim audit: not re-run for the 4 added sentences, which restate `shownDescription`'s order; review's fresh diff-bug reviewer reads them. Status review.
+- 2026-10-29: step-7 approval: m055-english-descriptions approved for merge
 
 ## Decisions
 
@@ -223,3 +224,4 @@ added after this plan, which follow D-030 case by case.
 - ripple #6: reader comment on unzipped files — fix now, fixed 0690b47 (same edit as prior-review #2).
 - ripple #7: About page "When an upstream fact is wrong" — fix now, fixed 0690b47 (the override paragraph now names the English-text cases, including "not in English").
 - After fixes: `pnpm test` 1229 passed, 6 skipped; `pnpm check` 0 problems; `cairn_validate` all checks passed. Snapshot files changed: none (no `_snaps` or `__snapshots__` path in the diff).
+- AC6: the user accepted the eight override texts, shown verbatim, at the merge question on 2026-10-29; the mechanical parts were recorded in pass 1.
