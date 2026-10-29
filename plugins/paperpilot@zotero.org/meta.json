@@ -1,0 +1,8 @@
+{
+  "id": "paperpilot@zotero.org",
+  "name": "PaperPilot",
+  "description": "Academic reading assistant for Zotero 10",
+  "homepage": "https://github.com/wyhao2333/zotero-paperpilot",
+  "repoUrl": "https://github.com/wyhao2333/zotero-paperpilot",
+  "updateUrl": "https://raw.githubusercontent.com/wyhao2333/zotero-paperpilot/main/updates.json"
+}
