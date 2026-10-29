@@ -254,7 +254,10 @@ exception is a report that is abuse.
   to drop. A plugin read stops
   at 3 minutes and fails as `request-failed`. After 18 minutes from the
   command's start, the build reads no more plugins, and each entry left
-  fails as `not-read`. Both are build-level (D-015). The label and report
+  fails as `not-read`. Both are build-level (D-015). It reads the plugins in
+  id order on even UTC days since 1970-01-01, the day of `generatedAt`, and
+  in reverse on odd ones; the records, the build-level list, and the start
+  plan keep id order. The label and report
   issue read stops at 3 minutes in all, a failed report read under D-013
   (D-027). The command exits once stdout and stderr have flushed, so a host
   lookup that a limit cut cannot hold it open. Added M003;

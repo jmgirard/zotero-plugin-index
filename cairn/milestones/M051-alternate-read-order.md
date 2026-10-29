@@ -62,7 +62,7 @@ D-010 rules out for the deploy build; no work is planned for it.
 - [x] T2: Order the entries by the parity of `now`'s UTC day count before
       the read loop in `src/build/build.ts`, and put the records back in id
       order before `countReports` and the output.
-- [ ] T3: Update README "Building the data" and the build lines of
+- [x] T3: Update README "Building the data" and the build lines of
       DESIGN.md, and add the CHANGELOG entry. They state the order rule
       only, not that a plugin is never left unread two days running, which
       no test shows. Run `pnpm test` and `pnpm check`.
@@ -83,6 +83,7 @@ D-010 rules out for the deploy build; no work is planned for it.
 - 2026-10-29: T1: four tests in "with time limits": request order on ODD (2026-10-31T23:30Z) and EVEN (2026-11-01T00:30Z), and the 4-entry odd-date cut (records, `buildLevel`, plan in id order); the existing cut test gets EVEN. Both odd-date tests failed on main at the request order and the cut output. The spawned `pnpm build` tests cannot take a `now`; none of their assertions depends on read order, so the one comment that claimed an order now names both days.
 - 2026-10-29: T2: `buildData` reads entry indices in id order, reversed when `floor(now / day) % 2 !== 0`, writes each record at its index, and builds `buildLevel` from the indices in id order, so `countReports`, the file, and the plan see id order. Choice: index slots over a re-sort, since ids are directory names and index order is `listEntries` order.
 - 2026-10-29: verify: `pnpm test` 1070 passed, 6 skipped, on an odd day (20755); with the parity shifted for today only, every test without a fixed date also passed (the 4 fixed-date tests failed, as the shift flips them too). `pnpm check`: 56 entries, 0 problems.
+- 2026-10-29: T3: README "Building the data" and the CHANGELOG entry state the rule against `generatedAt` (the same `now` that sets the order), the `not-read` ids on even and odd days, and that the file keeps id order; DESIGN.md's build bullet adds the rule and the id-order outputs. No two-day claim. Verify: `pnpm test` 1070 passed, 6 skipped; `pnpm check` 0 problems.
 
 ## Decisions
 

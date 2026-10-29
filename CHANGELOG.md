@@ -375,3 +375,10 @@
   seconds. The command also exits once
   its output is written. Work that a read left running, such as a host
   lookup that a time limit cut, no longer keeps it open.
+- If the number of whole days from 1970-01-01T00:00Z to `generatedAt` is
+  even, `pnpm build` reads the plugins in id order. If that number is odd,
+  it reads them in reverse id order. So the entries that the 18-minute
+  limit leaves `not-read` are the last ids on even days and the first ids
+  on odd days. Before, the build always read in id order, so a cut build
+  left the last ids unread every day. The data file still lists its records
+  in id order.
