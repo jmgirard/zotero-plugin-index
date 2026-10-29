@@ -92,8 +92,14 @@
       ],
       "properties": {
         "id": { "description": "applications.zotero.id in the manifest.", "type": "string" },
-        "name": { "description": "The manifest name, with a __MSG_ name resolved.", "type": "string" },
-        "description": { "description": "The manifest description, with a __MSG_ name resolved.", "type": "string" },
+        "name": {
+          "description": "The manifest name, with a __MSG_ name resolved from the first of _locales/en/, _locales/en_US/, and _locales/en_GB/ whose message is a string that is not blank, else from the default locale.",
+          "type": "string"
+        },
+        "description": {
+          "description": "The manifest description, with a __MSG_ name resolved as for name. The site shows it, the repoDescription, or an override, by the rule in the README.",
+          "type": "string"
+        },
         "homepage": { "description": "homepage_url in the manifest.", "type": "string" },
         "version": { "description": "The manifest version.", "type": "string" },
         "strictMinVersion": { "description": "applications.zotero.strict_min_version in the manifest.", "type": "string" },

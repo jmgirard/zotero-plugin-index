@@ -53,16 +53,31 @@ On a screen 760 pixels wide or less, the table hides the languages and the
 release columns. At 560 pixels or less, it also hides the descriptions and
 the source links.
 
-The description comes from the plugin's manifest. If the manifest has no
-description, if it is blank, or if it only repeats the plugin's name, the
-site shows no description. The site checks for a repeated name this way. It
-takes the words of the description and of the name. It leaves out "zotero",
-"plugin", "addon", "add", "on", "extension", "for", "a", "an", and "the". If
-every word of the description that is left is also a word of the name, the
-description only repeats the name. For example, "Zotero Plugin for OCR" only repeats the name
-"Zotero OCR". A `description` override that applies to the plugin version
-that the index read replaces the manifest description. The name check does
-not apply to an override.
+The description comes from the plugin's manifest or from the About text of
+its GitHub repository. A manifest name or description of the form
+`__MSG_<key>__` names a message in a `_locales/<locale>/messages.json` file.
+The index first tries the English folders `_locales/en/`, `_locales/en_US/`,
+and `_locales/en_GB/`, in that order. If none of them holds a message that
+is not blank, the index reads the message of the manifest's default locale.
+
+The site drops a description that is missing, blank, or only repeats the
+plugin's name. The site checks for a repeated name this way. It takes the
+words of the description and of the name. It leaves out "zotero", "plugin",
+"addon", "add", "on", "extension", "for", "a", "an", and "the". If every word
+of the description that is left is also a word of the name, the description
+only repeats the name. For example, "Zotero Plugin for OCR" only repeats the
+name "Zotero OCR".
+
+The site then compares the share of Chinese, Japanese, and Korean text in
+the descriptions that are left. It counts each Han, Hiragana, Katakana, or
+Hangul character as one unit and each run of other letters as one unit. If
+less than half of the manifest description is such text, the site shows
+the manifest description. If not, the site shows the GitHub description in
+two cases: the site dropped the manifest description, or the GitHub
+description has a lower share. In all other cases the site shows the
+manifest description, or no description. A `description` override that
+applies to the plugin version that the index read replaces both. The name
+check does not apply to an override.
 
 The home page has a search box. It shows only the plugins whose name or
 description holds the text you type. The search ignores letter case and the
@@ -304,8 +319,11 @@ only registry fields. Its `id` must equal the directory name.
 - `schemaVersion`: the version of the `index.json` schema. The current version
   is `1`. This field is required.
 - `overrides`: a list of corrections to upstream facts. Use an override only
-  when the plugin author cannot or will not fix the fact upstream. Each item
-  has these fields:
+  when the plugin author cannot or will not fix the fact upstream. A
+  `description` override can also give English text for a plugin with no
+  English description upstream. "Upstream" here means the manifest, the
+  English locale, and the GitHub repository. An English description that
+  only repeats the name also counts as none. Each item has these fields:
   - `field`: the fact to correct. The value is one of `name`, `description`,
     `homepage`, `strict_min_version`, `strict_max_version`, or `languages`.
   - `version`: the plugin version that the override applies to. If you leave
@@ -383,6 +401,10 @@ host, and what it unzips from the XPI:
   deflate data inflates past the unzipped size that the zip declares fails
   with `xpi-unreadable`. The command inflates 16 KiB of that data at a time
   and stops after the first 16 KiB whose output passes that size.
+- The `messages.json` of `_locales/en/`, `_locales/en_US/`, or
+  `_locales/en_GB/` fails nothing. If the command refuses such a file under
+  the rules above, it skips the file. The rules still apply to the same
+  file as the default locale's.
 - A file in a locale folder fails nothing. The command inflates the whole
   file, 1 KiB of input at a time, and then counts its messages. For each
   file it counts the largest of the declared size, the compressed size, and

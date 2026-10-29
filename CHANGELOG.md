@@ -436,3 +436,17 @@
   reports, and applies overrides. It also says that the index does not vet
   the plugins it lists. The notes on the start test and the overrides that
   the plugin pages held before are now on the About page.
+- The index shows more plugin descriptions in English. A manifest name or
+  description can have the form `__MSG_<key>__`. The reader now first tries
+  that message in `_locales/en/`, `_locales/en_US/`, and `_locales/en_GB/`.
+  If none of them holds a message that is not blank, it reads the default
+  locale. Each `upstream` block of the data file has a new optional
+  `repoDescription` field: the About text of the GitHub repository,
+  trimmed. If less than half of the manifest description is Chinese,
+  Japanese, or Korean, the site shows it. The README gives the count. In
+  other cases the site can show the GitHub description, by the rule in the
+  README. Each plugin page's Details card shows both descriptions. A
+  `description` override can now give English text for a plugin with no
+  English description upstream, and eight plugins have one. If you
+  validate against a saved copy of `schemas/plugins.v1.schema.json`, fetch
+  the schema again, since it rejects fields that it does not define.

@@ -603,6 +603,7 @@ describe("the About page", () => {
       ["declared", "Declared range"],
       ["start-test", "Start test"],
       ["reports", "User reports"],
+      ["descriptions", "Descriptions"],
       ["overrides", "Overrides"],
       ["not-vetted", "What the index does not do"],
     ]);
@@ -631,6 +632,18 @@ describe("the About page", () => {
     const reporter = readFileSync(resolve(ROOT, "src/start-test/reporter/bootstrap.js"), "utf8");
     expect(/^const SETTLE_MS = (\d+);$/m.exec(reporter)?.[1]).toBe("3000");
     expect(START_LIMIT_MS).toBe(90 * 1000);
+  });
+
+  test("says where the description comes from and when an override gives English text", () => {
+    const text = mainText(about());
+    for (const line of [
+      "the index reads an English locale file of the plugin first, if it has one.",
+      "If less than half of the manifest description is Chinese, Japanese, or Korean, the site shows it.",
+      "the manifest description was dropped, or the GitHub description has less of that text.",
+      "A description override can also give English text for a plugin with no English description upstream.",
+    ]) {
+      expect(text).toContain(line);
+    }
   });
 
   test("says which user reports count, how overrides and the Used column work, and that the index does not vet plugins", () => {

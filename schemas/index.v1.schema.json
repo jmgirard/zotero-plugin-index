@@ -12,7 +12,7 @@
       "const": 1
     },
     "overrides": {
-      "description": "Corrections to upstream facts that the plugin author cannot or will not fix upstream.",
+      "description": "Corrections to upstream facts that the plugin author cannot or will not fix upstream. A description override can also give English text for a plugin with no English description upstream, or only one that repeats the name.",
       "type": "array",
       "items": {
         "type": "object",
@@ -44,7 +44,7 @@
             "minLength": 1
           },
           "reason": {
-            "description": "Why the upstream value is wrong.",
+            "description": "Why the upstream value is wrong, or, for English description text, the upstream source it was drawn from and that the upstream has no English description.",
             "type": "string",
             "minLength": 1
           }
