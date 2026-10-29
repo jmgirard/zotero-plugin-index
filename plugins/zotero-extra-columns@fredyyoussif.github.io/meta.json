@@ -1,0 +1,7 @@
+{
+  "id": "zotero-extra-columns@fredyyoussif.github.io",
+  "name": "Extra Columns",
+  "description": "Add your own editable columns to Zotero. Values are stored in the Extra field, so they sync with your library.",
+  "repoUrl": "https://github.com/fredyyoussif/zotero-extra-columns",
+  "updateUrl": "https://github.com/fredyyoussif/zotero-extra-columns/releases/latest/download/updates.json"
+}
