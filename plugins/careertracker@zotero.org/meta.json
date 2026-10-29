@@ -1,0 +1,8 @@
+{
+  "id": "careertracker@zotero.org",
+  "name": "Career Tracker",
+  "description": "Track your research career with Zotero library statistics",
+  "homepage": "https://github.com/etShaw-zh/zotero-career-tracker#readme",
+  "repoUrl": "https://github.com/etShaw-zh/zotero-career-tracker",
+  "updateUrl": "https://github.com/etShaw-zh/zotero-career-tracker/releases/download/release/update.json"
+}
