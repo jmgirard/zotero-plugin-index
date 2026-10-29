@@ -130,3 +130,25 @@ is added to the report read (see the work log).
 - AC3 evidence: README.md:718-720 says the label and report issue read counts toward the 18 minutes; README.md:769-771 lists a read that takes more than 3 minutes in all among the cases that write no data file; CHANGELOG.md:371-377 is one Unreleased entry naming the 3-minute report read limit and the exit once the output is written.
 - Pass 2, 2026-10-29, at 474f4b8 after return 1, main at c7d844d (not moved). AC2 evidence: the three "pnpm build with a timer still pending" tests passed (0.5 s, 0.5 s, 2.8 s run time). Each timer run exits in under 30 s and matches the plain run with the same `--out` in exit status, stdout, and data file apart from `generatedAt`: the file-writing run (status 0), the no-file run (status 1, no file in either, stderr also equal), and the 1500-entry run (stdout over 64 KiB read after a 2 s pause, 1500 records in the compared file).
 - AC4 evidence: `pnpm test` at 6de3fbe: tsc clean, 22 files passed and 1 skipped, 1067 tests passed and 6 skipped; `pnpm check`: 56 entries, 0 problems. Re-run at cd244aa (the tree of 474f4b8 outside `cairn/`): 1067 passed, 6 skipped; `pnpm check` 0 problems.
+- Consistency gate (pass 2): `cairn_validate.py` all checks passed; no principle changed, so `cairn_impact` skipped; the generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the bare `stream.write("", cb)` in `src/build/cli.ts:86` has no error listener, so an EPIPE from a reader that closed the pipe (`pnpm build | head`) can end the command with exit 1 and a stack trace — reject, edge: only a closed stdout pipe reaches it, outside the documented use (the daily build and a terminal), and its effect is an error.
+- diff-bug #2: the 64 KiB test can fail only on macOS, since Node writes stdout pipes synchronously on Linux — reject, false: on Linux no output is left unwritten at exit, so there is no defect there to catch.
+- diff-bug #3: `src/upstream/time-limit.ts:1` calls `READ_LIMIT_MS` the limit of one plugin read, but it now also bounds the report read — fix now.
+- diff-bug #4: CHANGELOG "Before, only each request, the label read and each page, …" reads awkwardly and its wrap is uneven — reject, style.
+- diff-bug #5: the 64 KiB test copies `pnpmBuild`'s env stripping — reject, style.
+- diff-bug #6: the 200 ms `reportsMs` in the stall table must also cover the label and page 1 reads, so a pause under load can cut the wrong URL — fix now.
+- diff-bug #7: no tests of unchanged behavior, no history comments; each table case has its own reason — noted.
+- blame-history #1: `cli.ts` replaces the `exitCode` line from 717e31d and its piped-output reason — reject, planned change (T3, D-027); the flush keeps the reason and the 64 KiB test guards it.
+- blame-history #2: `reportsMs` defaults to the plugin read constant, so a change to one changes the other — fix now (with diff-bug #3).
+- blame-history #3: the `build.yml` comment does not state the worst-case margin — reject, style.
+- blame-history #4: `boundFetch` is now exported from the reader — reject, planned change (T2); the composition with `request()`'s timeout is correct.
+- blame-history #5: the M021 and M041 read code is kept unchanged — noted.
+- blame-history #6: README and CHANGELOG claims match the code — noted.
+- prior-review #1: the new command tests add wall-clock bounds (`< 30` s, a 2 s pause), the load sensitivity that M029, M030, and M038 reviews raised — reject, planned change: AC2 names the 30 s bound, and the runs took 0.5–2.9 s.
+- prior-review #2: `reportsMs: 200` repeats the short-limit pattern that M029 and M030 reviews fixed — fix now (with diff-bug #6).
+- prior-review #3: the diff reverses the documented `exitCode` choice — reject, planned change (as blame-history #1).
+- ripple #1: candidate row "Close gaps in the build time limits" still says the report read has no total limit and a lookup can hold the process open — fix now, at post-merge hygiene, which narrows the row to the read order gap that M051 holds.
+- ripple #2: candidate row "Bound the whole discover workflow's time" cites the build row for the pending-lookup gap — fix now, at post-merge hygiene, stating the discover gap in the row itself.
+- ripple #3: the `time-limit.ts` comment, as diff-bug #3 — fix now.
+- ripple #4: twelve other CLIs keep "Set exitCode rather than calling exit()" — reject, false: those commands still set `exitCode`, so the comments hold for them.
