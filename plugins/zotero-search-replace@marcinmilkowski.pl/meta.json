@@ -1,0 +1,8 @@
+{
+  "id": "zotero-search-replace@marcinmilkowski.pl",
+  "name": "Zotero Search & Replace",
+  "description": "Advanced search and replace functionality for Zotero library items with regex support and preloaded data quality patterns",
+  "homepage": "https://github.com/milekpl/zotero-search-replace",
+  "repoUrl": "https://github.com/milekpl/zotero-search-replace",
+  "updateUrl": "https://raw.githubusercontent.com/milekpl/zotero-search-replace/main/update.json"
+}
