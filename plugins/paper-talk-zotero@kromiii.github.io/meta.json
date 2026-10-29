@@ -1,0 +1,8 @@
+{
+  "id": "paper-talk-zotero@kromiii.github.io",
+  "name": "Paper Talk for Zotero",
+  "description": "Zotero plugin for voice conversation about paper content using the Gemini Live API",
+  "homepage": "https://github.com/kromiii/paper-talk-zotero#readme",
+  "repoUrl": "https://github.com/kromiii/paper-talk-zotero",
+  "updateUrl": "https://github.com/kromiii/paper-talk-zotero/releases/download/release/update.json"
+}
