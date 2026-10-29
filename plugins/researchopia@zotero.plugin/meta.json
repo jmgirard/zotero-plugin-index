@@ -1,0 +1,8 @@
+{
+  "id": "researchopia@zotero.plugin",
+  "name": "研学港 Researchopia",
+  "description": "Researchopia - Open academic exchange and knowledge sharing platform. Academic annotation sharing and collaboration for Zotero",
+  "homepage": "https://github.com/occasional16/researchopia#readme",
+  "repoUrl": "https://github.com/occasional16/researchopia",
+  "updateUrl": "https://github.com/occasional16/researchopia/releases/download/release/update.json"
+}
