@@ -1,0 +1,8 @@
+{
+  "id": "zometaker@senior-developer",
+  "name": "Zometaker",
+  "description": "Tidy up messy Zotero Connector imports. Auto-update, normalise to APA 7, and fill missing metadata so your library reads like a real bibliography.",
+  "homepage": "https://github.com/shiyangzheng/zometaker",
+  "repoUrl": "https://github.com/ShiyangZheng/zometaker",
+  "updateUrl": "https://raw.githubusercontent.com/shiyangzheng/zometaker/main/update.json"
+}
