@@ -68,7 +68,7 @@ fixture are as M053 defines them.
       requests, host of update.json, and the languages line; when a record
       has overrides, the overrides table sits under an h3 inside it. A
       site test checks each page built from the site fixture.
-- [ ] AC5: `pnpm site` writes `about/index.html`, whose text covers the
+- [x] AC5: `pnpm site` writes `about/index.html`, whose text covers the
       declared range and its marks, the start test (Linux, a new profile,
       the 3-second wait, a start is not "works"), the counting of user
       reports, overrides and the Used column, and that the index does not
@@ -168,3 +168,7 @@ Pass 1, 2026-10-29, on c0c43dc (branch after merging main at 2ab094f; verify: 11
 - AC6 evidence: fresh deployed `v1/plugins.json` (generatedAt 2026-10-29T19:12:45.935Z, 56 records, 56 with `xpiUrl`), site rebuilt on c0c43dc and served on port 4329; iframe width check with `border: 0`: DeepRead, Better BibTeX, PDF Preview, and About pages 375/375 at 375 px and 1280/1280 at 1280 px, each plugin page with its download link; a planted 900 px block gave 900/375.
 - AC7 evidence: README, `cairn/DESIGN.md`, and CHANGELOG each name the About page (4 lines each) and the "Zotero compatibility" table; the CHANGELOG change is inside the M053 entry; verify passes as above.
 - Gate: `cairn_validate.py` all checks passed; no DESIGN principle changed, so `cairn_impact` skipped; the generic profile's consistency-gate names no toolchain checks.
+
+Pass 2, 2026-10-29, on 55f1f99 (main unmoved at 2ab094f; since c0c43dc only `test/site.test.ts` changed outside `cairn/`; verify: 1179 tests passed, 6 skipped; `pnpm check` 58 entries, 0 problems). Site tests 196 of 196 passed: AC1 14, AC2 16, AC3 16, AC4 13, AC5 20, so pass 1's AC1–AC4, AC6, and AC7 evidence stands on the same page code.
+
+- AC5 evidence (amended wording): the About page tests, the top bar and footer test over all 15 built pages, and the page list test: 20 of 20 passed. `about/index.html` text holds each named topic; on all 13 plugin pages none of the four strings is in the markup or the tag-stripped text; each page's `<main>` holds exactly one About href, in the `data-about-line` line of the compatibility card, after `</table>` on the 10 read records' pages and after the failure message on the 3 failed records' pages; the footer's not-vetted line is on all 15 pages. A planted swap of the failure message and the About line failed the 3 failure pages (T7).
