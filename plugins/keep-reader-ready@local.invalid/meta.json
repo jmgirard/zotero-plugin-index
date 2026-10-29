@@ -1,0 +1,8 @@
+{
+  "id": "keep-reader-ready@local.invalid",
+  "name": "Keep Reader Ready",
+  "description": "Retain rendered PDF pages and reduce redraws when returning to a paper.",
+  "homepage": "https://github.com/Hanson-Wang-chn/zotero-keep-reader-ready",
+  "repoUrl": "https://github.com/Hanson-Wang-chn/zotero-keep-reader-ready",
+  "updateUrl": "https://raw.githubusercontent.com/Hanson-Wang-chn/zotero-keep-reader-ready/main/updates/en-US.json"
+}
