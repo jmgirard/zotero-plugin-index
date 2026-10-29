@@ -1,0 +1,7 @@
+{
+  "id": "zotero-trackpad-navigation@luigicatello",
+  "name": "Zotero Trackpad Navigation",
+  "description": "Navigate Zotero reader location history with macOS two-finger swipes.",
+  "repoUrl": "https://github.com/louis1642/zotero-trackpad-navigation",
+  "updateUrl": "https://raw.githubusercontent.com/louis1642/zotero-trackpad-navigation/main/updates.json"
+}
