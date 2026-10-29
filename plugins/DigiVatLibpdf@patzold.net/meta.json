@@ -1,0 +1,8 @@
+{
+  "id": "DigiVatLibpdf@patzold.net",
+  "name": "Download DigiVatLib pdf",
+  "description": "Download pdf files of whole DigiVatLib manuscripts.",
+  "homepage": "https://github.com/windingwind/zotero-addon-template#readme",
+  "repoUrl": "https://github.com/theRatramnus/Zotero-download-DigiVatLib-pdf",
+  "updateUrl": "https://raw.githubusercontent.com/theRatramnus/Zotero-download-DigiVatLib-pdf/main/update.json"
+}
