@@ -1,0 +1,8 @@
+{
+  "id": "zoterotldr@syt.com",
+  "name": "Zotero TLDR",
+  "description": "TLDR(too long; didn't read) from sematic scholar",
+  "homepage": "https://github.com/syt2/zotero-tldr#readme",
+  "repoUrl": "https://github.com/syt2/Zotero-TLDR",
+  "updateUrl": "https://raw.githubusercontent.com/syt2/zotero-tldr/main/update.json"
+}
