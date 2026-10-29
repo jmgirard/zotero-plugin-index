@@ -1,0 +1,8 @@
+{
+  "id": "RIOPACAddChapter@noidea.com",
+  "name": "RIOPACAddChapter",
+  "description": "Add full information for chapters from RI OPAC.",
+  "homepage": "https://github.com/windingwind/zotero-addon-template#readme",
+  "repoUrl": "https://github.com/theRatramnus/RIOPACAddChapter",
+  "updateUrl": "https://raw.githubusercontent.com/theRatramnus/RIOPACAddChapter/main/update.json"
+}
