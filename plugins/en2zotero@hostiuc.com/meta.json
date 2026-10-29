@@ -1,0 +1,8 @@
+{
+  "id": "en2zotero@hostiuc.com",
+  "name": "EN2Zotero",
+  "description": "Convert EndNote CWYW citations in Word documents to Zotero citations",
+  "homepage": "https://github.com/sorinhostiuc/en2zotero",
+  "repoUrl": "https://github.com/sorinhostiuc/en2zotero",
+  "updateUrl": "https://raw.githubusercontent.com/sorinhostiuc/en2zotero/main/update.json"
+}
