@@ -1,0 +1,8 @@
+{
+  "id": "zotero-agent@autoagent.my",
+  "name": "Zotero Agent",
+  "description": "Zotero Agent",
+  "homepage": "https://github.com/psiQAQ/zotero-agent#readme",
+  "repoUrl": "https://github.com/psiQAQ/zotero-agent",
+  "updateUrl": "https://github.com/psiQAQ/zotero-agent/releases/latest/download/update.json"
+}
