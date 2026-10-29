@@ -1,0 +1,8 @@
+{
+  "id": "snowball-sources@socratic-irony.github.io",
+  "name": "Snowball Sources",
+  "description": "Find forward and backward citations for selected Zotero items and collections.",
+  "homepage": "https://github.com/socratic-irony/zotero-snowball",
+  "repoUrl": "https://github.com/socratic-irony/zotero-snowball",
+  "updateUrl": "https://raw.githubusercontent.com/socratic-irony/zotero-snowball/main/updates.json?v=%ITEM_VERSION%"
+}
