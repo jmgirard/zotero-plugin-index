@@ -1,0 +1,8 @@
+{
+  "id": "semantic-search@ildon.github.io",
+  "name": "Semantic Search",
+  "description": "Semantic (meaning-based) search over the full text of your Zotero PDFs, with a local MCP endpoint for LLMs.",
+  "homepage": "https://github.com/ilDon/zotero-semantic-search",
+  "repoUrl": "https://github.com/ilDon/zotero-semantic-search",
+  "updateUrl": "https://github.com/ilDon/zotero-semantic-search/releases/latest/download/updates.json"
+}
