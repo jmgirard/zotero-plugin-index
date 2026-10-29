@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zotero plugin index (mockup)</title>
+<link rel="stylesheet" href="mockup.css">
+<style>
+  .hero { padding: 28px 0 8px; }
+  .hero h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: -0.015em; }
+  .hero p { margin: 0; color: var(--muted); max-width: 70ch; }
+
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 18px 0 12px; }
+  .search { position: relative; flex: 1 1 220px; max-width: 320px; }
+  .search svg { position: absolute; left: 10px; top: 8px; color: var(--faint); }
+  .search input, .toolbar select {
+    width: 100%; height: 32px; border: 1px solid var(--line-strong); border-radius: 6px;
+    background: var(--surface); color: var(--text); font: inherit; font-size: 14px;
+  }
+  .search input { padding: 0 10px 0 32px; }
+  .toolbar select { width: auto; padding: 0 8px; }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; background: var(--surface); }
+  .seg button { height: 30px; padding: 0 11px; border: 0; border-left: 1px solid var(--line); background: none; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; }
+  .seg button:first-child { border-left: 0; }
+  .seg button[aria-pressed="true"] { background: var(--text); color: var(--surface); }
+  .field { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .count { margin-left: auto; font-size: 13px; color: var(--muted); }
+
+  .table-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px 12px; text-align: left; vertical-align: middle; }
+  thead th { font-size: 12px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: 0; white-space: nowrap; }
+  thead tr.group th { padding-bottom: 0; border-bottom: 0; text-align: center; font-weight: 500; }
+  thead tr.group th span { display: block; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  tbody tr { border-top: 1px solid var(--line); }
+  tbody tr:first-child { border-top: 0; }
+  tbody tr:hover { background: var(--hover); }
+  td.name { width: 100%; min-width: 0; }
+  td.name a { font-weight: 600; color: var(--text); }
+  td.name a:hover { color: var(--link); }
+  td.name .desc { color: var(--muted); font-size: 13px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; max-width: 52ch; }
+  .badge { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 4px; font-size: 11px; font-weight: 600; color: var(--muted); border: 1px solid var(--line-strong); vertical-align: 1px; }
+  th.v, td.v { text-align: center; padding-left: 2px; padding-right: 2px; width: 40px; }
+  td.v .start { display: block; height: 10px; margin-top: 2px; font-size: 10px; line-height: 10px; }
+  td.v .start.ok { color: var(--ok); }
+  td.v .start.bad { color: var(--bad); font-weight: 700; }
+  td.lang, td.upd { white-space: nowrap; color: var(--muted); font-size: 13px; }
+  td.lang .code { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; padding: 0 4px; margin-right: 2px; border-radius: 3px; background: var(--hover); color: var(--muted); }
+  td.links { white-space: nowrap; text-align: right; padding-left: 4px; }
+  td.links a { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 6px; color: var(--muted); }
+  td.links a:hover { background: var(--line); color: var(--text); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 2px 0; font-size: 12px; color: var(--muted); align-items: center; }
+  .legend .mark { transform: scale(.85); }
+  .legend span.item { display: inline-flex; align-items: center; gap: 4px; }
+
+  @media (max-width: 760px) {
+    th.lang, td.lang, th.upd, td.upd { display: none; }
+  }
+  @media (max-width: 560px) {
+    td.name .desc { display: none; }
+    th, td { padding: 9px 8px; }
+    th.v, td.v { width: 30px; padding: 9px 1px; }
+    .mark { width: 22px; }
+    td.links a.repo { display: none; }
+    .count { margin-left: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="index.html">Zotero plugin index</a>
+  <nav><a href="#">About</a><a href="#">Add a plugin</a><a href="v1/plugins.json">Data</a></nav>
+</div></header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Plugins for Zotero 7 and later</h1>
+    <p>Facts read each day from every plugin's own GitHub releases. The index does not review or endorse plugins.</p>
+  </section>
+
+  <div class="toolbar">
+    <label class="search"><span class="visually-hidden">Search plugins</span>
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="q" placeholder="Search plugins">
+    </label>
+    <label class="field">Language <select id="lang"><option value="">Any</option></select></label>
+    <div class="field"><span id="vlabel">Zotero</span>
+      <div class="seg" role="group" aria-labelledby="vlabel" id="ver">
+        <button type="button" value="" aria-pressed="true">Any</button>
+        <button type="button" value="7" aria-pressed="false">7</button>
+        <button type="button" value="8" aria-pressed="false">8</button>
+        <button type="button" value="9" aria-pressed="false">9</button>
+        <button type="button" value="10" aria-pressed="false">10</button>
+      </div>
+    </div>
+    <span class="count" id="count" role="status"></span>
+  </div>
+
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr class="group"><th></th><th colspan="4"><span>Declares Zotero</span></th><th class="lang"></th><th class="upd"></th><th></th></tr>
+        <tr>
+          <th>Plugin</th>
+          <th class="v">7</th><th class="v">8</th><th class="v">9</th><th class="v">10</th>
+          <th class="lang">Languages</th>
+          <th class="upd">Latest release</th>
+          <th><span class="visually-hidden">Links</span></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="legend" id="legend"></div>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <span>The index does not vet the plugins it lists.</span>
+  <span id="built"></span>
+  <a href="v1/plugins.json">v1/plugins.json</a>
+</div></footer>
+
+<div class="mock-panel">
+  <b>Mockup options</b>
+  <div id="opts"></div>
+  <div style="margin-top:6px">Try a plugin: <a href="plugin.html?id=deepread@lsy-aia.github.io">DeepRead</a>, <a href="plugin.html?id=better-bibtex@iris-advies.com">Better BibTeX</a>, <a href="plugin.html?id=pdfpreview@windingwind.com">PDF Preview</a></div>
+</div>
+
+<script type="module">
+import { MAJORS, ICONS, loadPlugins, name, description, support, startFor, shortLanguages, languageName, monthYear, markHtml, esc, variant, variantHref } from "./mockup.js";
+
+const cells = variant("cells", "declared");
+document.getElementById("opts").innerHTML = [
+  ["declared", "Version columns: declared range only"],
+  ["both", "Version columns: declared + start test"],
+].map(([v, t]) => `<label><input type="radio" name="cells" ${cells === v ? "checked" : ""} onclick="location.href='${variantHref("cells", v)}'"> ${t}</label>`).join("");
+
+const data = await loadPlugins();
+const plugins = data.plugins.slice().sort((a, b) => name(a).localeCompare(name(b), "en", { sensitivity: "base" }));
+document.getElementById("built").textContent = `Read ${data.generatedAt.slice(0, 10)}`;
+
+const LABEL = { all: "Declares all of Zotero", some: "Declares part of Zotero", none: "Does not declare Zotero" };
+const rows = plugins.map((r) => {
+  const tr = document.createElement("tr");
+  const langs = shortLanguages(r);
+  tr.dataset.langs = langs.join(" ");
+  tr.dataset.majors = MAJORS.filter((m) => ["all", "some"].includes(support(r, m))).join(" ");
+  tr.dataset.text = `${name(r)} ${description(r)}`.toLowerCase();
+  const vcells = MAJORS.map((m) => {
+    const s = support(r, m);
+    let html = s ? markHtml(s, `${LABEL[s]} ${m}`) : `<span class="mark none">·</span>`;
+    if (cells === "both") {
+      const t = startFor(r, m);
+      html += t ? (t.result === "started" ? `<span class="start ok" title="Started in Zotero ${t.zotero}">●</span>` : `<span class="start bad" title="Failed to start in Zotero ${t.zotero}">✕</span>`) : `<span class="start"></span>`;
+    }
+    return `<td class="v">${html}</td>`;
+  }).join("");
+  const href = `plugin.html?id=${encodeURIComponent(r.id)}`;
+  const repo = r.upstream?.repoUrl ?? r.repoUrl;
+  const langCell = langs.length === 0 ? "" : langs.length <= 3
+    ? langs.map((l) => `<span class="code" title="${esc(languageName(l))}">${esc(l)}</span>`).join("")
+    : `${langs.slice(0, 2).map((l) => `<span class="code" title="${esc(languageName(l))}">${esc(l)}</span>`).join("")} +${langs.length - 2}`;
+  tr.innerHTML = `
+    <td class="name"><a href="${href}">${esc(name(r))}</a>${r.upstream?.archived ? '<span class="badge">Archived</span>' : ""}
+      ${description(r) ? `<div class="desc" title="${esc(description(r))}">${esc(description(r))}</div>` : ""}</td>
+    ${vcells}
+    <td class="lang">${langCell}</td>
+    <td class="upd">${monthYear(r.upstream?.latestReleaseDate)}</td>
+    <td class="links">
+      <a class="repo" href="${esc(repo)}" title="Source on GitHub" aria-label="Source of ${esc(name(r))} on GitHub">${ICONS.github}</a>
+      ${r.upstream ? `<a href="${esc(repo)}/releases/latest" title="Download version ${esc(r.upstream.version)} (.xpi)" aria-label="Download ${esc(name(r))} ${esc(r.upstream.version)}">${ICONS.download}</a>` : ""}
+    </td>`;
+  return tr;
+});
+document.getElementById("rows").append(...rows);
+
+const all = [...new Set(plugins.flatMap(shortLanguages))].sort((a, b) => languageName(a).localeCompare(languageName(b)));
+document.getElementById("lang").innerHTML += all.map((l) => `<option value="${l}">${esc(languageName(l))}</option>`).join("");
+
+let major = "";
+const q = document.getElementById("q"), lang = document.getElementById("lang"), count = document.getElementById("count");
+const buttons = [...document.querySelectorAll("#ver button")];
+function show() {
+  const text = q.value.trim().toLowerCase();
+  let n = 0;
+  for (const tr of rows) {
+    const ok = (!text || tr.dataset.text.includes(text)) && (!lang.value || tr.dataset.langs.split(" ").includes(lang.value)) && (!major || tr.dataset.majors.split(" ").includes(major));
+    tr.hidden = !ok; if (ok) n++;
+  }
+  for (const b of buttons) b.setAttribute("aria-pressed", String(b.value === major));
+  count.textContent = n === rows.length ? `${rows.length} plugins` : `${n} of ${rows.length} plugins`;
+}
+q.addEventListener("input", show); lang.addEventListener("change", show);
+for (const b of buttons) b.addEventListener("click", () => { major = b.value; show(); });
+show();
+
+document.getElementById("legend").innerHTML =
+  `<span class="item">${markHtml("all", "")} declares all of that version</span>` +
+  `<span class="item">${markHtml("some", "")} part of it</span>` +
+  `<span class="item">${markHtml("none", "")} none</span>` +
+  (cells === "both" ? `<span class="item"><span style="color:var(--ok)">●</span> started in a test run</span><span class="item"><span style="color:var(--bad);font-weight:700">✕</span> failed to start</span>` : "") +
+  `<span class="item">Declared ranges come from each plugin's manifest; they are not test results.</span>`;
+</script>
+</body>
+</html>

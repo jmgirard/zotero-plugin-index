@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plugin (mockup)</title>
+<link rel="stylesheet" href="mockup.css">
+<style>
+  .back { display: inline-flex; align-items: center; gap: 6px; margin: 20px 0 0; font-size: 13px; color: var(--muted); }
+  .back:hover { color: var(--text); text-decoration: none; }
+
+  .head { padding: 14px 0 22px; }
+  .head h1 { margin: 0; font-size: 26px; letter-spacing: -0.02em; line-height: 1.25; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 99px; font-size: 12px; font-weight: 600; color: var(--part); background: var(--part-bg); letter-spacing: 0; }
+  .badge svg.icon { width: 13px; height: 13px; }
+  .head .desc { margin: 6px 0 0; color: var(--muted); font-size: 16px; max-width: 68ch; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .meta { margin-top: 12px; font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+
+  .layout { display: grid; gap: 20px; }
+  body.sidebar .layout { grid-template-columns: minmax(0, 1fr) 300px; align-items: start; }
+  body.sidebar .head .actions { display: none; }
+  @media (max-width: 860px) { body.sidebar .layout { grid-template-columns: 1fr; } body.sidebar .head .actions { display: flex; } body.sidebar aside .links { display: none; } }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+  .card > h2 { margin: 0; padding: 14px 16px 0; font-size: 15px; font-weight: 650; }
+  .card .sub { margin: 2px 16px 0; font-size: 13px; color: var(--muted); }
+
+  table.compat { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  .compat th, .compat td { padding: 10px 16px; text-align: left; vertical-align: middle; }
+  .compat thead th { font-size: 12px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--line); }
+  .compat tbody tr + tr { border-top: 1px solid var(--line); }
+  .compat th[scope="row"] { font-weight: 600; white-space: nowrap; width: 1%; }
+  .cell { display: inline-flex; align-items: center; gap: 8px; }
+  .cell .note { color: var(--muted); font-size: 13px; }
+  .cell.muted { color: var(--faint); font-size: 13px; }
+  .counts { display: inline-flex; gap: 10px; font-size: 13px; }
+  .counts .w { color: var(--ok); font-weight: 600; }
+  .counts .b { color: var(--bad); font-weight: 600; }
+
+  .card-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 12px 16px; border-top: 1px solid var(--line); background: var(--bg); border-radius: 0 0 var(--radius) var(--radius); }
+  .card-foot .prompt { font-size: 14px; font-weight: 500; }
+  .card-foot .spacer { flex: 1; }
+  .fineprint { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: flex-start; padding: 10px 16px 12px; border-top: 1px solid var(--line); }
+  .fineprint svg.icon { width: 14px; height: 14px; margin-top: 1px; color: var(--faint); }
+
+  dl.facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px 24px; margin: 0; padding: 14px 16px 16px; }
+  body.sidebar dl.facts { grid-template-columns: 1fr; gap: 12px; }
+  .facts dt { font-size: 12px; color: var(--muted); }
+  .facts dd { margin: 2px 0 0; font-size: 14px; overflow-wrap: anywhere; }
+  .facts code { font-family: var(--mono); font-size: 12.5px; }
+
+  aside { display: grid; gap: 20px; }
+  aside .links { display: grid; gap: 8px; padding: 16px; }
+  aside .links .btn { justify-content: flex-start; width: 100%; height: 36px; }
+
+  .overrides { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .overrides th, .overrides td { padding: 8px 16px; text-align: left; border-top: 1px solid var(--line); }
+  .overrides th { color: var(--muted); font-weight: 600; font-size: 12px; }
+
+  @media (max-width: 560px) {
+    .compat th, .compat td { padding: 9px 10px; }
+    .compat .hide-sm { display: none; }
+    .head h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="index.html">Zotero plugin index</a>
+  <nav><a href="#">About</a><a href="#">Add a plugin</a><a href="v1/plugins.json">Data</a></nav>
+</div></header>
+
+<main class="wrap" id="main"></main>
+
+<footer class="foot"><div class="wrap">
+  <span>The index does not vet the plugins it lists.</span>
+  <span id="built"></span>
+  <a href="v1/plugins.json">v1/plugins.json</a>
+</div></footer>
+
+<div class="mock-panel">
+  <b>Mockup options</b>
+  <div id="opts"></div>
+  <div style="margin-top:6px">Other plugins: <a id="o1">DeepRead</a> · <a id="o2">Better BibTeX</a> · <a id="o3">PDF Preview</a></div>
+</div>
+
+<script type="module">
+import { MAJORS, ICONS, loadPlugins, name, description, support, startFor, reportFor, languageName, day, markHtml, esc, variant, variantHref, rangeText } from "./mockup.js";
+
+const layout = variant("layout", "single");
+document.body.classList.toggle("sidebar", layout === "sidebar");
+document.getElementById("opts").innerHTML = [
+  ["single", "One column"],
+  ["sidebar", "Two columns (links and facts at the side)"],
+].map(([v, t]) => `<label><input type="radio" name="layout" ${layout === v ? "checked" : ""} onclick="location.href='${variantHref("layout", v)}'"> ${t}</label>`).join("");
+const other = (id) => { const u = new URL(location.href); u.searchParams.set("id", id); return u.pathname + u.search; };
+document.getElementById("o1").href = other("deepread@lsy-aia.github.io");
+document.getElementById("o2").href = other("better-bibtex@iris-advies.com");
+document.getElementById("o3").href = other("pdfpreview@windingwind.com");
+
+const data = await loadPlugins();
+document.getElementById("built").textContent = `Read ${data.generatedAt.slice(0, 10)}`;
+const id = variant("id", "deepread@lsy-aia.github.io");
+const r = data.plugins.find((p) => p.id === id) ?? data.plugins[0];
+const u = r.upstream;
+const repo = u?.repoUrl ?? r.repoUrl;
+document.title = `${name(r)} – Zotero plugin index (mockup)`;
+
+const declaredCell = (m) => {
+  const s = support(r, m);
+  if (!s) return `<span class="cell muted">No range</span>`;
+  const t = { all: "Yes", some: "Partly", none: "No" }[s];
+  return `<span class="cell">${markHtml(s, `${t}: Zotero ${m}`)}<span${s === "none" ? ' class="note"' : ""}>${t}</span></span>`;
+};
+const startCell = (m) => {
+  const t = startFor(r, m);
+  if (!t) return `<span class="cell muted">Not tested</span>`;
+  return t.result === "started"
+    ? `<span class="cell">${markHtml("all", "Started")}<span>Started</span><span class="note">${esc(t.zotero)}</span></span>`
+    : `<span class="cell">${markHtml("fail", "Failed to start")}<span>Failed to start</span><span class="note">${esc(t.zotero)}</span></span>`;
+};
+const reportCell = (m) => {
+  const rep = reportFor(r, m);
+  if (!rep) return `<span class="cell muted">None yet</span>`;
+  return `<span class="counts"><span class="w">${rep.works} works</span><span class="b">${rep.broken} broken</span></span>`;
+};
+
+const compat = r.failure
+  ? `<section class="card"><h2>Zotero compatibility</h2><p class="sub" style="padding-bottom:14px">The last build could not read this plugin: <code>${esc(r.failure.name)}</code>.</p></section>`
+  : `<section class="card" aria-labelledby="compat-h">
+      <h2 id="compat-h">Zotero compatibility</h2>
+      ${u ? `<p class="sub">For version ${esc(u.version)}, the release the index read.</p>` : ""}
+      <table class="compat">
+        <thead><tr><th>Zotero</th><th>Declared</th>${u ? `<th>Start test</th><th class="hide-sm">User reports</th>` : ""}</tr></thead>
+        <tbody>${[...MAJORS].reverse().map((m) => `<tr><th scope="row">${m}</th><td>${declaredCell(m)}</td>${u ? `<td>${startCell(m)}</td><td class="hide-sm">${reportCell(m)}</td>` : ""}</tr>`).join("")}</tbody>
+      </table>
+      <div class="fineprint">${ICONS.info}<span>Declared: ${esc(rangeText(r) || "no range")}, from the plugin's manifest. Start test: the build installs the plugin in a new Zotero profile and checks that it starts; that is not proof that it works. <a href="#">How the index checks</a></span></div>
+      ${u ? `<div class="card-foot"><span class="prompt">Tried version ${esc(u.version)}?</span><span class="spacer"></span>
+        <a class="btn works" href="#">${ICONS.check} Works for me</a>
+        <a class="btn broken" href="#">${ICONS.x} It's broken</a></div>` : ""}
+    </section>`;
+
+const languages = (u?.languages ?? []).map(languageName);
+const facts = `<section class="card" aria-labelledby="facts-h">
+    <h2 id="facts-h">Details</h2>
+    <dl class="facts">
+      ${u ? `<div><dt>Version read</dt><dd>${esc(u.version)}${u.prerelease ? " (prerelease)" : ""}</dd></div>
+      <div><dt>Released</dt><dd>${day(u.latestReleaseDate)}</dd></div>
+      <div><dt>Menus and settings in</dt><dd>${languages.length ? esc(languages.join(", ")) : "Not stated"}</dd></div>
+      <div><dt>Releases with an .xpi</dt><dd>${u.releaseCount}</dd></div>
+      <div><dt>Open issues and pull requests</dt><dd>${u.openIssues}</dd></div>
+      <div><dt>Repository created</dt><dd>${day(u.repoCreatedAt)}</dd></div>
+      ${typeof u.archived === "boolean" ? `<div><dt>Archived on GitHub</dt><dd>${u.archived ? "Yes" : "No"}</dd></div>` : ""}
+      <div><dt>Updates from</dt><dd>${esc(u.updateHost)}</dd></div>` : ""}
+      <div><dt>Plugin ID</dt><dd><code>${esc(r.id)}</code></dd></div>
+    </dl>
+    ${r.overrides.length ? `<table class="overrides"><thead><tr><th>Corrected field</th><th>Value</th><th>Reason</th></tr></thead><tbody>${r.overrides.map((o) => `<tr><td><code>${esc(o.field)}</code></td><td>${esc(o.value)}</td><td>${esc(o.reason)}</td></tr>`).join("")}</tbody></table>` : ""}
+  </section>`;
+
+const actions = `
+  ${u ? `<a class="btn primary" href="${esc(repo)}/releases/latest">${ICONS.download} Download ${esc(u.version)} <span style="opacity:.6;font-weight:400">.xpi</span></a>` : ""}
+  <a class="btn" href="${esc(repo)}">${ICONS.github} Source</a>
+  ${u ? `<a class="btn" href="${esc(repo)}/releases">${ICONS.tag} Releases</a>` : ""}`;
+
+document.getElementById("main").innerHTML = `
+  <a class="back" href="index.html">${ICONS.back} All plugins</a>
+  <div class="head">
+    <h1>${esc(name(r))}${u?.archived ? `<span class="badge">${ICONS.archive} Archived</span>` : ""}</h1>
+    ${description(r) ? `<p class="desc">${esc(description(r))}</p>` : ""}
+    <div class="actions">${actions}</div>
+  </div>
+  <div class="layout">
+    <div style="display:grid;gap:20px;min-width:0">${compat}${layout === "single" ? facts : ""}</div>
+    ${layout === "sidebar" ? `<aside><section class="card links">${actions}</section>${facts}</aside>` : ""}
+  </div>`;
+</script>
+</body>
+</html>
