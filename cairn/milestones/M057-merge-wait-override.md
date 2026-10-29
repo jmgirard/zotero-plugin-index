@@ -66,7 +66,7 @@ row "Close gaps in bot holds and merges" (6).
 - [x] T1: In `src/discover/merge.ts` replace `WAIT_MS` in `recordProblem` with a `waitHours` option of
       `MergeOptions` (default 48), and give the age condition its two reasons; parse the arguments and the new
       `USAGE` in `merge-cli.ts`. Tests in `test/merge.test.ts`.
-- [ ] T2: Add the `wait_hours` input, the `WAIT_HOURS` env line, and the run line to
+- [x] T2: Add the `wait_hours` input, the `WAIT_HOURS` env line, and the run line to
       `.github/workflows/merge-discover.yml`. In `test/workflows.test.ts`, check the trigger events, the input,
       the env line with no `||`, the run line, and that no `run:` line holds `${{`.
 - [ ] T3: README "Merging bot pull requests" and a CHANGELOG entry; append D-034 (a dispatched merge run may set a
@@ -91,3 +91,4 @@ row "Close gaps in bot holds and merges" (6).
 - 2026-10-29: plan gate chose a dispatch input over merging only the four open pull requests by hand, at the user's choice, because about 378 repos are unread; falsified by a backfill that the hand route finishes in fewer steps.
 - 2026-10-29: implement started on branch m057-merge-wait-override.
 - 2026-10-29: T1 done: `DEFAULT_WAIT_HOURS` (48) and a `waitHours` option replace `WAIT_MS`; an unreadable or future `created_at` gets its own reason before the wait test; `merge-cli.ts` takes no arguments or exactly `--wait-hours <n>` and prints the new `USAGE` before the `GITHUB_REPOSITORY` check. 15 new tests in `test/merge.test.ts` (31 in the file); planted `<=`, a dropped future-time check, and a CLI that let `x` through turned 4 red.
+- 2026-10-29: T2 done: `merge-discover.yml` gains the `wait_hours` number input (default 48), the `WAIT_HOURS` env line, and the `${WAIT_HOURS:+…}` run line, with a comment on scheduled runs and refused values. `test/workflows.test.ts` checks the `on:` block with the input, the step's run and env lines, that `wait_hours` appears in one expression only, and that no `run:` line holds `${{`; a planted `|| 48` turned 1 test red. Ruby's YAML parse shows the input and the step.

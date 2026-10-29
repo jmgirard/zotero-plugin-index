@@ -5,6 +5,11 @@ on:
   schedule:
     - cron: "13 5 * * *"
   workflow_dispatch:
+    inputs:
+      wait_hours:
+        description: How many hours before the run a pull request must have opened, 0 to 9999
+        type: number
+        default: 48
 
 # The job sets its own permissions.
 permissions: {}
@@ -42,6 +47,10 @@ jobs:
         with:
           node-version: 24
       - run: pnpm install --frozen-lockfile
-      - run: pnpm merge-discover
+      # Scheduled runs have no inputs, so WAIT_HOURS is empty and the command's default of
+      # 48 hours applies. A dispatched wait reaches the command as given, 0 included, and a
+      # value the command refuses fails the run with nothing merged.
+      - run: pnpm merge-discover ${WAIT_HOURS:+--wait-hours "$WAIT_HOURS"}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WAIT_HOURS: ${{ inputs.wait_hours }}
