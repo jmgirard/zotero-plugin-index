@@ -1,0 +1,8 @@
+{
+  "id": "ccfrank@timetrapzz.site",
+  "name": "Zotero CCF Rank",
+  "description": "Zotero plugin for computer science papers: identifies the CCF rank and the CAS (中科院) journal zone, writes a one-line venue summary, and shows it in a dedicated column.",
+  "homepage": "https://github.com/ZBigFish/zotero-ccf-rank#readme",
+  "repoUrl": "https://github.com/ZBigFish/zotero-ccf-rank",
+  "updateUrl": "https://github.com/ZBigFish/zotero-ccf-rank/releases/download/release/update.json"
+}
