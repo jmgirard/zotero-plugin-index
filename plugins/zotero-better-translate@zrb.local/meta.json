@@ -1,0 +1,8 @@
+{
+  "id": "zotero-better-translate@zrb.local",
+  "name": "Translation-Notebook",
+  "description": "选中单词即查词典，选中短语/句子即 AI 翻译；译文可编辑；金句原文收藏为可检索的分类列表（词典/AI/收藏）。",
+  "homepage": "https://github.com/",
+  "repoUrl": "https://github.com/zhongrubo/translation-notebook",
+  "updateUrl": "https://raw.githubusercontent.com/zhongrubo/translation-notebook/main/updates.json"
+}
