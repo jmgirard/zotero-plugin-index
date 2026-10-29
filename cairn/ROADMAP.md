@@ -1,16 +1,15 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-29 (M055 done and archived; 1 row added, 1 extended; M052 row pruned; 8 lessons marked used, none captured)_
+_Last hygiene check: 2026-10-29 (M056 done and archived; 1 row added, 2 merged; M053 row pruned; 9 lessons marked used, none captured)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M056 | Merge bot pull requests after a wait unless held | review | — | normal | milestones/M056-merge-bot-pull-requests.md |
+| M056 | Merge bot pull requests after a wait unless held | done | — | normal | milestones/archive/M056-merge-bot-pull-requests.md |
 | M055 | Show English descriptions where upstream has them | done | — | normal | milestones/archive/M055-english-descriptions.md |
 | M054 | Rebuild the plugin page and add an About page | done | M053 | normal | milestones/archive/M054-plugin-page-redesign.md |
-| M053 | Show the home list as a table | done | M052 | normal | milestones/archive/M053-home-table.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
