@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, test } from "vitest";
+import { PREVIOUS_URL } from "../src/start-test/carry.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const BUILD = resolve(ROOT, ".github/workflows/build.yml");
@@ -85,6 +86,20 @@ describe("build.yml", () => {
     expect(matrix).toHaveLength(4);
     const tested = /^ {10}--results \S+ --tested (\S+)$/m.exec(jobText(build, "site"))?.[1].split(",");
     expect(tested).toEqual(matrix);
+  });
+
+  test("carries start results from the deployed data after pnpm build and before the start plan's upload", () => {
+    const job = jobText(build, "build");
+    const built = job.indexOf("      - run: pnpm build --plan start-plan.json\n");
+    const carry = job.indexOf(
+      "      - run: >-\n          pnpm carry-start-results --plan start-plan.json --data dist/v1/plugins.json\n" +
+        `          --previous ${PREVIOUS_URL}\n`,
+    );
+    const upload = job.search(/^ {10}name: start-plan$/m);
+    expect(built).toBeGreaterThan(-1);
+    expect(carry).toBeGreaterThan(built);
+    expect(upload).toBeGreaterThan(carry);
+    expect(job.match(/carry-start-results/g)).toHaveLength(1);
   });
 
   test("runs the site job after a build that succeeded, whatever the start tests did, and deploys only after the site job", () => {

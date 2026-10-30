@@ -51,6 +51,12 @@ jobs:
       - run: pnpm build --plan start-plan.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Reuses the `started` results of the deployed data for each XPI whose SHA-256 is unchanged,
+      # except on the entry's weekly re-test day, so the start-test jobs skip those starts. It
+      # exits 0 and leaves the plan as it is when the deployed data cannot be read (D-024).
+      - run: >-
+          pnpm carry-start-results --plan start-plan.json --data dist/v1/plugins.json
+          --previous https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json
       # Kept after a failed build too, so the failures can be read. Skipped when no data
       # file exists, for example after a failed `pnpm check`. The site job builds the
       # pages from it.
