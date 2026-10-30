@@ -8,6 +8,7 @@ import { countReports, type ReportCount } from "../reports/count.ts";
 import type { StartResultName } from "../start-test/start-test.ts";
 import { boundFetch, type Fetch, githubClient, ReadFailure, readUpstream, type UpstreamFacts, type XpiRead } from "../upstream/reader.ts";
 import { duration, READ_LIMIT_MS, withinLimit } from "../upstream/time-limit.ts";
+import { readZoteroRelease, ZOTERO_RELEASE_LIMIT_MS } from "./zotero-release.ts";
 
 export interface Override {
   field: string;
@@ -41,6 +42,9 @@ export interface StartTestRecord {
 export interface PluginsFile {
   schemaVersion: 1;
   generatedAt: string;
+  // The current Zotero release that zotero.org gave, such as 10.0.7. A build whose read of it
+  // failed, and data written before the build read it, have none.
+  zoteroRelease?: string;
   plugins: PluginRecord[];
 }
 
@@ -72,9 +76,10 @@ export interface StartPlan {
 
 // `buildLevel` lists the ids of the records whose failure usually points at the build, such as a
 // rate limit or a network error, in record order. It and the plan stay out of the data. The
-// plan has one item for each record with upstream, in record order.
+// plan has one item for each record with upstream, in record order. `releaseProblem` names why
+// the read of the current Zotero release failed, when it did.
 export type BuildResult =
-  | { ok: true; data: PluginsFile; text: string; buildLevel: string[]; plan: StartPlan }
+  | { ok: true; data: PluginsFile; text: string; buildLevel: string[]; plan: StartPlan; releaseProblem?: string }
   | { ok: false; problems: string[] };
 
 const ajv = new Ajv({ allErrors: true });
@@ -96,10 +101,12 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const REPORTS_LIMIT_MS = 3 * 60 * 1000;
 
 // `startedAt` is a performance.now() time. Its default, 0, is when the process started.
-// `reportsMs` bounds the label read and every page of the report issues together.
+// `reportsMs` bounds the label read and every page of the report issues together, and
+// `releaseMs` the read of the current Zotero release.
 export interface TimeLimits {
   readMs?: number;
   reportsMs?: number;
+  releaseMs?: number;
   buildMs?: number;
   startedAt?: number;
 }
@@ -112,13 +119,21 @@ export interface TimeLimits {
 // `reportsMs`, also stops it, before any upstream read (D-013). A plugin read that passes
 // `readMs` fails as request-failed. Once `buildMs` has passed since `startedAt`, the build
 // reads no more plugins, and each entry left gets the failure not-read. Both count as
-// build-level. The UTC day of `now` sets the read order.
+// build-level. The UTC day of `now` sets the read order. Last, it reads the current Zotero
+// release from zotero.org. A failed read of it leaves zoteroRelease out and does not stop the
+// build.
 export async function buildData(
   root: string,
   fetch: Fetch,
   now = new Date(),
   indexRepo = INDEX_REPO,
-  { readMs = READ_LIMIT_MS, reportsMs = REPORTS_LIMIT_MS, buildMs = BUILD_LIMIT_MS, startedAt = 0 }: TimeLimits = {},
+  {
+    readMs = READ_LIMIT_MS,
+    reportsMs = REPORTS_LIMIT_MS,
+    releaseMs = ZOTERO_RELEASE_LIMIT_MS,
+    buildMs = BUILD_LIMIT_MS,
+    startedAt = 0,
+  }: TimeLimits = {},
 ): Promise<BuildResult> {
   let listed: Awaited<ReturnType<typeof listEntries>>;
   try {
@@ -201,7 +216,9 @@ export async function buildData(
   const plugins = records.map(({ id, repoUrl, upstream, failure, overrides }) =>
     upstream ? { id, repoUrl, upstream, reports: reports.get(id) ?? [], overrides } : { id, repoUrl, failure, overrides },
   );
-  const data: PluginsFile = { schemaVersion: 1, generatedAt: now.toISOString(), plugins };
+  const release = await readZoteroRelease(fetch, releaseMs);
+  const zoteroRelease = release.ok ? release.version : undefined;
+  const data: PluginsFile = { schemaVersion: 1, generatedAt: now.toISOString(), zoteroRelease, plugins };
   const text = `${JSON.stringify(data, null, 2)}\n`;
   // Check the file as written, where undefined fields are gone.
   const outputProblems = checkOutput(JSON.parse(text));
@@ -214,7 +231,7 @@ export async function buildData(
       return [{ entry, id, version, strictMinVersion, strictMaxVersion, xpiUrl: xpi.url, sha256: xpi.sha256 }];
     }),
   };
-  return { ok: true, data, text, buildLevel, plan };
+  return { ok: true, data, text, buildLevel, plan, ...(release.ok ? {} : { releaseProblem: release.message }) };
 }
 
 // The problems schemas/plugins.v1.schema.json finds in value, or none.

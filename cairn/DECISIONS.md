@@ -476,3 +476,22 @@ deploys nothing. A job result for a pair that the plan carries is dropped, so
 plugin code can no longer overwrite a carried result. The plan rejected a
 previous run's artifact as the source, since it needs `actions: read`, expires,
 and can come from a run that did not deploy.
+
+### D-036: The build reads the current Zotero release from zotero.org, and a failed read never withholds a deploy, annotating D-011
+
+2026-10-30, M062. A declared mark counted Zotero N as N.0 to N.9, so a range
+such as 10.0.* showed part of 10 while 10.0 was the only release line. To mark
+such a range all, the index needs the newest release of each major. At the M062
+plan question set the user chose a daily read of
+`https://www.zotero.org/download/client/version?channel=release` over a
+hand-kept value, since a hand-kept value lags each Zotero release and shows
+all too early until someone updates it. The earlier majors' last releases stay
+in `LAST_RELEASES` in `src/site/version.ts`, since that address gives only the
+current release. The build writes the value into the data as `zoteroRelease`,
+so that `pnpm site` builds the same pages from the same data file. The request
+sends no token, since zotero.org is not GitHub. A failed read leaves the field
+out and does not change the exit code: the marks then fall back to N.9 for that
+major, which shows part, never a false all, so D-011's rule of withholding a
+deploy only for build-level failures holds. A range that starts after the
+newest release reads none. This choice is wrong if the address changes its
+shape or fails on most days.

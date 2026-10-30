@@ -1,6 +1,9 @@
 ---
+import { knownRelease, ZOTERO_MAJORS } from "../../../src/site/version.ts";
 import Base from "../layouts/Base.astro";
-import { SUPPORT_MARKS as MARKS } from "../data.ts";
+import { loadData, SUPPORT_MARKS as MARKS } from "../data.ts";
+
+const { zoteroRelease } = loadData();
 ---
 
 <Base title="About: Zotero plugin index">
@@ -19,15 +22,36 @@ import { SUPPORT_MARKS as MARKS } from "../data.ts";
       <code>strict_max_version</code> fields. The index shows that range for the release it read, after its overrides.
     </p>
     <ul class="about-list" role="list">
-      <li><span class="mark" data-support="all" aria-hidden="true">{MARKS.all}</span> The range covers all of that Zotero version.</li>
+      <li>
+        <span class="mark" data-support="all" aria-hidden="true">{MARKS.all}</span> The range covers every release of that
+        Zotero version, up to its newest release.
+      </li>
       <li><span class="mark" data-support="some" aria-hidden="true">{MARKS.some}</span> The range covers part of it.</li>
       <li><span class="mark" data-support="none" aria-hidden="true">{MARKS.none}</span> The range covers none of it.</li>
     </ul>
     <p>
-      The index counts Zotero N as the versions from N.0 to N.9. Authors often write a maximum such as 10.99.99 to mean
-      every Zotero 10 release, and a minimum such as 8.999 to mean Zotero 9 and newer. A plugin that declares no range
-      shows no mark. The range is what the author declares, not a test result.
+      The index counts Zotero N as the versions from N.0 to the newest release of N. So a maximum such as 10.0.* covers all
+      of Zotero 10 while 10.0 is its newest release line, and part of it once Zotero 10.1 is out. A range that ends
+      before N.0 or starts after the newest release covers none of it, so a minimum such as 8.999, which authors write
+      to mean Zotero 9 and newer, covers none of Zotero 8. Each day the build reads the current Zotero
+      release from zotero.org, and the index keeps the last release of each earlier Zotero version. For a Zotero version
+      with no known release, the index counts N.0 to N.9, because authors often write a maximum such as 10.99.99 to mean
+      every Zotero 10 release. A plugin that declares no range shows no mark. The range is what the author declares, not
+      a test result.
     </p>
+    <p>This build used these newest releases:</p>
+    <ul class="about-list" role="list" data-newest-releases>
+      {
+        ZOTERO_MAJORS.map((major) => {
+          const release = knownRelease(major, zoteroRelease);
+          return (
+            <li data-major={major}>
+              {release ? `Zotero ${major}: ${release}` : `Zotero ${major}: no release known, so the index counts ${major}.0 to ${major}.9`}
+            </li>
+          );
+        })
+      }
+    </ul>
   </section>
   <section class="card" id="start-test" data-about="start-test">
     <h2>Start test</h2>

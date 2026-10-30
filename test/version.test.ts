@@ -109,7 +109,8 @@ describe("majorSupport", () => {
     [{ strictMinVersion: "8.999", strictMaxVersion: "10.0.*" }, "8", "none"],
     [{ strictMinVersion: "8.999", strictMaxVersion: "10.0.*" }, "9", "all"],
     [{ strictMinVersion: "8.999", strictMaxVersion: "10.0.*" }, "10", "some"],
-    [{ strictMinVersion: "6.999", strictMaxVersion: "7.0.*" }, "7", "some"],
+    [{ strictMinVersion: "6.999", strictMaxVersion: "7.0.*" }, "7", "all"],
+    [{ strictMinVersion: "6.999", strictMaxVersion: "7.0.31" }, "7", "some"],
     [{ strictMinVersion: "6.999", strictMaxVersion: "7.0.*" }, "8", "none"],
     [{ strictMinVersion: "8.0.1" }, "8", "some"],
     [{ strictMinVersion: "8.0.1" }, "10", "all"],
@@ -118,6 +119,21 @@ describe("majorSupport", () => {
     [{ strictMinVersion: "8.5", strictMaxVersion: "8.2" }, "8", "none"],
   ])("reads %j for Zotero %s as %s", (facts, major, support) => {
     expect(majorSupport(record(facts), major)).toBe(support);
+  });
+
+  test.each([
+    [{ strictMaxVersion: "10.0.*" }, "10", "10.0.7", "all"],
+    [{ strictMaxVersion: "10.0.6" }, "10", "10.0.7", "some"],
+    [{ strictMinVersion: "10.1" }, "10", "10.0.7", "none"],
+    [{ strictMinVersion: "10.0" }, "10", "10.0.7", "all"],
+    [{ strictMaxVersion: "10.0.*" }, "10", "10.1.0", "some"],
+    [{ strictMaxVersion: "10.0.*" }, "10", undefined, "some"],
+    [{ strictMaxVersion: "10.99.99" }, "10", undefined, "all"],
+    [{ strictMaxVersion: "9.0.*" }, "9", "10.0.7", "all"],
+    [{ strictMaxVersion: "9.0.6" }, "9", "9.0.7", "some"],
+    [{ strictMinVersion: "10.0.3", strictMaxVersion: "10.0.1" }, "10", "10.0.7", "none"],
+  ])("reads %j for Zotero %s with the current release %s as %s", (facts, major, zoteroRelease, support) => {
+    expect(majorSupport(record(facts), major, zoteroRelease)).toBe(support);
   });
 
   test("gives no result for a record with neither bound", () => {

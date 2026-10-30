@@ -664,10 +664,13 @@ describe("the About page", () => {
   test("names each declared mark and says that a range is not a test result", () => {
     const text = mainText(about());
     for (const line of [
-      "✓ The range covers all of that Zotero version.",
+      "✓ The range covers every release of that Zotero version, up to its newest release.",
       "◐ The range covers part of it.",
       "– The range covers none of it.",
-      "The index counts Zotero N as the versions from N.0 to N.9.",
+      "The index counts Zotero N as the versions from N.0 to the newest release of N.",
+      "so a minimum such as 8.999, which authors write to mean Zotero 9 and newer, covers none of Zotero 8.",
+      "Each day the build reads the current Zotero release from zotero.org, and the index keeps the last release of each earlier Zotero version.",
+      "For a Zotero version with no known release, the index counts N.0 to N.9,",
       "A plugin that declares no range shows no mark. The range is what the author declares, not a test result.",
     ]) {
       expect(text).toContain(line);
@@ -925,7 +928,7 @@ describe("the home page", () => {
     expect(html.indexOf("<ul class=\"legend\"")).toBeGreaterThan(html.indexOf("</table>"));
     const items = [...legend![1]!.matchAll(/<li[^>]*>(.*?)<\/li>/gs)].map(([, item]) => item!.replace(/\s+/g, " "));
     expect(items).toEqual([
-      '<span class="mark" data-support="all" aria-hidden="true">✓</span> Declares all of that Zotero version',
+      '<span class="mark" data-support="all" aria-hidden="true">✓</span> Declares every release of that Zotero version, up to its newest release',
       '<span class="mark" data-support="some" aria-hidden="true">◐</span> Declares part of it',
       '<span class="mark" data-support="none" aria-hidden="true">–</span> Declares none of it',
       "No mark: the plugin declares no range",
@@ -1456,6 +1459,76 @@ describe("the built site", () => {
       const text = readFileSync(join(out, file), "utf8");
       for (const trace of traces) expect(text.includes(trace), `${file}: ${trace}`).toBe(false);
     }
+  });
+});
+
+describe("the newest Zotero release", () => {
+  // The shared fixture has no zoteroRelease, so these records get their own two builds.
+  const base = records.find((record) => record.id === "first-plugin@example.org")!;
+  const UP_TO = "up-to-10-0@example.org";
+  const FROM = "from-10-1@example.org";
+  const ranged = (id: string, range: { strictMinVersion?: string; strictMaxVersion?: string }): PluginRecord => {
+    const { strictMinVersion: _min, strictMaxVersion: _max, ...upstream } = base.upstream!;
+    return { ...base, id, upstream: { ...upstream, id, ...range }, reports: [], overrides: [] };
+  };
+  const plugins = [ranged(UP_TO, { strictMinVersion: "7.0", strictMaxVersion: "10.0.*" }), ranged(FROM, { strictMinVersion: "10.1" })];
+  const built: Record<"known" | "unknown", string> = { known: "", unknown: "" };
+  beforeAll(() => {
+    for (const [name, zoteroRelease] of [["known", "10.0.7"], ["unknown", undefined]] as const) {
+      const dir = outWith(JSON.stringify({ schemaVersion: 1, generatedAt: "2026-10-30T06:17:00.000Z", zoteroRelease, plugins }));
+      const run = pnpmSite(["--out", dir]);
+      if (run.status !== 0) throw new Error(run.stderr);
+      built[name] = dir;
+    }
+  }, 120_000);
+
+  const homeOf = (name: keyof typeof built) => readFileSync(join(built[name], "index.html"), "utf8");
+  const pageOf = (name: keyof typeof built, id: string) => readFileSync(join(built[name], "plugins", id, "index.html"), "utf8");
+  // The row's data-zotero value and its home mark for 10.
+  const row = (html: string, id: string) => {
+    const tr = new RegExp(`<tr data-plugin="${escaped(id)}"[^>]*data-zotero="([^"]*)"[^>]*>([\\s\\S]*?)</tr>`).exec(html)!;
+    return { majors: tr[1], mark: /<td class="v" data-major="10">\s*<span class="mark" data-support="(\w+)"/.exec(tr[2])?.[1] };
+  };
+  const declared = (html: string) => /<tr data-major="10">[\s\S]*?<td data-declared="([^"]+)"/.exec(html)?.[1];
+
+  test("the data files are valid against the v1 schema", () => {
+    const validate = new Ajv({ allErrors: true }).compile(pluginsSchema);
+    for (const dir of Object.values(built)) {
+      const data = JSON.parse(readFileSync(join(dir, "v1/plugins.json"), "utf8"));
+      expect(validate(data), JSON.stringify(validate.errors)).toBe(true);
+    }
+  });
+
+  test("with zoteroRelease 10.0.7, marks a maximum of 10.0.* as all of 10 and leaves 10 out of a 10.1 minimum's row", () => {
+    expect(row(homeOf("known"), UP_TO)).toEqual({ majors: "7 8 9 10", mark: "all" });
+    expect(declared(pageOf("known", UP_TO))).toBe("all");
+    expect(pageOf("known", UP_TO)).toContain('<span class="visually-hidden">Declares all of Zotero 10</span>');
+    expect(row(homeOf("known"), FROM)).toEqual({ majors: "", mark: "none" });
+  });
+
+  test("with no zoteroRelease, marks a maximum of 10.0.* as part of 10 and keeps 10 in a 10.1 minimum's row", () => {
+    expect(row(homeOf("unknown"), UP_TO)).toEqual({ majors: "7 8 9 10", mark: "some" });
+    expect(declared(pageOf("unknown", UP_TO))).toBe("some");
+    expect(row(homeOf("unknown"), FROM).majors).toBe("10");
+  });
+
+  // The About page's list of the newest release of each major, one item per major.
+  const releases = (name: keyof typeof built) => {
+    const list = /<ul[^>]*data-newest-releases>([\s\S]*?)<\/ul>/.exec(readFileSync(join(built[name], "about/index.html"), "utf8"))![1]!;
+    return [...list.matchAll(/<li data-major="(\d+)">\s*([^<]*?)\s*<\/li>/g)].map(([, major, text]) => [major, text]);
+  };
+
+  test("the About page names the newest release of each major: 10.0.7 from the data and the last releases of 7, 8, and 9", () => {
+    expect(releases("known")).toEqual([
+      ["7", "Zotero 7: 7.0.32"],
+      ["8", "Zotero 8: 8.0.5"],
+      ["9", "Zotero 9: 9.0.6"],
+      ["10", "Zotero 10: 10.0.7"],
+    ]);
+  });
+
+  test("the About page says that no release of 10 is known when the data has no zoteroRelease", () => {
+    expect(releases("unknown").at(-1)).toEqual(["10", "Zotero 10: no release known, so the index counts 10.0 to 10.9"]);
   });
 });
 
