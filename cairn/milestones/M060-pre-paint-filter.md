@@ -124,7 +124,7 @@ In a browser that runs the home page's module script and supports `:nth-child(â€
       `prePaintStyle` in `src/site/home-filter.ts`, with no call to or read
       of a binding outside its body except built-ins, so no read of
       `PAGE_SIZE` (the size is an argument).
-- [ ] T2: In `site/src/pages/index.astro`, add before `.table-card` a
+- [x] T2: In `site/src/pages/index.astro`, add before `.table-card` a
       `<script is:inline>` whose text is built with `set:html` from
       `String(prePaintStyle)`, `PAGE_SIZE`, and the `noModule` check; in the
       module script, remove `style[data-pre-paint]` after the first `show()`
@@ -166,6 +166,8 @@ In a browser that runs the home page's module script and supports `:nth-child(â€
 - 2026-10-30: lessons used: 2026-10-25 (M001), 2026-10-25 (M007), 2026-10-26 (M015), 2026-10-28 (M035), 2026-10-29 (M048, iframe widths), 2026-10-29 (M053).
 - 2026-10-30: started by /milestone-implement on branch m060-pre-paint-filter, cut from main at 369cf7e.
 - 2026-10-30: T1 done: `prePaintStyle(search, size)` in `src/site/home-filter.ts` with 35 cases in `test/home-filter.test.ts`, which failed before the function and pass now; rules are joined by newlines, every style ends with the first row's border reset (`!important`, since the page's `tr:not([hidden]) ~ tr` rule is more specific), and page 1 writes no `-n+0` rule; `pnpm test` 1405 passed, `pnpm check` 0 problems.
+- 2026-10-30: T2 done: `index.astro` writes `<script is:inline set:html={prePaint} />` between the toolbar and `.table-card`, its text built from `${prePaintStyle}` and `PAGE_SIZE` (the built page carries the function as JavaScript with no types), and the module script ends by removing `style[data-pre-paint]` outside its guard; the AC4 cases moved to `test/support/pre-paint.ts` so the unit and site tests share them; `homeScript` gained a `missing` control and a pre-paint stand-in; new `prePaintScript` runs the classic script in `node:vm`; the one-script test now expects a classic and a module script, and the toolbar test ends its slice at `</div><script>`.
+- 2026-10-30: T2 check discrimination: removing the module script's `remove()` failed the 4 AC5 tests, a page size of 49 in the classic script failed the AC3 cases, and dropping the `noModule` check failed the no-module test; each file was restored from a copy; `pnpm test` 1446 passed, `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review Â· append-only; milestone-local. -->
