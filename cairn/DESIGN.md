@@ -63,8 +63,8 @@ address. The style hides the rows outside the asked page of the rows that
 `?language=` and `?zotero=` pass. So in a browser that reads
 `:nth-child(… of S)`, no row that the script hides paints while the page
 loads (see Known issues). A value that the script drops, or a page past the
-last one, also hides rows that the script then shows. For an address with a non-blank `?q=`, it hides every
-row until the script runs. The script removes the style after its first
+last one, also hides rows that the script then shows. For an address with
+a non-blank `?q=`, it hides every row until the script runs. The script removes the style after its first
 pass (M060). The home
 page's "Menus and settings in" menu filters the table by language subtag,
 run by the home page's script (D-014, D-026, M024, M033). The menu lists the

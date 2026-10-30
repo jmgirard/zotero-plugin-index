@@ -28,8 +28,8 @@ const { plugins } = loadData();
 // A classic script runs as soon as the parser reaches it, before the table's rows parse, where
 // the module script below runs only once the whole page has parsed. It hides at least the rows
 // the module script will hide, so in a browser that reads :nth-child(… of S) none of them
-// paints while the page loads. Only a browser that
-// runs module scripts gets the style, since the module script removes it.
+// paints while the page loads. Only a browser that runs module scripts gets the style, since
+// the module script removes it.
 const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
   const style = document.createElement("style");
   style.setAttribute("data-pre-paint", "");

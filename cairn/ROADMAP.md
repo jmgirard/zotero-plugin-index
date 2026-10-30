@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-30 (M059 done and archived; 2 rows graduated, 2 fil
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M060 | Filter the home list before it paints | in-progress | — | normal | milestones/M060-pre-paint-filter.md |
+| M060 | Filter the home list before it paints | review | — | normal | milestones/M060-pre-paint-filter.md |
 | M059 | Reuse start results for unchanged XPIs | done | — | high | milestones/archive/M059-carry-start-results.md |
 | M058 | Page the home table | done | — | normal | milestones/archive/M058-home-pages.md |
 | M057 | Let a dispatched merge run set its own wait | done | — | high | milestones/archive/M057-merge-wait-override.md |

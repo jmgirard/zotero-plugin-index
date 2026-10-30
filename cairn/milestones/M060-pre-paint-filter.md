@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M060: Filter the home list before it paints
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -173,6 +173,8 @@ In a browser that runs the home page's module script and supports `:nth-child(�
 - 2026-10-30: T4 done: MDN's `:nth-child` page renders its compat table with JavaScript, so the shelf also holds the compat data file it loads (`css.selectors.nth-child`, version 8.1.7), whose `of_syntax` entry gives Chrome and Edge 111, Firefox 113, Opera 97, and Safari 9; new source note `cairn/references/mdn-nth-child.md` and its INDEX line; DESIGN.md's home page paragraph, `home-filter.ts` line, and a new Known issues entry; one CHANGELOG entry. The simple-english hook flags 8 older CHANGELOG lines (`could`, long sentences) outside this milestone's entry; left as they are.
 - 2026-10-30: T5 done at 2367b08: `pnpm test` 1446 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
 - 2026-10-30: claim audit fixes: the `prePaintStyle` and `index.astro` comments now say the style hides at least the rows the script hides (a dropped value or a page past the last hides more) and only in a browser that reads `of S`; `prePaintStyle` now writes one `:not()` rule per filter with one attribute selector, not one compound `:not()`, so DESIGN.md's Known issues claim holds without a Selectors 4 `:not()` (the AC4 cases for both filters changed to match); DESIGN.md's home paragraph names the `of S` limit and the over-hiding; the removal test now records how many rows were hidden at `remove()` (70 of 120 plus the fixture's, so after the first `show()`), and a planted removal before the guard failed only that test; browser pane rerun on the rebuilt site: 16 of 16 same-row addresses matched with 0px borders, 7 of 7 no-row addresses showed 0 rows, no-JS iframes 272 and 272; `pnpm test` 1446 passed, `pnpm check` 0 problems.
+- 2026-10-30: claim audit: 29 claims read, 4 corrected — site/src/pages/index.astro, src/site/home-filter.ts, cairn/DESIGN.md, test/site.test.ts; the same reader re-read the 4 at 64c8443 and found each holds; two wrap fixes it noted (the `index.astro` comment, a 108-character DESIGN.md line) followed.
+- 2026-10-30: implement complete; status set to review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
