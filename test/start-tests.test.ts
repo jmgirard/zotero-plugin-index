@@ -6,14 +6,15 @@ import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { afterAll, afterEach, describe, expect, test, vi } from "vitest";
 import type { PluginsFile, StartPlan, StartPlanItem, StartTestRecord } from "../src/build/build.ts";
-import { addResults, readResultsDir } from "../src/start-test/add-results.ts";
-import { carryPlan, isRetestDay } from "../src/start-test/carry.ts";
+import { isRetestDay } from "../src/start-test/carry.ts";
 import { parsePlan, startTests, summaryLines } from "../src/start-test/start-tests.ts";
 import { fixtureFetch, type Responses } from "./support/fixture-fetch.ts";
 import { fixtureXpi } from "./support/start-fixtures.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const CLI = resolve(ROOT, "src/start-test/start-tests-cli.ts");
+const CARRY_CLI = resolve(ROOT, "src/start-test/carry-cli.ts");
+const ADD_CLI = resolve(ROOT, "src/start-test/add-results-cli.ts");
 const PRELOAD = resolve(ROOT, "test/support/preload-fixture.ts");
 const run = promisify(execFile);
 const publicLookup = async () => ["140.82.112.3"];
@@ -213,46 +214,64 @@ describe("startTests", () => {
 });
 
 describe("the carry chain", () => {
+  // Runs one command with the recorded answers in place of the network.
+  async function command(cli: string, args: string[], responses: Responses = {}) {
+    const fixture = join(tempDir(), "responses.json");
+    writeFileSync(fixture, JSON.stringify({ source: "carry chain test", repoUrl: "", responses }));
+    return run(process.execPath, [cli, ...args], { env: { ...process.env, ZPI_FIXTURE: fixture, NODE_OPTIONS: `--import=${PRELOAD}` } });
+  }
+
   test("carries, skips, and merges results that the next carry reads and carries again", async () => {
     const { binary, starts } = shim("report");
-    const alpha = item("alpha", {});
-    const beta = item("beta", {});
-    const plan: StartPlan = { plugins: [alpha, beta] };
-    const upstream = { id: alpha.id, version: alpha.version, xpiSha256: SHA256 };
-    const records = (startTests?: StartTestRecord[]) => [
-      { id: "alpha", repoUrl: "https://github.com/example/alpha", upstream, ...(startTests ? { startTests } : {}), overrides: [] },
-      { id: "beta", repoUrl: "https://github.com/example/beta", upstream, overrides: [] },
-    ];
-    const deployed = { schemaVersion: 1, generatedAt: "2026-10-29T06:17:00.000Z", plugins: records([{ zotero: "10.0.6", result: "started" }]) };
-    // A day that is neither entry's re-test day.
-    const day = [0, 1, 2, 3, 4, 5, 6].map((i) => (20_000 + i) * 86_400_000).find((t) => !isRetestDay("alpha", t) && !isRetestDay("beta", t))!;
+    const plan: StartPlan = { plugins: [item("alpha", {}), item("beta", {})] };
+    const record = (entry: string, startTests?: StartTestRecord[]) => ({
+      id: entry,
+      repoUrl: `https://github.com/example/${entry}`,
+      upstream: {
+        id: "started@start-test.invalid",
+        version: "1.0.0",
+        updateUrl: `https://example.org/${entry}/update.json`,
+        updateHost: "example.org",
+        repoUrl: `https://github.com/example/${entry}`,
+        repoCreatedAt: "2026-01-01T00:00:00Z",
+        openIssues: 0,
+        releaseCount: 1,
+        latestReleaseDate: "2026-10-01T00:00:00Z",
+        xpiSha256: SHA256,
+      },
+      reports: [],
+      ...(startTests ? { startTests } : {}),
+      overrides: [],
+    });
+    const started: StartTestRecord[] = [{ zotero: "10.0.6", result: "started" }];
+    // alpha started in 10.0.6 before, and beta has no result yet.
+    const deployed = { schemaVersion: 1, generatedAt: "2026-10-29T06:17:00.000Z", plugins: [record("alpha", started), record("beta")] };
+    const quiet = (t: number) => !isRetestDay("alpha", t) && !isRetestDay("beta", t);
+    const day = [0, 1, 2, 3, 4, 5, 6].map((i) => (20_000 + i) * 86_400_000).find(quiet)!;
     const dir = tempDir();
     const planPath = join(dir, "start-plan.json");
     const dataPath = join(dir, "plugins.json");
-    writeFileSync(planPath, JSON.stringify(plan));
-    const built = { schemaVersion: 1 as const, generatedAt: new Date(day).toISOString(), plugins: records() } as unknown as PluginsFile;
-    writeFileSync(dataPath, JSON.stringify(built));
-    const previous = "https://example.org/v1/plugins.json";
-
-    await carryPlan({ plan: planPath, data: dataPath, previous, fetch: fixtureFetch({ [previous]: { json: deployed } }).fetch });
-    const carried = parsePlan(readFileSync(planPath, "utf8"));
-    if (!carried.ok) throw new Error(carried.problem);
-    const run = await startTests({ plan: carried.plan, zotero: binary, fetch: fixtureFetch(served(plan.plugins)).fetch, lookup: publicLookup });
-    expect(run.carried).toEqual(["alpha"]);
-    expect(startCount(starts)).toBe(1);
     const results = join(dir, "results");
-    mkdirSync(join(results, "start-results-10.0.6"), { recursive: true });
-    writeFileSync(join(results, "start-results-10.0.6", "start-results.json"), JSON.stringify(run.results));
-    const merged = addResults(built, carried.plan, await readResultsDir(results), ["10.0.6"]).data;
-    expect(merged.plugins.map((record) => record.startTests)).toEqual([[{ zotero: "10.0.6", result: "started" }], [{ zotero: "10.0.6", result: "started" }]]);
+    const previous = "https://example.org/v1/plugins.json";
+    const built = (t: number) => JSON.stringify({ schemaVersion: 1, generatedAt: new Date(t).toISOString(), plugins: [record("alpha"), record("beta")] });
+    writeFileSync(planPath, JSON.stringify(plan));
+    writeFileSync(dataPath, built(day));
+
+    await command(CARRY_CLI, ["--plan", planPath, "--data", dataPath, "--previous", previous], { [previous]: { json: deployed } });
+    const out = join(results, "start-results-10.0.6", "start-results.json");
+    const tests = await command(CLI, ["--plan", planPath, "--zotero", binary, "--out", out], served(plan.plugins));
+    expect(tests.stdout).toContain("Zotero 10.0.6: 1 results, 0 without a result, 1 carried, 0 outside the manifest range\n");
+    expect(startCount(starts)).toBe(1);
+    await command(ADD_CLI, ["--data", dataPath, "--plan", planPath, "--results", results, "--tested", "10.0.6"]);
+    const merged = JSON.parse(readFileSync(dataPath, "utf8")) as PluginsFile;
+    expect(merged.plugins.map((p) => p.startTests)).toEqual([started, started]);
 
     // The next day's build reads the merged data as the deployed data.
+    const next = [1, 2, 3, 4, 5, 6].map((i) => day + i * 86_400_000).find(quiet)!;
     writeFileSync(planPath, JSON.stringify(plan));
-    const next = [1, 2, 3, 4, 5, 6].map((i) => day + i * 86_400_000).find((t) => !isRetestDay("alpha", t) && !isRetestDay("beta", t))!;
-    writeFileSync(dataPath, JSON.stringify({ ...built, generatedAt: new Date(next).toISOString() }));
-    await carryPlan({ plan: planPath, data: dataPath, previous, fetch: fixtureFetch({ [previous]: { json: merged } }).fetch });
-    const again = JSON.parse(readFileSync(planPath, "utf8")) as StartPlan;
-    expect(again.plugins.map((p) => p.carried)).toEqual([[{ zotero: "10.0.6", result: "started" }], [{ zotero: "10.0.6", result: "started" }]]);
+    writeFileSync(dataPath, built(next));
+    await command(CARRY_CLI, ["--plan", planPath, "--data", dataPath, "--previous", previous], { [previous]: { json: merged } });
+    expect((JSON.parse(readFileSync(planPath, "utf8")) as StartPlan).plugins.map((p) => p.carried)).toEqual([started, started]);
   });
 });
 

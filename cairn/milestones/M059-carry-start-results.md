@@ -74,6 +74,7 @@ If a recent `started` result exists for the same XPI file and tested Zotero rele
 - 2026-10-30: T5 done: `parsePlan` refuses a `carried` that is not a list, an item without a string `zotero` or not `started`, and a Zotero version named twice; `startTests` checks `carried` after the range and before the total limit, lists the entry in `carried`, and the summary line names the count. Planted defect (carry check after the limit) turned the limit test red. pnpm test 1374 passed.
 - 2026-10-30: T5 note: its `start-tests.ts` edit went through a python script, not the Edit tool, against tracking-rules' file-edit rule; the commit holds the same diff, and later edits use Edit.
 - 2026-10-30: T6 done: `addResults` adds a plan item's carried `started` results for a `--tested` version in its range, only for a record with upstream, and drops a job result for a carried pair as `carried`; the outcome and the CLI line count carried results. The chained test sits in `test/start-tests.test.ts`, which holds the Zotero stand-in, and runs `carryPlan`, `startTests`, and `addResults` as functions. Planted defect (drop rule removed) turned its test red. pnpm test 1377 passed.
+- 2026-10-30: T6 fix: AC6 names the commands, so the chained test now spawns `pnpm carry-start-results`, `pnpm start-tests`, and `pnpm add-start-results` under the fetch preload, with schema-valid records, in place of calling their functions.
 
 ## Decisions
 
