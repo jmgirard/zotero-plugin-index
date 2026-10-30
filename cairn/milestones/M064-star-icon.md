@@ -173,4 +173,4 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - prior-review #4: README splits the quoted "1 GitHub Star" across a line break — fix now (rewrapped; CHANGELOG's split "8,400 GitHub Stars" rewrapped too)
 - prior-review #5: the words sit in both the `title` and the hidden span — reject, planned change: AC1 and M054's declared-mark pattern
 - ripple #1: README line 150's "The line reads `By <owner> · <owner>/<repo>`" omits the star — reject, false: the next sentence adds the star for a plugin with a count
-- After the fixes: `pnpm test` 1547 passed, `pnpm check` 0 problems; the four criteria the fixes touch (AC1 markup, AC5 docs) still hold: the head test's exact match collapses the added space, and "8,400 stars" is found 0 times.
+- After the fixes: `pnpm test` 1547 passed, `pnpm check` 0 problems; the two criteria the fixes touch (AC1 markup, AC5 docs) still hold: the head test's exact match collapses the added space, and "8,400 stars" is found 0 times.
