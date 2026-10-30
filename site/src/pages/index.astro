@@ -176,6 +176,11 @@ const { plugins } = loadData();
       </tbody>
     </table>
   </div>
+  <nav class="pager" aria-label="Pages" data-pager hidden>
+    <button type="button" data-page-step="-1">Previous</button>
+    <span role="status" data-page-status></span>
+    <button type="button" data-page-step="1">Next</button>
+  </nav>
   <ul class="legend" role="list" data-legend>
     <li><span class="mark" data-support="all" aria-hidden="true">{MARKS.all}</span> Declares all of that Zotero version</li>
     <li><span class="mark" data-support="some" aria-hidden="true">{MARKS.some}</span> Declares part of it</li>
@@ -191,19 +196,34 @@ const { plugins } = loadData();
 </Base>
 
 <script>
-  import { chosenValue, filterHref, filterOn, filterStatus, rowShows } from "../../../src/site/home-filter.ts";
+  import {
+    chosenPage,
+    chosenValue,
+    filterHref,
+    filterOn,
+    filterStatus,
+    onPage,
+    PAGE_SIZE,
+    pageCount,
+    rowShows,
+  } from "../../../src/site/home-filter.ts";
 
-  // The search box, the menu, the buttons, and the count are hidden in the HTML, so a page
-  // without JavaScript shows every row and no control.
+  // The search box, the menu, the buttons, the count, and the pager are hidden in the HTML,
+  // so a page without JavaScript shows every row and no control.
   const search = document.querySelector<HTMLInputElement>("input[data-search]");
   const select = document.querySelector<HTMLSelectElement>("select[data-language-filter]");
   const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-version-filter] button")];
   const status = document.querySelector<HTMLElement>("[data-filter-status]");
+  const pager = document.querySelector<HTMLElement>("[data-pager]");
+  const pageStatus = document.querySelector<HTMLElement>("[data-page-status]");
+  const steps = [...document.querySelectorAll<HTMLButtonElement>("[data-pager] button")];
+  const table = document.querySelector<HTMLElement>(".table-card");
   if (search && select && buttons.length > 0) {
     const languages = [...select.options].map((option) => option.value);
     // The "Any" button has no value attribute, so its value is "".
     const majors = buttons.map((button) => button.value);
     let major = "";
+    let page = 1;
     const rows = [...document.querySelectorAll<HTMLElement>("tbody tr[data-plugin]")].map((row) => ({
       row,
       languages: row.dataset.languages ?? "",
@@ -211,21 +231,38 @@ const { plugins } = loadData();
       name: row.querySelector("[data-name]")?.textContent ?? "",
       description: row.querySelector("[data-description]")?.textContent ?? "",
     }));
+    const language = () => ({ value: select.value, options: languages });
+    const zotero = () => ({ value: major, options: majors });
+    // The rows the search box, the menu, and the buttons pass, on every page.
+    const passed = () => rows.filter((entry) => rowShows(entry, language(), zotero(), search.value));
     const show = () => {
       for (const button of buttons) button.setAttribute("aria-pressed", String(button.value === major));
-      const language = { value: select.value, options: languages };
-      const zotero = { value: major, options: majors };
-      for (const entry of rows) entry.row.hidden = !rowShows(entry, language, zotero, search.value);
+      const shown = passed();
+      const pages = pageCount(shown.length);
+      page = Math.min(page, pages);
+      for (const entry of rows) entry.row.hidden = true;
+      shown.forEach((entry, i) => (entry.row.hidden = !onPage(i, page)));
       if (status) {
-        const shown = rows.filter(({ row }) => !row.hidden).length;
-        status.textContent = filterStatus(shown, rows.length, search.value.trim() !== "" || filterOn(language) || filterOn(zotero));
+        const filtering = search.value.trim() !== "" || filterOn(language()) || filterOn(zotero());
+        status.textContent = filterStatus(shown.length, rows.length, filtering);
+      }
+      if (pager) pager.hidden = shown.length <= PAGE_SIZE;
+      if (pageStatus) pageStatus.textContent = `Page ${page} of ${pages}`;
+      // aria-disabled rather than disabled, so a button at an end keeps the keyboard focus.
+      for (const step of steps) {
+        const end = step.dataset.pageStep === "-1" ? 1 : pages;
+        step.setAttribute("aria-disabled", String(page === end));
       }
     };
     const address = () =>
-      filterHref(filterHref(filterHref(location.href, "q", search.value.trim()), "language", select.value), "zotero", major);
-    // Reads the parameters into the search box, the menu, and the buttons, on load and when
-    // Back or Forward changes the address in the same page. A parameter that names no option
-    // leaves the address.
+      filterHref(
+        filterHref(filterHref(filterHref(location.href, "q", search.value.trim()), "language", select.value), "zotero", major),
+        "page",
+        page > 1 ? String(page) : "",
+      );
+    // Reads the parameters into the search box, the menu, the buttons, and the page, on load
+    // and when Back or Forward changes the address in the same page. A parameter that names
+    // no option, or no page after 1, leaves the address.
     // Typing writes the address once the visitor stops for half a second, so a burst of keys
     // makes one history call, not one per key.
     let pending: ReturnType<typeof setTimeout> | undefined;
@@ -233,23 +270,29 @@ const { plugins } = loadData();
       clearTimeout(pending);
       history.replaceState(null, "", address());
     };
+    // The filter parameters are read first, so the page parameter is judged against the pages
+    // that the filtered rows fill.
     const fromAddress = () => {
       clearTimeout(pending);
       const params = new URL(location.href).searchParams;
       search.value = params.get("q") ?? "";
       select.value = chosenValue(params.get("language"), languages);
       major = chosenValue(params.get("zotero"), majors);
+      page = chosenPage(params.get("page"), pageCount(passed().length));
       show();
       const href = address();
       if (href !== location.href) history.replaceState(null, "", href);
     };
+    // Each filter event goes back to page 1.
     const update = () => {
+      page = 1;
       show();
       write();
     };
     fromAddress();
     addEventListener("popstate", fromAddress);
     search.addEventListener("input", () => {
+      page = 1;
       show();
       clearTimeout(pending);
       pending = setTimeout(write, 500);
@@ -259,6 +302,18 @@ const { plugins } = loadData();
       button.addEventListener("click", () => {
         major = button.value;
         update();
+      });
+    }
+    // Previous and Next add a history entry, so Back returns to the page before. The new
+    // address also carries any search text that typing had not written yet.
+    for (const step of steps) {
+      step.addEventListener("click", () => {
+        if (step.getAttribute("aria-disabled") === "true") return;
+        clearTimeout(pending);
+        page += Number(step.dataset.pageStep);
+        show();
+        history.pushState(null, "", address());
+        table?.scrollIntoView({ block: "start" });
       });
     }
     search.closest("[hidden]")?.removeAttribute("hidden");

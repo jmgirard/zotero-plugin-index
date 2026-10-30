@@ -8,12 +8,15 @@ it does not review or endorse plugins.
 
 The website <https://jmgirard.github.io/zotero-plugin-index/> shows the index.
 A top bar on every page links to the home page and to the About page. It
-also links to the "Add a plugin" issue form and to the data file. The home page lists every plugin in one table,
-sorted by name. The sort ignores letter case and accents, and names that
-are then equal sort by plugin id. Each row shows the plugin's name and its
-description. If the plugin's GitHub repository is archived, the row shows
-"Archived" after the name. Then come one cell for each Zotero major version
-from 7 to 10 and a "Menus and settings" cell. Next comes the month of
+also links to the "Add a plugin" issue form and to the data file. The home
+page lists every plugin in one table, sorted by name. Without JavaScript the
+table shows every row. With it, the table shows 50 rows at a time, as the
+pager paragraph below says. The sort ignores letter case
+and accents, and names that are then equal sort by plugin id. Each row
+shows the plugin's name and its description. If the plugin's GitHub
+repository is archived, the row shows "Archived" after the name. Then come
+one cell for each Zotero major version from 7 to 10 and a "Menus and
+settings" cell. Next comes the month of
 the release that the index read. Last come links to the source code and to
 the `.xpi` file.
 
@@ -91,10 +94,10 @@ come first, and languages with the same number of plugins come in order of
 their names. If you pick a language, the table shows only the plugins whose
 languages list includes it. The menu groups the regional forms of a
 language, so a plugin with `zh-CN` or `zh-TW` counts under Chinese.
-"All languages" shows every plugin. The page keeps your choice in the
+"All languages" passes every plugin. The page keeps your choice in the
 `language` query parameter of its address, such as `?language=zh`, so you
 can link to the filtered table. If the parameter names no language in the
-menu, the page shows every plugin and removes the parameter.
+menu, the page passes every plugin and removes the parameter.
 
 The home page also has "Declares Zotero" buttons: "Any" and one button for
 each Zotero major from 7 to 10. If you press a major, the table shows only
@@ -107,13 +110,26 @@ pressed and removes the parameter.
 
 The search box, the menu, and the buttons work together: the table shows
 the plugins that pass all three. A count beside them reads "M plugins",
-where M is the number of plugins in the table. While a filter is on, it
-reads "N of M plugins", where N is the number that the filters show. If
-the filters show no plugin, the count says that no plugins match these
-filters.
+where M is the number of plugins in the index. While a filter is on, it
+reads "N of M plugins", where N is the number that the filters pass. The
+count covers the plugins on every page. If the filters pass no plugin, the
+count says that no plugins match these filters.
 
-A script runs the search box, the menu, the buttons, and the count.
-Without JavaScript, the home page shows none of them and lists every
+The table shows 50 of the plugins that the filters pass at a time. When
+they pass more than 50, a pager below the table reads "Page p of P" between
+a Previous and a Next button. Each of them moves one page and scrolls back
+to the top of the table. It also adds an entry to the browser history, so
+Back returns to the address before, filters included. On the first page
+Previous does nothing, and on the last page Next does nothing. The page
+keeps the page number in the `page` query parameter of its address, such as
+`?page=2`, and leaves it out for page 1. If the parameter names no page that
+the filtered plugins fill, the page shows page 1 and removes the parameter.
+A change to the search box, the menu, or the buttons shows page 1 at once.
+For the search box, the address takes the new text and drops `page` once
+typing stops for half a second.
+
+A script runs the search box, the menu, the buttons, the count, and the
+pager. Without JavaScript, the home page shows none of them and lists every
 plugin.
 
 The "Add a plugin" link in the top bar opens the issue form that

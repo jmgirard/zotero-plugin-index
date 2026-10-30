@@ -1,5 +1,6 @@
 // The home page's filters: the search box, the language menu, the Zotero version buttons,
-// and the plugin count beside them. The page's script imports it, so it has no imports.
+// the plugin count beside them, and the pages below the table. The page's script imports
+// it, so it has no imports.
 
 // One filter's state: its chosen value and the values its menu or buttons offer.
 export interface Filter {
@@ -36,8 +37,8 @@ function matches(row: HomeRow, query: string): boolean {
   return row.name.toLowerCase().includes(text) || row.description.toLowerCase().includes(text);
 }
 
-// Whether the home table shows a row: when the search box, the language menu, and the
-// version buttons all pass it.
+// Whether the filters pass a row, so that it shows on its page: when the search box, the
+// language menu, and the version buttons all pass it.
 export function rowShows(row: HomeRow, language: Filter, zotero: Filter, query: string): boolean {
   return matches(row, query) && passes(row.languages, language) && passes(row.zotero, zotero);
 }
@@ -49,7 +50,7 @@ export function chosenValue(asked: string | null, options: readonly string[]): s
 }
 
 // The plugin count beside the filters: the table's total rows when no filter is on, else
-// how many of them the filters show, or that none match.
+// how many of them the filters pass on every page, or that none match.
 export function filterStatus(shown: number, total: number, filtering: boolean): string {
   const plugins = total === 1 ? "plugin" : "plugins";
   if (!filtering) return `${total} ${plugins}`;
@@ -57,11 +58,32 @@ export function filterStatus(shown: number, total: number, filtering: boolean): 
   return `${shown} of ${total} ${plugins}`;
 }
 
+// How many rows a page of the home table shows.
+export const PAGE_SIZE = 50;
+
+// How many pages the rows the filters pass fill: at least 1, so no rows still make page 1.
+export function pageCount(passed: number, size = PAGE_SIZE): number {
+  return Math.max(1, Math.ceil(passed / size));
+}
+
+// Whether the row at index i of the rows the filters pass, counting from 0, is on page.
+export function onPage(i: number, page: number, size = PAGE_SIZE): boolean {
+  return i >= (page - 1) * size && i < page * size;
+}
+
+// The page an address parameter names: a whole number from 2 to pages, in digits with no
+// sign or leading zero, else 1.
+export function chosenPage(asked: string | null, pages: number): number {
+  if (asked === null || !/^[1-9]\d*$/.test(asked)) return 1;
+  const page = Number(asked);
+  return page >= 2 && page <= pages ? page : 1;
+}
+
 // The page's address with parameter name set to value, or with the parameter removed when
 // value is "". An address that already says so comes back unchanged. Otherwise the query is
 // written again, so the other parameters keep their values but not always their spelling,
 // such as %20 for +. The page writes the search box to q, the language menu to language,
-// and the version buttons to zotero.
+// the version buttons to zotero, and the page number after 1 to page.
 export function filterHref(href: string, name: string, value: string): string {
   const url = new URL(href);
   if (value ? url.searchParams.get(name) === value : !url.searchParams.has(name)) return href;

@@ -56,7 +56,8 @@
   build then deploys nothing.
 - The daily build publishes a website at
   `https://jmgirard.github.io/zotero-plugin-index/`. The home page lists every
-  plugin. Each plugin has a page. The entry on version pills below describes
+  plugin. A later entry says how its script shows 50 at a time. Each plugin
+  has a page. The entry on version pills below describes
   what the pages show. `pnpm site` builds the pages into `dist/` beside the
   data. If `pnpm site` fails, the daily build deploys nothing.
 - A bot finds new plugins. Once a day, the `Discover plugins` workflow
@@ -470,3 +471,9 @@
   `--wait-hours <n>`. Scheduled runs still wait 48 hours. With
   `wait_hours` 0, rounds of discovery and merging add every clean plugin
   without the wait, as the README's backfill steps say.
+- The home table shows 50 of the plugins that its filters pass at a time.
+  If more than 50 pass, a pager below it reads "Page p of P" between
+  Previous and Next. A page number after 1 goes in the `page` query
+  parameter, and Back returns to the address before. A filter change goes
+  back to page 1, and the count still covers every page. Without
+  JavaScript the home page still lists every plugin.
