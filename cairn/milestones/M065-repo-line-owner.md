@@ -1,6 +1,6 @@
 # M065: Drop the repeated owner from the repo line
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -48,7 +48,7 @@ Bot branch names and addresses written `<owner>/<repo>` elsewhere in README and 
   repo line test's rows (tests first).
 - [x] T2: Rewrite README's plugin page paragraph (near line 150), DESIGN.md's (near line 92), and the M061 CHANGELOG
   entry (near line 499).
-- [ ] T3: Run `pnpm test` and `pnpm check`. Build the site from the deployed data and view a plugin page with a long
+- [x] T3: Run `pnpm test` and `pnpm check`. Build the site from the deployed data and view a plugin page with a long
   repo name in the browser pane at 375 px.
 
 ## Work log
@@ -64,6 +64,8 @@ Bot branch names and addresses written `<owner>/<repo>` elsewhere in README and 
 - 2026-10-30: criteria audit (full), run after the question set because the line's form was the set's open choice: 2 findings, both taken. AC1 covers every fixture page with a repo line through the head test. AC2 names the link sentences and searches for `<owner>/<repo>` outside an address. No problem in AC3; a repo-name-only link is clear in context (link purpose in context).
 - 2026-10-30: T1 done: `data-repo-name` reads `{github.repo}`. The head test expects `escaped(github.repo)` and the five repo line rows expect the bare repo name; they went red first (16 failed: 11 head-test pages, 5 rows) and pass with the change. `pnpm test` 1547 passed, `pnpm check` 0 problems.
 - 2026-10-30: T2 done: README, DESIGN.md, and the M061 CHANGELOG entry give "By <owner> · <repo>" and say the repo name links to the repository; the example reads "By windingwind · zotero-better-notes · ★ 8,400". A joined-text search of each passage, with `https://github.com/<owner>/<repo>` removed, finds `<owner>/<repo>` and `windingwind/zotero-better-notes` 0 times. No added line over 80 characters. `pnpm test` 1547 passed, `pnpm check` 0 problems.
+- 2026-10-30: T3 done: built the site from the deployed data and served it as `m064-look`. At 375 px in the dark scheme, the Abbreviation Helper page's line reads "By Cydoimos · zotero-abbreviation-helper · 3" (visible text) on one row; the owner links `https://github.com/Cydoimos`, the repo name `https://github.com/Cydoimos/zotero-abbreviation-helper`; page width 375.
+- 2026-10-30: status review; all tasks checked, `pnpm test` and `pnpm check` clean.
 
 ## Decisions
 
