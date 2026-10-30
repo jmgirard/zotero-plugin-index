@@ -189,9 +189,9 @@ export function safeHref(url: string): string | undefined {
 }
 
 // The owner and repo of a URL of the form https://github.com/<owner>/<repo>, with or without
-// a trailing slash, or undefined for any other URL.
+// a trailing slash, or undefined for any other URL, such as one with a query or a fragment.
 export function githubRepo(url: string): { owner: string; repo: string } | undefined {
-  const match = /^https:\/\/github\.com\/([^/]+)\/([^/]+?)\/?$/.exec(url);
+  const match = /^https:\/\/github\.com\/([^/?#]+)\/([^/?#]+?)\/?$/.exec(url);
   return match ? { owner: match[1]!, repo: match[2]! } : undefined;
 }
 

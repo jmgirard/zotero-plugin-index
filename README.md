@@ -138,9 +138,10 @@ account.
 
 Each plugin has its own page. It opens with an "All plugins" link back to
 the home page, the plugin's name, a repository line, and its description.
-If the repository address has the form
-`https://github.com/<owner>/<repo>`, the repository line reads
-`By <owner> · <owner>/<repo>`. The owner links to the owner's GitHub page,
+The repository line needs an address of the form
+`https://github.com/<owner>/<repo>`, with no query or fragment. A
+trailing slash is allowed. The line reads `By <owner> · <owner>/<repo>`.
+The owner links to the owner's GitHub page,
 and `<owner>/<repo>` links to the repository. If the data has a star
 count for the plugin, the line ends with it, such as "8,400 stars". For
 any other address, the page has no repository line. Then come up to

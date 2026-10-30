@@ -31,13 +31,14 @@ rule for declared marks is in M062.
 ## Acceptance criteria
 
 - [ ] AC1: A plugin page's repo URL is `upstream.repoUrl`, else the entry's `repoUrl`. If
-      that URL matches `^https://github\.com/([^/]+)/([^/]+?)/?$`, the page head shows a
+      that URL matches `^https://github\.com/([^/?#]+)/([^/?#]+?)/?$`, the page head shows a
       repo line after the `h1` and before the description. The line links the owner to
       `https://github.com/<owner>` and `<owner>/<repo>` to the repo URL. If the URL does
       not match, the page shows no repo line. Site tests check each link's text and
       `href` on a page with an `upstream.repoUrl`. They also check a failure record whose
       entry `repoUrl` matches. They check that a page shows no line for a non-GitHub host,
-      an `http:` URL, and a URL with an extra path segment.
+      an `http:` URL, a URL with an extra path segment, a URL with a query, and a URL with
+      a fragment.
 - [ ] AC2: `pnpm build` writes GitHub's `stargazers_count` for each repo it reads as
       `upstream.stars`. `schemas/plugins.v1.schema.json` defines `stars` as an optional
       integer of at least 0. If GitHub gives no integer of at least 0, the record has no
@@ -92,6 +93,9 @@ rule for declared marks is in M062.
 - 2026-10-30: T2 done: `githubRepo` and `starsText` in `site/src/data.ts`, the line in the plugin page head, `.repo-line` CSS; site fixture gained stars 1234, 1, and 0, an extra-segment URL (min-only), an `http:` URL (zotero6), and a gitlab entry URL (punctuation failure record); planting `https?` and dropping the space after the owner link each failed the new tests. Browser pane, deployed data plus hand-set stars: no sideways scroll at 375 and 1280 px.
 - 2026-10-30: T3 done: README's plugin page paragraph and data section, DESIGN's facts list and plugin page paragraph, and one CHANGELOG entry describe the repo line and `stars`, with the fetch-the-schema-again line; no added line passes 80 columns.
 - 2026-10-30: T4 done: `pnpm test` 1462 passed and 6 skipped, `pnpm check` 272 entries and 0 problems.
+- 2026-10-30: claim audit: 23 claims read, 5 corrected — site/src/data.ts, README.md, CHANGELOG.md, test/site.test.ts (four claims rested on the pattern letting `?` and `#` into the repo name, which a failure record's `meta.json` URL can reach; one test name said "the stars" for cases with none).
+- 2026-10-30: substantive amendment: AC1's pattern is now `^https://github\.com/([^/?#]+)/([^/?#]+?)/?$`, and its no-line cases add a URL with a query and a URL with a fragment; the deliverable's look is unchanged.
+- 2026-10-30: re-audit: AC1 (full) — 3 findings, none changing the wording: query and fragment cases sit on upstream records (answered: one `githubRepo` call serves both paths, and failure records are tested both ways); the owner group had no case of its own (fixed in tests: `https://github.com/example?x=/cafe-tools`, which a planted `[^/]+` owner group failed); a `.git` suffix still matches (answered: GitHub's `html_url` never has one, and the line still links the repo).
 
 ## Decisions
 

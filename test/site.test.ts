@@ -441,7 +441,7 @@ describe("the plugin page", () => {
     ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "https://github.com/example", "https://github.com/example/guid-plugin", "example/guid-plugin", "By example · example/guid-plugin · 0 stars"],
     ["no-range-plugin@example.org", "https://github.com/example", "https://github.com/example/no-range-plugin", "example/no-range-plugin", "By example · example/no-range-plugin"],
     ["broken-plugin@example.org", "https://github.com/example", "https://github.com/example/broken-plugin", "example/broken-plugin", "By example · example/broken-plugin"],
-  ])("shows the owner, the repo, and the stars of %s under the name", (id, ownerHref, repoHref, repoText, text) => {
+  ])("shows the owner, the repo, and any stars of %s under the name", (id, ownerHref, repoHref, repoText, text) => {
     const line = /<p class="repo-line" data-repo-line>(.*?)<\/p>/s.exec(page(id))?.[1];
     expect(/<a href="([^"]*)" data-repo-owner>([^<]*)<\/a>/.exec(line ?? "")?.slice(1)).toEqual([ownerHref, "example"]);
     expect(/<a href="([^"]*)" data-repo-name>([^<]*)<\/a>/.exec(line ?? "")?.slice(1)).toEqual([repoHref, repoText]);
@@ -453,6 +453,9 @@ describe("the plugin page", () => {
     ["an http: GitHub URL", "zotero6-plugin@example.org"],
     ["a non-GitHub host on a failure record", "_x-y+z.w@{v}"],
     ["a URL with no scheme", "next-plugin@example.org"],
+    ["a GitHub URL with a query after the repo", "locale-plugin@example.org"],
+    ["a GitHub URL with a query after the owner", "a-cafe@example.org"],
+    ["a GitHub URL with a fragment", "b-cafe@example.org"],
   ])("shows no repo line for %s", (_name, id) => {
     expect(page(id)).not.toContain("data-repo-line");
   });
