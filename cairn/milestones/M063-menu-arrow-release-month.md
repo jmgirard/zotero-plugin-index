@@ -77,6 +77,8 @@ in M062.
 - 2026-10-30: T4 done: `pnpm test` 1546 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
 - 2026-10-30: claim audit: 13 claims read, 0 corrected — CHANGELOG.md, README.md, site/src/data.ts, site/src/layouts/Base.astro, test/site.test.ts
 - 2026-10-30: the audit reader noted that the style test's forced-colors check dropped the `@media` wrapper; the test now matches the `(forced-colors: active)` block in the layout source, and it failed with that query planted as `prefers-contrast: more`. `pnpm test` 1546 passed, `pnpm check` 0 problems. Status set to review.
+- 2026-10-30: review fix 2c8de3b drops the b-cafe line from the UTC month test (diff-bug #5); `pnpm test` 1546 passed, `pnpm check` 0 problems.
+- 2026-10-30: step-7 approval: m063-menu-arrow-release-month approved for merge
 
 ## Decisions
 
