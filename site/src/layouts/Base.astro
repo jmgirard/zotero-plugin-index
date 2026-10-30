@@ -35,6 +35,7 @@ const { generatedAt } = loadData();
         --bad: #b3261e;
         --bad-bg: #fbe4e1;
         --none: #8f8f88;
+        --star: #b07d00;
         /* --space-N is N eighths of a rem. */
         --space-1: 0.125rem;
         --space-2: 0.25rem;
@@ -83,6 +84,7 @@ const { generatedAt } = loadData();
           --bad: #ff8a80;
           --bad-bg: #3d1a17;
           --none: #74746d;
+          --star: #e3b341;
         }
       }
       * {
@@ -623,6 +625,21 @@ const { generatedAt } = loadData();
       .page-head .repo-line a {
         color: var(--text);
         font-weight: 600;
+      }
+      /* The star stays on the line of its count. */
+      [data-repo-stars] {
+        white-space: nowrap;
+      }
+      /* The star is filled, so it drops the line icons' stroke. */
+      [data-repo-stars] .icon {
+        fill: var(--star);
+        stroke: none;
+        vertical-align: -0.125em;
+      }
+      @media (forced-colors: active) {
+        [data-repo-stars] .icon {
+          fill: CanvasText;
+        }
       }
       .page-head .description {
         max-width: 68ch;

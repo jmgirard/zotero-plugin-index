@@ -1682,7 +1682,8 @@ describe("the site colors", () => {
   const darkBlock = /@media \(prefers-color-scheme: dark\) \{\s*:root \{(.*?)\}/s.exec(layout)![1]!;
   const dark = new Map([...light, ...colors(darkBlock)]);
   // Each text token on each surface, and each status token on its own background and on
-  // the surface, at 4.5:1; each mark or icon token on the surface at 3:1.
+  // the surface, at 4.5:1; each mark or icon token on the surface at 3:1, and the star, which
+  // the plugin page head shows on the page background, on both.
   const PAIRS: [string, string, number][] = [
     ...["--text", "--muted", "--link"].flatMap((text) =>
       ["--bg", "--surface", "--hover"].map((surface): [string, string, number] => [text, surface, 4.5]),
@@ -1693,6 +1694,8 @@ describe("the site colors", () => {
     ]),
     ["--faint", "--surface", 3],
     ["--none", "--surface", 3],
+    ["--star", "--bg", 3],
+    ["--star", "--surface", 3],
   ];
 
   test.each([
@@ -1736,6 +1739,12 @@ describe("the site colors", () => {
   test("colors each report button from its verdict's pair", () => {
     expect(layout).toMatch(/\.button\[data-report="works"\] \{\s*background: var\(--ok-bg\);\s*color: var\(--ok\);\s*\}/);
     expect(layout).toMatch(/\.button\[data-report="broken"\] \{\s*background: var\(--bad-bg\);\s*color: var\(--bad\);\s*\}/);
+  });
+
+  test("fills the plugin page's star with --star and no stroke, and with CanvasText in forced colors", () => {
+    expect(layout).toMatch(/\n {6}\[data-repo-stars\] \.icon \{[^}]*fill: var\(--star\);[^}]*stroke: none;/);
+    expect(layout).toMatch(/@media \(forced-colors: active\) \{\s*\[data-repo-stars\] \.icon \{\s*fill: CanvasText;/);
+    expect(layout).toMatch(/\[data-repo-stars\] \{\s*white-space: nowrap;/);
   });
 
   // A report button's border takes its text color, and WCAG 2.2 asks 3:1 for a control's edge.
