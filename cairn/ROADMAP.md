@@ -1,18 +1,17 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-30 (M060 done and archived; 1 row graduated, 1 extended; M057 row pruned; 10 lessons marked used, 2 captured, 2 evicted)_
+_Last hygiene check: 2026-10-30 (M061 done and archived; 1 row extended; M058 row pruned; 8 lessons marked used, 1 captured, 1 evicted)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M061 | Show the repo, owner, and stars on plugin pages | review | — | normal | milestones/M061-repo-owner-stars.md |
 | M062 | Mark full support against released Zotero versions | planned | — | normal | milestones/M062-full-support-marks.md |
 | M063 | Fix the language menu arrow and release dates | planned | — | normal | milestones/M063-menu-arrow-release-month.md |
+| M061 | Show the repo, owner, and stars on plugin pages | done | — | normal | milestones/archive/M061-repo-owner-stars.md |
 | M060 | Filter the home list before it paints | done | — | normal | milestones/archive/M060-pre-paint-filter.md |
 | M059 | Reuse start results for unchanged XPIs | done | — | high | milestones/archive/M059-carry-start-results.md |
-| M058 | Page the home table | done | — | normal | milestones/archive/M058-home-pages.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
