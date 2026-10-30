@@ -1630,6 +1630,20 @@ describe("the site styles", () => {
     expect(html.match(/<t[dh][^>]* class="date"/g)).toHaveLength(ids.length + 2);
   });
 
+  test("draws the language menu's arrow in currentColor, inset from the right by the left padding", () => {
+    const menu = cssRules(layout).filter(({ selector }) => selector === "[data-language-filter]");
+    const drawn = new Map(menu.find(({ declarations }) => declarations.some(([property]) => property === "appearance"))!.declarations);
+    expect(drawn.get("appearance")).toBe("none");
+    const gradients = drawn.get("background-image")!.match(/linear-gradient\([^)]*\)/g)!;
+    expect(gradients).toHaveLength(2);
+    for (const gradient of gradients) expect(gradient).toContain("currentColor");
+    const left = drawn.get("padding")!.split(" ")[3];
+    // The last layer is the arrow's right half, so its offset is the arrow's inset.
+    expect(drawn.get("background-position")!.split(",").at(-1)!.trim()).toBe(`right ${left} top 50%`);
+    // Forced colors drop gradients, so there the browser draws its own arrow.
+    expect(menu.at(-1)!.declarations).toContainEqual(["appearance", "auto"]);
+  });
+
   test("leaves styles out of every other .astro file", () => {
     const files = (readdirSync(resolve(ROOT, "site/src"), { recursive: true }) as string[]).filter(
       (path) => path.endsWith(".astro") && path !== join("layouts", "Base.astro"),

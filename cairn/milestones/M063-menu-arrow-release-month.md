@@ -53,7 +53,7 @@ in M062.
 - [x] T1: Change `monthYear` (line 195 of `site/src/data.ts`) to give `YYYY-MM` from the
       UTC date, use it for both the cell text and `datetime`, and add the fixture date
       and site test.
-- [ ] T2: Style `[data-language-filter]` in `site/src/layouts/Base.astro` with
+- [x] T2: Style `[data-language-filter]` in `site/src/layouts/Base.astro` with
       `appearance: none`, right padding for the arrow, and an arrow drawn in
       `currentColor`. Measure the insets and take the four screenshots in the browser
       pane.
@@ -71,6 +71,8 @@ in M062.
 - 2026-10-30: lessons used: 2026-10-26 (M015, serve the built site for the browser pane), 2026-10-29 (M053, the built CSS is minified, so a test cannot match a style by its source text), 2026-10-29 (M048, check page width in same-origin iframes).
 - 2026-10-30: implement started on branch m063-menu-arrow-release-month, cut from main at ad9f627.
 - 2026-10-30: T1 done: `monthYear` now returns `toISOString().slice(0, 7)` and feeds both the cell text and `datetime`; `day` import dropped from index.astro; the cafe-tools fixture date moved from 2026-07-01T00:30:00Z to 2026-11-01T02:00:00Z, and the UTC test expects `2026-11` and `2025-12`; the tests failed before the change (11 in site.test.ts) and pass after. One full-suite run had 1 unnamed failure that did not repeat in 3 more runs.
+- 2026-10-30: T2 choice: the arrow is two 6 px `linear-gradient` triangles in `currentColor` as the menu's background, the right one at `right var(--space-4)`, with right padding `--space-14` so the text clears it; a `forced-colors: active` block puts back `appearance: auto`, since CSS Color Adjust 1 says `background-image` computes to `none` there unless it holds a `url()` (read on w3.org this session).
+- 2026-10-30: T2 done: built the site from the deployed plugins.json and served it as `m063-look` (port 4337). Computed CSS at 1280 and 375 px, light and dark: padding-left 8px, arrow layer at `calc(100% - 8px) 50%`, color `rgb(28, 28, 26)` light and `rgb(236, 236, 232)` dark; the four screenshots each show one arrow inside the box. A new style test checks `appearance: none`, both gradients in currentColor, the inset equal to the left padding, and the forced-colors fallback; it failed with the inset planted at `--space-5`. Forced colors not viewed in the pane.
 
 ## Decisions
 
