@@ -96,6 +96,7 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - 2026-10-30: claim audit: 17 claims read, 3 corrected — README.md, CHANGELOG.md (the tooltip gives the count with its label; the hidden text adds only the words), cairn/DESIGN.md (the `title` holds the count, the span "GitHub Star" or "GitHub Stars"), test/site.test.ts (the column is the full text, not the spoken text). Re-read of the 3 by the same reader pending. `pnpm test` 1547 passed, `pnpm check` 0 problems.
 - 2026-10-30: claim audit re-read: the same reader found all corrected claims true (README, CHANGELOG, DESIGN.md, the test comment).
 - 2026-10-30: amendment routed: AC1 — the criterion puts the `title` on the element that also holds the hidden words, so a screen reader can read the count twice (blame-history #1, against M054's fix 9007997), and its leading space inside the hidden span is dropped in layout (diff-bug #1); the fix-now items for the repo line test and the README and CHANGELOG wording ride with the amendment.
+- 2026-10-30: checkpoint: the AC1 structure is in code (an `aria-hidden` span with the `title`, the star and the count, then a `.visually-hidden` span with `starsText`; `starsWord` removed), with tests that check the `title`, the hidden text, and the star path (a planted outer `title` turned 6 red, a planted `releases` icon 3 red), and README, CHANGELOG and DESIGN.md rewritten; `pnpm test` 1547 passed, `pnpm check` 0 problems. The amended AC1 text waits on its second fresh reader before it is written here.
 
 ## Decisions
 

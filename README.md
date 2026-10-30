@@ -151,10 +151,10 @@ trailing slash is allowed. The line reads `By <owner> · <owner>/<repo>`.
 The owner links to the owner's GitHub page, and `<owner>/<repo>` links to
 the repository. If the data has a star count for the plugin, the line
 ends with a gold star icon and the count, such as "★ 8,400". A tooltip
-gives the count with its label, such as "8,400 GitHub Stars". Hidden
-text after the number adds "GitHub Stars" for screen readers. For any
-other address, the page has
-no repository line. Then come up to
+gives the count with its label, such as "8,400 GitHub Stars", or "1
+GitHub Star" for a count of 1. Screen readers skip the icon and the
+number and read hidden text with the same words. For any other address,
+the page has no repository line. Then come up to
 three links, each with an icon and text: "Download <version> (.xpi)" to the `.xpi`
 file that the index read, "Source" to the repository, and "Releases" to
 the repository's releases page. If the download address does not start

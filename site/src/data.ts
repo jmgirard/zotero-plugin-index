@@ -195,14 +195,9 @@ export function githubRepo(url: string): { owner: string; repo: string } | undef
   return match ? { owner: match[1]!, repo: match[2]! } : undefined;
 }
 
-// The words after a star count: "GitHub Star" for 1, else "GitHub Stars".
-export function starsWord(stars: number): string {
-  return stars === 1 ? "GitHub Star" : "GitHub Stars";
-}
-
 // A star count in words, such as "1 GitHub Star" or "1,234 GitHub Stars".
 export function starsText(stars: number): string {
-  return `${stars.toLocaleString("en")} ${starsWord(stars)}`;
+  return `${stars.toLocaleString("en")} ${stars === 1 ? "GitHub Star" : "GitHub Stars"}`;
 }
 
 export function day(timestamp: string): string {

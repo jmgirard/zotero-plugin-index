@@ -19,7 +19,6 @@ import {
   safeHref,
   shownDescription,
   starsText,
-  starsWord,
   startWords,
   SUPPORT_MARKS as MARKS,
   SUPPORT_WORDS,
@@ -67,9 +66,9 @@ const { min, max } = declaredRange(record);
             <>
               {" "}
               <span aria-hidden="true">·</span>{" "}
-              <span data-repo-stars title={starsText(upstream.stars)}>
-                <Icon name="star" /> {upstream.stars.toLocaleString("en")}
-                <span class="visually-hidden">{` ${starsWord(upstream.stars)}`}</span>
+              <span data-repo-stars>
+                <span aria-hidden="true" title={starsText(upstream.stars)}><Icon name="star" /> {upstream.stars.toLocaleString("en")}</span>
+                <span class="visually-hidden">{starsText(upstream.stars)}</span>
               </span>
             </>
           )}
