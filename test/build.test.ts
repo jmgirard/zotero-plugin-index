@@ -624,7 +624,7 @@ describe("buildData", () => {
 
     test("writes the same file as before the build-level rule", () => {
       if (!result.ok) throw new Error(result.problems.join("\n"));
-      // The fixture zips each XPI with the current time, so the file names its SHA-256 by the plan.
+      // The zip's time is local, so its SHA-256 differs by time zone; the file names it by the plan.
       const fixture = readFileSync(resolve(ROOT, "test/fixtures/build/mixed-failures.plugins.json"), "utf8");
       expect(result.plan.plugins).toHaveLength(1);
       expect(result.text).toBe(fixture.replace("PLAN_SHA256", result.plan.plugins[0].sha256));

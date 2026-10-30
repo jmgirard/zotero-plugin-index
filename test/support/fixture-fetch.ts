@@ -115,7 +115,8 @@ function body(recorded: Recorded, seen: SeenRequest): BodyInit | null {
       name,
       strToU8(typeof content === "string" ? content : JSON.stringify(content)),
     ]);
-    return new Blob([zipSync(Object.fromEntries(files)) as Uint8Array<ArrayBuffer>]);
+    // A fixed time keeps the bytes, and so their SHA-256, the same from one request to the next.
+    return new Blob([zipSync(Object.fromEntries(files), { mtime: "2026-01-01T00:00:00Z" }) as Uint8Array<ArrayBuffer>]);
   }
   if (recorded.base64 !== undefined) return new Blob([Buffer.from(recorded.base64, "base64")]);
   if (recorded.text !== undefined) return recorded.text;

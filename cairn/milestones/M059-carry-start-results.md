@@ -42,8 +42,8 @@ If a recent `started` result exists for the same XPI file and tested Zotero rele
 ## Tasks
 
 - [x] T1: Publish `upstream.xpiSha256`. Change the record type and writer in `src/build/build.ts` (near lines 23 and 283), add the v1 schema field, and add the build and schema tests.
-- [ ] T2: Write `src/start-test/carry.ts`, with the pure carry selection and `retestDay`. Add the AC3 tests.
-- [ ] T3: Write the carry command, `pnpm carry-start-results --plan <file> --data <file> --previous <url>`. It fetches with a time limit and a 16 MiB cap, keeps the AC4 fallbacks, and rewrites the plan through a temporary file. Add tests with a fixture fetch.
+- [x] T2: Write `src/start-test/carry.ts`, with the pure carry selection and `retestDay`. Add the AC3 tests.
+- [x] T3: Write the carry command, `pnpm carry-start-results --plan <file> --data <file> --previous <url>`. It fetches with a time limit and a 16 MiB cap, keeps the AC4 fallbacks, and rewrites the plan through a temporary file. Add tests with a fixture fetch.
 - [ ] T4: Add the carry step to `build.yml` after `pnpm build` and before the `start-plan` upload. Add its check to `test/workflows.test.ts`.
 - [ ] T5: Make `parsePlan` read and check `carried`. Make `startTests` skip carried pairs and count them in its summary. Add tests.
 - [ ] T6: Make `addResults` merge carried results and drop job results for carried pairs as `carried`. Add the AC6 tests and the chained test.
@@ -69,6 +69,7 @@ If a recent `started` result exists for the same XPI file and tested Zotero rele
 - 2026-10-30: plan gate chose to write carried results into the start plan in the build job over a carry inside the start-test jobs, because those jobs run plugin code and the site job must merge carried results from a source plugin code cannot write. Falsified by evidence that plugin code can replace the `start-plan` artifact.
 - 2026-10-30: implement started on branch m059-carry-start-results.
 - 2026-10-30: T1 done: `readRecord` writes `xpiSha256` beside `xpiUrl`, the schema adds it with pattern `^[0-9a-f]{64}$`. The fixture zips XPIs with the current time, so `mixed-failures.plugins.json` holds `PLAN_SHA256`, which the test fills from the plan. The `StartPlanItem.carried` type rides in this commit for T2. pnpm test 1332 passed, pnpm check 0 problems.
+- 2026-10-30: T2 and T3 done in one commit, since both live in `src/start-test/carry.ts`: `retestDay` is the first 4 bytes of the entry id's SHA-256 mod 7; a record or test item of another shape, a Zotero version named twice, and an entry id named twice carry nothing; `carryPlan` returns code 0 with one line on every error; `--previous` defaults to `PREVIOUS_URL`; the CLI exits 1 only for a usage error. Planted defects (hash check removed, re-test day removed) each turned 2 tests red. A two-run build test then failed, since fixture zips took the current time: `fixture-fetch.ts` now zips with a fixed time, which fflate writes in local time, so the build fixture keeps `PLAN_SHA256`. pnpm test 1364 passed.
 
 ## Decisions
 
