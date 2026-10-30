@@ -66,6 +66,7 @@ Bot branch names and addresses written `<owner>/<repo>` elsewhere in README and 
 - 2026-10-30: T2 done: README, DESIGN.md, and the M061 CHANGELOG entry give "By <owner> · <repo>" and say the repo name links to the repository; the example reads "By windingwind · zotero-better-notes · ★ 8,400". A joined-text search of each passage, with `https://github.com/<owner>/<repo>` removed, finds `<owner>/<repo>` and `windingwind/zotero-better-notes` 0 times. No added line over 80 characters. `pnpm test` 1547 passed, `pnpm check` 0 problems.
 - 2026-10-30: T3 done: built the site from the deployed data and served it as `m064-look`. At 375 px in the dark scheme, the Abbreviation Helper page's line reads "By Cydoimos · zotero-abbreviation-helper · 3" (visible text) on one row; the owner links `https://github.com/Cydoimos`, the repo name `https://github.com/Cydoimos/zotero-abbreviation-helper`; page width 375.
 - 2026-10-30: status review; all tasks checked, `pnpm test` and `pnpm check` clean.
+- 2026-10-30: claim audit: 14 claims read, 0 corrected — README.md, CHANGELOG.md, cairn/DESIGN.md, the plugin page template, test/site.test.ts.
 
 ## Decisions
 
