@@ -266,7 +266,7 @@ describe("the carry chain", () => {
     const merged = JSON.parse(readFileSync(dataPath, "utf8")) as PluginsFile;
     expect(merged.plugins.map((p) => p.startTests)).toEqual([started, started]);
 
-    // The next day's build reads the merged data as the deployed data.
+    // A later build, on a day that is a re-test day for neither entry, reads the merged data as the deployed data.
     const next = [1, 2, 3, 4, 5, 6].map((i) => day + i * 86_400_000).find(quiet)!;
     writeFileSync(planPath, JSON.stringify(plan));
     writeFileSync(dataPath, built(next));

@@ -339,6 +339,10 @@ keeps the record's `started` result. It starts the plugin in these cases:
 - It is the entry's re-test day. Each entry has one such day in every 7,
   fixed by its entry id. A build on that day keeps no earlier result for
   the entry.
+- The published data names the entry twice, or its record names the
+  release twice.
+- The build cannot read the published data. It then keeps no earlier
+  result that day.
 
 So a `started` result is most often up to 7 days old. If the build on the
 re-test day deploys nothing, the result stays until the next re-test day.
@@ -1084,7 +1088,9 @@ The command carries nothing in these cases:
 - It cannot read the earlier data in 60 seconds.
 - The answer is not HTTP 200, or the body is over 16 MiB.
 - The body is not data with a `plugins` list.
-- It cannot read the plan or the `--data` file.
+- It cannot read the plan, or the plan is not a valid start plan.
+- It cannot read the `--data` file or its `generatedAt`.
+- It cannot write the new plan.
 
 In each case, it leaves the plan as it was, prints one line that names the
 cause, and exits with status 0.
@@ -1133,10 +1139,11 @@ version. If a result meets all of these conditions, the command keeps it:
 - The item's `carried` list does not name its Zotero version.
 
 The command also adds each result of an item's `carried` list whose Zotero
-version `--tested` lists and the item's range covers. If two or more
-results from the directories name one entry and one Zotero version, the
-command drops all of them. It also drops each entry that is not a readable
-JSON array. Such an entry can be a directory, a link, or a file over 1 MiB.
+version `--tested` lists and the item's range covers. Two or more results
+from the directories can meet all of these conditions and name one entry
+and one Zotero version. The command then drops all of them. It also drops
+each entry that is not a readable JSON array. Such an entry can be a
+directory, a link, or a file over 1 MiB.
 Then it writes each record's kept results into the data file as
 `startTests`, ordered by Zotero version, and prints how many it dropped. If
 `--results` does not exist, the command adds no results and exits with
