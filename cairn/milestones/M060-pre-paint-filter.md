@@ -61,7 +61,7 @@ In a browser that runs the home page's module script and supports `:nth-child(â€
 ## Acceptance criteria
 <!-- owner: plan Â· create/amend-via-gate; review reads, never reinterprets. -->
 
-- [ ] AC1: In the browser pane, on a site built from the deployed data file,
+- [x] AC1: In the browser pane, on a site built from the deployed data file,
       a copy of the home page with its module script removed displays the
       same rows, by `data-plugin` id, as the full page displays, with the
       same computed `border-top-width` on the first displayed row, for each
@@ -75,16 +75,16 @@ In a browser that runs the home page's module script and supports `:nth-child(â€
       `?q=pdf&page=2`, `?language=xx`, `?zotero=99`, `?page=99`,
       `?zotero=Z&page=99`, and `?page=99999999999999999999` the copy
       displays no row.
-- [ ] AC2: In the browser pane, the built home page loaded in an iframe whose
+- [x] AC2: In the browser pane, the built home page loaded in an iframe whose
       `sandbox` attribute holds `allow-same-origin` and not `allow-scripts`
       displays every row, for the bare address and for `?zotero=Z&page=2`.
-- [ ] AC3: A site test runs the built home page's classic inline script in
+- [x] AC3: A site test runs the built home page's classic inline script in
       `node:vm` with a stand-in `location.search` and document, for each
       search string that AC4 lists. Each run appends one
       `style[data-pre-paint]` to the head, whose text equals
       `prePaintStyle(<that search string>, PAGE_SIZE)`. A run whose stand-in
       `HTMLScriptElement.prototype` lacks `noModule` appends no style.
-- [ ] AC4: Unit tests of `prePaintStyle` assert its exact CSS text for each
+- [x] AC4: Unit tests of `prePaintStyle` assert its exact CSS text for each
       of these search strings: `""`; `?page=` with each of `2`, `1`, `02`,
       `0`, `-2`, `2.0`, `abc`, `99`, `999999`, `1234567`, and an empty
       value; `?page=2&page=3`; `?language=en`, `?zotero=7`, and
@@ -93,18 +93,18 @@ In a browser that runs the home page's module script and supports `:nth-child(â€
       `?zotero=7&zotero=8`, `?language=`, and `?zotero=`; `?language=`
       with each of `a"b`, `a]b`, and `a%20b`; `?q`, `?q=`, `?q=+`,
       `?q=%20`, `?q=pdf`, and `?q=pdf&page=2`.
-- [ ] AC5: Site tests in `node:vm` show that no `style[data-pre-paint]` is
+- [x] AC5: Site tests in `node:vm` show that no `style[data-pre-paint]` is
       left in the stand-in head once the module script's first pass ends,
       on the built page and on pages that lack the search box, the language
       menu, or the version buttons.
-- [ ] AC6: DESIGN.md's home page paragraph and one CHANGELOG entry state
+- [x] AC6: DESIGN.md's home page paragraph and one CHANGELOG entry state
       that, in a browser that runs module scripts, the home page paints
       only the asked rows before its script runs and paints no row for an
       address with a non-blank `q`; DESIGN.md's `home-filter.ts` line names
       `prePaintStyle`; a DESIGN.md Known issues entry names the browser
       releases that lack `:nth-child(â€¦ of S)`, citing MDN's compatibility
       data through a `cairn/references/` source note.
-- [ ] AC7: `pnpm test` and `pnpm check` pass.
+- [x] AC7: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 <!-- owner: plan Â· create/amend-via-gate -->
@@ -181,3 +181,14 @@ In a browser that runs the home page's module script and supports `:nth-child(â€
 
 ## Review
 <!-- owner: review Â· exclusive. -->
+
+Evidence gathered 2026-10-30 at c79908d (main unmoved at 369cf7e; route (d); Copilot round off).
+
+- AC1: site rebuilt at c79908d from the deployed `v1/plugins.json` (272 rows; L=en, Z=7, Z3=8, Z2=7, last page 6), `pre/index.html` the home page less its module script, served by `m060-live`; in the browser pane, iframes at 1200 px: 16 of 16 same-row addresses gave the copy the same `data-plugin` ids as the full page (each non-empty) and the same first-row `border-top-width` (0px/0px), the full page keeping no pre-paint style; 7 of 7 no-row addresses gave the copy 0 displayed rows with its pre-paint style present.
+- AC2: same build, iframes with `sandbox="allow-same-origin"` (no `allow-scripts`): the bare address and `?zotero=7&page=2` each displayed 272 of 272 rows, with no pre-paint style.
+- AC3: `pnpm exec vitest run test/home-filter.test.ts test/site.test.ts --reporter=verbose` (360 passed): 35 of 35 "the home page's classic script > adds the style that prePaintStyle writes for â€¦" cases pass, one per `PRE_PAINT_CASES` search string, each asserting one appended element with `data-pre-paint` whose text equals `prePaintStyle(search, PAGE_SIZE)`; "adds no style in a browser that does not run module scripts" passes; check discrimination at T2 (page size 49, no `noModule` check) turned them red.
+- AC4: same run: 35 of 35 "prePaintStyle > writes the style for â€¦" cases pass with `toBe` on the exact text; `test/support/pre-paint.ts` lists exactly AC4's 35 search strings (1 empty, 11 `page` values, the repeated page, 6 language/zotero forms with and without page 2, 7 other values, 3 unsafe values, 6 `q` forms).
+- AC5: same run: "removes the classic script's style once its first pass has hidden the rows off page 1" (removal seen with all rows past 50 already hidden) and "removes the classic script's style on a page with no search / menu / buttons" pass; a planted removal before the guard failed the first, and no removal failed all four (T2, claim audit fixes).
+- AC6: `git diff main...HEAD -- cairn/DESIGN.md CHANGELOG.md`: the CHANGELOG entry opens "In a browser that runs module scripts, the home table no longer shows rows that its filters or page leave out while the page loads" and says a non-blank `q` shows no row until the search runs; DESIGN.md's home paragraph says the same for module-script browsers and non-blank `?q=`, its `home-filter.ts` line names `prePaintStyle`, and a new Known issues entry names Chrome and Edge before 111, Firefox before 113, Opera before 97, and Safari since 9, citing `cairn/references/mdn-nth-child.md`, whose values match the shelf's compat data file. A 108-character DESIGN.md line from the claim fix was rewrapped at review.
+- AC7: at c79908d, `pnpm test`: type check clean, 1446 passed, 6 skipped (26 files); `pnpm check`: checked 272 entries in plugins, 0 problems.
+- Consistency gate: `cairn_validate.py` exit 0, all checks passed (coverage complete PASS); no DESIGN.md principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
