@@ -79,18 +79,22 @@ export function chosenPage(asked: string | null, pages: number): number {
   return page >= 2 && page <= pages ? page : 1;
 }
 
-// The CSS that hides the rows the page's script will hide for an address, so that a row the
-// script hides never paints before the script runs. search is the address's query string,
-// read as the script reads it, and size is the page size. A non-blank q, a language or zotero
-// value that is not letters, digits, and hyphens, or a page of more than 6 digits hides every
-// row. Otherwise the CSS shows the asked page of the rows that the language and zotero values
-// pass. The home page builds a classic script from this function's source text, so it calls
-// and reads nothing from outside its body except built-ins.
+// The CSS that hides at least the rows the page's script will hide for an address, so that a
+// row the script hides does not paint before the script runs. A value that the script drops,
+// or a page past the last one, can also hide rows that the script then shows. search is the
+// address's query string, read as the script reads it, and size is the page size. A non-blank
+// q, a language or zotero value that is not letters, digits, and hyphens, or a page of more
+// than 6 digits hides every row. Otherwise the CSS shows the asked page of the rows that the
+// language and zotero values pass. Each value gets its own :not() rule with one attribute
+// selector, and each rule that uses :nth-child(… of S) stands alone, so a browser that cannot
+// read that form drops only those rules. The home page builds a classic script from this
+// function's source text, so it calls and reads nothing from outside its body except
+// built-ins.
 export function prePaintStyle(search: string, size: number): string {
   const rows = ".plugins tbody tr";
   const params = new URLSearchParams(search);
   if ((params.get("q") ?? "").trim() !== "") return `${rows}{display:none}`;
-  let filter = "";
+  const passing: string[] = [];
   for (const [name, attribute] of [
     ["language", "data-languages"],
     ["zotero", "data-zotero"],
@@ -98,15 +102,14 @@ export function prePaintStyle(search: string, size: number): string {
     const value = params.get(name!) ?? "";
     if (value === "") continue;
     if (!/^[A-Za-z0-9-]+$/.test(value)) return `${rows}{display:none}`;
-    filter += `[${attribute}~="${value}"]`;
+    passing.push(`[${attribute}~="${value}"]`);
   }
   const asked = params.get("page") ?? "";
   if (/^\d{7,}$/.test(asked)) return `${rows}{display:none}`;
   const page = /^[1-9]\d*$/.test(asked) && Number(asked) >= 2 ? Number(asked) : 1;
-  const of = filter === "" ? "" : ` of ${filter}`;
+  const of = passing.length === 0 ? "" : ` of ${passing.join("")}`;
   const before = (page - 1) * size;
-  const rules: string[] = [];
-  if (filter !== "") rules.push(`${rows}:not(${filter}){display:none}`);
+  const rules = passing.map((selector) => `${rows}:not(${selector}){display:none}`);
   if (page > 1) rules.push(`${rows}:nth-child(-n+${before}${of}){display:none}`);
   rules.push(`${rows}:nth-child(n+${before + size + 1}${of}){display:none}`);
   // The page's own rule gives a row a top border after any row without hidden, and these

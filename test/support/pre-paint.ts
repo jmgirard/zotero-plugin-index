@@ -10,15 +10,24 @@ const PAGE_2 = css(
   `${R}:nth-child(n+101){display:none}`,
   `${R}:nth-child(51){border-top:0!important}`,
 );
-const filtered = (s: string) =>
-  css(`${R}:not(${s}){display:none}`, `${R}:nth-child(n+51 of ${s}){display:none}`, `${R}:nth-child(1 of ${s}){border-top:0!important}`);
-const filteredPage2 = (s: string) =>
-  css(
-    `${R}:not(${s}){display:none}`,
+// One :not() rule per filter, then the page rules over the rows that pass both.
+const filtered = (...each: string[]) => {
+  const s = each.join("");
+  return css(
+    ...each.map((one) => `${R}:not(${one}){display:none}`),
+    `${R}:nth-child(n+51 of ${s}){display:none}`,
+    `${R}:nth-child(1 of ${s}){border-top:0!important}`,
+  );
+};
+const filteredPage2 = (...each: string[]) => {
+  const s = each.join("");
+  return css(
+    ...each.map((one) => `${R}:not(${one}){display:none}`),
     `${R}:nth-child(-n+50 of ${s}){display:none}`,
     `${R}:nth-child(n+101 of ${s}){display:none}`,
     `${R}:nth-child(51 of ${s}){border-top:0!important}`,
   );
+};
 const EN = '[data-languages~="en"]';
 const Z7 = '[data-zotero~="7"]';
 
@@ -48,10 +57,10 @@ export const PRE_PAINT_CASES: [search: string, style: string][] = [
   ["?page=2&page=3", PAGE_2],
   ["?language=en", filtered(EN)],
   ["?zotero=7", filtered(Z7)],
-  ["?language=en&zotero=7", filtered(EN + Z7)],
+  ["?language=en&zotero=7", filtered(EN, Z7)],
   ["?language=en&page=2", filteredPage2(EN)],
   ["?zotero=7&page=2", filteredPage2(Z7)],
-  ["?language=en&zotero=7&page=2", filteredPage2(EN + Z7)],
+  ["?language=en&zotero=7&page=2", filteredPage2(EN, Z7)],
   ["?language=EN", filtered('[data-languages~="EN"]')],
   ["?language=zh-Hant", filtered('[data-languages~="zh-Hant"]')],
   ["?language=e%6E", filtered(EN)],

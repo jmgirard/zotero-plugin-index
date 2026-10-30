@@ -60,8 +60,10 @@ goes back to page 1 (M058). Without JavaScript every row shows. A classic
 script before the table runs before the rows parse. In a browser that runs
 module scripts, it adds a style that `prePaintStyle` writes from the
 address. The style hides the rows outside the asked page of the rows that
-`?language=` and `?zotero=` pass, so no row that the script hides paints
-while the page loads. For an address with a non-blank `?q=`, it hides every
+`?language=` and `?zotero=` pass. So in a browser that reads
+`:nth-child(… of S)`, no row that the script hides paints while the page
+loads (see Known issues). A value that the script drops, or a page past the
+last one, also hides rows that the script then shows. For an address with a non-blank `?q=`, it hides every
 row until the script runs. The script removes the style after its first
 pass (M060). The home
 page's "Menus and settings in" menu filters the table by language subtag,
@@ -820,5 +822,6 @@ reused._
   passes, on every page, until the home page's script runs. Chrome and Edge
   before 111, Firefox before 113, and Opera before 97 cannot read it; Safari
   reads it since 9 (`cairn/references/mdn-nth-child.md`). Such a browser
-  drops only the rules that use the form, so it still hides the rows that
-  the filter does not pass. Recorded at M060, 2026-10-30.
+  drops only the rules that use the form. Each filter's `:not()` rule holds
+  one attribute selector, so the browser still hides the rows that the
+  filter does not pass. Recorded at M060, 2026-10-30.

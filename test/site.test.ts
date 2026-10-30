@@ -1043,8 +1043,9 @@ function homeScript(href: string, generated = 0, missing?: "search" | "menu" | "
   let scrolls = 0;
   const table = { scrollIntoView: () => scrolls++ };
   // The style that the classic script adds to the head.
-  let prePaintRemoved = false;
-  const prePaint = { remove: () => (prePaintRemoved = true) };
+  // How many rows were hidden when the module script removed it, or undefined before then.
+  let hiddenAtRemoval: number | undefined;
+  const prePaint = { remove: () => (hiddenAtRemoval = tableRows.filter((row) => row.hidden).length) };
   const lookups: Record<string, unknown> = {
     "input[data-search]": missing === "search" ? null : search,
     "select[data-language-filter]": missing === "menu" ? null : select,
@@ -1101,7 +1102,7 @@ function homeScript(href: string, generated = 0, missing?: "search" | "menu" | "
     pageStatus,
     steps,
     scrolls: () => scrolls,
-    prePaintRemoved: () => prePaintRemoved,
+    hiddenAtRemoval: () => hiddenAtRemoval,
     all: () => tableRows.map((r) => r.dataset.plugin),
     visible: () => tableRows.filter((r) => !r.hidden).map((r) => r.dataset.plugin),
     fire: (name: string) => events.get(name)!(),
@@ -1280,13 +1281,14 @@ describe("the home page script", () => {
     expect(page.timers.size).toBe(0);
   });
 
-  test("removes the classic script's style after its first pass", () => {
-    expect(homeScript(PAGE).prePaintRemoved()).toBe(true);
+  test("removes the classic script's style once its first pass has hidden the rows off page 1", () => {
+    const page = homeScript(PAGE, 120);
+    expect(page.hiddenAtRemoval()).toBe(page.all().length - 50);
   });
 
   test.each(["search", "menu", "buttons"] as const)("removes the classic script's style on a page with no %s", (missing) => {
     const page = homeScript(PAGE, 0, missing);
-    expect(page.prePaintRemoved()).toBe(true);
+    expect(page.hiddenAtRemoval()).toBe(0);
     expect(page.shown.size).toBe(0);
   });
 });
