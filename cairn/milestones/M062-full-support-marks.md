@@ -130,6 +130,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: status set to review after return 1.
 - 2026-10-30: review pass 2: AC1–AC6 re-evidenced at eee4cb7; four lenses found no criterion failing; 8 fix-now items landed in db543af (verify: `pnpm test` 1545 passed, 6 skipped; `pnpm check` 0 problems), and follow-up row "Track point releases of older majors" added at low.
 - 2026-10-30: `cairn_validate` failed weight caps (ROADMAP 60 lines, cap under 60); merged the two M062 follow-up rows into "Keep the Zotero release lists current" at normal. Review lines that name "Flag a new Zotero major in the build" mean that row.
+- 2026-10-30: step-7 approval: m062-full-support-marks approved for merge
 
 ## Decisions
 
