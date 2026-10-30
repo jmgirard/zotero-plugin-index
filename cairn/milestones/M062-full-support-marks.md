@@ -1,6 +1,6 @@
 # M062: Mark full support against released Zotero versions
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -126,6 +126,8 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: implement resumed for review return 1; minor amendment: added T6 (the AC1 fix, Coverage AC1 → T1, T6) and T7 (the pass 1 fix-now findings).
 - 2026-10-30: T6 done: `readZoteroRelease` awaits `response.text()` before the parse's `try`, so a failed or cut body read reaches the outer catch with its own cause, and the `signal.aborted` check is gone. The new "a body read that fails" case (`bodyError: "read ECONNRESET"`) failed on the old code with "returned a body that is not JSON" and passes now; the stalled-body case still names the limit.
 - 2026-10-30: T7 done: the CLI prints the release line before the writes; build.yml and README name the 30 s read beside the other limits, and README's release paragraph moved after the plugin time-limit paragraph; README's field list names `zoteroRelease`; README and the About page restore the 8.999 note (it covers none of 8); `checkOutput` has a pass case and a `10.0.7-beta` reject case for `zoteroRelease`; the release error cases use `releaseMs: 1000`, drop the repeated `checkOutput` and `buildLevel` expects, and the CLI test checks "build-level failures: 0 of 3 records" once; the site test drops the weaker list expect and the restating comment; DESIGN and README added lines rewrapped to 80 columns. `pnpm test` 1544 passed, 6 skipped; `pnpm check` 0 problems.
+- 2026-10-30: claim audit: 24 claims read, 0 corrected — README.md, .github/workflows/build.yml, site/src/pages/about.astro, src/build/cli.ts, src/build/zotero-release.ts, test/build.test.ts, test/site.test.ts (the added lines of cd048e2 and d78dd39; a fresh Opus reader).
+- 2026-10-30: status set to review after return 1.
 
 ## Decisions
 
