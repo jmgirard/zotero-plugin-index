@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { chosenValue, filterHref, filterOn, filterStatus, passes, rowShows } from "../src/site/home-filter.ts";
+import { chosenPage, chosenValue, filterHref, filterOn, filterStatus, onPage, pageCount, passes, rowShows } from "../src/site/home-filter.ts";
 
 const LANGUAGES = ["", "de", "en", "zh"];
 const MAJORS = ["", "7", "8", "9", "10"];
@@ -125,5 +125,47 @@ describe("filterHref", () => {
     ["the language parameter already set", `${PAGE}?q=a%20b&language=zh`, "language", "zh"],
   ])("leaves an address with %s unchanged", (_, href, name, value) => {
     expect(filterHref(href, name, value)).toBe(href);
+  });
+});
+
+describe("the home table's pages", () => {
+  test.each([
+    [0, 1],
+    [1, 1],
+    [50, 1],
+    [51, 2],
+    [100, 2],
+    [101, 3],
+    [272, 6],
+  ])("%i passed rows fill %i pages of 50", (passed, pages) => {
+    expect(pageCount(passed)).toBe(pages);
+  });
+
+  // The indexes of the rows on a page, out of 272 passed rows.
+  const rowsOn = (page: number) => [...Array(272).keys()].filter((i) => onPage(i, page));
+
+  test.each([
+    [1, 0, 49],
+    [3, 100, 149],
+    [6, 250, 271],
+  ])("page %i of 272 rows holds rows %i to %i", (page, first, last) => {
+    const rows = rowsOn(page);
+    expect([rows[0], rows.at(-1), rows.length]).toEqual([first, last, last - first + 1]);
+  });
+
+  test.each([
+    ["2", 6, 2],
+    ["6", 6, 6],
+    [null, 6, 1],
+    ["1", 6, 1],
+    ["", 6, 1],
+    ["0", 6, 1],
+    ["-2", 6, 1],
+    ["x", 6, 1],
+    ["02", 6, 1],
+    ["2.0", 6, 1],
+    ["7", 6, 1],
+  ])("reads the page parameter %j over %i pages as page %i", (asked, pages, page) => {
+    expect(chosenPage(asked, pages)).toBe(page);
   });
 });

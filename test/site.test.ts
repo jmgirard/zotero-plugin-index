@@ -942,7 +942,7 @@ describe("the home page", () => {
     ]);
   });
 
-  test("holds every row without hidden, and the search box, the menu, the buttons, and the count inside hidden elements", () => {
+  test("holds every row without hidden, and the search box, the menu, the buttons, the count, and the pager inside hidden elements", () => {
     const html = home();
     expect(rows().length).toBe(ids.length);
     for (const { id, attributes } of rows()) expect(attributes, id).not.toMatch(/\shidden[\s=]|\shidden$/);
@@ -954,8 +954,11 @@ describe("the home page", () => {
     expect(toolbar).toMatch(/<p class="filter-status" role="status" data-filter-status hidden><\/p>$/);
     expect(html.match(/<input[\s>]/g)).toHaveLength(1);
     expect(html.match(/<select[\s>]/g)).toHaveLength(1);
-    expect(html.match(/<button[\s>]/g)).toHaveLength(ZOTERO_MAJORS.length + 1);
+    expect(html.match(/<button[\s>]/g)).toHaveLength(ZOTERO_MAJORS.length + 3);
     expect(html.match(/\sdata-filter-status/g)).toHaveLength(1);
+    expect(html).toContain(
+      '</table></div><nav class="pager" aria-label="Pages" data-pager hidden><button type="button" data-page-step="-1">Previous</button><span role="status" data-page-status></span><button type="button" data-page-step="1">Next</button></nav>',
+    );
   });
 
   test("hides each control's element while it has hidden, whatever display its other rules give it", () => {
@@ -963,7 +966,7 @@ describe("the home page", () => {
       declarations.some(([property, value]) => property === "display" && value === "none"),
     );
     const selectors = hiding.flatMap(({ selector }) => selector.split(",").map((part) => part.trim()));
-    for (const control of [".search[hidden]", ".language-filter[hidden]", ".version-filter[hidden]", ".filter-status[hidden]"]) {
+    for (const control of [".search[hidden]", ".language-filter[hidden]", ".version-filter[hidden]", ".filter-status[hidden]", ".pager[hidden]"]) {
       expect(selectors, control).toContain(control);
     }
   });
@@ -971,7 +974,23 @@ describe("the home page", () => {
 
 // The built home page script run against stand-ins for the elements it reads, so a test can
 // type in the search box, load an address, or go Back, and read which rows it hides.
-function homeScript(href: string) {
+// A generated row, "gen-<n>@example.org" named "Bulk <n>" with n from 001, after the built
+// rows. Its description holds "alpha" for n up to 50, "beta" up to 51, and "gamma" up to 20,
+// so a search can pass exactly 50, 51, or 20 of them.
+function generatedRow(n: number) {
+  const tags = [n <= 20 && "gamma", n <= 50 && "alpha", n <= 51 && "beta"].filter(Boolean).join(" ");
+  const fields: Record<string, string> = { name: `Bulk ${String(n).padStart(3, "0")}`, description: tags };
+  return {
+    hidden: false,
+    dataset: { plugin: `gen-${n}@example.org`, languages: "", zotero: "" },
+    querySelector: (selector: string) => {
+      const field = fields[selector.slice(6, -1)];
+      return field ? { textContent: field } : null;
+    },
+  };
+}
+
+function homeScript(href: string, generated = 0) {
   const html = home();
   const script = /<script type="module">(.*?)<\/script>/s.exec(html)![1]!;
   const shown = new Set<string>();
@@ -1002,12 +1021,34 @@ function homeScript(href: string) {
       };
     },
   );
+  tableRows.push(...Array.from({ length: generated }, (_, i) => generatedRow(i + 1)));
+  const pager = { hidden: true };
+  const pageStatus = { textContent: "" };
+  const steps = ["previous", "next"].map((name) => {
+    const attributes = new Map<string, string>();
+    return {
+      name,
+      attributes,
+      setAttribute: (attribute: string, value: string) => attributes.set(attribute, value),
+      getAttribute: (attribute: string) => attributes.get(attribute) ?? null,
+      addEventListener: listen(name),
+    };
+  });
+  let scrolls = 0;
+  const table = { scrollIntoView: () => scrolls++ };
   const lookups: Record<string, unknown> = {
     "input[data-search]": search,
     "select[data-language-filter]": select,
     "[data-filter-status]": status,
+    "[data-pager]": pager,
+    "[data-page-status]": pageStatus,
+    ".table-card": table,
   };
-  const lists: Record<string, unknown[]> = { "[data-version-filter] button": buttons, "tbody tr[data-plugin]": tableRows };
+  const lists: Record<string, unknown[]> = {
+    "[data-version-filter] button": buttons,
+    "tbody tr[data-plugin]": tableRows,
+    "[data-pager] button": steps,
+  };
   const location = { href };
   const document = {
     querySelector: (selector: string) => {
@@ -1020,10 +1061,15 @@ function homeScript(href: string) {
     },
   };
   const writes: string[] = [];
+  const pushes: string[] = [];
   const history = {
     replaceState: (_state: unknown, _title: string, next: string) => {
       location.href = String(next);
       writes.push(location.href);
+    },
+    pushState: (_state: unknown, _title: string, next: string) => {
+      location.href = String(next);
+      pushes.push(location.href);
     },
   };
   // Timers wait until the test runs them, as the page's would wait for a pause in typing.
@@ -1034,11 +1080,18 @@ function homeScript(href: string) {
   runInNewContext(script, { document, location, history, URL, setTimeout, clearTimeout, addEventListener: listen("window") });
   return {
     search,
+    select,
     status,
     location,
     shown,
     writes,
+    pushes,
     timers,
+    pager,
+    pageStatus,
+    steps,
+    scrolls: () => scrolls,
+    all: () => tableRows.map((r) => r.dataset.plugin),
     visible: () => tableRows.filter((r) => !r.hidden).map((r) => r.dataset.plugin),
     fire: (name: string) => events.get(name)!(),
     runTimers: () => {
@@ -1090,6 +1143,112 @@ describe("the home page script", () => {
     page.fire("search:input");
     expect(page.visible()).toHaveLength(ids.length);
     expect(page.status.textContent).toBe(`${ids.length} plugins`);
+  });
+
+  describe("pages", () => {
+    // The built rows and 120 generated ones: 133 rows, 3 pages with no filter on.
+    const GENERATED = 120;
+    const gen = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, i) => `gen-${from + i}@example.org`);
+    const pressed = (page: ReturnType<typeof homeScript>) => page.steps.map((step) => step.getAttribute("aria-disabled"));
+
+    test("shows the first 50 rows, the pager, and a count of every row", () => {
+      const page = homeScript(PAGE, GENERATED);
+      const total = ids.length + GENERATED;
+      expect(page.visible()).toEqual(page.all().slice(0, 50));
+      expect([page.pager.hidden, page.pageStatus.textContent, pressed(page)]).toEqual([false, "Page 1 of 3", ["true", "false"]]);
+      expect(page.status.textContent).toBe(`${total} plugins`);
+    });
+
+    test("pages the rows a filter passes and counts them all", () => {
+      const page = homeScript(`${PAGE}?q=bulk`, GENERATED);
+      expect(page.visible()).toEqual(gen(1, 50));
+      expect(page.status.textContent).toBe(`${GENERATED} of ${ids.length + GENERATED} plugins`);
+      expect(page.pageStatus.textContent).toBe("Page 1 of 3");
+    });
+
+    test.each([
+      ["alpha", 50, true, "Page 1 of 1"],
+      ["beta", 51, false, "Page 1 of 2"],
+    ])("a filter that passes %s's %i rows sets the pager's hidden to %s", (query, count, hidden, text) => {
+      const page = homeScript(`${PAGE}?q=${query}`, GENERATED);
+      expect(page.visible()).toEqual(gen(1, Math.min(count, 50)));
+      expect([page.pager.hidden, page.pageStatus.textContent]).toEqual([hidden, text]);
+    });
+
+    test("Next and Previous move a page, add a history entry, and scroll to the table, and do nothing at an end", () => {
+      const page = homeScript(PAGE, GENERATED);
+      const next = () => page.fire("next:click");
+      const previous = () => page.fire("previous:click");
+      previous();
+      expect(page.pushes).toEqual([]);
+      next();
+      expect(page.visible()).toEqual(page.all().slice(50, 100));
+      next();
+      expect(page.visible()).toEqual(page.all().slice(100));
+      expect(pressed(page)).toEqual(["false", "true"]);
+      next();
+      previous();
+      previous();
+      expect(page.pushes).toEqual([`${PAGE}?page=2`, `${PAGE}?page=3`, `${PAGE}?page=2`, PAGE]);
+      expect(page.visible()).toEqual(page.all().slice(0, 50));
+      expect(page.scrolls()).toBe(4);
+      expect(page.writes).toEqual([]);
+    });
+
+    test("Next drops a write that typing left waiting, and its address keeps the search text", () => {
+      const page = homeScript(PAGE, GENERATED);
+      page.search.value = "bulk";
+      page.fire("search:input");
+      page.fire("next:click");
+      page.runTimers();
+      expect(page.pushes).toEqual([`${PAGE}?q=bulk&page=2`]);
+      expect(page.writes).toEqual([]);
+      expect(page.visible()).toEqual(gen(51, 100));
+    });
+
+    test("a search input or a menu change on page 2 goes back to page 1 and drops page from the address", () => {
+      const typed = homeScript(`${PAGE}?page=2`, GENERATED);
+      typed.search.value = "bulk";
+      typed.fire("search:input");
+      expect(typed.visible()).toEqual(gen(1, 50));
+      expect(typed.location.href).toBe(`${PAGE}?page=2`);
+      typed.runTimers();
+      expect(typed.location.href).toBe(`${PAGE}?q=bulk`);
+      const picked = homeScript(`${PAGE}?page=2`, GENERATED);
+      picked.select.value = "";
+      picked.fire("select:change");
+      expect(picked.visible()).toEqual(picked.all().slice(0, 50));
+      expect(picked.writes).toEqual([PAGE]);
+    });
+
+    test("reads page on load and shows that page", () => {
+      const page = homeScript(`${PAGE}?page=3`, GENERATED);
+      expect(page.visible()).toEqual(page.all().slice(100));
+      expect(page.writes).toEqual([]);
+    });
+
+    test.each(["1", "", "0", "-2", "x", "02", "4"])("shows page 1 for page=%j and removes it from the address", (value) => {
+      const page = homeScript(`${PAGE}?page=${value}`, GENERATED);
+      expect(page.visible()).toEqual(page.all().slice(0, 50));
+      expect(page.writes).toEqual([PAGE]);
+    });
+
+    test("judges page against the pages the filters on the address leave", () => {
+      const page = homeScript(`${PAGE}?q=gamma&page=2`, GENERATED);
+      expect(page.visible()).toEqual(gen(1, 20));
+      expect(page.writes).toEqual([`${PAGE}?q=gamma`]);
+    });
+
+    test("Back and Forward read page again", () => {
+      const page = homeScript(PAGE, GENERATED);
+      page.location.href = `${PAGE}?page=2`;
+      page.fire("window:popstate");
+      expect(page.visible()).toEqual(page.all().slice(50, 100));
+      page.location.href = PAGE;
+      page.fire("window:popstate");
+      expect(page.visible()).toEqual(page.all().slice(0, 50));
+      expect(page.writes).toEqual([]);
+    });
   });
 
   test("reads q again when Back or Forward changes the address, and drops a write that typing left waiting", () => {

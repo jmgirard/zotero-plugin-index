@@ -57,6 +57,27 @@ export function filterStatus(shown: number, total: number, filtering: boolean): 
   return `${shown} of ${total} ${plugins}`;
 }
 
+// How many rows a page of the home table shows.
+export const PAGE_SIZE = 50;
+
+// How many pages the rows the filters pass fill: at least 1, so no rows still make page 1.
+export function pageCount(passed: number, size = PAGE_SIZE): number {
+  return Math.max(1, Math.ceil(passed / size));
+}
+
+// Whether the row at index i of the rows the filters pass, counting from 0, is on page.
+export function onPage(i: number, page: number, size = PAGE_SIZE): boolean {
+  return i >= (page - 1) * size && i < page * size;
+}
+
+// The page an address parameter names: a whole number from 2 to pages, in digits with no
+// sign or leading zero, else 1.
+export function chosenPage(asked: string | null, pages: number): number {
+  if (asked === null || !/^[1-9]\d*$/.test(asked)) return 1;
+  const page = Number(asked);
+  return page >= 2 && page <= pages ? page : 1;
+}
+
 // The page's address with parameter name set to value, or with the parameter removed when
 // value is "". An address that already says so comes back unchanged. Otherwise the query is
 // written again, so the other parameters keep their values but not always their spelling,

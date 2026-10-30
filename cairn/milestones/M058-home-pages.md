@@ -1,13 +1,13 @@
 # M058: Page the home table
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes what the home page shows and adds an address parameter
-- **Branch/PR:** —
+- **Branch/PR:** m058-home-pages
 
 ## Goal
 
@@ -69,13 +69,13 @@ filters to read the data file (not asked for).
 
 ## Tasks
 
-- [ ] T1: Add the paging helpers to `src/site/home-filter.ts` (page count, the rows of a page, the page an
+- [x] T1: Add the paging helpers to `src/site/home-filter.ts` (page count, the rows of a page, the page an
       address names), with tests beside the existing helper tests.
-- [ ] T2: Add the pager markup to `site/src/pages/index.astro` and the paging to its script: count passed rows
+- [x] T2: Add the pager markup to `site/src/pages/index.astro` and the paging to its script: count passed rows
       apart from paged-out ones, hide rows off the page, the Previous and Next handlers, `pushState`, the
       scroll, page 1 on a filter event, and `page` read on load and on `popstate` after the filters; the pager's
       styles in `site/src/layouts/Base.astro` with the `[hidden]` rule its controls already have.
-- [ ] T3: Let `homeScript` in `test/site.test.ts` take generated rows beside the built ones, with stand-ins for
+- [x] T3: Let `homeScript` in `test/site.test.ts` take generated rows beside the built ones, with stand-ins for
       the pager, `pushState`, and `scrollIntoView`, and write the AC1 and AC2 script tests.
 - [ ] T4: README home section and a CHANGELOG entry.
 - [ ] T5: Run the verify slot; look at the built home page in the browser pane at 375 px and at desktop width,
@@ -94,3 +94,5 @@ filters to read the data file (not asked for).
 - 2026-10-30: question set: pager style — numbered pages with Previous and Next and `?page=`; page size — 50.
 - 2026-10-30: plan gate chose numbered pages with `pushState` over a "Show more" button, at the user's choice, because a page can be linked and Back returns to it; falsified by visitors who lose their place more often with pages than with a growing list.
 - 2026-10-30: plan gate chose paging in the script over pages built as separate files because the filters and the count already need every row in the page; falsified by a page weight that the `?page` view alone would cut enough to matter.
+- 2026-10-30: implement started on branch m058-home-pages.
+- 2026-10-30: T1 to T3 done: `PAGE_SIZE`, `pageCount`, `onPage`, and `chosenPage` in `src/site/home-filter.ts` (25 helper tests); the pager `nav` (hidden in the HTML, `.pager[hidden]` in Base.astro's hide rule) and the script's paging: `passed()` counts rows apart from paging, rows off the page hide, Previous and Next check `aria-disabled`, drop a waiting typing write, `pushState`, and scroll `.table-card`; filter events set page 1; load and `popstate` read the filters, then `page`. `homeScript` takes generated rows and stand-ins for the pager, `pushState`, and `scrollIntoView`; 17 paging tests. Planted counting by visible rows, a kept typing write, and no end check turned 3 red. `pnpm test` 1328 passed, `pnpm check` 272 entries clean.

@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-30 (M057 done and archived; backfill took the index
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M058 | Page the home table | planned | — | normal | milestones/M058-home-pages.md |
+| M058 | Page the home table | in-progress | — | normal | milestones/M058-home-pages.md |
 | M057 | Let a dispatched merge run set its own wait | done | — | high | milestones/archive/M057-merge-wait-override.md |
 | M056 | Merge bot pull requests after a wait unless held | done | — | normal | milestones/archive/M056-merge-bot-pull-requests.md |
 | M055 | Show English descriptions where upstream has them | done | — | normal | milestones/archive/M055-english-descriptions.md |
