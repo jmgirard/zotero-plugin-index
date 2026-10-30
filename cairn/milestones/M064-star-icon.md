@@ -26,7 +26,7 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 
 ## Acceptance criteria
 
-- [ ] AC1: For a record whose `upstream.stars` is set, the repo line's last two children are the `aria-hidden` `·`
+- [x] AC1: For a record whose `upstream.stars` is set, the repo line's last two children are the `aria-hidden` `·`
   span and a `data-repo-stars` element. That element holds, in order, three parts.
   The first is a filled star SVG with `aria-hidden="true"`.
   The second is the count as `toLocaleString("en")` writes it.
@@ -37,23 +37,23 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
   "By example · example/first-plugin · 1,234".
   With all tags removed and no span removed, it reads "By example · example/first-plugin · 1,234 GitHub Stars".
   Tests in `test/site.test.ts` check this for the fixture counts 1,234, 1, and 0.
-- [ ] AC2: For a record with no `upstream.stars`, the repo line holds no `data-repo-stars` element and no `<svg`.
+- [x] AC2: For a record with no `upstream.stars`, the repo line holds no `data-repo-stars` element and no `<svg`.
   The tests for `no-range-plugin@example.org` and `broken-plugin@example.org` check this.
-- [ ] AC3: A rule in `site/src/layouts/Base.astro` sets `fill: var(--star)` and `stroke: none` on the star icon.
+- [x] AC3: A rule in `site/src/layouts/Base.astro` sets `fill: var(--star)` and `stroke: none` on the star icon.
   This overrides `.icon`'s `fill: none` and `stroke: currentColor`. A search of `site/src` for `fill` finds it set in no file but `Base.astro`.
   In `Base.astro`, `--star` is `#b07d00` in the light `:root` block.
   It is `#e3b341` in the `prefers-color-scheme: dark` block.
   The site's contrast test holds `--star` to 3:1 on `--bg` and on `--surface` in both schemes.
   Inside a `@media (forced-colors: active)` block, the star's fill is `CanvasText`.
   `Base.astro` gives `[data-repo-stars]` `white-space: nowrap`.
-- [ ] AC4: A built plugin page is served over HTTP and viewed in the browser pane, in the light and dark schemes.
+- [x] AC4: A built plugin page is served over HTTP and viewed in the browser pane, in the light and dark schemes.
   The star path's computed fill is `rgb(176, 125, 0)` in light and `rgb(227, 179, 65)` in dark.
   At a 375 px width, on the page of the indexed plugin with the longest owner and repo name, the star and the count
   share one line.
-- [ ] AC5: Three texts describe the line's end as a star icon, the count, and the "GitHub Stars" tooltip.
+- [x] AC5: Three texts describe the line's end as a star icon, the count, and the "GitHub Stars" tooltip.
   They are the README plugin page paragraph, the DESIGN.md plugin page paragraph, and the M061 CHANGELOG entry.
   None of the three files contains the string "8,400 stars", by a joined-text search of each file.
-- [ ] AC6: `pnpm test` and `pnpm check` pass.
+- [x] AC6: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -99,3 +99,13 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 ## Decisions
 
 ## Review
+
+- 2026-10-30, branch head 9c7f547, default branch not moved since the cut.
+- AC1: the 3 "opens the main content" tests for first-plugin (1,234), old-plugin (1) and the GUID plugin (0) pass; they match the head exactly, with the `·` span and the `data-repo-stars` element (its `title`, `<svg>`, the count, and the hidden span with its leading space) as the line's last two children. The 3 matching "shows the owner, the repo, and any stars" tests pass on the visible text ("… · 1,234"), the full text ("… · 1,234 GitHub Stars"), and the `title` ("1 GitHub Star" for 1).
+- AC2: the "shows the owner…" tests for no-range-plugin and broken-plugin pass, asserting no `title`, no `data-repo-stars`, and no `<svg` in the line.
+- AC3: `Base.astro` line 38 `--star: #b07d00;` (light `:root`), line 87 `--star: #e3b341;` (dark block), lines 634-636 `[data-repo-stars] .icon` sets `fill: var(--star)` and `stroke: none`, line 641 `fill: CanvasText` inside `@media (forced-colors: active)`, and the `[data-repo-stars]` rule sets `white-space: nowrap`. `grep -rn fill site/src` outside `Base.astro` finds 4 prose lines and no fill set. The light and dark token-pair contrast tests pass with `--star` on `--bg` and `--surface` (light 3.39 and 3.63, dark 9.30 and 8.58).
+- AC4: site rebuilt at 9c7f547 from the deployed data and served on port 4338. Better BibTeX page: light fill `rgb(176, 125, 0)`, dark fill `rgb(227, 179, 65)` (`prefers-color-scheme: dark` matched), stroke `none` in both. At 375 px, `scientific-name-italicizer@example.com` (longest owner and repo with stars): `[data-repo-stars]` has 1 client rect, page scroll width 375.
+- AC5: README, DESIGN.md and CHANGELOG paragraphs describe the star icon, the count, and the "GitHub Stars" tooltip; a joined-text search finds "8,400 stars" 0 times in each.
+- AC6: `pnpm test` 25 files passed, 1547 tests passed, 6 skipped; `pnpm check` checked 272 entries, 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed; no principle changed, so no impact report; the generic profile names no toolchain checks.
+
