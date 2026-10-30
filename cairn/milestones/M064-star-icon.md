@@ -152,4 +152,25 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - AC5: README, CHANGELOG and DESIGN.md describe the icon, the count, the "GitHub Stars" tooltip ("1 GitHub Star" for 1), and the hidden copy; "8,400 stars" found 0 times in each by joined-text search.
 - AC6: `pnpm test` 1547 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed; no principle changed; the generic profile names no toolchain checks.
-
+- spawned: diff-bug, blame-history, prior-review, ripple
+- blame-history #1: D-029 says a plain link does not read as an endorsement, and the gold star has no decision entry — reject, false: D-029 governs how the download link is styled, and the star is no link
+- blame-history #2: the visible count and the hidden copy touch with no space, so copied or found text reads "1,2341,234 GitHub Stars" — fix now (a space between the two spans; the built page reads `7,253</span> <span class="visually-hidden">`)
+- blame-history #3: "GitHub Stars" is only in a hover tooltip, which touch and keyboard users do not get — reject, planned change: the user chose the icon with a hover tooltip
+- blame-history #4: the forced-colors fill has no browser view — follow-up: the parked row "View the star in forced colors mode", filed in the first pass
+- blame-history #5: `Icon.astro` and DESIGN.md call the icons line icons — reject, false: DESIGN.md lines 385-386 and the `Icon.astro` comment already name the filled star
+- diff-bug #1: the tooltip label is not reachable by keyboard or touch — reject, planned change (as blame-history #3)
+- diff-bug #2: `nowrap` covers the star and count but not the `·` before them, so the dot can end a line — reject, style: a wrap point at a separator, and AC4 asks only that the star and count stay together
+- diff-bug #3: the source test checks cosmetic CSS text (`nowrap`, fill, stroke) — reject, planned change: AC3 names each rule, as M063's forced-colors test does
+- diff-bug #4: the test copies the star's whole path from `Icon.astro`, so a redrawn star breaks it — reject, planned change: AC1 names the star SVG of `Icon.astro`, and the check caught a swapped icon when planted
+- diff-bug #5: the 1,234 and 0 rows share the plural branch — reject, false: the reviewer keeps both (0 tests the `!== undefined` guard)
+- diff-bug #6: the head test builds its expected `title` with `starsText` — reject, false: the repo line test pins the words as literals
+- diff-bug #7: `vertical-align: -0.125em` is a raw length — reject, false: the M049 rule does not cover `vertical-align`
+- diff-bug #8: the light `--star` (#b07d00) is near `--part` (#8a5a00), which marks partial support in the table below — reject, planned change: the question set chose this gold for 3:1 contrast, and the star sits in the head, away from the table's marks
+- diff-bug #9: `Icon.astro`'s comment opens with "a line icon" before naming the star — reject, style
+- prior-review #1: the forced-colors fill has no browser view — follow-up: the parked row "View the star in forced colors mode"
+- prior-review #2: the new parked row restates part (5) of "Close small gaps on the site pages" — reject, false: part (5) covers the language menu's arrow, not the star
+- prior-review #3: README and CHANGELOG claim "gold" and a tooltip with no browser check — reject, false: AC4's browser view read the fill and the inner `title` "7,253 GitHub Stars"
+- prior-review #4: README splits the quoted "1 GitHub Star" across a line break — fix now (rewrapped; CHANGELOG's split "8,400 GitHub Stars" rewrapped too)
+- prior-review #5: the words sit in both the `title` and the hidden span — reject, planned change: AC1 and M054's declared-mark pattern
+- ripple #1: README line 150's "The line reads `By <owner> · <owner>/<repo>`" omits the star — reject, false: the next sentence adds the star for a plugin with a count
+- After the fixes: `pnpm test` 1547 passed, `pnpm check` 0 problems; the four criteria the fixes touch (AC1 markup, AC5 docs) still hold: the head test's exact match collapses the added space, and "8,400 stars" is found 0 times.
