@@ -133,7 +133,7 @@ In a browser that runs the home page's module script and supports `:nth-child(â€
       its stand-ins throw on an unknown selector. Add the AC3 and AC5 tests.
       A page test that greps the built HTML can also match the new script's
       text: match attribute forms.
-- [ ] T3: Build the site from the deployed `v1/plugins.json` (`pnpm site
+- [x] T3: Build the site from the deployed `v1/plugins.json` (`pnpm site
       --out <dir>`), serve it with a `.claude/launch.json` http.server entry
       kept out of git, and write the copy without the module script beside
       the home page. In one `javascript_tool` call per list, load each AC1
@@ -168,6 +168,8 @@ In a browser that runs the home page's module script and supports `:nth-child(â€
 - 2026-10-30: T1 done: `prePaintStyle(search, size)` in `src/site/home-filter.ts` with 35 cases in `test/home-filter.test.ts`, which failed before the function and pass now; rules are joined by newlines, every style ends with the first row's border reset (`!important`, since the page's `tr:not([hidden]) ~ tr` rule is more specific), and page 1 writes no `-n+0` rule; `pnpm test` 1405 passed, `pnpm check` 0 problems.
 - 2026-10-30: T2 done: `index.astro` writes `<script is:inline set:html={prePaint} />` between the toolbar and `.table-card`, its text built from `${prePaintStyle}` and `PAGE_SIZE` (the built page carries the function as JavaScript with no types), and the module script ends by removing `style[data-pre-paint]` outside its guard; the AC4 cases moved to `test/support/pre-paint.ts` so the unit and site tests share them; `homeScript` gained a `missing` control and a pre-paint stand-in; new `prePaintScript` runs the classic script in `node:vm`; the one-script test now expects a classic and a module script, and the toolbar test ends its slice at `</div><script>`.
 - 2026-10-30: T2 check discrimination: removing the module script's `remove()` failed the 4 AC5 tests, a page size of 49 in the classic script failed the AC3 cases, and dropping the `noModule` check failed the no-module test; each file was restored from a copy; `pnpm test` 1446 passed, `pnpm check` 0 problems.
+- 2026-10-30: T3 done: site built at 3e5ba2e from the deployed `v1/plugins.json` (272 rows; L=en, Z=7, Z3=8, Z2=7, last page 6), served by the excluded `m060-live` launch entry, with `pre/index.html` the home page less its module script; in the browser pane all 16 AC1 same-row addresses matched the full page's ids and first-row `border-top-width` (0px both), the full page kept no pre-paint style, and all 7 no-row addresses showed 0 rows in the copy; AC2's sandboxed iframes showed 272 of 272 rows with no pre-paint style, for the bare address and `?zotero=7&page=2`; controls: copy `?page=2` against full `?page=3` mismatched, and the copy without the border rule gave its first row 1px.
+- 2026-10-30: T3 size: the built home page is 54,544 bytes at `gzip -9`, and 53,882 with the classic script cut out, so the script adds 662 bytes (the module script's one added line is in both figures).
 
 ## Decisions
 <!-- owner: implement / review Â· append-only; milestone-local. -->
