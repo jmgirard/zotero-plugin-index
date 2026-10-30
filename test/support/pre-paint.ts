@@ -10,7 +10,6 @@ const PAGE_2 = css(
   `${R}:nth-child(n+101){display:none}`,
   `${R}:nth-child(51){border-top:0!important}`,
 );
-// One :not() rule per filter, then the page rules over the rows that pass both.
 const filtered = (...each: string[]) => {
   const s = each.join("");
   return css(

@@ -1,6 +1,7 @@
 // The home page's filters: the search box, the language menu, the Zotero version buttons,
-// the plugin count beside them, and the pages below the table. The page's script imports
-// it, so it has no imports.
+// the plugin count beside them, and the pages below the table. The page's module script
+// imports it, so it has no imports. The page's classic script carries the source text of
+// prePaintStyle.
 
 // One filter's state: its chosen value and the values its menu or buttons offer.
 export interface Filter {
@@ -81,7 +82,10 @@ export function chosenPage(asked: string | null, pages: number): number {
 
 // The CSS that hides at least the rows the page's script will hide for an address, so that a
 // row the script hides does not paint before the script runs. A value that the script drops,
-// or a page past the last one, can also hide rows that the script then shows. search is the
+// or a page past the last one, can also hide rows that the script then shows. That holds
+// while the menu and the buttons offer each value that a row carries, since the script pages
+// over the rows its chosen values pass and this CSS over the rows the asked values pass;
+// languageOptions and ZOTERO_MAJORS do so today. search is the
 // address's query string, read as the script reads it, and size is the page size. A non-blank
 // q, a language or zotero value that is not letters, digits, and hyphens, or a page of more
 // than 6 digits hides every row. Otherwise the CSS shows the asked page of the rows that the

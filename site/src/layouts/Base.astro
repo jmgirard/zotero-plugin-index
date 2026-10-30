@@ -339,7 +339,8 @@ const { generatedAt } = loadData();
         padding-bottom: var(--space-2);
         border-bottom: 1px solid var(--line);
       }
-      /* A row gets a top border only after a shown row, so the first shown row has none. */
+      /* A row gets a top border only after a shown row, so the first shown row has none. The home
+         page's pre-paint style hides rows without hidden, so it drops its first row's border. */
       .plugins tbody tr:not([hidden]) ~ tr {
         border-top: 1px solid var(--line);
       }

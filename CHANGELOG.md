@@ -492,7 +492,7 @@
   rows that its filters or page leave out while the page loads. An
   address with `language`, `zotero`, or `page` shows only the rows of
   that page. An address with a non-blank `q` shows no row until the
-  search runs. Chrome before 111 and Firefox before 113 cannot read the
-  `of <selector>` form of `:nth-child()`. If a language or Zotero filter
-  is on, such browsers still show the filter's rows on every page until
-  the script runs.
+  search runs. Chrome and Edge before 111, Firefox before 113, and Opera
+  before 97 cannot read the `of <selector>` form of `:nth-child()`. If a
+  language or Zotero filter is on, such browsers still show the filter's
+  rows on every page until the script runs.

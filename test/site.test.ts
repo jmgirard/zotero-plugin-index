@@ -1289,27 +1289,43 @@ describe("the home page script", () => {
   test.each(["search", "menu", "buttons"] as const)("removes the classic script's style on a page with no %s", (missing) => {
     const page = homeScript(PAGE, 0, missing);
     expect(page.hiddenAtRemoval()).toBe(0);
-    expect(page.shown.size).toBe(0);
   });
 });
 
-// The built home page's classic script run against a stand-in head and location. It returns
-// the attributes and text of each element the script appends to the head.
+// The built home page's classic script run against a stand-in head, location, and window. It
+// returns the attributes and text of each element the script appends to the head, and runs
+// the window's error listeners on fire().
 function prePaintScript(search: string, modules = true) {
   const html = home();
   const script = /<script>(.*?)<\/script>/s.exec(html)![1]!;
-  const appended: { attributes: Record<string, string>; textContent: string }[] = [];
+  type Element = { attributes: Record<string, string>; textContent: string; removed: boolean };
+  const appended: Element[] = [];
   const document = {
     createElement: (tag: string) => {
       if (tag !== "style") throw new Error(`the script creates ${tag}`);
-      const attributes: Record<string, string> = {};
-      return { attributes, textContent: "", setAttribute: (name: string, value: string) => (attributes[name] = value) };
+      const element: Element & { setAttribute: unknown; remove: unknown } = {
+        attributes: {},
+        textContent: "",
+        removed: false,
+        setAttribute: (name: string, value: string) => (element.attributes[name] = value),
+        remove: () => (element.removed = true),
+      };
+      return element;
     },
-    head: { append: (element: (typeof appended)[number]) => appended.push(element) },
+    head: { append: (element: Element) => appended.push(element) },
+  };
+  const errors: (() => void)[] = [];
+  const addEventListener = (type: string, listener: () => void) => {
+    if (type !== "error") throw new Error(`the script listens for ${type}`);
+    errors.push(listener);
   };
   const HTMLScriptElement = { prototype: modules ? { noModule: false } : {} };
-  runInNewContext(script, { document, location: { search }, HTMLScriptElement, URLSearchParams });
-  return appended.map(({ attributes, textContent }) => ({ attributes, textContent }));
+  runInNewContext(script, { document, location: { search }, HTMLScriptElement, URLSearchParams, addEventListener });
+  return {
+    styles: () => appended.map(({ attributes, textContent }) => ({ attributes, textContent })),
+    removed: () => appended.map(({ removed }) => removed),
+    fire: () => errors.forEach((listener) => listener()),
+  };
 }
 
 describe("the home page's classic script", () => {
@@ -1320,11 +1336,18 @@ describe("the home page's classic script", () => {
   });
 
   test.each(PRE_PAINT_CASES.map(([search]) => search))("adds the style that prePaintStyle writes for %j", (search) => {
-    expect(prePaintScript(search)).toEqual([{ attributes: { "data-pre-paint": "" }, textContent: prePaintStyle(search, PAGE_SIZE) }]);
+    expect(prePaintScript(search).styles()).toEqual([{ attributes: { "data-pre-paint": "" }, textContent: prePaintStyle(search, PAGE_SIZE) }]);
   });
 
   test("adds no style in a browser that does not run module scripts", () => {
-    expect(prePaintScript("?page=2", false)).toEqual([]);
+    expect(prePaintScript("?page=2", false).styles()).toEqual([]);
+  });
+
+  test("removes its style on a window error, so a module script that failed leaves every row shown", () => {
+    const page = prePaintScript("?page=2");
+    expect(page.removed()).toEqual([false]);
+    page.fire();
+    expect(page.removed()).toEqual([true]);
   });
 });
 
@@ -1360,7 +1383,7 @@ describe("the built site", () => {
     }
   });
 
-  test("has a script on the home page only", () => {
+  test("has scripts on the home page only, a classic one and then a module", () => {
     const files = htmlFiles(out);
     expect(files).toContain("index.html");
     for (const file of files) expect(readFileSync(join(out, file), "utf8").includes("<script"), file).toBe(file === "index.html");

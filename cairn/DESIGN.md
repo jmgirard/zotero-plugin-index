@@ -65,7 +65,9 @@ address. The style hides the rows outside the asked page of the rows that
 loads (see Known issues). A value that the script drops, or a page past the
 last one, also hides rows that the script then shows. For an address with
 a non-blank `?q=`, it hides every row until the script runs. The script
-removes the style after its first pass (M060). The home page's "Menus and
+removes the style after its first pass, and the classic script removes it
+on any error the window reports, such as a module script that throws or
+cannot parse (M060). The home page's "Menus and
 settings in" menu filters the table by language subtag,
 run by the home page's script (D-014, D-026, M024, M033). The menu lists the
 languages with the most plugins first, and languages with the same number
@@ -749,9 +751,9 @@ reused._
   for the language menu and, since M037, the version buttons and, since
   M044, the status line under them, and since M053 the search box and the
   count that replaced that line, and since M058 the pager, which Astro
-  inlines as a
-  `type="module"` script; the other pages carry none (D-014,
-  D-019, D-026). The templates take the Pages path
+  inlines as a `type="module"` script. Since M060 a classic inline script
+  before the table adds the pre-paint style. The other pages carry none
+  (D-014, D-019, D-026). The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
   Astro's `import.meta.env.BASE_URL`. `build.yml`'s site job runs `pnpm site`
   after the build job (M047), so a failed site build also deploys nothing.
@@ -765,7 +767,9 @@ reused._
   the markup the site tests match (M015). Outside its `:root` blocks and
   `.visually-hidden`, each value part of each margin, padding, gap,
   `border-radius`, and `font-size` there is a custom property, `0`, or
-  `auto`, and no other `.astro` file holds a style (M049).
+  `auto`, and no other `.astro` file holds a style (M049). The one style
+  outside it is the home page's pre-paint style, which `prePaintStyle`
+  writes and the classic script adds at load (M060).
 
 ## Known issues
 
