@@ -97,6 +97,7 @@ rule for declared marks is in M062.
 - 2026-10-30: substantive amendment: AC1's pattern is now `^https://github\.com/([^/?#]+)/([^/?#]+?)/?$`, and its no-line cases add a URL with a query and a URL with a fragment; the deliverable's look is unchanged.
 - 2026-10-30: re-audit: AC1 (full) — 3 findings, none changing the wording: query and fragment cases sit on upstream records (answered: one `githubRepo` call serves both paths, and failure records are tested both ways); the owner group had no case of its own (fixed in tests: `https://github.com/example?x=/cafe-tools`, which a planted `[^/]+` owner group failed); a `.git` suffix still matches (answered: GitHub's `html_url` never has one, and the line still links the repo).
 - 2026-10-30: implement complete; status review.
+- 2026-10-30: step-7 approval: m061-repo-owner-stars approved for merge
 
 ## Decisions
 
