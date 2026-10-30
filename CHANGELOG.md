@@ -496,3 +496,12 @@
   before 97 cannot read the `of <selector>` form of `:nth-child()`. If a
   language or Zotero filter is on, such browsers still show the filter's
   rows on every page until the script runs.
+- Each plugin page shows a line under the plugin's name, such as "By
+  windingwind · windingwind/zotero-better-notes · 8,400 stars". The owner
+  links to the owner's GitHub page, and `<owner>/<repo>` links to the
+  repository. The line shows only for a repository URL of the form
+  `https://github.com/<owner>/<repo>`. Each `upstream` block of the data
+  file has a new optional `stars` field: the star count that the build
+  read for the repository. The schema rejects fields that it does not
+  define, so fetch any saved copy of `schemas/plugins.v1.schema.json`
+  again.
