@@ -176,6 +176,7 @@ In a browser that runs the home page's module script and supports `:nth-child(�
 - 2026-10-30: claim audit: 29 claims read, 4 corrected — site/src/pages/index.astro, src/site/home-filter.ts, cairn/DESIGN.md, test/site.test.ts; the same reader re-read the 4 at 64c8443 and found each holds; two wrap fixes it noted (the `index.astro` comment, a 108-character DESIGN.md line) followed.
 - 2026-10-30: implement complete; status set to review.
 - 2026-10-30: review: four lenses, 27 findings: 16 fixed in a6c9e41, 3 follow-ups into "Test the home page script in a browser", 8 rejected; a `DOMContentLoaded` fallback was tried first and replaced by a window `error` listener, because removing the style at `DOMContentLoaded` would also strip it from AC1's copy, which has no module script; no return.
+- 2026-10-30: step-7 approval: m060-pre-paint-filter approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
