@@ -128,6 +128,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: T7 done: the CLI prints the release line before the writes; build.yml and README name the 30 s read beside the other limits, and README's release paragraph moved after the plugin time-limit paragraph; README's field list names `zoteroRelease`; README and the About page restore the 8.999 note (it covers none of 8); `checkOutput` has a pass case and a `10.0.7-beta` reject case for `zoteroRelease`; the release error cases use `releaseMs: 1000`, drop the repeated `checkOutput` and `buildLevel` expects, and the CLI test checks "build-level failures: 0 of 3 records" once; the site test drops the weaker list expect and the restating comment; DESIGN and README added lines rewrapped to 80 columns. `pnpm test` 1544 passed, 6 skipped; `pnpm check` 0 problems.
 - 2026-10-30: claim audit: 24 claims read, 0 corrected — README.md, .github/workflows/build.yml, site/src/pages/about.astro, src/build/cli.ts, src/build/zotero-release.ts, test/build.test.ts, test/site.test.ts (the added lines of cd048e2 and d78dd39; a fresh Opus reader).
 - 2026-10-30: status set to review after return 1.
+- 2026-10-30: review pass 2: AC1–AC6 re-evidenced at eee4cb7; four lenses found no criterion failing; 8 fix-now items landed in db543af (verify: `pnpm test` 1545 passed, 6 skipped; `pnpm check` 0 problems), and follow-up row "Track point releases of older majors" added at low.
 
 ## Decisions
 
@@ -178,3 +179,50 @@ Review pass 1 findings.
 Review pass 2 evidence, 2026-10-30, at eee4cb7, main unmoved (0170d1e).
 
 - AC1–AC6 re-run on the new head: `pnpm test` 1544 passed, 6 skipped, 0 failed; `pnpm check` 272 entries, 0 problems; the 28 tests named in pass 1's AC1, AC3, AC4, and AC5 lines pass, plus the new "a body read that fails" case (`failed: read ECONNRESET`) and the two `checkOutput` `zoteroRelease` cases. `cairn_validate` passes. The six boxes stay ticked against this evidence.
+
+Review pass 2 findings.
+
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: `LAST_RELEASES` gives a false all if Zotero ships a point release of an earlier major, such as 9.0.7 for a maximum of 9.0.6 — follow-up, candidate row "Track point releases of older majors", low rung, since it needs a point release of an earlier major and a bound pinned to the old last release; the question set chose the hand-kept list for earlier majors
+- diff-bug #2: a failed release read prints a plain line with no `::warning::`, so days of fallback go unnoticed — fix now: the one line now starts with `::warning::`, fixed db543af
+- diff-bug #3: the new-major gap — follow-up, already the row "Flag a new Zotero major in the build"
+- diff-bug #4: `response.text()` has no byte cap — reject, edge: only zotero.org serving a huge body reaches it, outside documented use, and the 30 s limit bounds the effect to slow running
+- diff-bug #5: the read uses the raw fetch without the reader's host check — reject, false: the host check guards plugin-supplied URLs, and this URL is a fixed zotero.org address
+- diff-bug #6: the release pattern is written in the code and in the schema — fix now: the code builds its pattern from the schema's, fixed db543af
+- diff-bug #7: D-036 does not annotate D-015 — reject, false: D-015's build-level rule classifies the failures of records, and the release read writes no record (README and DESIGN now say so, db543af)
+- diff-bug #8: the all mark's hover keeps "Declares all of Zotero N" — reject, false, as pass 1 diff-bug #8
+- diff-bug #9: no test of a `zoteroRelease` whose major has a `LAST_RELEASES` entry — fix now: a 9.0.6 maximum with release 9.0.7 reads some, fixed db543af
+- diff-bug #10: "30000 ms" in the timeout line — reject, style, as pass 1 diff-bug #5
+- diff-bug #11: "failed: undefined" for a non-Error rejection — reject, edge, as pass 1 diff-bug #9
+- diff-bug #12 (tests): four AC3 rows repeat older rows' paths — reject, planned change: AC3 names them
+- diff-bug #13 (tests): the `checkOutput` pass case for `zoteroRelease` repeats a check — reject, false: it is the passing control beside the reject case
+- diff-bug #14 (tests): the site schema-validity test — reject, false, as pass 1 diff-bug #13
+- diff-bug #15 (tests): the thrown, stalled, and body-failure rows reach one catch — reject, false: each pins a different await that the T6 fix moved, and AC1 names the thrown and timed-out rows
+- diff-bug #16 (tests): the token comment says what the next assertion shows — reject, false: it says why the check is there, that the token was set
+- diff-bug #17 (tests): the site helper comments describe the helpers — reject, style: each names what its regex returns
+- blame-history #1: `LAST_RELEASES` repeats the lag D-036 rejected — follow-up, same row as diff-bug #1
+- blame-history #2: D-015 is not annotated — reject, false, as diff-bug #7
+- blame-history #3: `LAST_RELEASES` holds 8.0.5 while build.yml says 8.0.4 is the newest Zotero 8 with a Linux build — reject, false: 8.0.5 is a Zotero 8 release by its changelog, and the start-test list counts Linux builds, a different list (D-023)
+- blame-history #4: a third hand-kept list of releases beside the start-test matrix — reject, false: the two lists answer different questions, which release starts on Linux and which releases exist
+- blame-history #5: the new-major gap — follow-up, already the row "Flag a new Zotero major in the build"
+- blame-history #6: D-036's "fall back to N.9 for that major" — reject, false: "that major" is the current release's major, and the entry names `LAST_RELEASES` for the earlier ones
+- blame-history #7: `withinLimit`'s comment says an aborted read is build-level — reject, false: the comment names `readUpstream`, and this caller is not it
+- blame-history #8: the all mark's hover — reject, false, as pass 1 diff-bug #8
+- blame-history #9: "Add the current major here when Zotero ships the next one" names the wrong major — fix now: "add the major it replaces", fixed db543af
+- prior-review #1: no byte cap, against the bounded-read lessons — reject, edge, as diff-bug #4; the GitHub JSON reads are also bounded by time alone
+- prior-review #2: the M030 lesson in the plan's `lessons used:` line does not match the 1000 ms tests — reject, false: the plan named it for the time-limit tests, and the 1000 ms came from pass 1 prior-review #1; hygiene will not mark it used for a trap met
+- prior-review #3: the About list and the longer legend were not checked at 375 px — fix now: checked in the browser pane at 375 px, no sideways scroll (scroll width 375), the list and the legend fit, the legend's first item wraps to two lines
+- prior-review #4: the new-major gap — follow-up, already the row "Flag a new Zotero major in the build"
+- prior-review #5: the all mark's hover — reject, false, as pass 1 diff-bug #8
+- prior-review #6: a 49-column README line in "Building the data" — fix now: rewrapped, fixed db543af
+- prior-review #7: the row "Let old v1 schemas accept new fields" now has a live instance — reject, planned change: the plan adds an optional field under D-006, and README and CHANGELOG tell consumers to fetch the schema again
+- prior-review #8: build.yml changed without a branch dispatch — reject, false: the change is a comment, which YAML parsing ignores
+- ripple #1: README's "Every other failure, a 404 included, belongs to the plugin" leaves the release read unplaced — fix now: README says the read writes no record and is neither, fixed db543af
+- ripple #2: README's "First, the command prints one line for each failed record" misses the release line — fix now, fixed db543af
+- ripple #3: DESIGN's "runs on GitHub only" — reject, false, as pass 1 ripple #4
+- ripple #4: DESIGN's banked-candidates ledger "Everything runs on GitHub" — reject, false: a Phase 1 interview ledger, a record of an earlier setup
+- ripple #5: the all mark's hover — reject, false, as pass 1 diff-bug #8
+- ripple #6: the footer and About intro list the plugin reads only — reject, false: both still say what the build read for the plugins, which stays true
+- ripple #7: `BUILD_LIMIT_MS`'s comment does not name the release read — reject, false: the comment is about the plugin-read limits, and it stays true
+- ripple #8: README's "means all of it" — reject, false, as pass 1 ripple #6
+- ripple #9: "newest release" also names a plugin's GitHub release elsewhere — reject, style: each use names its subject (a plugin's or Zotero's)
