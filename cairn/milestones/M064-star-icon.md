@@ -1,6 +1,6 @@
 # M064: Show the star count with a star icon
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -26,42 +26,41 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 
 ## Acceptance criteria
 
-- [x] AC1: For a record whose `upstream.stars` is set, the repo line's last two children are the `aria-hidden` `·`
-  span and a `data-repo-stars` element. That element holds, in order, three parts.
-  The first is a filled star SVG with `aria-hidden="true"`.
-  The second is the count as `toLocaleString("en")` writes it.
-  The third is a `.visually-hidden` span that holds " GitHub Star" for a count of 1 and " GitHub Stars" otherwise.
-  The span's text starts with that space.
-  The element's `title` is the count and the same words, such as "1,234 GitHub Stars".
+- [ ] AC1: For each fixture record whose `upstream.stars` is set (counts 1,234, 1, and 0), the plugin page's repo line's
+  last two children are the `aria-hidden` `·` span and a `data-repo-stars` element.
+  That element has no `title` and has exactly two child elements, both spans, in order.
+  The first span has `aria-hidden="true"` and a `title` that gives the count and its words.
+  The `title` reads, for example, "1,234 GitHub Stars", or "1 GitHub Star" for a count of 1.
+  The first span holds the star SVG of `Icon.astro`, then the count as `toLocaleString("en")` writes it.
+  The second span is a `.visually-hidden` span whose text equals that `title`.
   With the `.visually-hidden` span removed, the line's text with tags removed reads, for example,
   "By example · example/first-plugin · 1,234".
-  With all tags removed and no span removed, it reads "By example · example/first-plugin · 1,234 GitHub Stars".
-  Tests in `test/site.test.ts` check this for the fixture counts 1,234, 1, and 0.
-- [x] AC2: For a record with no `upstream.stars`, the repo line holds no `data-repo-stars` element and no `<svg`.
+  Tests in `test/site.test.ts` check this.
+- [ ] AC2: For a record with no `upstream.stars`, the repo line holds no `data-repo-stars` element and no `<svg`.
   The tests for `no-range-plugin@example.org` and `broken-plugin@example.org` check this.
-- [x] AC3: A rule in `site/src/layouts/Base.astro` sets `fill: var(--star)` and `stroke: none` on the star icon.
+- [ ] AC3: A rule in `site/src/layouts/Base.astro` sets `fill: var(--star)` and `stroke: none` on the star icon.
   This overrides `.icon`'s `fill: none` and `stroke: currentColor`. A search of `site/src` for `fill` finds it set in no file but `Base.astro`.
   In `Base.astro`, `--star` is `#b07d00` in the light `:root` block.
   It is `#e3b341` in the `prefers-color-scheme: dark` block.
   The site's contrast test holds `--star` to 3:1 on `--bg` and on `--surface` in both schemes.
   Inside a `@media (forced-colors: active)` block, the star's fill is `CanvasText`.
   `Base.astro` gives `[data-repo-stars]` `white-space: nowrap`.
-- [x] AC4: A built plugin page is served over HTTP and viewed in the browser pane, in the light and dark schemes.
+- [ ] AC4: A built plugin page is served over HTTP and viewed in the browser pane, in the light and dark schemes.
   The star path's computed fill is `rgb(176, 125, 0)` in light and `rgb(227, 179, 65)` in dark.
   At a 375 px width, on the page of the indexed plugin with the longest owner and repo name, the star and the count
   share one line.
-- [x] AC5: Three texts describe the line's end as a star icon, the count, and the "GitHub Stars" tooltip.
+- [ ] AC5: Three texts describe the line's end as a star icon, the count, and the "GitHub Stars" tooltip.
   They are the README plugin page paragraph, the DESIGN.md plugin page paragraph, and the M061 CHANGELOG entry.
   None of the three files contains the string "8,400 stars", by a joined-text search of each file.
-- [x] AC6: `pnpm test` and `pnpm check` pass.
+- [ ] AC6: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
-- AC1 → T2
+- AC1 → T2, T5
 - AC2 → T2
 - AC3 → T1
 - AC4 → T4
-- AC5 → T3
+- AC5 → T3, T5
 - AC6 → T4
 
 ## Tasks
@@ -74,6 +73,8 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - [x] T3: Rewrite the README plugin page paragraph, the DESIGN.md plugin page paragraph, and the M061 CHANGELOG entry.
 - [x] T4: Run `pnpm test` and `pnpm check`. Build the site from the deployed data, serve it through `.claude/launch.json`,
   and view a plugin page in the browser pane in both schemes and at 375 px.
+- [x] T5: Rebuild the repo line's end to the amended AC1 (review return), with its tests, and rewrite README,
+  CHANGELOG, and DESIGN.md to match.
 
 ## Work log
 
@@ -97,6 +98,11 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - 2026-10-30: claim audit re-read: the same reader found all corrected claims true (README, CHANGELOG, DESIGN.md, the test comment).
 - 2026-10-30: amendment routed: AC1 — the criterion puts the `title` on the element that also holds the hidden words, so a screen reader can read the count twice (blame-history #1, against M054's fix 9007997), and its leading space inside the hidden span is dropped in layout (diff-bug #1); the fix-now items for the repo line test and the README and CHANGELOG wording ride with the amendment.
 - 2026-10-30: checkpoint: the AC1 structure is in code (an `aria-hidden` span with the `title`, the star and the count, then a `.visually-hidden` span with `starsText`; `starsWord` removed), with tests that check the `title`, the hidden text, and the star path (a planted outer `title` turned 6 red, a planted `releases` icon 3 red), and README, CHANGELOG and DESIGN.md rewritten; `pnpm test` 1547 passed, `pnpm check` 0 problems. The amended AC1 text waits on its second fresh reader before it is written here.
+- 2026-10-30: re-audit: AC1 (full) — 4 findings, all taken: the outer element must have no `title` and exactly two child spans; the promise is scoped to the fixture records; DESIGN.md's hidden-span wording must change (done in T5).
+- 2026-10-30: re-audit: AC1 (full) — 1 finding: the plural rule is given only by example; answered without change, since the criterion names the count 0 and the test pins "0 GitHub Stars", so the narrower wording stands. The reader also noted that AC4's evidence predates the extra span; review re-takes it.
+- 2026-10-30: amendment return: AC1 — "That element has no `title` and has exactly two child elements, both spans, in order. The first span has `aria-hidden="true"` and a `title` that gives the count and its words."
+- 2026-10-30: T5 added and done (minor amendment for the review return): the amended structure, tests, and docs; Coverage maps AC1 and AC5 to T5 too. All criterion boxes unticked so review re-verifies at the new head.
+- 2026-10-30: status review; `pnpm test` 1547 passed, `pnpm check` 0 problems.
 
 ## Decisions
 
