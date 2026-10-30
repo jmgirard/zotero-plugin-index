@@ -94,15 +94,28 @@ export const ZOTERO_MAJORS = ["7", "8", "9", "10"];
 
 export type MajorSupport = "all" | "some" | "none";
 
-// How much of Zotero major N the declared range covers. A major counts as N.0 to N.9,
-// because authors write maxima such as 10.99.99 and minima such as 8.999 to mean all of
-// 10 and 9 or newer. Undefined for a record with a failure or with neither bound.
-export function majorSupport(record: RangeRecord, major: string): MajorSupport | undefined {
+// The newest release of each Zotero major before the current one, from the "Changes in"
+// headings of https://www.zotero.org/support/<N>.0_changelog on 2026-10-30. Add the
+// current major here when Zotero ships the next one.
+export const LAST_RELEASES: Record<string, string> = { "7": "7.0.32", "8": "8.0.5", "9": "9.0.6" };
+
+// The newest release of Zotero major N: `zoteroRelease`, the current release that the build
+// read, when its first part is N, else the LAST_RELEASES entry for N, else N.9, since authors
+// write maxima such as 10.99.99 to mean all of 10.
+export function newestRelease(major: string, zoteroRelease?: string): string {
+  if (zoteroRelease?.split(".")[0] === major) return zoteroRelease;
+  return LAST_RELEASES[major] ?? `${major}.9`;
+}
+
+// How much of Zotero major N the declared range covers, where a major runs from N.0 to its
+// newest release (see newestRelease). Undefined for a record with a failure or with neither
+// bound.
+export function majorSupport(record: RangeRecord, major: string, zoteroRelease?: string): MajorSupport | undefined {
   const { min, max } = declaredRange(record);
   if (min === undefined && max === undefined) return undefined;
   if (min !== undefined && max !== undefined && compareVersions(min, max) > 0) return "none";
   const first = `${major}.0`;
-  const last = `${major}.9`;
+  const last = newestRelease(major, zoteroRelease);
   const fromStart = min === undefined || compareVersions(min, first) <= 0;
   const toEnd = max === undefined || compareVersions(max, last) >= 0;
   if (fromStart && toEnd) return "all";
@@ -114,9 +127,9 @@ export function majorSupport(record: RangeRecord, major: string): MajorSupport |
 
 // The row's data-zotero: each major of ZOTERO_MAJORS whose support is all or some, in that
 // order, joined by spaces. Empty for a record with no declared marks or with only "none" marks.
-export function rowMajors(record: RangeRecord): string {
+export function rowMajors(record: RangeRecord, zoteroRelease?: string): string {
   return ZOTERO_MAJORS.filter((major) => {
-    const support = majorSupport(record, major);
+    const support = majorSupport(record, major, zoteroRelease);
     return support === "all" || support === "some";
   }).join(" ");
 }

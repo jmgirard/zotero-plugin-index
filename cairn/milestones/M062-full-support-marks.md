@@ -84,7 +84,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - [x] T1: Add the zotero.org read to `buildData` in `src/build/build.ts` with its own
       30 s limit and no token, add `zoteroRelease` to the data type and the schema, and
       add the fixture-response tests.
-- [ ] T2: Add the hand-kept list and a newest-release argument to `majorSupport` and
+- [x] T2: Add the hand-kept list and a newest-release argument to `majorSupport` and
       `rowMajors` in `src/site/version.ts`, and add the `test/version.test.ts` cases.
 - [ ] T3: Pass `zoteroRelease` from `loadData` in `site/src/data.ts` to every caller of
       `majorSupport` and `rowMajors` (home table, plugin page, `supportText`), and add
@@ -109,6 +109,8 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: lessons used: 2026-10-27 (M030, test a time limit with a stubbed `performance.now()` so the cut needs no real wait), 2026-10-28 (M035, build the site from the deployed data for a hand check), 2026-10-29 (M053, the built script is minified, so test it in `node:vm`).
 - 2026-10-30: implement started on m062-full-support-marks, cut from main at 0170d1e.
 - 2026-10-30: T1 done: `src/build/zotero-release.ts` holds the read; `buildData` runs it after the plugin reads (so it takes no time from `buildMs`) with a `releaseMs` limit and returns `releaseProblem`, which the CLI prints to stdout as one `cannot read the Zotero release:` line; the read of a timed-out body rethrows the abort reason so a cut body reads as the limit, not as non-JSON. Tests: 7 in-process `buildData` cases and 1 spawned CLI case; the token case also checks that the GitHub reads carry the planted token.
+- 2026-10-30: T1 follow-up: added a stalled-body case, which backs the code comment on the rethrow.
+- 2026-10-30: T2 done: `LAST_RELEASES` and `newestRelease(major, zoteroRelease?)` in `src/site/version.ts`; `majorSupport` and `rowMajors` take an optional `zoteroRelease`. The list values were re-read from the three changelog pages today and match. One old case changed from some to all (`6.999`–`7.0.*` for 7, since 7.0.32 is the last 7 release), and a `7.0.31` case now holds the some reading; 9 AC3 cases added.
 
 ## Decisions
 

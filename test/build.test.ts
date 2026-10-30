@@ -982,6 +982,7 @@ describe("buildData", () => {
       ["a 500 answer", { status: 500, text: "Internal Server Error" }, "returned HTTP 500"],
       ["a thrown request", { error: "getaddrinfo ENOTFOUND www.zotero.org" }, "failed: getaddrinfo ENOTFOUND www.zotero.org"],
       ["an answer that passes the limit", { stall: "headers" }, "failed: the read passed its time limit of 100 ms"],
+      ["a body that passes the limit", { stall: "body" }, "failed: the read passed its time limit of 100 ms"],
       ["a body that is not JSON", { text: "<html>" }, "returned a body that is not JSON"],
       ["no linux-x86_64 key", { json: { mac: "10.0.7" } }, "returned no linux-x86_64 value"],
       ["a beta version", { json: { "linux-x86_64": "10.0.7-beta" } }, 'returned the linux-x86_64 value "10.0.7-beta", which is not a release version'],
