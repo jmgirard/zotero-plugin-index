@@ -109,3 +109,26 @@ rule for declared marks is in M062.
 - AC5 evidence (2026-10-30): `pnpm test` 25 files passed, 1 skipped; 1465 tests passed, 6 skipped. `pnpm check`: 272 entries, 0 problems.
 - Consistency gate (2026-10-30): `cairn_validate.py` all checks passed; no DESIGN principle changed, so no `cairn_impact` run; the generic profile names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the star count renders only inside the repo line, so an upstream record whose URL fails the pattern shows no count while DESIGN listed the count unconditionally — fix now: DESIGN's facts list now names the URL form, fixed ee264bf
+- diff-bug #2: `githubRepo` matches the host case-sensitively, so a failure record's `https://GitHub.com/a/b` gets no line — follow-up: part (8) of "Close small gaps on the site pages" (low, parked by its promote-when-reported condition; GitHub's `html_url` never takes this form)
+- diff-bug #3: `.git`, `..`, and percent-encoded segments pass the pattern — follow-up: same part (8)
+- diff-bug #4: the repo line's links use `--text`, not `--link` — reject (style): underlined links in the text color, recorded as the T2 choice
+- diff-bug #5: five fixture records carried `upstream.repoUrl` forms GitHub never returns, giving malformed Releases links — fix now: refused forms moved to six new failure records, originals restored, fixed ee264bf
+- diff-bug #6: the per-id head test derives its expectation from `githubRepo` and its name omitted the repo line — fix now: renamed; the derivation stays as a markup-and-order check, since the dedicated cases carry literal expectations, fixed ee264bf
+- diff-bug #7: the build test set `stargazers_count` to the fixture's own 8400 — fix now: 8401, fixed ee264bf
+- diff-bug (c): the "12" star case repeats the `Number.isInteger` path and tests dependency behavior, and the no-scheme no-line case repeats the `http:` prefix path — fix now: both dropped, fixed ee264bf
+- blame-history #1: fixture upstream URLs GitHub never returns — fix now, as diff-bug #5, fixed ee264bf
+- blame-history #2: punctuation-plugin moved to GitLab, though M031 added it for its id — fix now: restored, fixed ee264bf
+- blame-history #3: zotero6-plugin moved to `http:`, though M037 added it for its all-none marks — fix now: restored, fixed ee264bf
+- blame-history #4: no decision records showing star counts against the no-endorsement stance — reject (planned change): the plan question set chose a plain count with no sort or rank, and the plan's idea-vet line records the concern
+- blame-history #5: the pattern accepts odd owner and repo names — follow-up: part (8), as diff-bug #3
+- prior-review #1: the head assertion strips whitespace between tags — reject (false): the literal-text cases catch a dropped space, and a planted missing space failed them in T2
+- prior-review #2: a stray short line in README's plugin page paragraph — fix now: rewrapped, fixed ee264bf
+- prior-review #3: the repo-name link used `repoUrl` where the page's other links use the `safeHref` value — fix now: the line now needs `repoHref` and links it, fixed ee264bf
+- ripple #1: About's intro says a plugin page shows facts for one release — reject (false): the page already showed repo-level facts (archived, open issues, repository created) before this diff
+- ripple #2: README's "Building the data" field sentence omits `stars` — reject (false): that sentence is not a full list; `repoDescription` and `xpiSha256` are absent too, and "Using the data" describes `stars`
+- ripple #3: the M054 CHANGELOG entry says the header shows the name and the description — reject (false): it records M054's change, and the new entry records this one
+- ripple #4: the head test's name omits the repo line — fix now, as diff-bug #6, fixed ee264bf
+- ripple #5: the 2026-10-29 mockup shows no repo line — reject (false): a dated design record
+- ripple #6: the GitLab fixture URL disagreed with its failure message — fix now: the punctuation record is back on GitHub and the new GitLab record's message names its own URL, fixed ee264bf
+- Post-fix verify (2026-10-30, ee264bf): `pnpm test` 1517 passed, 6 skipped; planting `https?` and a `[^/]+` owner group failed the `http:` and owner-query no-line cases on the new failure records.
