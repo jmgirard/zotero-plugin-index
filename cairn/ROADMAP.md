@@ -1,7 +1,7 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-30 (M062 done and archived; 1 row added; M059 row pruned; 7 lessons marked used, 1 captured, 1 evicted)_
+_Last hygiene check: 2026-10-30 (lessons pass: corrected 2026-10-25 (M001) and (M007); rank drops 2026-10-27 (M024), 2026-10-28 (M037), 2026-10-25 (M006), 2026-10-28 (M043), 2026-10-29 (M047); 20 lessons; no decision entry; validate green)_
 
 ## Milestones
 
