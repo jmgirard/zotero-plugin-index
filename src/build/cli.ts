@@ -42,6 +42,10 @@ async function main(): Promise<number> {
     console.error("wrote no file");
     return 1;
   }
+  // Without zoteroRelease, only the current major's marks fall back to the N.9 rule, until a
+  // later build reads it, so this read does not change the exit code. The line comes before
+  // the writes, so a failed write still leaves it in the log.
+  if (built.releaseProblem) console.log(`cannot read the Zotero release: ${oneLine(built.releaseProblem)}`);
   const written = await writeData(outDir, built.text);
   if (!written.ok) {
     console.error(`write-failed: ${written.message}`);
@@ -56,9 +60,6 @@ async function main(): Promise<number> {
     }
     console.log(`wrote a start plan of ${built.plan.plugins.length} plugins to ${resolve(cwd, planFile)}`);
   }
-  // Without zoteroRelease, only the current major's marks fall back to the N.9 rule, until a
-  // later build reads it, so this read does not change the exit code.
-  if (built.releaseProblem) console.log(`cannot read the Zotero release: ${oneLine(built.releaseProblem)}`);
   const failed = built.data.plugins.filter((plugin) => plugin.failure);
   for (const { id, failure } of failed) console.log(`${id}: ${failure!.name}: ${oneLine(failure!.message)}`);
   const counts = new Map<string, number>();

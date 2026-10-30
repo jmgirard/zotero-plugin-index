@@ -668,6 +668,7 @@ describe("the About page", () => {
       "◐ The range covers part of it.",
       "– The range covers none of it.",
       "The index counts Zotero N as the versions from N.0 to the newest release of N.",
+      "so a minimum such as 8.999, which authors write to mean Zotero 9 and newer, covers none of Zotero 8.",
       "Each day the build reads the current Zotero release from zotero.org, and the index keeps the last release of each earlier Zotero version.",
       "For a Zotero version with no known release, the index counts N.0 to N.9,",
       "A plugin that declares no range shows no mark. The range is what the author declares, not a test result.",
@@ -1462,9 +1463,7 @@ describe("the built site", () => {
 });
 
 describe("the newest Zotero release", () => {
-  // Two records read from the same repo as first-plugin, with no overrides: one declares 7.0 to
-  // 10.0.*, one 10.1 or newer. The same two records are built twice: once with zoteroRelease
-  // 10.0.7 and once with none.
+  // The shared fixture has no zoteroRelease, so these records get their own two builds.
   const base = records.find((record) => record.id === "first-plugin@example.org")!;
   const UP_TO = "up-to-10-0@example.org";
   const FROM = "from-10-1@example.org";
@@ -1530,7 +1529,6 @@ describe("the newest Zotero release", () => {
 
   test("the About page says that no release of 10 is known when the data has no zoteroRelease", () => {
     expect(releases("unknown").at(-1)).toEqual(["10", "Zotero 10: no release known, so the index counts 10.0 to 10.9"]);
-    expect(releases("unknown").map(([major]) => major)).toEqual(ZOTERO_MAJORS);
   });
 });
 

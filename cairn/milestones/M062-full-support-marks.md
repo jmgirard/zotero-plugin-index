@@ -96,7 +96,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
       page in the browser pane with the deployed data.
 - [x] T6: (review return 1) Read the zotero.org body outside the JSON parse's `try`, so a
       failed body read names its own cause, and add a body-reset regression case.
-- [ ] T7: (review return 1) Apply review pass 1's fix-now findings, as the Review section
+- [x] T7: (review return 1) Apply review pass 1's fix-now findings, as the Review section
       lists them.
 
 ## Work log
@@ -125,6 +125,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: review return 1: AC1 fails inside its domain: `readZoteroRelease` reads the body and parses it in one `try`, so a body read that fails mid-transfer prints "returned a body that is not JSON" instead of its cause (diff-bug #1). The fix-now findings of pass 1 (diff-bug #4, #6, #7, #10, #11, #14, #17; blame-history #3; prior-review #1–#3; ripple #1–#3) ride with the return. Follow-up row "Flag a new Zotero major in the build" added at normal. Status back to in-progress.
 - 2026-10-30: implement resumed for review return 1; minor amendment: added T6 (the AC1 fix, Coverage AC1 → T1, T6) and T7 (the pass 1 fix-now findings).
 - 2026-10-30: T6 done: `readZoteroRelease` awaits `response.text()` before the parse's `try`, so a failed or cut body read reaches the outer catch with its own cause, and the `signal.aborted` check is gone. The new "a body read that fails" case (`bodyError: "read ECONNRESET"`) failed on the old code with "returned a body that is not JSON" and passes now; the stalled-body case still names the limit.
+- 2026-10-30: T7 done: the CLI prints the release line before the writes; build.yml and README name the 30 s read beside the other limits, and README's release paragraph moved after the plugin time-limit paragraph; README's field list names `zoteroRelease`; README and the About page restore the 8.999 note (it covers none of 8); `checkOutput` has a pass case and a `10.0.7-beta` reject case for `zoteroRelease`; the release error cases use `releaseMs: 1000`, drop the repeated `checkOutput` and `buildLevel` expects, and the CLI test checks "build-level failures: 0 of 3 records" once; the site test drops the weaker list expect and the restating comment; DESIGN and README added lines rewrapped to 80 columns. `pnpm test` 1544 passed, 6 skipped; `pnpm check` 0 problems.
 
 ## Decisions
 

@@ -33,9 +33,10 @@ index keeps in its code. The About page names each one. For a version
 with no known release, a mark counts N.0 to N.9. Plugin authors often
 write a maximum such as 10.99.99 to mean every Zotero 10 release. A
 range that ends before N.0 or starts after the newest release covers none
-of that version. The declared range uses the overrides
-that apply to the plugin version that the index read. The marks show what
-each plugin declares, not a test result.
+of that version. Plugin authors also write a minimum such as 8.999 to mean
+Zotero 9 and newer, and it covers none of Zotero 8. The declared range
+uses the overrides that apply to the plugin version that the index read.
+The marks show what each plugin declares, not a test result.
 
 Under the declared mark, a version cell shows the result of the start
 tests on that major, which "Using the data" describes. If more than
@@ -967,7 +968,8 @@ the data must have a label named `report`, or the build exits 1. Then it
 reads each plugin
 from GitHub in the same way as `pnpm add-plugin`. It writes one file,
 `dist/v1/plugins.json`. The file has a `schemaVersion` of `1`, a
-`generatedAt` time, and one record for each entry. Each record keeps the
+`generatedAt` time, an optional `zoteroRelease` from the read below, and
+one record for each entry. Each record keeps the
 upstream facts in an `upstream` block and the overrides of the entry, with
 their reasons, in an `overrides` block. The schema for the file is
 [`schemas/plugins.v1.schema.json`](schemas/plugins.v1.schema.json). If the
@@ -987,22 +989,6 @@ read stops with an error that the reader does not name, the failure name is
 `unexpected-error`. If the read gives facts that the schema rejects, the
 failure name is `facts-invalid`. The command still writes the file.
 
-After the plugin reads, the command reads
-<https://www.zotero.org/download/client/version?channel=release> with no
-token and a limit of 30 seconds. It writes the answer's `linux-x86_64`
-value as the top-level `zoteroRelease`. The value must be numbers joined by
-dots, such as `10.0.7`. These cases fail the read:
-
-- an answer that is not a success,
-- a request that fails or passes 30 seconds,
-- a body that is not JSON,
-- a value that is missing or has another form.
-
-Then the command writes no
-`zoteroRelease`, and it prints one
-line that starts with `cannot read the Zotero release:` and names the
-cause. This read does not change the exit status.
-
 The command gives each plugin read 3 minutes. If a read takes longer, the
 command stops it, and the record fails with `request-failed`. The command
 starts no plugin read after 18 minutes from its start. Each entry that it
@@ -1015,8 +1001,25 @@ number is odd, it reads them in reverse id order. So the entries that get
 file lists its records in id order on every day. A plugin with either
 failure shows no facts until a later build reads it. The read of the
 `report` label and the report issues, which comes before the plugin reads,
-also counts toward the 18 minutes. These limits leave time for the other
-steps of the daily build, whose job GitHub stops at 30 minutes.
+also counts toward the 18 minutes. The read of the Zotero release below
+comes after the plugin reads and takes at most 30 seconds. These limits
+leave time for the other steps of the daily build, whose job GitHub stops
+at 30 minutes.
+
+After the plugin reads, the command reads
+<https://www.zotero.org/download/client/version?channel=release> with no
+token and a limit of 30 seconds. It writes the answer's `linux-x86_64`
+value as the top-level `zoteroRelease`. The value must be numbers joined by
+dots, such as `10.0.7`. These cases fail the read:
+
+- an answer that is not a success,
+- a request or a body read that fails or passes 30 seconds,
+- a body that is not JSON,
+- a value that is missing or has another form.
+
+Then the command writes no `zoteroRelease`, and it prints one line that
+starts with `cannot read the Zotero release:` and names the cause. This
+read does not change the exit status.
 
 A build-level failure usually comes from the build, not from the plugin.
 A plugin's own download host that is down also gives one. These failures

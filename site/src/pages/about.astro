@@ -32,7 +32,8 @@ const { zoteroRelease } = loadData();
     <p>
       The index counts Zotero N as the versions from N.0 to the newest release of N. So a maximum such as 10.0.* covers all
       of Zotero 10 while 10.0 is its newest release line, and part of it once Zotero 10.1 is out. A range that ends
-      before N.0 or starts after the newest release covers none of it. Each day the build reads the current Zotero
+      before N.0 or starts after the newest release covers none of it, so a minimum such as 8.999, which authors write
+      to mean Zotero 9 and newer, covers none of Zotero 8. Each day the build reads the current Zotero
       release from zotero.org, and the index keeps the last release of each earlier Zotero version. For a Zotero version
       with no known release, the index counts N.0 to N.9, because authors often write a maximum such as 10.99.99 to mean
       every Zotero 10 release. A plugin that declares no range shows no mark. The range is what the author declares, not

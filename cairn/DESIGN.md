@@ -120,10 +120,10 @@ declared cell or mark states how much of that major the declared range
 covers, counting Zotero N as N.0 to the newest release of N: all, part, or
 none. The newest release is the data's `zoteroRelease` for its major, else
 the `LAST_RELEASES` entry in `src/site/version.ts`, else N.9; a range that
-starts after it covers none (M062, D-036). The About page names each one. The plugin
-page's table keeps the declared range, the start result, and the reports
-in separate columns with no summary column, so it is not a combined
-verdict (M054). A home table cell
+starts after it covers none (M062, D-036). The About page names each one.
+The plugin page's table keeps the declared range, the start result, and
+the reports in separate columns with no summary column, so it is not a
+combined verdict (M054). A home table cell
 shows the major's newest start-test result as a second mark in its own
 element, and a legend under the table names each mark and says that a
 declared range is not a test result (M053). The home table also shows the
@@ -351,8 +351,9 @@ exception is a report that is abuse.
   `src/build/zotero-release.ts` reads the current Zotero release from
   zotero.org with no token and a 30 s limit, and the build writes it as the
   top-level `zoteroRelease`; a failed read leaves the field out, prints one
-  line, and does not change the exit code (M062, D-036). The command exits once stdout and stderr have flushed, so a host
-  lookup that a limit cut cannot hold it open. Added M003;
+  line, and does not change the exit code (M062, D-036). The command exits
+  once stdout and stderr have flushed, so a host lookup that a limit cut
+  cannot hold it open. Added M003;
   schemas and exit rule M006; build-level rule and summary M017; every-record
   rule M018; reports M021; time limits M029; label read and `closed_by`
   check M041; report read limit and exit M050; read order by day M051;
@@ -761,10 +762,12 @@ reused._
   the data. `src/site/version.ts` orders versions by Mozilla's legacy version
   format (`cairn/references/mozilla-toolkit-version.md`), finds a record's
   declared range with overrides applied, and, in `majorSupport`, how much of
-  one Zotero major that range covers, up to `newestRelease` (M062). The tests and the templates (through
-  `site/src/data.ts`, and, for `majorSupport`, `site/src/pages/index.astro`
-  and `site/src/pages/plugins/[id]/index.astro`, and, for `ZOTERO_MAJORS`,
-  `site/src/pages/index.astro` and, with `knownRelease`, `site/src/pages/about.astro`) import it. The
+  one Zotero major that range covers, up to `newestRelease` (M062). The
+  tests and the templates (through `site/src/data.ts`, and, for
+  `majorSupport`, `site/src/pages/index.astro` and
+  `site/src/pages/plugins/[id]/index.astro`, and, for `ZOTERO_MAJORS`,
+  `site/src/pages/index.astro` and, with `knownRelease`,
+  `site/src/pages/about.astro`) import it. The
   pages carried no script from M015. Since M024 the home page carries one,
   for the language menu and, since M037, the version buttons and, since
   M044, the status line under them, and since M053 the search box and the
