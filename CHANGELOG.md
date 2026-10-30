@@ -516,3 +516,9 @@
   Zotero release that `pnpm build` read from zotero.org. The schema
   rejects fields that it does not define, so fetch any saved copy of
   `schemas/plugins.v1.schema.json` again.
+- The home table writes the month of the release that the index read as
+  the year and month in UTC, such as `2026-09`, in place of `Sep 2026`.
+  Its `<time datetime>` holds the same text, in place of the release day.
+- The "Menus and settings in" menu draws its own down arrow in the text
+  color, inside the box, in place of the browser's arrow. With forced
+  colors on, the browser draws its own arrow.

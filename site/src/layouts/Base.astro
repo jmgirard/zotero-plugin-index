@@ -242,9 +242,25 @@ const { generatedAt } = loadData();
         width: 100%;
         padding: 0 var(--space-5) 0 var(--space-16);
       }
+      /* The page draws the menu's arrow in place of the browser's: two triangles in currentColor
+         make one down arrow, inset from the right edge by the left padding. */
       [data-language-filter] {
         max-width: 100%;
-        padding: 0 var(--space-4);
+        padding: 0 var(--space-14) 0 var(--space-4);
+        appearance: none;
+        background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+        background-position:
+          right calc(var(--space-4) + var(--space-3)) top 50%,
+          right var(--space-4) top 50%;
+        background-size: var(--space-3) var(--space-3);
+        background-repeat: no-repeat;
+      }
+      /* Forced colors drop gradients, so the menu keeps the browser's own arrow there. */
+      @media (forced-colors: active) {
+        [data-language-filter] {
+          padding-right: var(--space-4);
+          appearance: auto;
+        }
       }
       .language-filter,
       .version-filter {

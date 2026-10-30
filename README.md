@@ -17,8 +17,8 @@ shows the plugin's name and its description. If the plugin's GitHub
 repository is archived, the row shows "Archived" after the name. Then come
 one cell for each Zotero major version from 7 to 10 and a "Menus and
 settings" cell. Next comes the month of
-the release that the index read. Last come links to the source code and to
-the `.xpi` file.
+the release that the index read, as the year and month in UTC, such as
+`2026-09`. Last come links to the source code and to the `.xpi` file.
 
 A version cell shows how much of that version the plugin's declared range
 covers. A check mark (✓) means all of it, a half circle (◐) means part of

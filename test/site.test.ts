@@ -888,7 +888,7 @@ describe("the home page", () => {
     const released = record.upstream?.latestReleaseDate;
     expect(date!.html).toBe(
       released
-        ? `<time datetime="${released.slice(0, 10)}">${new Date(released).toLocaleDateString("en", { month: "short", year: "numeric", timeZone: "UTC" })}</time>`
+        ? `<time datetime="${released.slice(0, 7)}">${released.slice(0, 7)}</time>`
         : "",
     );
     const linked = [...links!.html.matchAll(/<a href="([^"]*)" data-link="([^"]+)"/g)].map(([, href, kind]) => [kind, unescaped(href!)]);
@@ -903,10 +903,9 @@ describe("the home page", () => {
     expect(row("b-cafe@example.org").cells.at(-3)!.html).toBe(`<abbr title="${languageName("en")}">en</abbr>`);
   });
 
-  // The site builds in New York time (pnpmSite), where 00:30 UTC on the 1st is still the month before.
+  // The site builds in New York time (pnpmSite), where 02:00 UTC on the 1st is still the month before.
   test("shows the release month in UTC", () => {
-    expect(row("a-cafe@example.org").cells.at(-2)!.html).toBe('<time datetime="2026-07-01">Jul 2026</time>');
-    expect(row("b-cafe@example.org").cells.at(-2)!.html).toBe('<time datetime="2025-12-31">Dec 2025</time>');
+    expect(row("a-cafe@example.org").cells.at(-2)!.html).toBe('<time datetime="2026-11">2026-11</time>');
   });
 
   test("links a source and a download only when the address passes", () => {
@@ -1628,6 +1627,20 @@ describe("the site styles", () => {
     const html = home();
     expect(html.match(/<t[dh][^>]* class="lang"/g)).toHaveLength(ids.length + 2);
     expect(html.match(/<t[dh][^>]* class="date"/g)).toHaveLength(ids.length + 2);
+  });
+
+  test("draws the language menu's arrow in currentColor, inset from the right by the left padding", () => {
+    const menu = cssRules(layout).filter(({ selector }) => selector === "[data-language-filter]");
+    const drawn = new Map(menu.find(({ declarations }) => declarations.some(([property]) => property === "appearance"))!.declarations);
+    expect(drawn.get("appearance")).toBe("none");
+    const gradients = drawn.get("background-image")!.match(/linear-gradient\([^)]*\)/g)!;
+    expect(gradients).toHaveLength(2);
+    for (const gradient of gradients) expect(gradient).toContain("currentColor");
+    const left = drawn.get("padding")!.split(" ")[3];
+    // The last layer is the arrow's right half, so its offset is the arrow's inset.
+    expect(drawn.get("background-position")!.split(",").at(-1)!.trim()).toBe(`right ${left} top 50%`);
+    // Forced colors drop gradients, so there the browser draws its own arrow.
+    expect(layout).toMatch(/@media \(forced-colors: active\) \{\s*\[data-language-filter\] \{[^}]*appearance: auto;/);
   });
 
   test("leaves styles out of every other .astro file", () => {
