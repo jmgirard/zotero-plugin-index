@@ -72,7 +72,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
 
 ## Coverage
 
-- AC1 → T1
+- AC1 → T1, T6
 - AC2 → T2
 - AC3 → T2
 - AC4 → T3
@@ -94,6 +94,10 @@ and stars line is in M061. The menu arrow and release month are in M063.
       since it adds a source to the build.
 - [x] T5: Run `pnpm test` and `pnpm check`, and look at the home table and one plugin
       page in the browser pane with the deployed data.
+- [x] T6: (review return 1) Read the zotero.org body outside the JSON parse's `try`, so a
+      failed body read names its own cause, and add a body-reset regression case.
+- [ ] T7: (review return 1) Apply review pass 1's fix-now findings, as the Review section
+      lists them.
 
 ## Work log
 
@@ -119,6 +123,8 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: status set to review; `pnpm test` (1541 passed, 6 skipped) and `pnpm check` (0 problems) pass.
 - 2026-10-30: review started, route (d): no PR, main unmoved. AC1–AC6 evidence recorded and ticked; `cairn_validate` passes; generic profile has no toolchain checks. Four-lens review spawned; checkpoint while it runs.
 - 2026-10-30: review return 1: AC1 fails inside its domain: `readZoteroRelease` reads the body and parses it in one `try`, so a body read that fails mid-transfer prints "returned a body that is not JSON" instead of its cause (diff-bug #1). The fix-now findings of pass 1 (diff-bug #4, #6, #7, #10, #11, #14, #17; blame-history #3; prior-review #1–#3; ripple #1–#3) ride with the return. Follow-up row "Flag a new Zotero major in the build" added at normal. Status back to in-progress.
+- 2026-10-30: implement resumed for review return 1; minor amendment: added T6 (the AC1 fix, Coverage AC1 → T1, T6) and T7 (the pass 1 fix-now findings).
+- 2026-10-30: T6 done: `readZoteroRelease` awaits `response.text()` before the parse's `try`, so a failed or cut body read reaches the outer catch with its own cause, and the `signal.aborted` check is gone. The new "a body read that fails" case (`bodyError: "read ECONNRESET"`) failed on the old code with "returned a body that is not JSON" and passes now; the stalled-body case still names the limit.
 
 ## Decisions
 

@@ -22,12 +22,13 @@ export async function readZoteroRelease(
     return await withinLimit(ms, async (signal) => {
       const response = await fetch(ZOTERO_RELEASE_URL, { signal });
       if (!response.ok) return { ok: false, message: `GET ${ZOTERO_RELEASE_URL} returned HTTP ${response.status}` };
+      // A body read that fails, or that the time limit cuts, rejects here and goes to the outer
+      // catch with its own cause.
+      const text = await response.text();
       let body: unknown;
       try {
-        body = JSON.parse(await response.text());
+        body = JSON.parse(text);
       } catch {
-        // A body cut by the time limit rejects text(), so that failure goes to the outer catch.
-        if (signal.aborted) throw signal.reason;
         return { ok: false, message: `GET ${ZOTERO_RELEASE_URL} returned a body that is not JSON` };
       }
       const version = (body as { "linux-x86_64"?: unknown } | null)?.["linux-x86_64"];
