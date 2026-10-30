@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-30 (M058 done and archived; 1 row graduated, 3 exte
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M059 | Reuse start results for unchanged XPIs | in-progress | — | high | milestones/M059-carry-start-results.md |
+| M059 | Reuse start results for unchanged XPIs | review | — | high | milestones/M059-carry-start-results.md |
 | M058 | Page the home table | done | — | normal | milestones/archive/M058-home-pages.md |
 | M057 | Let a dispatched merge run set its own wait | done | — | high | milestones/archive/M057-merge-wait-override.md |
 | M056 | Merge bot pull requests after a wait unless held | done | — | normal | milestones/archive/M056-merge-bot-pull-requests.md |

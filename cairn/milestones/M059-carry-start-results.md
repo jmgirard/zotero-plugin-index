@@ -1,6 +1,6 @@
 # M059: Reuse start results for unchanged XPIs
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
@@ -48,7 +48,7 @@ If a recent `started` result exists for the same XPI file and tested Zotero rele
 - [x] T5: Make `parsePlan` read and check `carried`. Make `startTests` skip carried pairs and count them in its summary. Add tests.
 - [x] T6: Make `addResults` merge carried results and drop job results for carried pairs as `carried`. Add the AC6 tests and the chained test.
 - [x] T7: Update README, `site/src/pages/about.astro`, `site/src/pages/index.astro`, the schema's `startTests` text, DESIGN.md, and CHANGELOG.md. Write a D-entry on reading the deployed data for the carry. It annotates D-023 and D-024, and states that a forged `started` on an unchanged XPI can last until the entry's next re-test day.
-- [ ] T8: Run the verify commands. Dispatch `Build data` on the branch once, to check that the changed workflow runs. The deployed data has no hashes yet, so that run carries nothing.
+- [x] T8: Run the verify commands. Dispatch `Build data` on the branch once, to check that the changed workflow runs. The deployed data has no hashes yet, so that run carries nothing.
 
 ## Work log
 
@@ -78,6 +78,8 @@ If a recent `started` result exists for the same XPI file and tested Zotero rele
 - 2026-10-30: T7 done: README (version cells, `xpiSha256` paragraph with the fetch-again notice, the start rule and the forged-carry cost, `pnpm carry-start-results`, start-tests and add-start-results rules, daily build job 1), About page `data-fact="start-when"` paragraph, home intro and legend ("Started in the start test", with its site test), the schema's `startTests` text, DESIGN.md (contract item 5, start-test family, workflow), CHANGELOG entry, and D-035. D-035 went in through a shell append, not the Edit tool. One README line that an Edit joined was rewrapped. Browser pane on a site built from the deployed data shows the new About paragraph, intro, and legend. pnpm test 1377 passed, pnpm check 0 problems.
 - 2026-10-30: T8 started: branch pushed and `Build data` dispatched on it as run 41018926508 (question set grant, run 1 of 2).
 - 2026-10-30: claim audit: 66 claims read, 5 corrected — README.md (start cases now name the unreadable published data and an entry or release named twice; carries-nothing list adds an invalid plan, an unreadable `generatedAt`, a failed write; duplicate rule restored to results that meet every condition), schemas/plugins.v1.schema.json (`startTests` text names the unreadable published data), test/start-tests.test.ts (the later-day comment). The same reader re-read the 5 and found each true.
+- 2026-10-30: T8 done: run 41018926508 on the branch succeeded (build, four start-test jobs, site; deploy skipped off main). The carry step printed "carried 0 start results for 0 of 272 plan items", since the deployed data has no `xpiSha256` yet. Starts: 163, 182, 208, 208 on 7.0.32 to 10.0.6, 0 carried; the 10.0.6 job left 4 plugins unstarted at its 20-minute limit. The site job kept 761 results and dropped none.
+- 2026-10-30: implement complete; status review.
 
 ## Decisions
 
