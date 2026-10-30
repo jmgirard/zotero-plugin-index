@@ -78,7 +78,7 @@ filters to read the data file (not asked for).
 - [x] T3: Let `homeScript` in `test/site.test.ts` take generated rows beside the built ones, with stand-ins for
       the pager, `pushState`, and `scrollIntoView`, and write the AC1 and AC2 script tests.
 - [x] T4: README home section and a CHANGELOG entry.
-- [ ] T5: Run the verify slot; look at the built home page in the browser pane at 375 px and at desktop width,
+- [x] T5: Run the verify slot; look at the built home page in the browser pane at 375 px and at desktop width,
       with the iframe width check (LESSONS M048) and the 375 px look (LESSONS M054), built from the deployed data
       file (LESSONS M035).
 
@@ -96,4 +96,5 @@ filters to read the data file (not asked for).
 - 2026-10-30: plan gate chose paging in the script over pages built as separate files because the filters and the count already need every row in the page; falsified by a page weight that the `?page` view alone would cut enough to matter.
 - 2026-10-30: implement started on branch m058-home-pages.
 - 2026-10-30: T1 to T3 done: `PAGE_SIZE`, `pageCount`, `onPage`, and `chosenPage` in `src/site/home-filter.ts` (25 helper tests); the pager `nav` (hidden in the HTML, `.pager[hidden]` in Base.astro's hide rule) and the script's paging: `passed()` counts rows apart from paging, rows off the page hide, Previous and Next check `aria-disabled`, drop a waiting typing write, `pushState`, and scroll `.table-card`; filter events set page 1; load and `popstate` read the filters, then `page`. `homeScript` takes generated rows and stand-ins for the pager, `pushState`, and `scrollIntoView`; 17 paging tests. Planted counting by visible rows, a kept typing write, and no end check turned 3 red. `pnpm test` 1328 passed, `pnpm check` 272 entries clean.
+- 2026-10-30: T5 done: verify slot clean (1328 tests; 272 entries). Browser pane: the deployed data had 58 plugins (the build after the backfill had not run), so the look used it copied to 174 rows (ids `copy2-`, `copy3-`), built with `pnpm site --out` and served by a `.claude/launch.json` entry (`m058-look`). Page 1 showed 50 of 174, "Page 1 of 4", count "174 plugins", Previous `aria-disabled="true"`; Next went to `?page=2`, rows 51 to 100, the table's top at 0, focus kept on Next; Back went to page 1. Iframes of `?page=4` at 375, 760, and 1200 px: `scrollWidth` equals `clientWidth`. Screenshots at 375 px and 1024 px show the pager on one line, Next greyed on page 4.
 - 2026-10-30: T4 done: README's opening paragraph and home section (the count covers every page; a new paragraph for the pager, `page`, Back, and the reset to page 1; the script paragraph names the pager) and a CHANGELOG entry.
