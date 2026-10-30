@@ -26,27 +26,30 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 
 ## Acceptance criteria
 
-- [ ] AC1: For a record whose `upstream.stars` is set, the repo line ends with `·` and a `data-repo-stars` element.
-  That element holds, in order, three parts.
+- [ ] AC1: For a record whose `upstream.stars` is set, the repo line's last two children are the `aria-hidden` `·`
+  span and a `data-repo-stars` element. That element holds, in order, three parts.
   The first is a filled star SVG with `aria-hidden="true"`.
   The second is the count as `toLocaleString("en")` writes it.
   The third is a `.visually-hidden` span that holds " GitHub Star" for a count of 1 and " GitHub Stars" otherwise.
   The span's text starts with that space.
   The element's `title` is the count and the same words, such as "1,234 GitHub Stars".
-  The line's visible text reads, for example, "By example · example/first-plugin · 1,234".
-  Its text with all tags removed reads "By example · example/first-plugin · 1,234 GitHub Stars".
+  With the `.visually-hidden` span removed, the line's text with tags removed reads, for example,
+  "By example · example/first-plugin · 1,234".
+  With all tags removed and no span removed, it reads "By example · example/first-plugin · 1,234 GitHub Stars".
   Tests in `test/site.test.ts` check this for the fixture counts 1,234, 1, and 0.
-- [ ] AC2: For a record with no `upstream.stars`, the repo line holds no `data-repo-stars` element and no star icon.
+- [ ] AC2: For a record with no `upstream.stars`, the repo line holds no `data-repo-stars` element and no `<svg`.
   The tests for `no-range-plugin@example.org` and `broken-plugin@example.org` check this.
-- [ ] AC3: The star icon's path has `fill: var(--star)` and `stroke: none`.
-  In `site/src/layouts/Base.astro`, `--star` is `#b07d00` in the light `:root` block.
+- [ ] AC3: A rule in `site/src/layouts/Base.astro` sets `fill: var(--star)` and `stroke: none` on the star icon.
+  This overrides `.icon`'s `fill: none` and `stroke: currentColor`. A search of `site/src` for `fill` finds it set in no file but `Base.astro`.
+  In `Base.astro`, `--star` is `#b07d00` in the light `:root` block.
   It is `#e3b341` in the `prefers-color-scheme: dark` block.
   The site's contrast test holds `--star` to 3:1 on `--bg` and on `--surface` in both schemes.
   Inside a `@media (forced-colors: active)` block, the star's fill is `CanvasText`.
-  A read of the layout source is the only check of the forced-colors rule.
+  `Base.astro` gives `[data-repo-stars]` `white-space: nowrap`.
 - [ ] AC4: A built plugin page is served over HTTP and viewed in the browser pane, in the light and dark schemes.
-  In each scheme, the star path's computed fill equals that scheme's `--star` value.
-  At a 375 px width, the star and the count stay on one line.
+  The star path's computed fill is `rgb(176, 125, 0)` in light and `rgb(227, 179, 65)` in dark.
+  At a 375 px width, on the page of the indexed plugin with the longest owner and repo name, the star and the count
+  share one line.
 - [ ] AC5: Three texts describe the line's end as a star icon, the count, and the "GitHub Stars" tooltip.
   They are the README plugin page paragraph, the DESIGN.md plugin page paragraph, and the M061 CHANGELOG entry.
   None of the three files contains the string "8,400 stars", by a joined-text search of each file.
@@ -63,9 +66,9 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 
 ## Tasks
 
-- [ ] T1: Add a filled `star` icon to `Icon.astro`, and the `--star` tokens, star rule, and forced-colors rule to
-  `Base.astro`. Add `--star` on `--bg` and `--surface` at 3:1 to `PAIRS` in `test/site.test.ts` (near line 1686).
-- [ ] T2: Change the repo line's end in the plugin page template, with `white-space: nowrap` on the element.
+- [ ] T1: Add a filled `star` icon to `Icon.astro`, and the `--star` tokens, star rule, forced-colors rule, and
+  `[data-repo-stars]` nowrap rule to `Base.astro`. Add `--star` on `--bg` and `--surface` at 3:1 to `PAIRS` in `test/site.test.ts` (near line 1686).
+- [ ] T2: Change the repo line's end in the plugin page template.
   Change `starsText` in `site/src/data.ts` to give "1 GitHub Star" and "1,234 GitHub Stars".
   Update the repo line tests in `test/site.test.ts` (near lines 426 and 449 to 451) for the markup and both texts.
 - [ ] T3: Rewrite the README plugin page paragraph, the DESIGN.md plugin page paragraph, and the M061 CHANGELOG entry.
@@ -84,6 +87,7 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - 2026-10-30: plan gate chose a `.visually-hidden` word over an `aria-label` on the span because an `aria-label` on a plain span is not read by all screen readers; falsified by a screen reader that reads the hidden word twice with the `title`.
 - 2026-10-30: plan gate chose to edit the M061 CHANGELOG entry over a new entry because both sit under Unreleased and describe one line; falsified by a release cut between M061 and M064.
 - 2026-10-30: criteria audit (full): 10 findings. Taken: the space sits inside the hidden span; AC1 states the page and names the tests as the check; the star sets `stroke: none`; `--star` joins the 3:1 contrast test; the dark view uses a served page; the computed fill is a page property, not a record; a 375 px one-line check; forced colors checked by source read only; AC4 (now AC5) searches for the plain string. No problem in AC2, AC5 (now AC6), or proportion.
+- 2026-10-30: criteria re-audit (full) of the criteria the question set changed: 4 findings, all taken. AC1 names the last two children and defines visible text as the text with the hidden span removed; AC2 checks for no `<svg`; AC3 sets the fill in a `Base.astro` rule, with a `site/src` search, and holds the nowrap rule; AC4 states the computed fills as `rgb()` and checks the longest owner and repo name. Its note that the `title` can make some screen readers read the count twice is accepted: the user asked for the tooltip, and the hidden words keep the count readable where the `title` is not read.
 
 ## Decisions
 
