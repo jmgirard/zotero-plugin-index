@@ -61,7 +61,7 @@ const { min, max } = declaredRange(record);
         <p class="repo-line" data-repo-line>
           By <a href={`https://github.com/${github.owner}`} data-repo-owner>{github.owner}</a>{" "}
           <span aria-hidden="true">·</span>{" "}
-          <a href={repoHref} data-repo-name>{`${github.owner}/${github.repo}`}</a>
+          <a href={repoHref} data-repo-name>{github.repo}</a>
           {upstream?.stars !== undefined && (
             <>
               {" "}

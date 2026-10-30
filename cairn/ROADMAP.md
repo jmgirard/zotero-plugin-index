@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-30 (M064 done: 1 row added, M061 row pruned, 1 less
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M065 | Drop the repeated owner from the repo line | planned | — | normal | milestones/M065-repo-line-owner.md |
+| M065 | Drop the repeated owner from the repo line | in-progress | — | normal | milestones/M065-repo-line-owner.md |
 | M064 | Show the star count with a star icon | done | — | normal | milestones/archive/M064-star-icon.md |
 | M063 | Fix the language menu arrow and release dates | done | — | normal | milestones/archive/M063-menu-arrow-release-month.md |
 | M062 | Mark full support against released Zotero versions | done | — | normal | milestones/archive/M062-full-support-marks.md |

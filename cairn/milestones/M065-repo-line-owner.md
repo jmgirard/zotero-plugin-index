@@ -1,13 +1,13 @@
 # M065: Drop the repeated owner from the repo line
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes what the public plugin pages show
-- **Branch/PR:** —
+- **Branch/PR:** m065-repo-line-owner
 
 ## Goal
 
@@ -44,7 +44,7 @@ Bot branch names and addresses written `<owner>/<repo>` elsewhere in README and 
 
 ## Tasks
 
-- [ ] T1: Change the `data-repo-name` link text to `github.repo`, then update the head test's expected line and the
+- [x] T1: Change the `data-repo-name` link text to `github.repo`, then update the head test's expected line and the
   repo line test's rows (tests first).
 - [ ] T2: Rewrite README's plugin page paragraph (near line 150), DESIGN.md's (near line 92), and the M061 CHANGELOG
   entry (near line 499).
@@ -62,6 +62,7 @@ Bot branch names and addresses written `<owner>/<repo>` elsewhere in README and 
 - 2026-10-30: question set: long names — keep the browser's normal wrapping, so a long repo name can break at a hyphen.
 - 2026-10-30: plan gate chose "By owner · repo" over "By owner" alone because the repo name often differs from the plugin name and says where the code lives; falsified by users who read the repo name as noise beside the Source button.
 - 2026-10-30: criteria audit (full), run after the question set because the line's form was the set's open choice: 2 findings, both taken. AC1 covers every fixture page with a repo line through the head test. AC2 names the link sentences and searches for `<owner>/<repo>` outside an address. No problem in AC3; a repo-name-only link is clear in context (link purpose in context).
+- 2026-10-30: T1 done: `data-repo-name` reads `{github.repo}`. The head test expects `escaped(github.repo)` and the five repo line rows expect the bare repo name; they went red first (16 failed: 11 head-test pages, 5 rows) and pass with the change. `pnpm test` 1547 passed, `pnpm check` 0 problems.
 
 ## Decisions
 
