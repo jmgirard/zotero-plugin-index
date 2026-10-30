@@ -56,8 +56,19 @@ page lists the plugins in one table, sorted by display name with
 the rows the filters pass 50 at a time, with a pager below the table, and
 keeps the page after 1 in `?page=`; Previous and Next add a history entry
 with `pushState`, the filters still replace the address, and a filter event
-goes back to page 1 (M058). Without JavaScript every row shows. The home
-page's "Menus and settings in" menu filters the table by language subtag,
+goes back to page 1 (M058). Without JavaScript every row shows. A classic
+script before the table runs before the rows parse. In a browser that runs
+module scripts, it adds a style that `prePaintStyle` writes from the
+address. The style hides the rows outside the asked page of the rows that
+`?language=` and `?zotero=` pass. So in a browser that reads
+`:nth-child(… of S)`, no row that the script hides paints while the page
+loads (see Known issues). A value that the script drops, or a page past the
+last one, also hides rows that the script then shows. For an address with
+a non-blank `?q=`, it hides every row until the script runs. The script
+removes the style after its first pass, and the classic script removes it
+on any error the window reports, such as a module script that throws or
+cannot parse (M060). The home page's "Menus and
+settings in" menu filters the table by language subtag,
 run by the home page's script (D-014, D-026, M024, M033). The menu lists the
 languages with the most plugins first, and languages with the same number
 of plugins in code-unit order of their English names (M035). The home
@@ -338,7 +349,10 @@ exception is a report that is abuse.
   `chosenValue`, `filterHref`, `filterOn`, `filterStatus`, `PAGE_SIZE`,
   `pageCount`, `onPage`, and `chosenPage`, which the home page's script
   imports for the search box, the language menu, the version buttons, the
-  count, and the pager (renamed from `language-filter.ts`, M037; pages M058);
+  count, and the pager (renamed from `language-filter.ts`, M037; pages M058).
+  It also holds `prePaintStyle`, whose source text the home page's classic
+  script carries, so it calls and reads nothing outside its body except
+  built-ins (M060);
   `rowMajors` in `version.ts` gives each row's `data-zotero`.
   `site/src/data.ts` holds the template helpers, among them `homeOrder`,
   `majorStart`, `shortLanguages`, and `monthYear` for the home table, and
@@ -737,9 +751,9 @@ reused._
   for the language menu and, since M037, the version buttons and, since
   M044, the status line under them, and since M053 the search box and the
   count that replaced that line, and since M058 the pager, which Astro
-  inlines as a
-  `type="module"` script; the other pages carry none (D-014,
-  D-019, D-026). The templates take the Pages path
+  inlines as a `type="module"` script. Since M060 a classic inline script
+  before the table adds the pre-paint style. The other pages carry none
+  (D-014, D-019, D-026). The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces
   Astro's `import.meta.env.BASE_URL`. `build.yml`'s site job runs `pnpm site`
   after the build job (M047), so a failed site build also deploys nothing.
@@ -753,7 +767,9 @@ reused._
   the markup the site tests match (M015). Outside its `:root` blocks and
   `.visually-hidden`, each value part of each margin, padding, gap,
   `border-radius`, and `font-size` there is a custom property, `0`, or
-  `auto`, and no other `.astro` file holds a style (M049).
+  `auto`, and no other `.astro` file holds a style (M049). The one style
+  outside it is the home page's pre-paint style, which `prePaintStyle`
+  writes and the classic script adds at load (M060).
 
 ## Known issues
 
@@ -805,3 +821,11 @@ reused._
   deployed data stays until the entry's re-test day, or longer if that
   day's build deploys nothing, and plugin code can forge it again on that
   day (D-035).
+- If a language or Zotero filter is on, a browser that cannot read the
+  `of <selector>` form of `:nth-child()` paints every row that the filter
+  passes, on every page, until the home page's script runs. Chrome and Edge
+  before 111, Firefox before 113, and Opera before 97 cannot read it; Safari
+  reads it since 9 (`cairn/references/mdn-nth-child.md`). Such a browser
+  drops only the rules that use the form. Each filter's `:not()` rule holds
+  one attribute selector, so the browser still hides the rows that the
+  filter does not pass. Recorded at M060, 2026-10-30.

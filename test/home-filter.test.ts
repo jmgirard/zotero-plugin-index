@@ -1,5 +1,17 @@
 import { describe, expect, test } from "vitest";
-import { chosenPage, chosenValue, filterHref, filterOn, filterStatus, onPage, pageCount, passes, rowShows } from "../src/site/home-filter.ts";
+import {
+  chosenPage,
+  chosenValue,
+  filterHref,
+  filterOn,
+  filterStatus,
+  onPage,
+  pageCount,
+  passes,
+  prePaintStyle,
+  rowShows,
+} from "../src/site/home-filter.ts";
+import { PRE_PAINT_CASES } from "./support/pre-paint.ts";
 
 const LANGUAGES = ["", "de", "en", "zh"];
 const MAJORS = ["", "7", "8", "9", "10"];
@@ -167,5 +179,11 @@ describe("the home table's pages", () => {
     ["7", 6, 1],
   ])("reads the page parameter %j over %i pages as page %i", (asked, pages, page) => {
     expect(chosenPage(asked, pages)).toBe(page);
+  });
+});
+
+describe("prePaintStyle", () => {
+  test.each(PRE_PAINT_CASES)("writes the style for %j", (search, style) => {
+    expect(prePaintStyle(search, 50)).toBe(style);
   });
 });

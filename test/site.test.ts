@@ -9,9 +9,11 @@ import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json
 import { displayName, majorReport, pluginHref, rangeText, reportHref, safeHref, type PluginRecord } from "../site/src/data.ts";
 import type { PluginsFile } from "../src/build/build.ts";
 import { shownDescription } from "../src/site/description.ts";
+import { PAGE_SIZE, prePaintStyle } from "../src/site/home-filter.ts";
 import { appliedLanguages, languageName } from "../src/site/languages.ts";
 import { START_LIMIT_MS } from "../src/start-test/start-test.ts";
 import { compareVersions, declaredRange, majorSupport, ZOTERO_MAJORS } from "../src/site/version.ts";
+import { PRE_PAINT_CASES } from "./support/pre-paint.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const FIXTURE = resolve(ROOT, "test/fixtures/site/plugins.json");
@@ -946,7 +948,7 @@ describe("the home page", () => {
     const html = home();
     expect(rows().length).toBe(ids.length);
     for (const { id, attributes } of rows()) expect(attributes, id).not.toMatch(/\shidden[\s=]|\shidden$/);
-    const toolbar = html.slice(html.indexOf('<div class="toolbar">') + '<div class="toolbar">'.length, html.indexOf('</div><div class="table-card">'));
+    const toolbar = html.slice(html.indexOf('<div class="toolbar">') + '<div class="toolbar">'.length, html.indexOf("</div><script>"));
     expect(toolbar.length).toBeGreaterThan(0);
     expect(toolbar).toMatch(/^<p class="search" hidden><label for="search" class="visually-hidden">Search plugins<\/label><svg [^]*?<\/svg><input type="search" id="search" data-search placeholder="Search plugins" autocomplete="off"><\/p>/);
     expect(toolbar).toMatch(/<p class="language-filter" hidden><label[^>]*>[^<]*<\/label> <select[^>]*>(?:<option[^>]*>[^<]*<\/option>)+<\/select><\/p>/);
@@ -990,7 +992,7 @@ function generatedRow(n: number) {
   };
 }
 
-function homeScript(href: string, generated = 0) {
+function homeScript(href: string, generated = 0, missing?: "search" | "menu" | "buttons") {
   const html = home();
   const script = /<script type="module">(.*?)<\/script>/s.exec(html)![1]!;
   const shown = new Set<string>();
@@ -1040,16 +1042,21 @@ function homeScript(href: string, generated = 0) {
   });
   let scrolls = 0;
   const table = { scrollIntoView: () => scrolls++ };
+  // The style that the classic script adds to the head.
+  // How many rows were hidden when the module script removed it, or undefined before then.
+  let hiddenAtRemoval: number | undefined;
+  const prePaint = { remove: () => (hiddenAtRemoval = tableRows.filter((row) => row.hidden).length) };
   const lookups: Record<string, unknown> = {
-    "input[data-search]": search,
-    "select[data-language-filter]": select,
+    "input[data-search]": missing === "search" ? null : search,
+    "select[data-language-filter]": missing === "menu" ? null : select,
     "[data-filter-status]": status,
     "[data-pager]": pager,
     "[data-page-status]": pageStatus,
     ".table-card": table,
+    "style[data-pre-paint]": prePaint,
   };
   const lists: Record<string, unknown[]> = {
-    "[data-version-filter] button": buttons,
+    "[data-version-filter] button": missing === "buttons" ? [] : buttons,
     "tbody tr[data-plugin]": tableRows,
     "[data-pager] button": steps,
   };
@@ -1095,6 +1102,7 @@ function homeScript(href: string, generated = 0) {
     pageStatus,
     steps,
     scrolls: () => scrolls,
+    hiddenAtRemoval: () => hiddenAtRemoval,
     all: () => tableRows.map((r) => r.dataset.plugin),
     visible: () => tableRows.filter((r) => !r.hidden).map((r) => r.dataset.plugin),
     fire: (name: string) => events.get(name)!(),
@@ -1272,6 +1280,75 @@ describe("the home page script", () => {
     expect(page.visible()).toEqual(["b-cafe@example.org"]);
     expect(page.timers.size).toBe(0);
   });
+
+  test("removes the classic script's style once its first pass has hidden the rows off page 1", () => {
+    const page = homeScript(PAGE, 120);
+    expect(page.hiddenAtRemoval()).toBe(page.all().length - 50);
+  });
+
+  test.each(["search", "menu", "buttons"] as const)("removes the classic script's style on a page with no %s", (missing) => {
+    const page = homeScript(PAGE, 0, missing);
+    expect(page.hiddenAtRemoval()).toBe(0);
+  });
+});
+
+// The built home page's classic script run against a stand-in head, location, and window. It
+// returns the attributes and text of each element the script appends to the head, and runs
+// the window's error listeners on fire().
+function prePaintScript(search: string, modules = true) {
+  const html = home();
+  const script = /<script>(.*?)<\/script>/s.exec(html)![1]!;
+  type Element = { attributes: Record<string, string>; textContent: string; removed: boolean };
+  const appended: Element[] = [];
+  const document = {
+    createElement: (tag: string) => {
+      if (tag !== "style") throw new Error(`the script creates ${tag}`);
+      const element: Element & { setAttribute: unknown; remove: unknown } = {
+        attributes: {},
+        textContent: "",
+        removed: false,
+        setAttribute: (name: string, value: string) => (element.attributes[name] = value),
+        remove: () => (element.removed = true),
+      };
+      return element;
+    },
+    head: { append: (element: Element) => appended.push(element) },
+  };
+  const errors: (() => void)[] = [];
+  const addEventListener = (type: string, listener: () => void) => {
+    if (type !== "error") throw new Error(`the script listens for ${type}`);
+    errors.push(listener);
+  };
+  const HTMLScriptElement = { prototype: modules ? { noModule: false } : {} };
+  runInNewContext(script, { document, location: { search }, HTMLScriptElement, URLSearchParams, addEventListener });
+  return {
+    styles: () => appended.map(({ attributes, textContent }) => ({ attributes, textContent })),
+    removed: () => appended.map(({ removed }) => removed),
+    fire: () => errors.forEach((listener) => listener()),
+  };
+}
+
+describe("the home page's classic script", () => {
+  test("comes before the table", () => {
+    const html = home();
+    expect(html.indexOf("<script>")).toBeGreaterThan(-1);
+    expect(html.indexOf("<script>")).toBeLessThan(html.indexOf('<table class="plugins">'));
+  });
+
+  test.each(PRE_PAINT_CASES.map(([search]) => search))("adds the style that prePaintStyle writes for %j", (search) => {
+    expect(prePaintScript(search).styles()).toEqual([{ attributes: { "data-pre-paint": "" }, textContent: prePaintStyle(search, PAGE_SIZE) }]);
+  });
+
+  test("adds no style in a browser that does not run module scripts", () => {
+    expect(prePaintScript("?page=2", false).styles()).toEqual([]);
+  });
+
+  test("removes its style on a window error, so a module script that failed leaves every row shown", () => {
+    const page = prePaintScript("?page=2");
+    expect(page.removed()).toEqual([false]);
+    page.fire();
+    expect(page.removed()).toEqual([true]);
+  });
 });
 
 describe("the built site", () => {
@@ -1306,11 +1383,11 @@ describe("the built site", () => {
     }
   });
 
-  test("has a script on the home page only", () => {
+  test("has scripts on the home page only, a classic one and then a module", () => {
     const files = htmlFiles(out);
     expect(files).toContain("index.html");
     for (const file of files) expect(readFileSync(join(out, file), "utf8").includes("<script"), file).toBe(file === "index.html");
-    expect(readFileSync(join(out, "index.html"), "utf8").match(/<script[\s>]/g)).toHaveLength(1);
+    expect(readFileSync(join(out, "index.html"), "utf8").match(/<script[\s>]/g)).toEqual(["<script>", "<script "]);
   });
 
   test("has no trace of the Zotero version field", () => {

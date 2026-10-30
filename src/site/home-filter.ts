@@ -1,6 +1,7 @@
 // The home page's filters: the search box, the language menu, the Zotero version buttons,
-// the plugin count beside them, and the pages below the table. The page's script imports
-// it, so it has no imports.
+// the plugin count beside them, and the pages below the table. The page's module script
+// imports it, so it has no imports. The page's classic script carries the source text of
+// prePaintStyle.
 
 // One filter's state: its chosen value and the values its menu or buttons offer.
 export interface Filter {
@@ -77,6 +78,48 @@ export function chosenPage(asked: string | null, pages: number): number {
   if (asked === null || !/^[1-9]\d*$/.test(asked)) return 1;
   const page = Number(asked);
   return page >= 2 && page <= pages ? page : 1;
+}
+
+// The CSS that hides at least the rows the page's script will hide for an address, so that a
+// row the script hides does not paint before the script runs. A value that the script drops,
+// or a page past the last one, can also hide rows that the script then shows. That holds
+// while the menu and the buttons offer each value that a row carries, since the script pages
+// over the rows its chosen values pass and this CSS over the rows the asked values pass;
+// languageOptions and ZOTERO_MAJORS do so today. search is the
+// address's query string, read as the script reads it, and size is the page size. A non-blank
+// q, a language or zotero value that is not letters, digits, and hyphens, or a page of more
+// than 6 digits hides every row. Otherwise the CSS shows the asked page of the rows that the
+// language and zotero values pass. Each value gets its own :not() rule with one attribute
+// selector, and each rule that uses :nth-child(… of S) stands alone, so a browser that cannot
+// read that form drops only those rules. The home page builds a classic script from this
+// function's source text, so it calls and reads nothing from outside its body except
+// built-ins.
+export function prePaintStyle(search: string, size: number): string {
+  const rows = ".plugins tbody tr";
+  const params = new URLSearchParams(search);
+  if ((params.get("q") ?? "").trim() !== "") return `${rows}{display:none}`;
+  const passing: string[] = [];
+  for (const [name, attribute] of [
+    ["language", "data-languages"],
+    ["zotero", "data-zotero"],
+  ]) {
+    const value = params.get(name!) ?? "";
+    if (value === "") continue;
+    if (!/^[A-Za-z0-9-]+$/.test(value)) return `${rows}{display:none}`;
+    passing.push(`[${attribute}~="${value}"]`);
+  }
+  const asked = params.get("page") ?? "";
+  if (/^\d{7,}$/.test(asked)) return `${rows}{display:none}`;
+  const page = /^[1-9]\d*$/.test(asked) && Number(asked) >= 2 ? Number(asked) : 1;
+  const of = passing.length === 0 ? "" : ` of ${passing.join("")}`;
+  const before = (page - 1) * size;
+  const rules = passing.map((selector) => `${rows}:not(${selector}){display:none}`);
+  if (page > 1) rules.push(`${rows}:nth-child(-n+${before}${of}){display:none}`);
+  rules.push(`${rows}:nth-child(n+${before + size + 1}${of}){display:none}`);
+  // The page's own rule gives a row a top border after any row without hidden, and these
+  // rules leave hidden unset, so the page's first row drops it here.
+  rules.push(`${rows}:nth-child(${before + 1}${of}){border-top:0!important}`);
+  return rules.join("\n");
 }
 
 // The page's address with parameter name set to value, or with the parameter removed when

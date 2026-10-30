@@ -1,4 +1,5 @@
 ---
+import { PAGE_SIZE, prePaintStyle } from "../../../src/site/home-filter.ts";
 import { majorSupport, ZOTERO_MAJORS } from "../../../src/site/version.ts";
 import Icon from "../components/Icon.astro";
 import Base from "../layouts/Base.astro";
@@ -23,6 +24,20 @@ import {
 } from "../data.ts";
 
 const { plugins } = loadData();
+
+// A classic script runs as soon as the parser reaches it, before the table's rows parse, where
+// the module script below runs only once the whole page has parsed. It hides at least the rows
+// the module script will hide, so in a browser that reads :nth-child(… of S) none of them
+// paints while the page loads. Only a browser that runs module scripts gets the style, since
+// the module script removes it. A module script that throws or cannot parse reports an error
+// to the window, so the style also goes on any such error, and every row shows again.
+const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
+  const style = document.createElement("style");
+  style.setAttribute("data-pre-paint", "");
+  style.textContent = (${prePaintStyle})(location.search, ${PAGE_SIZE});
+  document.head.append(style);
+  addEventListener("error", () => style.remove());
+}`;
 ---
 
 <Base title="Zotero plugin index">
@@ -62,6 +77,7 @@ const { plugins } = loadData();
     </div>
     <p class="filter-status" role="status" data-filter-status hidden></p>
   </div>
+  <script is:inline set:html={prePaint} />
   <div class="table-card">
     <table class="plugins">
       <caption class="visually-hidden">Plugins in the index</caption>
@@ -322,4 +338,7 @@ const { plugins } = loadData();
     buttons[0]!.closest("[hidden]")?.removeAttribute("hidden");
     status?.removeAttribute("hidden");
   }
+  // Each row's hidden now says what shows, so the style that the classic script added goes,
+  // also when the page lacks a control.
+  document.querySelector("style[data-pre-paint]")?.remove();
 </script>
