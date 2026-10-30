@@ -77,4 +77,15 @@ Bot branch names and addresses written `<owner>/<repo>` elsewhere in README and 
 - AC2: README (lines 150-151), DESIGN.md (lines 92-94), and the CHANGELOG entry (lines 499-505) give "By <owner> · <repo>" and say the repo name links to the repository; a joined-text search of each passage, with `https://github.com/<owner>/<repo>` removed, finds `<owner>/<repo>` and `windingwind/zotero-better-notes` 0 times.
 - AC3: `pnpm test` 25 files, 1547 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed; no principle changed; the generic profile names no toolchain checks.
-
+- spawned: diff-bug, blame-history, prior-review, ripple
+- blame-history #1: part (8) of the candidate row "Close small gaps on the site pages" says `https://github.com/a/b.git` shows "a/b.git"; it now shows "b.git" — fix now (the row says "b.git")
+- blame-history #2: the repo link no longer names the owner, so a links list or copied text reads only the repo name — reject, planned change: the question set chose "By owner · repo", and the link is clear in context
+- diff-bug #1: the five repo line rows run one rendering path, and the two no-stars rows repeat each other — reject, false: the rows exist for the star cases (1,234, 1, 0, none) and predate this change, which only updates their expected text
+- diff-bug #2: no fixture repo name needs escaping or differs from its slug — reject, false: GitHub repo names hold only letters, digits, `.`, `-`, and `_`, and Astro escapes text expressions
+- diff-bug #3: a repo-name-only link lacks the owner out of context — reject, planned change (as blame-history #2)
+- diff-bug #4: T3's work-log line names the preview `m064-look` — reject, false: that is the `.claude/launch.json` entry reused on purpose
+- diff-bug #5: the M061 CHANGELOG entry was edited in place — reject, false: both sit under Unreleased, so the entry states the final form
+- prior-review #1: the bare repo link may repeat M048's link-purpose finding — reject, planned change (as blame-history #2)
+- prior-review #2: the CHANGELOG entry was edited in place — reject, false (as diff-bug #5)
+- prior-review #3: DESIGN.md cites milestone ids inline — reject, false: the same paragraph already cites M054 and M061
+- ripple: no ripple evidence
