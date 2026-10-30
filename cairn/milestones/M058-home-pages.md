@@ -25,7 +25,7 @@ filters to read the data file (not asked for).
 
 ## Acceptance criteria
 
-- [ ] AC1: When the script runs, the home table shows at most 50 of the rows that the search box, the language
+- [x] AC1: When the script runs, the home table shows at most 50 of the rows that the search box, the language
       menu, and the version buttons pass, in table order: on page `p` it shows the passed rows numbered
       50(p−1)+1 to 50p, counting from 1, and hides the rest. P, the number of pages, is the passed rows divided by
       50, rounded up, and at least 1. A pager below the table, a `nav` labeled "Pages", holds a Previous button,
@@ -39,7 +39,7 @@ filters to read the data file (not asked for).
       P", Previous has `aria-disabled="true"`, the count with no filter on reads the total, a filter that passes
       more than 50 rows gives a count of "N of M plugins" with N over 50, a filter that passes exactly 50 rows
       hides the pager, and one that passes 51 shows "Page 1 of 2".
-- [ ] AC2: A press of Next or Previous shows that page, scrolls the table's top into view, drops any address
+- [x] AC2: A press of Next or Previous shows that page, scrolls the table's top into view, drops any address
       write that typing left waiting, and adds a history entry with `pushState` whose address has `page=<p>` for p
       of 2 or more and no `page` parameter for page 1. Each input event of the search box, change of the menu,
       and click of a version button shows page 1; the address loses `page` when the filters' write runs, after
@@ -54,11 +54,11 @@ filters to read the data file (not asked for).
       shows passed rows 101 on; `?page=1`, `?page=`, `?page=0`, `?page=-2`, `?page=x`, `?page=02`, and a page
       past P each show page 1 and are removed; a `q` that passes 20 rows with `page=2` shows page 1 and removes
       `page`; Back to an address with `page=2` shows page 2, and Back to one with no `page` shows page 1.
-- [ ] AC3: README's home page section states that the table shows 50 plugins a page when the script runs, the
+- [x] AC3: README's home page section states that the table shows 50 plugins a page when the script runs, the
       pager, the `page` parameter and what the page does with a value that names no page, that a filter change
       goes back to page 1, that the count covers the plugins on every page, and that a page without JavaScript
       lists every plugin. `CHANGELOG.md`'s Unreleased section has an entry for the pages.
-- [ ] AC4: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
+- [x] AC4: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
 
 ## Coverage
 
@@ -99,3 +99,14 @@ filters to read the data file (not asked for).
 - 2026-10-30: T5 done: verify slot clean (1328 tests; 272 entries). Browser pane: the deployed data had 58 plugins (the build after the backfill had not run), so the look used it copied to 174 rows (ids `copy2-`, `copy3-`), built with `pnpm site --out` and served by a `.claude/launch.json` entry (`m058-look`). Page 1 showed 50 of 174, "Page 1 of 4", count "174 plugins", Previous `aria-disabled="true"`; Next went to `?page=2`, rows 51 to 100, the table's top at 0, focus kept on Next; Back went to page 1. Iframes of `?page=4` at 375, 760, and 1200 px: `scrollWidth` equals `clientWidth`. Screenshots at 375 px and 1024 px show the pager on one line, Next greyed on page 4.
 - 2026-10-30: claim audit: 46 claims read, 5 corrected — README.md, CHANGELOG.md, src/site/home-filter.ts, site/src/pages/index.astro. Fixed: "pager paragraph", Back returns to the address before (filters included), the ends do nothing, a filter change shows page 1 at once while the search box's address drops `page` after the typing pause, and the CHANGELOG's pager and page-number conditions; plus 4 stale comments (home-filter header, `filterStatus`, `filterHref`, `fromAddress`). The re-read found the `fromAddress` comment still wrong for `?page=1`, now fixed. Also rewrapped README lines that earlier edits joined.
 - 2026-10-30: T4 done: README's opening paragraph and home section (the count covers every page; a new paragraph for the pager, `page`, Back, and the reset to page 1; the script paragraph names the pager) and a CHANGELOG entry.
+- 2026-10-30: review started; origin/main an ancestor of the branch; Copilot round off.
+
+## Decisions
+
+## Review
+
+- AC1: 2026-10-30, `pnpm test` 1328 passed. `test/home-filter.test.ts`: page counts for 0, 1, 50, 51, 100, 101, 272 passed rows (1, 1, 1, 2, 2, 3, 6); page rows for pages 1, 3, 6 of 272 (0–49, 100–149, 250–271). `test/site.test.ts` "pages", over the 13 built rows and 120 generated: page 1 shows the first 50 rows, "Page 1 of 3", Previous `aria-disabled="true"`, count "133 plugins"; `?q=bulk` gives "120 of 133 plugins" and its first 50; a 50-row filter sets the pager `hidden` and a 51-row filter shows "Page 1 of 2". The built HTML holds the pager `nav` with `hidden`, and `.pager[hidden]` is in the `display: none` rule. Implement planted counting by visible rows; the count test went red.
+- AC2: `test/site.test.ts` "pages" (passed 2026-10-30): Previous on page 1 pushes nothing; Next pushes `?page=2` and shows rows 51–100, Next `?page=3`, Next at page 3 nothing, Previous `?page=2`, Previous the address with no `page`; 4 scrolls of `.table-card`; no `replaceState`. Typing "bulk", then Next, then the timers: pushes `?q=bulk&page=2`, no write. On `?page=2`, a search input shows page 1 at once and the timers write `?q=bulk`; a menu change writes the address with no `page`. `?page=3` on load shows rows 101 on with no write; `page=1`, empty, `0`, `-2`, `x`, `02`, and `4` each show page 1 and write the address without it; `?q=gamma&page=2` (20 rows) shows page 1 and writes `?q=gamma`; popstate to `?page=2` shows rows 51–100 and to no `page` shows page 1. The browser look (T5) showed Next scroll the table top to 0 and Back return to page 1. Planted no end check and a kept typing write turned tests red.
+- AC3: joined README (LESSONS M018), 2026-10-30, each once: "Its script shows 50 at a time", "The table shows 50 of the plugins that the filters pass at a time", the pager reading "Page p of P", the `page` query parameter, "the page shows page 1 and removes the parameter", "shows page 1 at once" for a filter change, "The count covers the plugins on every page", and "Without JavaScript, the home page shows none of them and lists every plugin". The Unreleased CHANGELOG holds the pages entry once.
+- AC4: 2026-10-30: `npx -y pnpm@12.15.0 test` 24 files passed, 1 skipped, 1328 tests passed, 6 skipped; `npx -y pnpm@12.15.0 check` "checked 272 entries in plugins, 0 problems".
+- consistency gate: `cairn_validate.py` all checks passed; no principle changed; the `generic` profile names no toolchain checks.
