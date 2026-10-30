@@ -328,10 +328,11 @@ ships a release, a maintainer adds it to the workflow. The `startTests`
 field is new in schema v1. If you validate against a saved copy of the
 schema, fetch the schema again.
 
-The build does not start every plugin each day. For each tested release,
-it reads the published data of the last deploy. If that data's record has
-the same entry id, plugin id, plugin version, and `xpiSha256`, the build
-keeps the record's `started` result. It starts the plugin in these cases:
+The build does not start every plugin each day. Once in each build, it
+reads the published data of the last deploy. That data's record can have
+the same entry id, plugin id, plugin version, and `xpiSha256`. If so, the
+build keeps the record's `started` result for each tested release. It starts
+the plugin in a tested release in these cases:
 
 - The XPI's SHA-256 differs from the one last tested.
 - The tested release has no earlier result.
@@ -351,8 +352,11 @@ Plugin code runs during its start test. Code that runs in a start-test job
 can rewrite that job's results, its own included. That code can also leave
 a process running. If the process uploads results under the artifact name
 of another tested release before that release's job does, its results
-count. So a `startTests` item can be forged. The build keeps a forged
-`started` result for an unchanged XPI until the entry's next re-test day.
+count. So a `startTests` item can be forged. For an unchanged XPI, the
+build keeps a forged `started` result to the entry's next re-test day. If
+the build on that day deploys nothing, the forged result stays longer.
+Plugin code that forges the result again on each re-test day keeps it in
+place.
 "Starting plugins in Zotero" below says which results the build keeps.
 
 ## Plugin entries
@@ -1039,8 +1043,7 @@ plugin id and version, and the manifest's `strict_min_version` and
 `strict_max_version`. It also names the URL of the XPI that the build read
 and the SHA-256 of the bytes that it got. The data's `xpiUrl` and
 `xpiSha256` hold the same URL and SHA-256. The plan is not part of the data
-file, and the daily build
-writes it outside `dist/`. Without `--plan`, the
+file, and the daily build writes it outside `dist/`. Without `--plan`, the
 command writes no plan.
 
 ## Starting plugins in Zotero
@@ -1095,7 +1098,7 @@ The command carries nothing in these cases:
 In each case, it leaves the plan as it was, prints one line that names the
 cause, and exits with status 0.
 
-To start each plugin of a start plan in one Zotero install, run:
+To start the plugins of a start plan in one Zotero install, run:
 
 ```bash
 pnpm start-tests --plan <file> --zotero <binary> --out <file>
@@ -1145,11 +1148,13 @@ and one Zotero version. The command then drops all of them. It also drops
 each entry that is not a readable JSON array. Such an entry can be a
 directory, a link, or a file over 1 MiB.
 Then it writes each record's kept results into the data file as
-`startTests`, ordered by Zotero version, and prints how many it dropped. If
-`--results` does not exist, the command adds no results and exits with
-status 0. The command can fail to read the data, the plan, or the list of
-the results directories, or the schema can reject the new data. In each
-case, the command leaves the file as it was and exits with status 1.
+`startTests`, ordered by Zotero version. It prints how many results it
+kept, how many of those the plan carried, and how many it dropped. If
+`--results` does not exist, the command adds only the carried results and
+exits with status 0. The command can fail to read the data, the plan, or
+the list of the results directories, or the schema can reject the new
+data. In each case, the command leaves the file as it was and exits with
+status 1.
 
 ## Building the site
 
@@ -1191,14 +1196,18 @@ hand. It has four jobs:
    `start-results-<version>`. The job has no token permission, reads no
    secret, keeps no git credentials, and uses no cache, since plugin code
    runs in it.
-3. The site job runs `pnpm add-start-results` and then `pnpm site`. It runs
+3. The site job checks the start plan against a SHA-256 that the build job
+   gives as a job output, since plugin code in a start-test job can upload
+   artifacts. Then it runs `pnpm add-start-results` and `pnpm site`. It runs
    when the build job succeeded, whatever the start-test jobs' results.
 4. If the site job succeeded, the deploy job deploys `dist/` to GitHub
    Pages, whatever the start-test jobs' results.
 
 If `pnpm build`, `pnpm add-start-results`, or `pnpm site` exits with
-status 1, the workflow deploys nothing. The site and data from the last
-good build then stay published.
+status 1, the workflow deploys nothing. If the start plan fails its
+SHA-256 check, the workflow also deploys nothing. So does an exit status
+of 1 from `pnpm carry-start-results`, which it gives only for a usage
+error. The site and data from the last good build then stay published.
 GitHub stops the build job at 30 minutes, and then the workflow also
 deploys nothing. The repository's
 `github-pages` environment, set in its GitHub settings, lets only runs on the

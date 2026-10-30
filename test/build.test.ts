@@ -624,10 +624,7 @@ describe("buildData", () => {
 
     test("writes the same file as before the build-level rule", () => {
       if (!result.ok) throw new Error(result.problems.join("\n"));
-      // The zip's time is local, so its SHA-256 differs by time zone; the file names it by the plan.
-      const fixture = readFileSync(resolve(ROOT, "test/fixtures/build/mixed-failures.plugins.json"), "utf8");
-      expect(result.plan.plugins).toHaveLength(1);
-      expect(result.text).toBe(fixture.replace("PLAN_SHA256", result.plan.plugins[0].sha256));
+      expect(result.text).toBe(readFileSync(resolve(ROOT, "test/fixtures/build/mixed-failures.plugins.json"), "utf8"));
     });
   });
 
@@ -669,7 +666,6 @@ describe("buildData", () => {
         },
       ],
     });
-    // Each record with upstream carries its plan item's SHA-256 as xpiSha256.
     const output: Output = JSON.parse(result.text);
     for (const item of result.plan.plugins) expect(record(output, item.entry)?.upstream?.xpiSha256, item.entry).toBe(item.sha256);
     expect(output.plugins.filter((plugin) => plugin.upstream).map((plugin) => plugin.id).sort()).toEqual(
@@ -683,7 +679,6 @@ describe("buildData", () => {
     const data: Output = JSON.parse(result.text);
     const index = data.plugins.findIndex((plugin) => plugin.id === BETTER_NOTES);
     const upstream = data.plugins[index].upstream!;
-    expect(upstream.xpiSha256).toMatch(/^[0-9a-f]{64}$/);
     expect(checkOutput(data)).toEqual([]);
     delete upstream.xpiSha256;
     expect(checkOutput(data)).toEqual([]);

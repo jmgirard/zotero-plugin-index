@@ -124,9 +124,10 @@ export interface StartTestsOptions {
 }
 
 // Starts the Zotero binary once for each plan item whose manifest range covers the binary's
-// version and whose `carried` list does not name it, in plan order. Each XPI is downloaded from the plan's URL with the reader's host
-// check and must match the plan's SHA-256; each start runs `pnpm start-test`. Once `limitMs`
-// has passed since `startedAt`, no new start begins.
+// version and whose `carried` list does not name it, in plan order. Each XPI is downloaded
+// from the plan's URL with the reader's host check and must match the plan's SHA-256; each
+// start runs `pnpm start-test`. Once `limitMs` has passed since `startedAt`, no new start
+// begins.
 export async function startTests(options: StartTestsOptions): Promise<StartTestsResult> {
   const { plan, fetch, lookup, limitMs = START_TESTS_LIMIT_MS, startedAt = 0, onItem } = options;
   const zotero = await zoteroVersion(options.zotero);

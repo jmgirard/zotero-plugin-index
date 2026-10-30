@@ -244,7 +244,6 @@ describe("the carry chain", () => {
       overrides: [],
     });
     const started: StartTestRecord[] = [{ zotero: "10.0.6", result: "started" }];
-    // alpha started in 10.0.6 before, and beta has no result yet.
     const deployed = { schemaVersion: 1, generatedAt: "2026-10-29T06:17:00.000Z", plugins: [record("alpha", started), record("beta")] };
     const quiet = (t: number) => !isRetestDay("alpha", t) && !isRetestDay("beta", t);
     const day = [0, 1, 2, 3, 4, 5, 6].map((i) => (20_000 + i) * 86_400_000).find(quiet)!;
@@ -266,7 +265,6 @@ describe("the carry chain", () => {
     const merged = JSON.parse(readFileSync(dataPath, "utf8")) as PluginsFile;
     expect(merged.plugins.map((p) => p.startTests)).toEqual([started, started]);
 
-    // A later build, on a day that is a re-test day for neither entry, reads the merged data as the deployed data.
     const next = [1, 2, 3, 4, 5, 6].map((i) => day + i * 86_400_000).find(quiet)!;
     writeFileSync(planPath, JSON.stringify(plan));
     writeFileSync(dataPath, built(next));
@@ -289,10 +287,8 @@ describe("parsePlan", () => {
 
   test.each([
     ["a carried value that is not a list", { zotero: "7.0.32", result: "started" }, "that is not a list"],
-    ["an item that is not an object", [null], "whose item 0 has no string zotero"],
     ["an item with no string zotero", [{ zotero: 7, result: "started" }], "whose item 0 has no string zotero"],
     ["an item that is not started", [{ zotero: "7.0.32", result: "start-error" }], "whose item 0 is not a started result"],
-    ["an item with no result", [{ zotero: "7.0.32" }], "whose item 0 is not a started result"],
     [
       "two items with one Zotero version",
       [

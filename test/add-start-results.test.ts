@@ -245,7 +245,7 @@ describe("the startTests schema", () => {
 });
 
 describe("pnpm add-start-results", () => {
-  test("writes the kept results into the data file and prints how many it dropped", async () => {
+  test("writes the kept results into the data file and prints how many it kept, carried, and dropped", async () => {
     const dir = tempDir();
     writeFileSync(join(dir, "plugins.json"), JSON.stringify(data()));
     writeFileSync(join(dir, "plan.json"), JSON.stringify(PLAN));
@@ -273,14 +273,18 @@ describe("pnpm add-start-results", () => {
     expect(stdout).toContain("kept 1 start results, 0 of them carried; dropped 1 results and 1 files that are not a readable JSON array\n");
   });
 
-  test("adds no results and exits 0 when the results directory is missing", async () => {
+  test("adds only the carried results and exits 0 when the results directory is missing", async () => {
     const dir = tempDir();
+    const plan = structuredClone(PLAN);
+    plan.plugins[0].carried = [{ zotero: "7.0.32", result: "started" }];
     writeFileSync(join(dir, "plugins.json"), JSON.stringify(data()));
-    writeFileSync(join(dir, "plan.json"), JSON.stringify(PLAN));
+    writeFileSync(join(dir, "plan.json"), JSON.stringify(plan));
     const missing = join(dir, "results");
     const { stdout } = await run(process.execPath, addArgs(dir, missing));
-    expect(stdout).toContain(`no results directory at ${missing}, so no start results are added\n`);
-    expect(JSON.parse(readFileSync(join(dir, "plugins.json"), "utf8")).plugins.some((record: object) => "startTests" in record)).toBe(false);
+    expect(stdout).toContain(`no results directory at ${missing}, so only carried start results are added\n`);
+    expect(stdout).toContain("kept 1 start results, 1 of them carried;");
+    const written = JSON.parse(readFileSync(join(dir, "plugins.json"), "utf8")) as PluginsFile;
+    expect(written.plugins.map((record) => record.startTests)).toEqual([[{ zotero: "7.0.32", result: "started" }], undefined, undefined]);
   });
 
   // A record that the schema rejects: its upstream has no version.

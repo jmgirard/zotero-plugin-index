@@ -35,9 +35,10 @@ counted user reports on the release the index read (M021), the
 languages of the plugin's menus and settings (M024), and whether the
 release the index read starts in each tested Zotero release that its
 manifest's range covers, shown as a start and never as "works" (D-023,
-M047). For the start tests, each CI job downloads the XPI from the URL the
+M047). For each start it runs, a CI job downloads the XPI from the URL the
 build read and checks its SHA-256, and no artifact holds an XPI, so the
-index still re-serves no plugin file.
+index still re-serves no plugin file. Since M059 the build reuses a
+deployed `started` result for an unchanged XPI (D-035).
 The data also carries the interface languages that the read XPI's locale
 folders name (M023), keeping a tag only when its files hold at least one
 message, judged by file type (M027), and at least half as many messages as
@@ -378,15 +379,17 @@ exception is a report that is abuse.
   reader's `downloadXpi`, checks the plan's SHA-256, runs `pnpm start-test`
   in its own process, records no result for a failed download, a hash
   mismatch, or a failed start, and starts nothing new after 20 minutes.
-  `pnpm add-start-results --data --plan --results --tested` keeps a result
-  only when its entry, plugin id, and version match the plan, its Zotero
-  version equals the one in its artifact's name, is listed in `--tested`,
-  and falls in the range, and its result is one of the four names; it
+  `pnpm add-start-results --data --plan --results --tested` keeps a job
+  result only when its entry, plugin id, and version match the plan, its
+  Zotero version equals the one in its artifact's name, is listed in
+  `--tested`, falls in the range, and is not carried (since M059), and its
+  result is one of the four names; it
   drops every result of a duplicate pair and each entry that is not a
   readable JSON array file of at most 1 MiB, and writes `startTests`
   ordered by version (`addResults`, M047). Since M059 it also adds each
-  carried result for a `--tested` version in range and drops a job result
-  for a carried pair as `carried`; `parsePlan` refuses a `carried` list
+  carried result for a `--tested` version in range, also when `--results`
+  is missing, and drops a job result for a carried pair as `carried`;
+  `parsePlan` refuses a `carried` list
   that is not a list of `started` results with distinct `zotero` strings.
 
 ## Conventions
@@ -670,6 +673,7 @@ reused._
   writes the `countReports` counts into each read record's `reports`, and checks each record and then the whole output against
   `schemas/plugins.v1.schema.json` before it writes the file.
   `.github/workflows/build.yml` runs `pnpm check` and the build (M007),
+  then since M059 `pnpm carry-start-results`,
   daily and on manual dispatch, and keeps the data as a workflow artifact
   (M003); since M047 a later site job runs `pnpm site`. The build also
   copies both schemas to `dist/schemas/`, and it exits 1 after it writes
@@ -684,11 +688,14 @@ reused._
   marks a failure build-level beside its name, and `buildData` returns the
   marked ids outside the data, so the published file keeps its shape
   (D-011). Since M047 the workflow has four jobs. The build job runs
-  `pnpm build --plan start-plan.json`, then since M059
-  `pnpm carry-start-results` on the plan, and uploads `dist/` as `plugins-data`
-  and the plan as `start-plan`. A `start-test` matrix job, one line per
-  tested Zotero release with its file name and SHA-256, runs
-  `pnpm start-tests` and uploads `start-results-<version>`; it holds
+  `pnpm build --plan start-plan.json`, then since M059 `pnpm
+  carry-start-results` on the plan, gives the plan's SHA-256 as the job
+  output `plan-sha256`, and uploads `dist/` as `plugins-data` and the plan
+  as `start-plan`; the site job checks the downloaded plan against that
+  output with `sha256sum --check` before `pnpm add-start-results`. A
+  `start-test` matrix job, one line per tested Zotero release with its
+  file name and SHA-256, runs `pnpm start-tests` and uploads
+  `start-results-<version>`; it holds
   `permissions: {}`, reads no secret, checks out with
   `persist-credentials: false`, and sets `cache-mode: none`, since plugin
   code runs in it (D-023). The site job, whose `if:` is
@@ -792,4 +799,9 @@ reused._
   job's own upload then fails. The command cannot tell a forged result from
   a real one inside those bounds, and an unreadable entry drops without
   stopping the deploy. Accepted with D-023, 2026-10-28; bounds set in the
-  M047 review.
+  M047 review. Since M059 a carried `started` result comes from the plan,
+  which the site job checks against the build job's output, and a job
+  result for a carried pair drops; a forged `started` result in the
+  deployed data stays until the entry's re-test day, or longer if that
+  day's build deploys nothing, and plugin code can forge it again on that
+  day (D-035).

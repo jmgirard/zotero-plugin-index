@@ -39,7 +39,8 @@ import { SUPPORT_MARKS as MARKS } from "../data.ts";
     <p data-fact="start-when">
       The build does not start every plugin each day. It starts a plugin in a tested release when the plugin file differs
       from the one last tested, when that release has no earlier result, or when the last result was not a start. It
-      also starts each plugin again on one day of each week. On the other days it keeps the last start result, so a
+      also starts each plugin again on one day of each week, and every plugin on a day when it cannot read the last
+      published data. On the other days it keeps the last start result, so a
       result is most often up to a week old. If the build on the weekly day deploys nothing, the result stays another
       week.
     </p>

@@ -76,10 +76,10 @@ async function readEntry(path: string): Promise<string | undefined> {
   }
 }
 
-// Adds the results to the data as `startTests`, keeping a result only when its entry, plugin
+// Adds the results to the data as `startTests`, keeping a job result only when its entry, plugin
 // id, and plugin version match a plan item, its Zotero version equals the one in its artifact
-// name, which is one of the `tested` versions, and falls in the item's manifest range, and its
-// result is one of the four names. Two or more such results for one entry and one Zotero
+// name, which is one of the `tested` versions, falls in the item's manifest range, and is not
+// one the item carries, and its result is one of the four names. Two or more such results for one entry and one Zotero
 // version all drop, since at most one job tests each pair. Plugin code in a start-test job can
 // write that job's file, and can upload an artifact under a name the workflow did not set, so
 // each result is read as untrusted. It also adds each `started` result that a plan item

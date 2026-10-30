@@ -99,7 +99,24 @@ describe("build.yml", () => {
     expect(built).toBeGreaterThan(-1);
     expect(carry).toBeGreaterThan(built);
     expect(upload).toBeGreaterThan(carry);
-    expect(job.match(/carry-start-results/g)).toHaveLength(1);
+    expect(job.match(/^ {10}pnpm carry-start-results /gm)).toHaveLength(1);
+  });
+
+  test("checks the downloaded start plan in the site job against the SHA-256 that the build job gives after the carry", () => {
+    const job = jobText(build, "build");
+    expect(job).toMatch(/^ {4}outputs:\n {6}plan-sha256: \$\{\{ steps\.plan-sha256\.outputs\.sha256 \}\}$/m);
+    const hash = job.indexOf('      - id: plan-sha256\n        run: echo "sha256=$(sha256sum start-plan.json | cut -d \' \' -f 1)" >> "$GITHUB_OUTPUT"\n');
+    expect(hash).toBeGreaterThan(job.indexOf("carry-start-results"));
+    expect(job.search(/^ {10}name: start-plan$/m)).toBeGreaterThan(hash);
+    const site = jobText(build, "site");
+    const download = site.search(/^ {10}name: start-plan$/m);
+    const check = site.indexOf(
+      "      - env:\n          PLAN_SHA256: ${{ needs.build.outputs.plan-sha256 }}\n" +
+        '        run: echo "$PLAN_SHA256  $RUNNER_TEMP/plan/start-plan.json" | sha256sum --check\n',
+    );
+    expect(download).toBeGreaterThan(-1);
+    expect(check).toBeGreaterThan(download);
+    expect(site.indexOf("pnpm add-start-results")).toBeGreaterThan(check);
   });
 
   test("runs the site job after a build that succeeded, whatever the start tests did, and deploys only after the site job", () => {
