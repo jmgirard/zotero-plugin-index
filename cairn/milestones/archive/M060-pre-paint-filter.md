@@ -1,0 +1,11 @@
+# M060: Filter the home list before it paints
+
+**Status:** done (2026-10-30, PR #342 https://github.com/jmgirard/zotero-plugin-index/pull/342)
+
+**Goal:** In a browser that runs the home page's module script and supports `:nth-child(… of S)`, a visitor who opens a home page address sees no table row that the script then hides.
+
+**Outcome:** `src/site/home-filter.ts` gains `prePaintStyle(search, size)`, which reads `q`, `language`, `zotero`, and `page` with `URLSearchParams.get` and returns CSS: every `.plugins tbody tr` hidden for a non-blank `q`, a value outside `[A-Za-z0-9-]+`, or a page of 7 or more digits; else one `:not([data-x~="v"])` rule per filter, `:nth-child(… of S)` rules that hide rows outside the asked page (`chosenPage`'s digit rule), and a `border-top:0!important` reset for the page's first row. It reads nothing outside its body except built-ins. `site/src/pages/index.astro` writes a classic `<script is:inline set:html>` before `.table-card` from `${prePaintStyle}` and `PAGE_SIZE`; where `noModule` exists it appends `<style data-pre-paint>` and removes it on a window `error`. The module script removes the style after its first pass. `test/support/pre-paint.ts` holds 35 search strings with exact CSS; site tests run the built classic script in `node:vm`. Browser pane on the deployed data (272 rows): 16 addresses matched the full page row for row, 7 showed no row, scripts-off iframes showed 272, and copies whose module script throws or cannot parse showed 272. The script adds 662 bytes at `gzip -9`. DESIGN.md (home paragraph, scripts, styles, a Known issues entry for Chrome and Edge before 111, Firefox before 113, Opera before 97), source note `mdn-nth-child.md`, and one CHANGELOG entry.
+
+**Decisions:** none; works under D-026.
+
+**Review:** Criteria audit (full) 9 findings, all taken; claim audit 29 claims, 4 corrected (one moved `:not()` to one selector per rule). Four-lens fan-out, 27 findings: 16 fixed in a6c9e41 (window `error` fallback, stale DESIGN, header, comment, title, and CHANGELOG text), 3 follow-ups into "Test the home page script in a browser", 8 rejected. No return. CI passed. "Filter the home list before it paints" graduated. 10 lessons marked used M060; 2 captured; evicted by rank 2026-10-28 (M046, used M047) on headless Zotero and 2026-10-29 (M050) on `spawnSync` pipe draining.
