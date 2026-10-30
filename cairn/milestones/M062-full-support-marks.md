@@ -27,7 +27,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
 
 ## Acceptance criteria
 
-- [ ] AC1: `pnpm build` reads `https://www.zotero.org/download/client/version?channel=release`
+- [x] AC1: `pnpm build` reads `https://www.zotero.org/download/client/version?channel=release`
       with a 30 s limit. It writes the answer's `linux-x86_64` value as the top-level
       `zoteroRelease` of `v1/plugins.json`. `schemas/plugins.v1.schema.json` defines
       `zoteroRelease` as an optional string that matches `^[0-9]+(\.[0-9]+)*$`. The
@@ -38,7 +38,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
       does not make the build fail. Tests with fixture responses check a good value, a
       500 answer, a thrown request, a request that passes the limit, a body that is not
       JSON, a missing `linux-x86_64` key, the value `10.0.7-beta`, and the absent header.
-- [ ] AC2: `majorSupport` measures major N over N.0 to the newest release of N. If the
+- [x] AC2: `majorSupport` measures major N over N.0 to the newest release of N. If the
       first part of `zoteroRelease` is N, the newest release is `zoteroRelease`.
       Otherwise it is the entry for N in a hand-kept list in `src/site/version.ts`. With
       neither, it is N.9 as before. The list holds 7.0.32, 8.0.5, and 9.0.6, the newest
@@ -47,19 +47,19 @@ and stars line is in M061. The menu arrow and release month are in M063.
       its maximum is "none". If the range covers N.0 and the newest release, the mark is
       "all". If the range ends before N.0 or starts after the newest release, the mark is
       "none". Otherwise the mark is "some".
-- [ ] AC3: Tests in `test/version.test.ts` check the AC2 rule on these cases. With newest
+- [x] AC3: Tests in `test/version.test.ts` check the AC2 rule on these cases. With newest
       10.0.7, max `10.0.*` gives all, max `10.0.6` gives some, min `10.1` gives none, and
       min `10.0` with no max gives all. With newest 10.1.0, max `10.0.*` gives some. With
       no newest, max `10.0.*` gives some, and max `10.99.99` gives all. For major 9 with
       the list value, max `9.0.*` gives all. Min `10.0.3` with max `10.0.1` gives none.
-- [ ] AC4: The home table's marks, the `data-zotero` values that the `?zotero=` filter
+- [x] AC4: The home table's marks, the `data-zotero` values that the `?zotero=` filter
       reads, the plugin page's Declared cells, and their hidden text use the AC2 result
       with the data's `zoteroRelease`. A site test builds a fixture with `zoteroRelease`
       `10.0.7`. A record whose maximum is `10.0.*` reads all in its home mark and plugin
       page cell for 10. A record whose minimum is `10.1` has no `10` in its row's
       `data-zotero`. Built with no `zoteroRelease`, the first record reads some and the
       second record's `data-zotero` holds `10`.
-- [ ] AC5: The About page's "Declared range" section and the home legend say that all
+- [x] AC5: The About page's "Declared range" section and the home legend say that all
       means every released version of that major up to its newest release. For each
       major of `ZOTERO_MAJORS`, the About page names the newest release that the build
       used, or says that it knew none. README, DESIGN, and one CHANGELOG entry describe
@@ -68,7 +68,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
       that the About page names `10.0.7` from the fixture and `7.0.32` from the list. It
       also checks that a build with no `zoteroRelease` says that no release of 10 is
       known.
-- [ ] AC6: `pnpm test` and `pnpm check` pass.
+- [x] AC6: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -117,7 +117,17 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: claim audit: 61 claims read, 4 corrected — src/build/cli.ts (the N.9 fallback covers only the current major), src/build/zotero-release.ts (the answer's shape, dated), src/site/version.ts (cites the new source note), test/site.test.ts (describe comment); the same Opus reader re-read the 4 and found them true. Its own spawned-CLI test runs failed in its sandbox, including old tests; in this session all 1541 pass.
 - 2026-10-30: added source note `cairn/references/zotero-changelogs.md` and its INDEX line, since the repo now relies on the three changelog pages and the release address; shelf copies saved under `cairn/references/sources/`.
 - 2026-10-30: status set to review; `pnpm test` (1541 passed, 6 skipped) and `pnpm check` (0 problems) pass.
+- 2026-10-30: review started, route (d): no PR, main unmoved. AC1–AC6 evidence recorded and ticked; `cairn_validate` passes; generic profile has no toolchain checks. Four-lens review spawned; checkpoint while it runs.
 
 ## Decisions
 
 ## Review
+
+Evidence gathered 2026-10-30 on m062-full-support-marks at 60d3bbc, main unmoved (0170d1e).
+
+- AC1: `ZOTERO_RELEASE_URL` is the named address and `ZOTERO_RELEASE_LIMIT_MS` is 30 000 (`src/build/zotero-release.ts:6,9`); the schema's `zoteroRelease` is an optional string with pattern `^[0-9]+(\.[0-9]+)*$` (required list still schemaVersion, generatedAt, plugins). `test/build.test.ts` "and the current Zotero release" passes 8 cases: the good value 10.0.7 with no `authorization` header while the GitHub reads carry the planted token, a 500, a thrown request, a request and a body past the limit, a non-JSON body, no `linux-x86_64` key, and `10.0.7-beta`; each failure case writes no field and names the cause. The spawned "prints one line that names a failed read of the Zotero release, writes the data, and exits 0" test passes.
+- AC2: `LAST_RELEASES` holds 7.0.32, 8.0.5, 9.0.6 with the 2026-10-30 date in its comment (`src/site/version.ts`); `newestRelease` takes `zoteroRelease` for its own major, else the list, else N.9; `majorSupport` returns none for min above max, all for covering N.0 and the newest release, none for ending before N.0 or starting after it, else some. The values match the first "Changes in" heading of each shelf page (`cairn/references/zotero-changelogs.md`).
+- AC3: `test/version.test.ts` passes all 9 named cases with their named results (verbose run).
+- AC4: `test/site.test.ts` "the newest Zotero release" passes: with 10.0.7 the 10.0.* record's home mark and plugin-page `data-declared` for 10 read all, and its hidden text reads "Declares all of Zotero 10"; the 10.1 record's `data-zotero` is empty. With no release the first reads some on both, and the second's `data-zotero` is `10`. Hand check on the deployed data: `?zotero=10` showed 211 of 272 (T5).
+- AC5: About and legend tests pass with the new "every release of that Zotero version, up to its newest release" text; the About list names 7.0.32, 8.0.5, 9.0.6, 10.0.7 from the 10.0.7 build and "Zotero 10: no release known, so the index counts 10.0 to 10.9" from the build with none. README (The site, Using the data at lines 236-242, Building the data), DESIGN, and one CHANGELOG entry describe the rule and `zoteroRelease`; the README paragraph and the CHANGELOG entry both tell schema consumers to fetch a saved copy again.
+- AC6: `pnpm test` 1541 passed, 6 skipped, 0 failed; `pnpm check` 272 entries, 0 problems.
