@@ -8,9 +8,10 @@ it does not review or endorse plugins.
 
 The website <https://jmgirard.github.io/zotero-plugin-index/> shows the index.
 A top bar on every page links to the home page and to the About page. It
-also links to the "Add a plugin" issue form and to the data file. The home page lists every plugin in one table,
-sorted by name. The sort ignores letter case and accents, and names that
-are then equal sort by plugin id. Each row shows the plugin's name and its
+also links to the "Add a plugin" issue form and to the data file. The home
+page lists every plugin in one table, sorted by name. Its script shows 50
+at a time, as the pager section below says. The sort ignores letter case
+and accents, and names that are then equal sort by plugin id. Each row shows the plugin's name and its
 description. If the plugin's GitHub repository is archived, the row shows
 "Archived" after the name. Then come one cell for each Zotero major version
 from 7 to 10 and a "Menus and settings" cell. Next comes the month of
@@ -107,13 +108,23 @@ pressed and removes the parameter.
 
 The search box, the menu, and the buttons work together: the table shows
 the plugins that pass all three. A count beside them reads "M plugins",
-where M is the number of plugins in the table. While a filter is on, it
-reads "N of M plugins", where N is the number that the filters show. If
-the filters show no plugin, the count says that no plugins match these
-filters.
+where M is the number of plugins in the index. While a filter is on, it
+reads "N of M plugins", where N is the number that the filters pass. The
+count covers the plugins on every page. If the filters pass no plugin, the
+count says that no plugins match these filters.
 
-A script runs the search box, the menu, the buttons, and the count.
-Without JavaScript, the home page shows none of them and lists every
+The table shows 50 of the plugins that the filters pass at a time. When
+they pass more than 50, a pager below the table reads "Page p of P" between
+a Previous and a Next button. Each of them moves one page and scrolls back
+to the top of the table. It also adds an entry to the browser history, so
+Back returns to the page before. The page keeps the page number in the `page`
+query parameter of its address, such as `?page=2`, and leaves it out for
+page 1. If the parameter names no page that the filtered plugins fill, the
+page shows page 1 and removes the parameter. A change to the search box,
+the menu, or the buttons goes back to page 1.
+
+A script runs the search box, the menu, the buttons, the count, and the
+pager. Without JavaScript, the home page shows none of them and lists every
 plugin.
 
 The "Add a plugin" link in the top bar opens the issue form that

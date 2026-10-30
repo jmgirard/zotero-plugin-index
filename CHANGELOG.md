@@ -470,3 +470,8 @@
   `--wait-hours <n>`. Scheduled runs still wait 48 hours. With
   `wait_hours` 0, rounds of discovery and merging add every clean plugin
   without the wait, as the README's backfill steps say.
+- The home table shows 50 of the plugins that its filters pass at a time,
+  with a pager below it ("Page p of P", Previous, Next). The page number
+  goes in the `page` query parameter, and Back returns to the page before.
+  A filter change goes back to page 1, and the count still covers every
+  page. Without JavaScript the home page still lists every plugin.
