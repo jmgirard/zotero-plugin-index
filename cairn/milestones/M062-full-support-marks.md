@@ -129,6 +129,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: claim audit: 24 claims read, 0 corrected — README.md, .github/workflows/build.yml, site/src/pages/about.astro, src/build/cli.ts, src/build/zotero-release.ts, test/build.test.ts, test/site.test.ts (the added lines of cd048e2 and d78dd39; a fresh Opus reader).
 - 2026-10-30: status set to review after return 1.
 - 2026-10-30: review pass 2: AC1–AC6 re-evidenced at eee4cb7; four lenses found no criterion failing; 8 fix-now items landed in db543af (verify: `pnpm test` 1545 passed, 6 skipped; `pnpm check` 0 problems), and follow-up row "Track point releases of older majors" added at low.
+- 2026-10-30: `cairn_validate` failed weight caps (ROADMAP 60 lines, cap under 60); merged the two M062 follow-up rows into "Keep the Zotero release lists current" at normal. Review lines that name "Flag a new Zotero major in the build" mean that row.
 
 ## Decisions
 
@@ -148,7 +149,7 @@ Review pass 1 findings.
 - spawned: diff-bug, blame-history, prior-review, ripple
 - diff-bug #1: one `try` in `readZoteroRelease` covers `response.text()` and `JSON.parse`, so a body read that fails mid-transfer (fixture `bodyError: "read ECONNRESET"`) prints "returned a body that is not JSON", and a timer that fires after the body arrives reports a non-JSON body as the limit — fix now, return-floor: AC1's "names the cause" fails inside its domain (review return 1), fixed cd048e2
 - diff-bug #2: `knownRelease` takes `zoteroRelease` for its major even when it is older than that major's `LAST_RELEASES` entry — reject, planned change: AC2 states that `zoteroRelease` wins for its own major, and the list holds only earlier majors, so this needs zotero.org to serve an older major than the list holds
-- diff-bug #3: when zotero.org serves 11.x, 10 has no list entry and falls back to N.9, the About page's "keeps the last release of each earlier Zotero version" turns false, and 11 is not in `ZOTERO_MAJORS` — follow-up, candidate row "Flag a new Zotero major in the build", normal rung, since every new major meets it and the fallback shows part, never a false all
+- diff-bug #3: when zotero.org serves 11.x, 10 has no list entry and falls back to N.9, the About page's "keeps the last release of each earlier Zotero version" turns false, and 11 is not in `ZOTERO_MAJORS` — follow-up, candidate row "Keep the Zotero release lists current" (first filed as "Flag a new Zotero major in the build"), normal rung, since every new major meets it and the fallback shows part, never a false all
 - diff-bug #4: `.github/workflows/build.yml:21-24` and README's "These limits leave time" sentence list the limits without the new 30 s read — fix now, fixed d78dd39
 - diff-bug #5: a timeout prints "time limit of 30000 ms" while README says 30 seconds — reject, style: the number is exact, and `duration` formats every other non-minute limit in ms the same way
 - diff-bug #6: `cli.ts` prints the release line only after the data and plan writes succeed — fix now: print it before the writes, fixed d78dd39
@@ -183,7 +184,7 @@ Review pass 2 evidence, 2026-10-30, at eee4cb7, main unmoved (0170d1e).
 Review pass 2 findings.
 
 - spawned: diff-bug, blame-history, prior-review, ripple
-- diff-bug #1: `LAST_RELEASES` gives a false all if Zotero ships a point release of an earlier major, such as 9.0.7 for a maximum of 9.0.6 — follow-up, candidate row "Track point releases of older majors", low rung, since it needs a point release of an earlier major and a bound pinned to the old last release; the question set chose the hand-kept list for earlier majors
+- diff-bug #1: `LAST_RELEASES` gives a false all if Zotero ships a point release of an earlier major, such as 9.0.7 for a maximum of 9.0.6 — follow-up, candidate row "Keep the Zotero release lists current", its gap (2) (first filed as "Track point releases of older majors" at low; merged to hold the ROADMAP line cap), since it needs a point release of an earlier major and a bound pinned to the old last release; the question set chose the hand-kept list for earlier majors
 - diff-bug #2: a failed release read prints a plain line with no `::warning::`, so days of fallback go unnoticed — fix now: the one line now starts with `::warning::`, fixed db543af
 - diff-bug #3: the new-major gap — follow-up, already the row "Flag a new Zotero major in the build"
 - diff-bug #4: `response.text()` has no byte cap — reject, edge: only zotero.org serving a huge body reaches it, outside documented use, and the 30 s limit bounds the effect to slow running
