@@ -32,9 +32,17 @@ import { SUPPORT_MARKS as MARKS } from "../data.ts";
   <section class="card" id="start-test" data-about="start-test">
     <h2>Start test</h2>
     <p>
-      Each day, the build installs the plugin version that the index read in a new Zotero profile on Linux. It does
-      this once for each tested Zotero release that the manifest's range covers. It waits 3 seconds after the install,
-      and then it reads one of four results.
+      The build installs the plugin version that the index read in a new Zotero profile on Linux. It does this for each
+      tested Zotero release that the manifest's range covers. It waits 3 seconds after the install, and then it reads one
+      of four results.
+    </p>
+    <p data-fact="start-when">
+      The build does not start every plugin each day. It starts a plugin in a tested release when the plugin file differs
+      from the one last tested, when that release has no earlier result, or when the last result was not a start. It
+      also starts each plugin again on one day of each week, and every plugin on a day when it cannot read the last
+      published data. On the other days it keeps the last start result, so a
+      result is most often up to a week old. If the build on the weekly day deploys nothing, the result stays another
+      week.
     </p>
     <ul class="about-list" role="list">
       <li>

@@ -7,11 +7,11 @@ import { parsePlan } from "./start-tests.ts";
 
 const USAGE = "usage: pnpm add-start-results --data <file> --plan <file> --results <dir> --tested <version>[,<version>…]";
 
-// Adds the start-test results under --results to the data file in place, keeping only the
-// results that match the plan and name a --tested version (see addResults). It exits 1,
-// leaving the file as it was, when it cannot read the data, the plan, or the results
-// directory's listing, or when the schema rejects the new data. A missing results directory
-// adds no results, and an entry in it that cannot be read drops as a bad file.
+// Adds the start-test results under --results and the plan's carried results to the data file
+// in place, keeping only the results that addResults keeps. It exits 1, leaving the file as it
+// was, when it cannot read the data, the plan, or the results directory's listing, or when the
+// schema rejects the new data. A missing results directory adds no job results, so only the
+// carried ones are added, and an entry in it that cannot be read drops as a bad file.
 async function main(): Promise<number> {
   let values: { data?: string; plan?: string; results?: string; tested?: string };
   try {
@@ -58,7 +58,7 @@ async function main(): Promise<number> {
       console.error(`cannot read the results directory ${values.results}: ${(error as Error).message}`);
       return 1;
     }
-    console.log(`no results directory at ${values.results}, so no start results are added`);
+    console.log(`no results directory at ${values.results}, so only carried start results are added`);
     files = [];
   }
   const outcome = addResults(data, parsed.plan, files, tested);
@@ -82,7 +82,7 @@ async function main(): Promise<number> {
     return 1;
   }
   console.log(
-    `kept ${outcome.kept} start results; dropped ${outcome.dropped.length} results and ${outcome.badFiles.length} files that are not a readable JSON array`,
+    `kept ${outcome.kept} start results, ${outcome.carried} of them carried; dropped ${outcome.dropped.length} results and ${outcome.badFiles.length} files that are not a readable JSON array`,
   );
   return 0;
 }

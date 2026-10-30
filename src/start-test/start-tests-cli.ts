@@ -7,8 +7,8 @@ import { parsePlan, startTests, summaryLines } from "./start-tests.ts";
 
 const USAGE = "usage: pnpm start-tests --plan <file> --zotero <binary> --out <file>";
 
-// Starts the Zotero binary with each plugin of the start plan that its range covers, and
-// writes the results as a JSON array to --out. It exits 0 when it wrote the file, however
+// Starts the Zotero binary with each plugin of the start plan that its range covers and that
+// carries no result for the binary's version, and writes the results as a JSON array to --out. It exits 0 when it wrote the file, however
 // many starts failed, and 1 when it cannot read the plan or the binary's Zotero version.
 async function main(): Promise<number> {
   let values: { plan?: string; zotero?: string; out?: string };

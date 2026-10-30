@@ -12,6 +12,7 @@
     "add-plugin": "node src/add-plugin/cli.ts",
     "add-start-results": "node src/start-test/add-results-cli.ts",
     "build": "node src/build/cli.ts",
+    "carry-start-results": "node src/start-test/carry-cli.ts",
     "check": "node src/check/cli.ts",
     "close-issue": "node src/discover/close-issue-cli.ts",
     "discover": "node src/discover/cli.ts",

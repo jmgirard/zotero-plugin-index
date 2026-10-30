@@ -74,7 +74,8 @@
         "releaseCount": 1,
         "latestReleaseDate": "2026-03-01T12:00:00Z",
         "prerelease": false,
-        "xpiUrl": "https://github.com/example/passing/releases/download/v1.0.0/plugin.xpi"
+        "xpiUrl": "https://github.com/example/passing/releases/download/v1.0.0/plugin.xpi",
+        "xpiSha256": "cd7613917dbc7a11b34502c839042a8ae490ba77e22be2bd95915ccc43fa2ba7"
       },
       "reports": [],
       "overrides": []

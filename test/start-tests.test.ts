@@ -5,13 +5,16 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { afterAll, afterEach, describe, expect, test, vi } from "vitest";
-import type { StartPlanItem } from "../src/build/build.ts";
-import { startTests, summaryLines } from "../src/start-test/start-tests.ts";
+import type { PluginsFile, StartPlan, StartPlanItem, StartTestRecord } from "../src/build/build.ts";
+import { isRetestDay } from "../src/start-test/carry.ts";
+import { parsePlan, startTests, summaryLines } from "../src/start-test/start-tests.ts";
 import { fixtureFetch, type Responses } from "./support/fixture-fetch.ts";
 import { fixtureXpi } from "./support/start-fixtures.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const CLI = resolve(ROOT, "src/start-test/start-tests-cli.ts");
+const CARRY_CLI = resolve(ROOT, "src/start-test/carry-cli.ts");
+const ADD_CLI = resolve(ROOT, "src/start-test/add-results-cli.ts");
 const PRELOAD = resolve(ROOT, "test/support/preload-fixture.ts");
 const run = promisify(execFile);
 const publicLookup = async () => ["140.82.112.3"];
@@ -58,7 +61,7 @@ function startCount(starts: string): number {
 const XPI = readFileSync(fixtureXpi("started", tempDir()));
 const SHA256 = createHash("sha256").update(XPI).digest("hex");
 
-function item(entry: string, range: { strictMinVersion?: string; strictMaxVersion?: string }): StartPlanItem {
+function item(entry: string, range: Pick<StartPlanItem, "strictMinVersion" | "strictMaxVersion" | "carried">): StartPlanItem {
   return {
     entry,
     id: "started@start-test.invalid",
@@ -154,6 +157,38 @@ describe("startTests", () => {
     expect(outcome.skipped).toEqual([{ entry: "odd", reason: "start-failed", message: expect.stringMatching(message) }]);
   });
 
+  test("neither downloads nor starts an item that carries a result for the binary's version, and counts it as carried", async () => {
+    const { binary, starts } = shim("report");
+    const carried = item("carried", { carried: [{ zotero: "10.0.6", result: "started" }] });
+    const other = item("other", { carried: [{ zotero: "9.0.6", result: "started" }] });
+    const plan = { plugins: [carried, other] };
+    const { fetch, requests } = fixtureFetch(served(plan.plugins));
+    const outcome = await startTests({ plan, zotero: binary, fetch, lookup: publicLookup });
+    expect(requests.map((request) => request.url)).toEqual([other.xpiUrl]);
+    expect(outcome.results.map((result) => result.entry)).toEqual(["other"]);
+    expect(outcome.carried).toEqual(["carried"]);
+    expect(startCount(starts)).toBe(1);
+    expect(summaryLines(outcome)).toEqual(["Zotero 10.0.6: 1 results, 0 without a result, 1 carried, 0 outside the manifest range"]);
+  });
+
+  test("counts a carried item as carried, not as not started, after the total limit", async () => {
+    const { binary, starts } = shim("report");
+    const plan = { plugins: [item("first", {}), item("carried", { carried: [{ zotero: "10.0.6", result: "started" }] }), item("third", {})] };
+    let now = 0;
+    vi.spyOn(performance, "now").mockImplementation(() => now);
+    const outcome = await startTests({
+      plan,
+      zotero: binary,
+      fetch: fixtureFetch(served(plan.plugins)).fetch,
+      lookup: publicLookup,
+      limitMs: 1000,
+      onItem: () => (now = 1000),
+    });
+    expect(outcome.carried).toEqual(["carried"]);
+    expect(outcome.notStarted).toEqual(["third"]);
+    expect(startCount(starts)).toBe(1);
+  });
+
   test("starts no new plugin after the total limit and keeps the results it has", async () => {
     const { binary, starts } = shim("report");
     const plan = { plugins: ["first", "second", "third"].map((entry) => item(entry, {})) };
@@ -172,9 +207,98 @@ describe("startTests", () => {
     expect(outcome.notStarted).toEqual(["second", "third"]);
     expect(startCount(starts)).toBe(1);
     expect(summaryLines(outcome)).toEqual([
-      "Zotero 10.0.6: 1 results, 0 without a result, 0 outside the manifest range",
+      "Zotero 10.0.6: 1 results, 0 without a result, 0 carried, 0 outside the manifest range",
       "::warning::2 plugins were not started after the limit of 20 minutes",
     ]);
+  });
+});
+
+describe("the carry chain", () => {
+  // Runs one command with the recorded answers in place of the network.
+  async function command(cli: string, args: string[], responses: Responses = {}) {
+    const fixture = join(tempDir(), "responses.json");
+    writeFileSync(fixture, JSON.stringify({ source: "carry chain test", repoUrl: "", responses }));
+    return run(process.execPath, [cli, ...args], { env: { ...process.env, ZPI_FIXTURE: fixture, NODE_OPTIONS: `--import=${PRELOAD}` } });
+  }
+
+  test("carries, skips, and merges results that the next carry reads and carries again", async () => {
+    const { binary, starts } = shim("report");
+    const plan: StartPlan = { plugins: [item("alpha", {}), item("beta", {})] };
+    const record = (entry: string, startTests?: StartTestRecord[]) => ({
+      id: entry,
+      repoUrl: `https://github.com/example/${entry}`,
+      upstream: {
+        id: "started@start-test.invalid",
+        version: "1.0.0",
+        updateUrl: `https://example.org/${entry}/update.json`,
+        updateHost: "example.org",
+        repoUrl: `https://github.com/example/${entry}`,
+        repoCreatedAt: "2026-01-01T00:00:00Z",
+        openIssues: 0,
+        releaseCount: 1,
+        latestReleaseDate: "2026-10-01T00:00:00Z",
+        xpiSha256: SHA256,
+      },
+      reports: [],
+      ...(startTests ? { startTests } : {}),
+      overrides: [],
+    });
+    const started: StartTestRecord[] = [{ zotero: "10.0.6", result: "started" }];
+    const deployed = { schemaVersion: 1, generatedAt: "2026-10-29T06:17:00.000Z", plugins: [record("alpha", started), record("beta")] };
+    const quiet = (t: number) => !isRetestDay("alpha", t) && !isRetestDay("beta", t);
+    const day = [0, 1, 2, 3, 4, 5, 6].map((i) => (20_000 + i) * 86_400_000).find(quiet)!;
+    const dir = tempDir();
+    const planPath = join(dir, "start-plan.json");
+    const dataPath = join(dir, "plugins.json");
+    const results = join(dir, "results");
+    const previous = "https://example.org/v1/plugins.json";
+    const built = (t: number) => JSON.stringify({ schemaVersion: 1, generatedAt: new Date(t).toISOString(), plugins: [record("alpha"), record("beta")] });
+    writeFileSync(planPath, JSON.stringify(plan));
+    writeFileSync(dataPath, built(day));
+
+    await command(CARRY_CLI, ["--plan", planPath, "--data", dataPath, "--previous", previous], { [previous]: { json: deployed } });
+    const out = join(results, "start-results-10.0.6", "start-results.json");
+    const tests = await command(CLI, ["--plan", planPath, "--zotero", binary, "--out", out], served(plan.plugins));
+    expect(tests.stdout).toContain("Zotero 10.0.6: 1 results, 0 without a result, 1 carried, 0 outside the manifest range\n");
+    expect(startCount(starts)).toBe(1);
+    await command(ADD_CLI, ["--data", dataPath, "--plan", planPath, "--results", results, "--tested", "10.0.6"]);
+    const merged = JSON.parse(readFileSync(dataPath, "utf8")) as PluginsFile;
+    expect(merged.plugins.map((p) => p.startTests)).toEqual([started, started]);
+
+    const next = [1, 2, 3, 4, 5, 6].map((i) => day + i * 86_400_000).find(quiet)!;
+    writeFileSync(planPath, JSON.stringify(plan));
+    writeFileSync(dataPath, built(next));
+    await command(CARRY_CLI, ["--plan", planPath, "--data", dataPath, "--previous", previous], { [previous]: { json: merged } });
+    expect((JSON.parse(readFileSync(planPath, "utf8")) as StartPlan).plugins.map((p) => p.carried)).toEqual([started, started]);
+  });
+});
+
+describe("parsePlan", () => {
+  const planWith = (carried: unknown) => JSON.stringify({ plugins: [item("ok", {}), { ...item("a", {}), carried }] });
+
+  test("takes an item with or without a carried list of started results", () => {
+    const carried = [
+      { zotero: "7.0.32", result: "started" },
+      { zotero: "10.0.6", result: "started" },
+    ];
+    expect(parsePlan(planWith(carried))).toEqual({ ok: true, plan: JSON.parse(planWith(carried)) });
+    expect(parsePlan(JSON.stringify({ plugins: [item("ok", {})] })).ok).toBe(true);
+  });
+
+  test.each([
+    ["a carried value that is not a list", { zotero: "7.0.32", result: "started" }, "that is not a list"],
+    ["an item with no string zotero", [{ zotero: 7, result: "started" }], "whose item 0 has no string zotero"],
+    ["an item that is not started", [{ zotero: "7.0.32", result: "start-error" }], "whose item 0 is not a started result"],
+    [
+      "two items with one Zotero version",
+      [
+        { zotero: "7.0.32", result: "started" },
+        { zotero: "7.0.32", result: "started" },
+      ],
+      "that names Zotero 7.0.32 twice",
+    ],
+  ])("refuses %s", (_name, carried, problem) => {
+    expect(parsePlan(planWith(carried))).toEqual({ ok: false, problem: `plan item 1 has a carried list ${problem}` });
   });
 });
 
@@ -206,7 +330,7 @@ describe("pnpm start-tests", () => {
       { entry: "inside", id: "started@start-test.invalid", version: "1.0.0", zotero: "10.0.6", result: "started" },
     ]);
     expect(result.stdout).toContain("inside: started\n");
-    expect(result.stdout).toContain("Zotero 10.0.6: 1 results, 0 without a result, 1 outside the manifest range\n");
+    expect(result.stdout).toContain("Zotero 10.0.6: 1 results, 0 without a result, 0 carried, 1 outside the manifest range\n");
     expect(result.stdout).not.toContain("::warning::");
   });
 

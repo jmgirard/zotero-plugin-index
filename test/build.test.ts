@@ -666,7 +666,27 @@ describe("buildData", () => {
         },
       ],
     });
-    expect(result.text).not.toContain("sha256");
+    const output: Output = JSON.parse(result.text);
+    for (const item of result.plan.plugins) expect(record(output, item.entry)?.upstream?.xpiSha256, item.entry).toBe(item.sha256);
+    expect(output.plugins.filter((plugin) => plugin.upstream).map((plugin) => plugin.id).sort()).toEqual(
+      result.plan.plugins.map((item) => item.entry).sort(),
+    );
+  });
+
+  test("the schema takes an upstream with or without an xpiSha256 of 64 lowercase hexadecimal characters and refuses another", async () => {
+    const result = await buildData(TREE, fixtureFetch(responses()).fetch);
+    if (!result.ok) throw new Error(result.problems.join("\n"));
+    const data: Output = JSON.parse(result.text);
+    const index = data.plugins.findIndex((plugin) => plugin.id === BETTER_NOTES);
+    const upstream = data.plugins[index].upstream!;
+    expect(checkOutput(data)).toEqual([]);
+    delete upstream.xpiSha256;
+    expect(checkOutput(data)).toEqual([]);
+    const refused = `/plugins/${index}/upstream/xpiSha256 must match pattern "^[0-9a-f]{64}$"`;
+    for (const value of ["A".repeat(64), "a".repeat(63), "a".repeat(65), `${"a".repeat(63)}g`]) {
+      upstream.xpiSha256 = value;
+      expect(checkOutput(data), value).toEqual([refused]);
+    }
   });
 
   test("writes on each record with upstream the XPI address of its start plan item, on each of the reader's three release paths", async () => {

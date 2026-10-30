@@ -19,9 +19,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     # The time limits in src/build/build.ts end the report issue read at 3
-    # minutes and start no plugin read after 18 minutes, which leaves time for
+    # minutes and start no plugin read after 18 minutes, and `pnpm
+    # carry-start-results` reads for at most 60 seconds, which leaves time for
     # the other steps before this limit.
     timeout-minutes: 30
+    # The site job checks the start plan it downloads against this SHA-256. Plugin code in a
+    # start-test job can upload artifacts, but it cannot change this job's outputs.
+    outputs:
+      plan-sha256: ${{ steps.plan-sha256.outputs.sha256 }}
     # `pnpm build` reads the closed report issues to count the reports.
     permissions:
       contents: read
@@ -51,6 +56,14 @@ jobs:
       - run: pnpm build --plan start-plan.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Reuses the `started` results of the deployed data for each XPI whose SHA-256 is unchanged,
+      # except on the entry's weekly re-test day, so the start-test jobs skip those starts. It
+      # exits 0 and leaves the plan as it is when the deployed data cannot be read (D-024).
+      - run: >-
+          pnpm carry-start-results --plan start-plan.json --data dist/v1/plugins.json
+          --previous https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json
+      - id: plan-sha256
+        run: echo "sha256=$(sha256sum start-plan.json | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
       # Kept after a failed build too, so the failures can be read. Skipped when no data
       # file exists, for example after a failed `pnpm check`. The site job builds the
       # pages from it.
@@ -66,8 +79,9 @@ jobs:
           path: start-plan.json
           if-no-files-found: error
 
-  # Starts each plugin of the plan in one Zotero release for Linux, for each release whose
-  # line a maintainer adds here when Zotero ships it (D-023). Plugin code runs in this job,
+  # Starts each plugin of the plan in one Zotero release for Linux, other than those whose plan
+  # item carries a result for it, for each release whose line a maintainer adds here when
+  # Zotero ships it (D-023). Plugin code runs in this job,
   # so it holds no token permission, reads no secret, keeps no git credentials, and uses no
   # cache. Plugin code can still rewrite this job's results, so the site job reads them as
   # untrusted.
@@ -170,8 +184,13 @@ jobs:
         with:
           name: start-plan
           path: ${{ runner.temp }}/plan
-      # A run whose start-test jobs all failed has no results, and the site deploys
-      # without start tests.
+      # The plan's carried results are added as they stand, so a plan that is not the one the
+      # build job wrote fails this step, and nothing is deployed.
+      - env:
+          PLAN_SHA256: ${{ needs.build.outputs.plan-sha256 }}
+        run: echo "$PLAN_SHA256  $RUNNER_TEMP/plan/start-plan.json" | sha256sum --check
+      # A run whose start-test jobs all failed has no results, and the site deploys with only
+      # the start results that the plan carries.
       - uses: actions/download-artifact@v8
         continue-on-error: true
         with:

@@ -454,3 +454,25 @@ every clean plugin at once rather than over days. `Merge bot pull requests`
 gains a `wait_hours` input that only a run started by hand sets, 0 included.
 Scheduled runs keep 48 hours, and the hold reasons, the `hold` label, and the
 check before each merge are unchanged. The rest of D-033 stands.
+
+### D-035: The daily build reuses deployed start results for an unchanged XPI, annotating D-023 and D-024
+
+2026-10-30, M059. Each daily run started every plugin in each tested release
+that its range covers, and the slowest start-test job neared its 20-minute
+limit. At the M059 plan question set the user chose to reuse results. The
+build job reads the deployed `v1/plugins.json` over HTTPS and copies into the
+start plan each `started` result whose record has the same entry id, plugin
+id, version, and `xpiSha256` as the plan item. The start-test jobs skip those
+starts, and the site job merges them from the plan, which only the build job
+writes. A result other than `started` is never reused, so a failure is tested
+again on the next run. Each entry is tested again on one fixed day in every 7,
+so that a flaky or outdated result, or a change to the start-test code,
+reaches every result within a week. The user declined a date on each result.
+D-010 and D-024 hold: the read uses no Actions cache, and a failed read
+carries nothing and exits 0, so start results still never withhold a deploy.
+The cost changes D-023's: a forged `started` result for an unchanged XPI now
+stays until the entry's next re-test day, and longer if that day's build
+deploys nothing. A job result for a pair that the plan carries is dropped, so
+plugin code can no longer overwrite a carried result. The plan rejected a
+previous run's artifact as the source, since it needs `actions: read`, expires,
+and can come from a run that did not deploy.
