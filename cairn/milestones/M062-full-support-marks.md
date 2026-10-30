@@ -1,0 +1,113 @@
+# M062: Mark full support against released Zotero versions
+
+- **Status:** planned
+- **Priority:** normal
+- **Depends on:** —
+- **Driving RR:** —
+- **Principles touched:** —
+- **Resolves:** —
+- **Surface tier:** user-facing — it changes the declared marks on every page and adds a field to the public data file
+- **Branch/PR:** —
+
+## Goal
+
+If a declared range covers every released version of a Zotero major, up to its newest
+release, the mark for that major reads "all".
+
+## Scope
+
+**In:** `pnpm build` reads the current Zotero release from zotero.org and writes it as
+the top-level `zoteroRelease` of `v1/plugins.json`. `src/site/version.ts` keeps a list of
+the last release of each earlier major. `majorSupport` measures a major from N.0 to its
+newest release. The home table, the `?zotero=` filter, the plugin page, the About page,
+and the home legend follow the new rule. README, DESIGN, and CHANGELOG describe it.
+
+**Out:** moving the start-test matrix's Zotero pins, which nobody asked for. The owner
+and stars line is in M061. The menu arrow and release month are in M063.
+
+## Acceptance criteria
+
+- [ ] AC1: `pnpm build` reads `https://www.zotero.org/download/client/version?channel=release`
+      with a 30 s limit. It writes the answer's `linux-x86_64` value as the top-level
+      `zoteroRelease` of `v1/plugins.json`. `schemas/plugins.v1.schema.json` defines
+      `zoteroRelease` as an optional string that matches `^[0-9]+(\.[0-9]+)*$`. The
+      request carries no `Authorization` header. A failed read is a non-2xx answer, a
+      thrown request, no answer within 30 s, a body that is not JSON, or a
+      `linux-x86_64` value that is missing or does not match. On a failed read, the build
+      writes no `zoteroRelease` and prints one line that names the cause. That read alone
+      does not make the build fail. Tests with fixture responses check a good value, a
+      500 answer, a thrown request, a request that passes the limit, a body that is not
+      JSON, a missing `linux-x86_64` key, the value `10.0.7-beta`, and the absent header.
+- [ ] AC2: `majorSupport` measures major N over N.0 to the newest release of N. If the
+      first part of `zoteroRelease` is N, the newest release is `zoteroRelease`.
+      Otherwise it is the entry for N in a hand-kept list in `src/site/version.ts`. With
+      neither, it is N.9 as before. The list holds 7.0.32, 8.0.5, and 9.0.6, the newest
+      releases that Zotero's `https://www.zotero.org/support/<N>.0_changelog` pages listed
+      on 2026-10-30, and a code comment gives that date. A range whose minimum is above
+      its maximum is "none". If the range covers N.0 and the newest release, the mark is
+      "all". If the range ends before N.0 or starts after the newest release, the mark is
+      "none". Otherwise the mark is "some".
+- [ ] AC3: Tests in `test/version.test.ts` check the AC2 rule on these cases. With newest
+      10.0.7, max `10.0.*` gives all, max `10.0.6` gives some, min `10.1` gives none, and
+      min `10.0` with no max gives all. With newest 10.1.0, max `10.0.*` gives some. With
+      no newest, max `10.0.*` gives some, and max `10.99.99` gives all. For major 9 with
+      the list value, max `9.0.*` gives all. Min `10.0.3` with max `10.0.1` gives none.
+- [ ] AC4: The home table's marks, the `data-zotero` values that the `?zotero=` filter
+      reads, the plugin page's Declared cells, and their hidden text use the AC2 result
+      with the data's `zoteroRelease`. A site test builds a fixture with `zoteroRelease`
+      `10.0.7`. A record whose maximum is `10.0.*` reads all in its home mark and plugin
+      page cell for 10. A record whose minimum is `10.1` has no `10` in its row's
+      `data-zotero`. Built with no `zoteroRelease`, the first record reads some and the
+      second record's `data-zotero` holds `10`.
+- [ ] AC5: The About page's "Declared range" section and the home legend say that all
+      means every released version of that major up to its newest release. For each
+      major of `ZOTERO_MAJORS`, the About page names the newest release that the build
+      used, or says that it knew none. README, DESIGN, and one CHANGELOG entry describe
+      the rule and `zoteroRelease`. README and the CHANGELOG entry tell consumers that
+      validate against a saved copy of the schema to fetch it again. A site test checks
+      that the About page names `10.0.7` from the fixture and `7.0.32` from the list. It
+      also checks that a build with no `zoteroRelease` says that no release of 10 is
+      known.
+- [ ] AC6: `pnpm test` and `pnpm check` pass.
+
+## Coverage
+
+- AC1 → T1
+- AC2 → T2
+- AC3 → T2
+- AC4 → T3
+- AC5 → T4
+- AC6 → T5
+
+## Tasks
+
+- [ ] T1: Add the zotero.org read to `buildData` in `src/build/build.ts` with its own
+      30 s limit and no token, add `zoteroRelease` to the data type and the schema, and
+      add the fixture-response tests.
+- [ ] T2: Add the hand-kept list and a newest-release argument to `majorSupport` and
+      `rowMajors` in `src/site/version.ts`, and add the `test/version.test.ts` cases.
+- [ ] T3: Pass `zoteroRelease` from `loadData` in `site/src/data.ts` to every caller of
+      `majorSupport` and `rowMajors` (home table, plugin page, `supportText`), and add
+      the fixture records and site tests.
+- [ ] T4: Rewrite the About page's "Declared range" text and the home legend, then
+      update README, DESIGN, and CHANGELOG. Record the new zotero.org read as a D-entry,
+      since it adds a source to the build.
+- [ ] T5: Run `pnpm test` and `pnpm check`, and look at the home table and one plugin
+      page in the browser pane with the deployed data.
+
+## Work log
+
+- 2026-10-30: created by /milestone-plan.
+- 2026-10-30: tier check: milestone — the request adds a data field and changes page and table behavior across several parts.
+- 2026-10-30: idea vet: gap, a hand-kept newest release goes stale and then shows all after a newer release ships; posed at the question set, which chose a daily read of zotero.org. Gap, a range that starts after the newest release can read none or part; posed at the question set, which chose none.
+- 2026-10-30: question set: newest Zotero release — read zotero.org daily, with the last releases of 7, 8, and 9 kept in the code; range past the newest release — none.
+- 2026-10-30: plan gate chose a daily read of zotero.org over a hand-kept list only because the list lags each Zotero release and shows all too early meanwhile; falsified by the endpoint changing shape or failing on most days.
+- 2026-10-30: plan chose to write the read value into the data over a read at site build time, so that `pnpm site` builds the same pages from the same data file; falsified by a need to rebuild the site without rebuilding the data.
+- 2026-10-30: plan chose that a failed read leaves the field out and does not fail the build, since a one-day fallback to the N.9 rule shows part, never a false all (D-011 withholds a deploy only for build-level failures).
+- 2026-10-30: criteria audit (full mode, fresh Opus reader): here AC1 adds the 30 s limit, a non-JSON body, and tests for each failure; AC2 names the list values and keeps min above max as none; AC3 adds a Zotero 9 case and a minimum-only case; AC4 tests `data-zotero` with a min `10.1` record, since the old check passed under both rules; AC5 tests the list value and the "none known" text.
+- 2026-10-30: collision check: M037 and M053 shipped the marks and the N.9 rule, and this changes their upper end; no D-entry rejects it. Inbox sweep: 0 open issues, 18 bot pull requests, none overlapping.
+- 2026-10-30: lessons used: 2026-10-27 (M030, test a time limit with a stubbed `performance.now()` so the cut needs no real wait), 2026-10-28 (M035, build the site from the deployed data for a hand check), 2026-10-29 (M053, the built script is minified, so test it in `node:vm`).
+
+## Decisions
+
+## Review
