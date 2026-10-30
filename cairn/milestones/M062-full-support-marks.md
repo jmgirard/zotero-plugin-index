@@ -1,6 +1,6 @@
 # M062: Mark full support against released Zotero versions
 
-- **Status:** review
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -118,6 +118,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: added source note `cairn/references/zotero-changelogs.md` and its INDEX line, since the repo now relies on the three changelog pages and the release address; shelf copies saved under `cairn/references/sources/`.
 - 2026-10-30: status set to review; `pnpm test` (1541 passed, 6 skipped) and `pnpm check` (0 problems) pass.
 - 2026-10-30: review started, route (d): no PR, main unmoved. AC1–AC6 evidence recorded and ticked; `cairn_validate` passes; generic profile has no toolchain checks. Four-lens review spawned; checkpoint while it runs.
+- 2026-10-30: review return 1: AC1 fails inside its domain: `readZoteroRelease` reads the body and parses it in one `try`, so a body read that fails mid-transfer prints "returned a body that is not JSON" instead of its cause (diff-bug #1). The fix-now findings of pass 1 (diff-bug #4, #6, #7, #10, #11, #14, #17; blame-history #3; prior-review #1–#3; ripple #1–#3) ride with the return. Follow-up row "Flag a new Zotero major in the build" added at normal. Status back to in-progress.
 
 ## Decisions
 
@@ -131,3 +132,36 @@ Evidence gathered 2026-10-30 on m062-full-support-marks at 60d3bbc, main unmoved
 - AC4: `test/site.test.ts` "the newest Zotero release" passes: with 10.0.7 the 10.0.* record's home mark and plugin-page `data-declared` for 10 read all, and its hidden text reads "Declares all of Zotero 10"; the 10.1 record's `data-zotero` is empty. With no release the first reads some on both, and the second's `data-zotero` is `10`. Hand check on the deployed data: `?zotero=10` showed 211 of 272 (T5).
 - AC5: About and legend tests pass with the new "every release of that Zotero version, up to its newest release" text; the About list names 7.0.32, 8.0.5, 9.0.6, 10.0.7 from the 10.0.7 build and "Zotero 10: no release known, so the index counts 10.0 to 10.9" from the build with none. README (The site, Using the data at lines 236-242, Building the data), DESIGN, and one CHANGELOG entry describe the rule and `zoteroRelease`; the README paragraph and the CHANGELOG entry both tell schema consumers to fetch a saved copy again.
 - AC6: `pnpm test` 1541 passed, 6 skipped, 0 failed; `pnpm check` 272 entries, 0 problems.
+
+Review pass 1 findings.
+
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: one `try` in `readZoteroRelease` covers `response.text()` and `JSON.parse`, so a body read that fails mid-transfer (fixture `bodyError: "read ECONNRESET"`) prints "returned a body that is not JSON", and a timer that fires after the body arrives reports a non-JSON body as the limit — fix now, return-floor: AC1's "names the cause" fails inside its domain (review return 1)
+- diff-bug #2: `knownRelease` takes `zoteroRelease` for its major even when it is older than that major's `LAST_RELEASES` entry — reject, planned change: AC2 states that `zoteroRelease` wins for its own major, and the list holds only earlier majors, so this needs zotero.org to serve an older major than the list holds
+- diff-bug #3: when zotero.org serves 11.x, 10 has no list entry and falls back to N.9, the About page's "keeps the last release of each earlier Zotero version" turns false, and 11 is not in `ZOTERO_MAJORS` — follow-up, candidate row "Flag a new Zotero major in the build", normal rung, since every new major meets it and the fallback shows part, never a false all
+- diff-bug #4: `.github/workflows/build.yml:21-24` and README's "These limits leave time" sentence list the limits without the new 30 s read — fix now
+- diff-bug #5: a timeout prints "time limit of 30000 ms" while README says 30 seconds — reject, style: the number is exact, and `duration` formats every other non-minute limit in ms the same way
+- diff-bug #6: `cli.ts` prints the release line only after the data and plan writes succeed — fix now: print it before the writes
+- diff-bug #7: no test that `checkOutput` rejects a bad `zoteroRelease` — fix now: one `checkOutput` case, since the pattern is a documented schema claim
+- diff-bug #8: the "all" mark's hover and hidden text still say "Declares all of Zotero N" — reject, false: that text stays true under the new rule, and AC5 names the legend and the About page for the longer wording
+- diff-bug #9: `(error as Error).message` gives "failed: undefined" for a rejection that is not an Error — reject, edge: fetch rejects with an Error or the limit's Error reason in every documented use, and the effect is a less clear printed line
+- diff-bug #10 (tests): the `checkOutput` expect repeats in all 7 failure cases though `buildData` already checks its output — fix now: remove
+- diff-bug #11 (tests): `buildLevel` expect repeats across 7 cases on one path — fix now: state it once, in the CLI test's summary line
+- diff-bug #12 (tests): the CLI test's `not.toHaveProperty("zoteroRelease")` repeats the in-process 500 case — reject, false: it checks the file the command writes, a path the in-process case does not reach
+- diff-bug #13 (tests): the site describe's schema-validity test checks a fixture the test wrote — reject, false: it guards the fixture as the shared fixture's validity test does, so a bad fixture cannot pass the mark tests
+- diff-bug #14 (tests): the second expect of the "no release of 10 is known" test is weaker than the exact list in the test before it — fix now: remove
+- diff-bug #15 (tests): the hidden-text check repeats the `data-declared` check — reject, planned change: AC4 names the hidden text
+- diff-bug #16 (tests): the `9.0.*`-for-9 case runs the same path as the `7.0.*`-for-7 case — reject, planned change: AC3 names it
+- diff-bug #17 (tests): the site describe comment restates the code — fix now: drop the restating part
+- blame-history #1: Zotero 10 marks revert to N.9 once Zotero 11 ships unless someone adds 10 to `LAST_RELEASES` — follow-up, same candidate row as diff-bug #3
+- blame-history #2: D-036 does not name D-015 or D-027, which make a time-limited read build-level or a build failure — reject, false: D-016 narrows D-015's limits to the plugin reads, and D-027 covers only the report read, so the release read falls under neither
+- blame-history #3: README and the About page dropped M015's note that a minimum such as 8.999 means Zotero 9 and newer, which still holds — fix now: restore the sentence in both
+- prior-review #1: every release error case runs with `releaseMs: 100`, so a non-stall case can flake under load, against M050's 1000 ms fix and the "Steady the time-limit tests under load" row — fix now: 1000 ms
+- prior-review #2: four added DESIGN lines run past 80 columns, against the M036 and M018 lessons — fix now: rewrap
+- prior-review #3: the README release-read paragraph sits between the plugin-failure paragraph and the plugin time-limit paragraph, with two hand-broken short lines — fix now: move it after the time-limit paragraph and rewrap
+- ripple #1: README's "The file has a `schemaVersion` of `1`, a `generatedAt` time, and one record" omits `zoteroRelease` — fix now
+- ripple #2: the build.yml limit comment omits the 30 s read — fix now, with diff-bug #4
+- ripple #3: README's "These limits leave time" omits the 30 s read — fix now, with diff-bug #4
+- ripple #4: DESIGN's "runs on GitHub only" now that the build reads zotero.org — reject, false: the sentence says where the index runs, and the start test already downloads from download.zotero.org
+- ripple #5: the mark tooltip keeps "Declares all of Zotero N" — reject, false, as diff-bug #8
+- ripple #6: README's "A check mark (✓) means all of it" leaves "all" undefined — reject, false: the next two sentences define it
