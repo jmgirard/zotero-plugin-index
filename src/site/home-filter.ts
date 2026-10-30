@@ -1,5 +1,6 @@
 // The home page's filters: the search box, the language menu, the Zotero version buttons,
-// and the plugin count beside them. The page's script imports it, so it has no imports.
+// the plugin count beside them, and the pages below the table. The page's script imports
+// it, so it has no imports.
 
 // One filter's state: its chosen value and the values its menu or buttons offer.
 export interface Filter {
@@ -49,7 +50,7 @@ export function chosenValue(asked: string | null, options: readonly string[]): s
 }
 
 // The plugin count beside the filters: the table's total rows when no filter is on, else
-// how many of them the filters show, or that none match.
+// how many of them the filters pass on every page, or that none match.
 export function filterStatus(shown: number, total: number, filtering: boolean): string {
   const plugins = total === 1 ? "plugin" : "plugins";
   if (!filtering) return `${total} ${plugins}`;
@@ -82,7 +83,7 @@ export function chosenPage(asked: string | null, pages: number): number {
 // value is "". An address that already says so comes back unchanged. Otherwise the query is
 // written again, so the other parameters keep their values but not always their spelling,
 // such as %20 for +. The page writes the search box to q, the language menu to language,
-// and the version buttons to zotero.
+// the version buttons to zotero, and the page number after 1 to page.
 export function filterHref(href: string, name: string, value: string): string {
   const url = new URL(href);
   if (value ? url.searchParams.get(name) === value : !url.searchParams.has(name)) return href;

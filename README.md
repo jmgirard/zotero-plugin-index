@@ -10,11 +10,12 @@ The website <https://jmgirard.github.io/zotero-plugin-index/> shows the index.
 A top bar on every page links to the home page and to the About page. It
 also links to the "Add a plugin" issue form and to the data file. The home
 page lists every plugin in one table, sorted by name. Its script shows 50
-at a time, as the pager section below says. The sort ignores letter case
-and accents, and names that are then equal sort by plugin id. Each row shows the plugin's name and its
-description. If the plugin's GitHub repository is archived, the row shows
-"Archived" after the name. Then come one cell for each Zotero major version
-from 7 to 10 and a "Menus and settings" cell. Next comes the month of
+at a time, as the pager paragraph below says. The sort ignores letter case
+and accents, and names that are then equal sort by plugin id. Each row
+shows the plugin's name and its description. If the plugin's GitHub
+repository is archived, the row shows "Archived" after the name. Then come
+one cell for each Zotero major version from 7 to 10 and a "Menus and
+settings" cell. Next comes the month of
 the release that the index read. Last come links to the source code and to
 the `.xpi` file.
 
@@ -117,11 +118,14 @@ The table shows 50 of the plugins that the filters pass at a time. When
 they pass more than 50, a pager below the table reads "Page p of P" between
 a Previous and a Next button. Each of them moves one page and scrolls back
 to the top of the table. It also adds an entry to the browser history, so
-Back returns to the page before. The page keeps the page number in the `page`
-query parameter of its address, such as `?page=2`, and leaves it out for
-page 1. If the parameter names no page that the filtered plugins fill, the
-page shows page 1 and removes the parameter. A change to the search box,
-the menu, or the buttons goes back to page 1.
+Back returns to the address before, filters included. On the first page
+Previous does nothing, and on the last page Next does nothing. The page
+keeps the page number in the `page` query parameter of its address, such as
+`?page=2`, and leaves it out for page 1. If the parameter names no page that
+the filtered plugins fill, the page shows page 1 and removes the parameter.
+A change to the search box, the menu, or the buttons shows page 1 at once.
+For the search box, the address takes the new text and drops `page` once
+typing stops for half a second.
 
 A script runs the search box, the menu, the buttons, the count, and the
 pager. Without JavaScript, the home page shows none of them and lists every

@@ -258,9 +258,9 @@ const { plugins } = loadData();
         "page",
         page > 1 ? String(page) : "",
       );
-    // Reads the parameters into the search box, the menu, and the buttons, on load and when
-    // Back or Forward changes the address in the same page. A parameter that names no option
-    // leaves the address.
+    // Reads the parameters into the search box, the menu, the buttons, and the page, on load
+    // and when Back or Forward changes the address in the same page. A parameter that names
+    // no option or page leaves the address.
     // Typing writes the address once the visitor stops for half a second, so a burst of keys
     // makes one history call, not one per key.
     let pending: ReturnType<typeof setTimeout> | undefined;
