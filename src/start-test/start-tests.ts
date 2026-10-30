@@ -39,9 +39,10 @@ export interface StartTestsResult {
   zotero: string;
   results: PlannedStart[];
   skipped: SkippedStart[];
-  // The entries outside the binary's Zotero version, and the entries in range that the total
-  // limit left unstarted.
+  // The entries outside the binary's Zotero version, the entries in range whose plan item
+  // carries a result for it, and the entries in range that the total limit left unstarted.
   outOfRange: string[];
+  carried: string[];
   notStarted: string[];
 }
 
@@ -50,7 +51,7 @@ export interface StartTestsResult {
 export function summaryLines(run: StartTestsResult, limitMs = START_TESTS_LIMIT_MS): string[] {
   const lines = [
     `Zotero ${run.zotero}: ${run.results.length} results, ${run.skipped.length} without a result, ` +
-      `${run.outOfRange.length} outside the manifest range`,
+      `${run.carried.length} carried, ${run.outOfRange.length} outside the manifest range`,
   ];
   if (run.notStarted.length > 0) {
     lines.push(`::warning::${run.notStarted.length} plugins were not started after the limit of ${duration(limitMs)}`);
@@ -68,7 +69,8 @@ export function inRange(item: Pick<StartPlanItem, "strictMinVersion" | "strictMa
 const PLAN_FIELDS = ["entry", "id", "version", "xpiUrl", "sha256"] as const;
 
 // The plan in `text`, or a problem. Each item needs its five string fields; the two bounds are
-// strings when present.
+// strings when present, and `carried`, when present, is a list of `started` results, each with
+// a string `zotero` that no other names.
 export function parsePlan(text: string): { ok: true; plan: StartPlan } | { ok: false; problem: string } {
   let value: unknown;
   try {
@@ -85,8 +87,24 @@ export function parsePlan(text: string): { ok: true; plan: StartPlan } | { ok: f
       (field) => fields[field] !== undefined && typeof fields[field] !== "string",
     );
     if (missing ?? badBound) return { ok: false, problem: `plan item ${i} has no string ${missing ?? badBound}` };
+    const carried = carriedProblem(fields.carried);
+    if (carried) return { ok: false, problem: `plan item ${i} has a carried list ${carried}` };
   }
   return { ok: true, plan: value as StartPlan };
+}
+
+function carriedProblem(carried: unknown): string | undefined {
+  if (carried === undefined) return undefined;
+  if (!Array.isArray(carried)) return "that is not a list";
+  const zoteros: string[] = [];
+  for (const [j, value] of carried.entries()) {
+    const { zotero, result } = (typeof value === "object" && value !== null ? value : {}) as Record<string, unknown>;
+    if (typeof zotero !== "string") return `whose item ${j} has no string zotero`;
+    if (result !== "started") return `whose item ${j} is not a started result`;
+    if (zoteros.includes(zotero)) return `that names Zotero ${zotero} twice`;
+    zoteros.push(zotero);
+  }
+  return undefined;
 }
 
 export interface StartTestsOptions {
@@ -106,18 +124,23 @@ export interface StartTestsOptions {
 }
 
 // Starts the Zotero binary once for each plan item whose manifest range covers the binary's
-// version, in plan order. Each XPI is downloaded from the plan's URL with the reader's host
+// version and whose `carried` list does not name it, in plan order. Each XPI is downloaded from the plan's URL with the reader's host
 // check and must match the plan's SHA-256; each start runs `pnpm start-test`. Once `limitMs`
 // has passed since `startedAt`, no new start begins.
 export async function startTests(options: StartTestsOptions): Promise<StartTestsResult> {
   const { plan, fetch, lookup, limitMs = START_TESTS_LIMIT_MS, startedAt = 0, onItem } = options;
   const zotero = await zoteroVersion(options.zotero);
-  const outcome: StartTestsResult = { zotero, results: [], skipped: [], outOfRange: [], notStarted: [] };
+  const outcome: StartTestsResult = { zotero, results: [], skipped: [], outOfRange: [], carried: [], notStarted: [] };
   const temp = await mkdtemp(join(tmpdir(), "start-tests-"));
   try {
     for (const item of plan.plugins) {
       if (!inRange(item, zotero)) {
         outcome.outOfRange.push(item.entry);
+        continue;
+      }
+      // Checked before the total limit, so a carried item is never counted as not started.
+      if (item.carried?.some((result) => result.zotero === zotero)) {
+        outcome.carried.push(item.entry);
         continue;
       }
       if (performance.now() - startedAt >= limitMs) {
