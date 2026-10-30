@@ -100,6 +100,7 @@ filters to read the data file (not asked for).
 - 2026-10-30: claim audit: 46 claims read, 5 corrected — README.md, CHANGELOG.md, src/site/home-filter.ts, site/src/pages/index.astro. Fixed: "pager paragraph", Back returns to the address before (filters included), the ends do nothing, a filter change shows page 1 at once while the search box's address drops `page` after the typing pause, and the CHANGELOG's pager and page-number conditions; plus 4 stale comments (home-filter header, `filterStatus`, `filterHref`, `fromAddress`). The re-read found the `fromAddress` comment still wrong for `?page=1`, now fixed. Also rewrapped README lines that earlier edits joined.
 - 2026-10-30: T4 done: README's opening paragraph and home section (the count covers every page; a new paragraph for the pager, `page`, Back, and the reset to page 1; the script paragraph names the pager) and a CHANGELOG entry.
 - 2026-10-30: review started; origin/main an ancestor of the branch; Copilot round off.
+- 2026-10-30: step-7 approval: m058-home-pages approved for merge
 
 ## Decisions
 
