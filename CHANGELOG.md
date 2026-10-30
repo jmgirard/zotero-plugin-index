@@ -505,3 +505,14 @@
   read for the repository. The schema rejects fields that it does not
   define, so fetch any saved copy of `schemas/plugins.v1.schema.json`
   again.
+- A declared mark now counts Zotero N as the versions from N.0 to the
+  newest release of N, not to N.9. So a check mark means that the range
+  covers every release of that version up to its newest release. A range
+  such as `10.0.*` now shows all of Zotero 10 while 10.0.7 is the newest
+  release. A range that starts after the newest release shows none of it.
+  The home table, the Zotero filter, and the plugin pages follow the rule,
+  and the About page names the newest release of each version. The data
+  file has a new optional top-level `zoteroRelease` field: the current
+  Zotero release that `pnpm build` read from zotero.org. The schema
+  rejects fields that it does not define, so fetch any saved copy of
+  `schemas/plugins.v1.schema.json` again.

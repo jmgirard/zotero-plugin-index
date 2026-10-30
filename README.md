@@ -25,9 +25,15 @@ covers. A check mark (✓) means all of it, a half circle (◐) means part of
 it, and a dash means none of it. Hold the pointer over a mark to read
 its meaning and, for a half circle, the declared range. On a touch screen,
 open the plugin's page to read its declared range. A mark counts Zotero N
-as the versions from N.0 to N.9. Plugin authors often write a maximum such
-as 10.99.99 to mean every Zotero 10 release. They also write a minimum such
-as 8.999 to mean Zotero 9 and newer. The declared range uses the overrides
+as the versions from N.0 to the newest release of N. A check mark thus
+means every release of that version up to its newest release. For the
+current Zotero version, the newest release is the `zoteroRelease` that the
+build read. For an earlier version, it is the last release, which the
+index keeps in its code. The About page names each one. For a version
+with no known release, a mark counts N.0 to N.9. Plugin authors often
+write a maximum such as 10.99.99 to mean every Zotero 10 release. A
+range that ends before N.0 or starts after the newest release covers none
+of that version. The declared range uses the overrides
 that apply to the plugin version that the index read. The marks show what
 each plugin declares, not a test result.
 
@@ -226,6 +232,14 @@ version under a new path, such as `v2/`. By this project's rule, a new
 optional field does not get a new schema version. The schema rejects fields
 that it does not define. If you validate
 against a saved copy of the schema, fetch it again after such a change.
+
+The data file can have a top-level `zoteroRelease` field, such as
+`"10.0.7"`. It is the current Zotero release that the build read from
+zotero.org, as "Building the data" says. The site's declared marks use it
+as the newest release of its Zotero version. If the build did not read
+it, the field is absent. Data written before the build wrote this field has
+none. The field is new in schema v1. If you validate against a saved copy
+of the schema, fetch the schema again.
 
 Each `upstream` block has an `xpiUrl` field. It is the download address
 that GitHub gives for the first `.xpi` file of the release whose manifest
@@ -972,6 +986,22 @@ record has a `failure` block with the failure name and a message. If the
 read stops with an error that the reader does not name, the failure name is
 `unexpected-error`. If the read gives facts that the schema rejects, the
 failure name is `facts-invalid`. The command still writes the file.
+
+After the plugin reads, the command reads
+<https://www.zotero.org/download/client/version?channel=release> with no
+token and a limit of 30 seconds. It writes the answer's `linux-x86_64`
+value as the top-level `zoteroRelease`. The value must be numbers joined by
+dots, such as `10.0.7`. These cases fail the read:
+
+- an answer that is not a success,
+- a request that fails or passes 30 seconds,
+- a body that is not JSON,
+- a value that is missing or has another form.
+
+Then the command writes no
+`zoteroRelease`, and it prints one
+line that starts with `cannot read the Zotero release:` and names the
+cause. This read does not change the exit status.
 
 The command gives each plugin read 3 minutes. If a read takes longer, the
 command stops it, and the record fails with `request-failed`. The command

@@ -99,12 +99,17 @@ export type MajorSupport = "all" | "some" | "none";
 // current major here when Zotero ships the next one.
 export const LAST_RELEASES: Record<string, string> = { "7": "7.0.32", "8": "8.0.5", "9": "9.0.6" };
 
-// The newest release of Zotero major N: `zoteroRelease`, the current release that the build
-// read, when its first part is N, else the LAST_RELEASES entry for N, else N.9, since authors
-// write maxima such as 10.99.99 to mean all of 10.
-export function newestRelease(major: string, zoteroRelease?: string): string {
+// The known newest release of Zotero major N: `zoteroRelease`, the current release that the
+// build read, when its first part is N, else the LAST_RELEASES entry for N, if any.
+export function knownRelease(major: string, zoteroRelease?: string): string | undefined {
   if (zoteroRelease?.split(".")[0] === major) return zoteroRelease;
-  return LAST_RELEASES[major] ?? `${major}.9`;
+  return LAST_RELEASES[major];
+}
+
+// The newest release of Zotero major N: the known one, else N.9, since authors write maxima
+// such as 10.99.99 to mean all of 10.
+export function newestRelease(major: string, zoteroRelease?: string): string {
+  return knownRelease(major, zoteroRelease) ?? `${major}.9`;
 }
 
 // How much of Zotero major N the declared range covers, where a major runs from N.0 to its

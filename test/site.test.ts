@@ -664,10 +664,12 @@ describe("the About page", () => {
   test("names each declared mark and says that a range is not a test result", () => {
     const text = mainText(about());
     for (const line of [
-      "✓ The range covers all of that Zotero version.",
+      "✓ The range covers every release of that Zotero version, up to its newest release.",
       "◐ The range covers part of it.",
       "– The range covers none of it.",
-      "The index counts Zotero N as the versions from N.0 to N.9.",
+      "The index counts Zotero N as the versions from N.0 to the newest release of N.",
+      "Each day the build reads the current Zotero release from zotero.org, and the index keeps the last release of each earlier Zotero version.",
+      "For a Zotero version with no known release, the index counts N.0 to N.9,",
       "A plugin that declares no range shows no mark. The range is what the author declares, not a test result.",
     ]) {
       expect(text).toContain(line);
@@ -925,7 +927,7 @@ describe("the home page", () => {
     expect(html.indexOf("<ul class=\"legend\"")).toBeGreaterThan(html.indexOf("</table>"));
     const items = [...legend![1]!.matchAll(/<li[^>]*>(.*?)<\/li>/gs)].map(([, item]) => item!.replace(/\s+/g, " "));
     expect(items).toEqual([
-      '<span class="mark" data-support="all" aria-hidden="true">✓</span> Declares all of that Zotero version',
+      '<span class="mark" data-support="all" aria-hidden="true">✓</span> Declares every release of that Zotero version, up to its newest release',
       '<span class="mark" data-support="some" aria-hidden="true">◐</span> Declares part of it',
       '<span class="mark" data-support="none" aria-hidden="true">–</span> Declares none of it',
       "No mark: the plugin declares no range",
@@ -1509,6 +1511,26 @@ describe("the newest Zotero release", () => {
     expect(row(homeOf("unknown"), UP_TO)).toEqual({ majors: "7 8 9 10", mark: "some" });
     expect(declared(pageOf("unknown", UP_TO))).toBe("some");
     expect(row(homeOf("unknown"), FROM).majors).toBe("10");
+  });
+
+  // The About page's list of the newest release of each major, one item per major.
+  const releases = (name: keyof typeof built) => {
+    const list = /<ul[^>]*data-newest-releases>([\s\S]*?)<\/ul>/.exec(readFileSync(join(built[name], "about/index.html"), "utf8"))![1]!;
+    return [...list.matchAll(/<li data-major="(\d+)">\s*([^<]*?)\s*<\/li>/g)].map(([, major, text]) => [major, text]);
+  };
+
+  test("the About page names the newest release of each major: 10.0.7 from the data and the last releases of 7, 8, and 9", () => {
+    expect(releases("known")).toEqual([
+      ["7", "Zotero 7: 7.0.32"],
+      ["8", "Zotero 8: 8.0.5"],
+      ["9", "Zotero 9: 9.0.6"],
+      ["10", "Zotero 10: 10.0.7"],
+    ]);
+  });
+
+  test("the About page says that no release of 10 is known when the data has no zoteroRelease", () => {
+    expect(releases("unknown").at(-1)).toEqual(["10", "Zotero 10: no release known, so the index counts 10.0 to 10.9"]);
+    expect(releases("unknown").map(([major]) => major)).toEqual(ZOTERO_MAJORS);
   });
 });
 

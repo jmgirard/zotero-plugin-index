@@ -89,7 +89,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - [x] T3: Pass `zoteroRelease` from `loadData` in `site/src/data.ts` to every caller of
       `majorSupport` and `rowMajors` (home table, plugin page, `supportText`), and add
       the fixture records and site tests.
-- [ ] T4: Rewrite the About page's "Declared range" text and the home legend, then
+- [x] T4: Rewrite the About page's "Declared range" text and the home legend, then
       update README, DESIGN, and CHANGELOG. Record the new zotero.org read as a D-entry,
       since it adds a source to the build.
 - [ ] T5: Run `pnpm test` and `pnpm check`, and look at the home table and one plugin
@@ -112,6 +112,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: T1 follow-up: added a stalled-body case, which backs the code comment on the rethrow.
 - 2026-10-30: T2 done: `LAST_RELEASES` and `newestRelease(major, zoteroRelease?)` in `src/site/version.ts`; `majorSupport` and `rowMajors` take an optional `zoteroRelease`. The list values were re-read from the three changelog pages today and match. One old case changed from some to all (`6.999`–`7.0.*` for 7, since 7.0.32 is the last 7 release), and a `7.0.31` case now holds the some reading; 9 AC3 cases added.
 - 2026-10-30: T3 done: the home page and plugin page read `zoteroRelease` from `loadData` and pass it to `majorSupport`; `rowMajorsAttribute` takes it as a second argument. `supportText` takes the support already computed, so it needed no change. The site tests build a two-record data set twice (10.0.7 and none) in a new describe and leave the shared fixture as it was; with the `site/` changes stashed, the 10.0.7 test fails.
+- 2026-10-30: T4 done: `newestRelease` split into `knownRelease` (undefined with no known release) and the N.9 fallback, so the About page can say "no release known"; the About page lists one `data-newest-releases` item per `ZOTERO_MAJORS` entry; the legend and About mark lines now say "every release of that Zotero version, up to its newest release". README (The site, Using the data, Building the data), DESIGN (marks rule, data sources, function family, architecture), one CHANGELOG entry, and D-036 updated. The README's two old lint hits (lines 233 and 810) and CHANGELOG's eight are in earlier text and were left.
 
 ## Decisions
 
