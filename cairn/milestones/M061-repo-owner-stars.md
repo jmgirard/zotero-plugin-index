@@ -1,6 +1,6 @@
 # M061: Show the repo, owner, and stars on plugin pages
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -96,6 +96,7 @@ rule for declared marks is in M062.
 - 2026-10-30: claim audit: 23 claims read, 5 corrected — site/src/data.ts, README.md, CHANGELOG.md, test/site.test.ts (four claims rested on the pattern letting `?` and `#` into the repo name, which a failure record's `meta.json` URL can reach; one test name said "the stars" for cases with none).
 - 2026-10-30: substantive amendment: AC1's pattern is now `^https://github\.com/([^/?#]+)/([^/?#]+?)/?$`, and its no-line cases add a URL with a query and a URL with a fragment; the deliverable's look is unchanged.
 - 2026-10-30: re-audit: AC1 (full) — 3 findings, none changing the wording: query and fragment cases sit on upstream records (answered: one `githubRepo` call serves both paths, and failure records are tested both ways); the owner group had no case of its own (fixed in tests: `https://github.com/example?x=/cafe-tools`, which a planted `[^/]+` owner group failed); a `.git` suffix still matches (answered: GitHub's `html_url` never has one, and the line still links the repo).
+- 2026-10-30: implement complete; status review.
 
 ## Decisions
 
