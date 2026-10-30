@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M060: Filter the home list before it paints
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — it changes which home table rows a visitor sees while the page loads   <!-- owner: plan · create/amend-via-gate; user-facing | internal — <one-clause reason>; skill conduct only — no validate check parses it -->
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m060-pre-paint-filter   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -120,7 +120,7 @@ In a browser that runs the home page's module script and supports `:nth-child(�
 ## Tasks
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
 
-- [ ] T1: Write the AC4 tests in `test/home-filter.test.ts`, then
+- [x] T1: Write the AC4 tests in `test/home-filter.test.ts`, then
       `prePaintStyle` in `src/site/home-filter.ts`, with no call to or read
       of a binding outside its body except built-ins, so no read of
       `PAGE_SIZE` (the size is an argument).
@@ -164,6 +164,8 @@ In a browser that runs the home page's module script and supports `:nth-child(�
 - 2026-10-30: checkpoint: plan committed while the full criteria audit runs; a second plan commit applies its findings before implement starts.
 - 2026-10-30: criteria audit (full, fresh Opus reader): 9 findings, all taken: Goal narrowed to browsers that run the module script and support `of S`; AC1 adds empty, repeated, encoded, blank-`q`, past-the-end, and 20-digit page cases, and the first row's border; a page value over 6 digits now hides every row, since a template literal writes a large offset as `5e+21`, which CSS drops; AC3 runs AC4's literal strings, not data-dependent ones; AC4 adds the same forms; AC5 adds a missing menu and missing buttons; AC6 drops its "written against" clause, scopes its claims to module-script browsers and non-blank `q`, names the three DESIGN.md places, and cites MDN through a source note (T4); Scope says built-ins are the one outside call; AC2 and AC7 passed.
 - 2026-10-30: lessons used: 2026-10-25 (M001), 2026-10-25 (M007), 2026-10-26 (M015), 2026-10-28 (M035), 2026-10-29 (M048, iframe widths), 2026-10-29 (M053).
+- 2026-10-30: started by /milestone-implement on branch m060-pre-paint-filter, cut from main at 369cf7e.
+- 2026-10-30: T1 done: `prePaintStyle(search, size)` in `src/site/home-filter.ts` with 35 cases in `test/home-filter.test.ts`, which failed before the function and pass now; rules are joined by newlines, every style ends with the first row's border reset (`!important`, since the page's `tr:not([hidden]) ~ tr` rule is more specific), and page 1 writes no `-n+0` rule; `pnpm test` 1405 passed, `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

@@ -79,6 +79,42 @@ export function chosenPage(asked: string | null, pages: number): number {
   return page >= 2 && page <= pages ? page : 1;
 }
 
+// The CSS that hides the rows the page's script will hide for an address, so that a row the
+// script hides never paints before the script runs. search is the address's query string,
+// read as the script reads it, and size is the page size. A non-blank q, a language or zotero
+// value that is not letters, digits, and hyphens, or a page of more than 6 digits hides every
+// row. Otherwise the CSS shows the asked page of the rows that the language and zotero values
+// pass. The home page builds a classic script from this function's source text, so it calls
+// and reads nothing from outside its body except built-ins.
+export function prePaintStyle(search: string, size: number): string {
+  const rows = ".plugins tbody tr";
+  const params = new URLSearchParams(search);
+  if ((params.get("q") ?? "").trim() !== "") return `${rows}{display:none}`;
+  let filter = "";
+  for (const [name, attribute] of [
+    ["language", "data-languages"],
+    ["zotero", "data-zotero"],
+  ]) {
+    const value = params.get(name!) ?? "";
+    if (value === "") continue;
+    if (!/^[A-Za-z0-9-]+$/.test(value)) return `${rows}{display:none}`;
+    filter += `[${attribute}~="${value}"]`;
+  }
+  const asked = params.get("page") ?? "";
+  if (/^\d{7,}$/.test(asked)) return `${rows}{display:none}`;
+  const page = /^[1-9]\d*$/.test(asked) && Number(asked) >= 2 ? Number(asked) : 1;
+  const of = filter === "" ? "" : ` of ${filter}`;
+  const before = (page - 1) * size;
+  const rules: string[] = [];
+  if (filter !== "") rules.push(`${rows}:not(${filter}){display:none}`);
+  if (page > 1) rules.push(`${rows}:nth-child(-n+${before}${of}){display:none}`);
+  rules.push(`${rows}:nth-child(n+${before + size + 1}${of}){display:none}`);
+  // The page's own rule gives a row a top border after any row without hidden, and these
+  // rules leave hidden unset, so the page's first row drops it here.
+  rules.push(`${rows}:nth-child(${before + 1}${of}){border-top:0!important}`);
+  return rules.join("\n");
+}
+
 // The page's address with parameter name set to value, or with the parameter removed when
 // value is "". An address that already says so comes back unchanged. Otherwise the query is
 // written again, so the other parameters keep their values but not always their spelling,
