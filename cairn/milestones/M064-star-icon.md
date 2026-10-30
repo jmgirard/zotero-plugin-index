@@ -1,6 +1,6 @@
 # M064: Show the star count with a star icon
 
-- **Status:** review
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -95,6 +95,7 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - 2026-10-30: status review; all tasks checked, `pnpm test` and `pnpm check` clean.
 - 2026-10-30: claim audit: 17 claims read, 3 corrected — README.md, CHANGELOG.md (the tooltip gives the count with its label; the hidden text adds only the words), cairn/DESIGN.md (the `title` holds the count, the span "GitHub Star" or "GitHub Stars"), test/site.test.ts (the column is the full text, not the spoken text). Re-read of the 3 by the same reader pending. `pnpm test` 1547 passed, `pnpm check` 0 problems.
 - 2026-10-30: claim audit re-read: the same reader found all corrected claims true (README, CHANGELOG, DESIGN.md, the test comment).
+- 2026-10-30: amendment routed: AC1 — the criterion puts the `title` on the element that also holds the hidden words, so a screen reader can read the count twice (blame-history #1, against M054's fix 9007997), and its leading space inside the hidden span is dropped in layout (diff-bug #1); the fix-now items for the repo line test and the README and CHANGELOG wording ride with the amendment.
 
 ## Decisions
 
@@ -108,4 +109,30 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - AC5: README, DESIGN.md and CHANGELOG paragraphs describe the star icon, the count, and the "GitHub Stars" tooltip; a joined-text search finds "8,400 stars" 0 times in each.
 - AC6: `pnpm test` 25 files passed, 1547 tests passed, 6 skipped; `pnpm check` checked 272 entries, 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed; no principle changed, so no impact report; the generic profile names no toolchain checks.
-
+- spawned: diff-bug, blame-history, prior-review, ripple
+- blame-history #1: the `title` on the span that also holds the hidden words lets a screen reader read the count twice, which M054's review fixed (9007997) by putting the `title` on an `aria-hidden` part and keeping one hidden copy — amendment return: AC1 mandates this structure, so the criterion is wrong (routed below)
+- diff-bug #1: the leading space inside the absolutely positioned `.visually-hidden` span is dropped in layout (the built page's `innerText` of the span reads "GitHub Stars"), so a screen reader can read "1,234GitHub Stars" — amendment return with blame-history #1: the new AC1 puts the whole phrase in the hidden span, so no leading space is needed
+- diff-bug #2: the `title` repeats the hidden words — amendment return with blame-history #1
+- prior-review #1: the `title` repeats the hidden words (M054) — amendment return with blame-history #1
+- diff-bug #6: the head test accepts any icon in the repo line — fix now, with the AC1 amendment (the repo line test checks the star path)
+- blame-history #3: no test checks the star path — fix now, with diff-bug #6
+- ripple #1: README and CHANGELOG say the hidden text adds "GitHub Stars", but a count of 1 gives "GitHub Star" — fix now, with the AC1 amendment, which rewrites both sentences
+- prior-review #3: the CHANGELOG rewrite left short lines — fix now, with the AC1 amendment's rewrap
+- prior-review #4: the README rewrite left short lines — fix now, with the AC1 amendment's rewrap
+- diff-bug #11: README and CHANGELOG short lines — fix now, with prior-review #3 and #4
+- blame-history #5: CHANGELOG and README short lines — fix now, with prior-review #3 and #4
+- diff-bug #4: no test checks that the forced-colors block comes after the base star rule, which it must to win at equal specificity — fix now (the test compares their positions; moving the block up turned it red)
+- diff-bug #5: the CSS test's name leaves out the nowrap check — fix now (renamed)
+- diff-bug #7: the comment above the repo line test repeats what its column names show — fix now, with the AC1 amendment's test rewrite
+- ripple #2: DESIGN.md says `Icon.astro` draws the line icons, and it now also holds the filled star — fix now (DESIGN.md names the star and where it is filled)
+- blame-history #4: `Icon.astro`'s comment does not say that the star draws as an outline outside the repo line — fix now (the comment says so)
+- prior-review #2: the star's forced-colors fill has no browser view, only a source test — follow-up: new parked row "View the star in forced colors mode", promote when a user reports it, since no documented use runs the site in forced colors and the rule follows M063's tested pattern
+- diff-bug #3: a `title` on a span gives no tooltip to keyboard or touch users — reject, planned change: the user asked for the icon in place of the word, with a hover tooltip
+- blame-history #2: the visible word "stars" is gone, so sighted users who do not hover lose the label — reject, planned change (as diff-bug #3)
+- prior-review #5: README and CHANGELOG call #b07d00 "gold" — reject, planned change: the question set chose it as the darker gold
+- prior-review #6: README writes "★ 8,400" while the page draws an SVG — reject, false: the same sentence says the star is an icon, and "★" shows what a reader sees
+- ripple #3: "★ 8,400" in README and CHANGELOG — reject, false (as prior-review #6)
+- diff-bug #8: the no-stars assertion sits inside an `if` — reject, style
+- diff-bug #9: the 1,234 and 0 rows share the plural branch — reject, false: the reviewer finds both rows in scope (the guard on 0 and the grouping on 1,234)
+- diff-bug #10: the template formats the count with `toLocaleString` apart from `starsText` — reject, style: one call, the same format, and the test pins both
+- diff-bug #12: the star path is Feather's polygon while the other paths look like Lucide's — reject, false: Lucide's paths come from Feather under the same permissive terms, and the repo credits neither, as before

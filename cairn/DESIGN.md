@@ -382,7 +382,8 @@ exception is a report that is abuse.
   `site/src/data.ts` holds the template helpers, among them `homeOrder`,
   `majorStart`, `shortLanguages`, and `monthYear` for the home table, and
   `compatMajors`, `majorReport`, and `startWords` for the plugin page's
-  table (M054). `site/src/components/Icon.astro` draws the line icons.
+  table (M054). `site/src/components/Icon.astro` draws the line icons and
+  the star, which `Base.astro` fills only inside `[data-repo-stars]` (M064).
   `site/src/layouts/Base.astro` holds the color and size tokens for both
   color schemes, the shared rules, the top bar, and the footer. Added M007;
   pills and descriptions M015; languages M024; version buttons M037; status

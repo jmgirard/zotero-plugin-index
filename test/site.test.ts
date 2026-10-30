@@ -1753,9 +1753,13 @@ describe("the site colors", () => {
     expect(layout).toMatch(/\.button\[data-report="broken"\] \{\s*background: var\(--bad-bg\);\s*color: var\(--bad\);\s*\}/);
   });
 
-  test("fills the plugin page's star with --star and no stroke, and with CanvasText in forced colors", () => {
-    expect(layout).toMatch(/\n {6}\[data-repo-stars\] \.icon \{[^}]*fill: var\(--star\);[^}]*stroke: none;/);
-    expect(layout).toMatch(/@media \(forced-colors: active\) \{\s*\[data-repo-stars\] \.icon \{\s*fill: CanvasText;/);
+  test("fills the plugin page's star with --star and no stroke, with CanvasText in forced colors, and keeps it on one line", () => {
+    const base = /\n {6}\[data-repo-stars\] \.icon \{[^}]*fill: var\(--star\);[^}]*stroke: none;/.exec(layout);
+    const forced = /@media \(forced-colors: active\) \{\s*\[data-repo-stars\] \.icon \{\s*fill: CanvasText;/.exec(layout);
+    expect(base).not.toBeNull();
+    expect(forced).not.toBeNull();
+    // Both rules have one specificity, so the forced-colors fill wins only when it comes later.
+    expect(forced!.index).toBeGreaterThan(base!.index);
     expect(layout).toMatch(/\[data-repo-stars\] \{\s*white-space: nowrap;/);
   });
 
