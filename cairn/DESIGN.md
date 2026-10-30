@@ -91,7 +91,11 @@ home, the name with an "Archived" badge for an archived repository, a
 repo line, the description, and links with icons. For a repo URL of the
 form `https://github.com/<owner>/<repo>` (`githubRepo`), the repo line
 links the owner's GitHub page and `<owner>/<repo>` and adds the
-`upstream.stars` count when the data has one (M061). The links are: the
+`upstream.stars` count when the data has one (M061). The count shows as a
+star icon filled with `--star` and the number, in an `aria-hidden` span
+whose `title` gives the count and its words (`starsText`); a
+`.visually-hidden` span after it gives the same words to screen readers,
+as M054 does for the declared marks (M064). The links are: the
 `.xpi` file (`upstream.xpiUrl`, only when it passes `safeHref`, in the
 same plain button style as the others, D-029), the source, and the
 releases; a repo URL that fails `safeHref` shows as plain text. A
@@ -379,7 +383,8 @@ exception is a report that is abuse.
   `site/src/data.ts` holds the template helpers, among them `homeOrder`,
   `majorStart`, `shortLanguages`, and `monthYear` for the home table, and
   `compatMajors`, `majorReport`, and `startWords` for the plugin page's
-  table (M054). `site/src/components/Icon.astro` draws the line icons.
+  table (M054). `site/src/components/Icon.astro` draws the line icons and
+  the star, which `Base.astro` fills only inside `[data-repo-stars]` (M064).
   `site/src/layouts/Base.astro` holds the color and size tokens for both
   color schemes, the shared rules, the top bar, and the footer. Added M007;
   pills and descriptions M015; languages M024; version buttons M037; status

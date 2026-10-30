@@ -423,8 +423,12 @@ describe("the plugin page", () => {
     const { upstream } = record;
     const repoUrl = upstream?.repoUrl ?? record.repoUrl;
     const github = githubRepo(repoUrl);
-    const stars = upstream?.stars !== undefined ? `<span aria-hidden="true">·</span><span data-repo-stars>${starsText(upstream.stars)}</span>` : "";
-    expect(head?.[1]).toBe(
+    const stars =
+      upstream?.stars !== undefined
+        ? `<span aria-hidden="true">·</span><span data-repo-stars><span aria-hidden="true" title="${starsText(upstream.stars)}"><svg> ` +
+          `${upstream.stars.toLocaleString("en")}</span><span class="visually-hidden">${starsText(upstream.stars)}</span></span>`
+        : "";
+    expect(head?.[1]?.replace(new RegExp(ICON, "g"), "<svg>")).toBe(
       `<h1>${escaped(displayName(record))}${archived}</h1>` +
         (github
           ? `<p class="repo-line" data-repo-line>By <a href="https://github.com/${escaped(github.owner)}" data-repo-owner>${escaped(github.owner)}</a>` +
@@ -445,17 +449,25 @@ describe("the plugin page", () => {
     expect(main).not.toMatch(/<header[\s>]/);
   });
 
-  test.each<[string, string, string, string, string]>([
-    ["first-plugin@example.org", "https://github.com/example", "https://github.com/example/first-plugin", "example/first-plugin", "By example · example/first-plugin · 1,234 stars"],
-    ["old-plugin@example.org", "https://github.com/example", "https://github.com/example/old-plugin", "example/old-plugin", "By example · example/old-plugin · 1 star"],
-    ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "https://github.com/example", "https://github.com/example/guid-plugin", "example/guid-plugin", "By example · example/guid-plugin · 0 stars"],
-    ["no-range-plugin@example.org", "https://github.com/example", "https://github.com/example/no-range-plugin", "example/no-range-plugin", "By example · example/no-range-plugin"],
-    ["broken-plugin@example.org", "https://github.com/example", "https://github.com/example/broken-plugin", "example/broken-plugin", "By example · example/broken-plugin"],
-  ])("shows the owner, the repo, and any stars of %s under the name", (id, ownerHref, repoHref, repoText, text) => {
+  test.each<[string, string, string, string, string, string | undefined]>([
+    ["first-plugin@example.org", "https://github.com/example", "https://github.com/example/first-plugin", "example/first-plugin", "By example · example/first-plugin · 1,234", "1,234 GitHub Stars"],
+    ["old-plugin@example.org", "https://github.com/example", "https://github.com/example/old-plugin", "example/old-plugin", "By example · example/old-plugin · 1", "1 GitHub Star"],
+    ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "https://github.com/example", "https://github.com/example/guid-plugin", "example/guid-plugin", "By example · example/guid-plugin · 0", "0 GitHub Stars"],
+    ["no-range-plugin@example.org", "https://github.com/example", "https://github.com/example/no-range-plugin", "example/no-range-plugin", "By example · example/no-range-plugin", undefined],
+    ["broken-plugin@example.org", "https://github.com/example", "https://github.com/example/broken-plugin", "example/broken-plugin", "By example · example/broken-plugin", undefined],
+  ])("shows the owner, the repo, and any stars of %s under the name", (id, ownerHref, repoHref, repoText, visible, words) => {
     const line = /<p class="repo-line" data-repo-line>(.*?)<\/p>/s.exec(page(id))?.[1];
+    const text = (html: string) => unescaped(html.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim();
     expect(/<a href="([^"]*)" data-repo-owner>([^<]*)<\/a>/.exec(line ?? "")?.slice(1)).toEqual([ownerHref, "example"]);
     expect(/<a href="([^"]*)" data-repo-name>([^<]*)<\/a>/.exec(line ?? "")?.slice(1)).toEqual([repoHref, repoText]);
-    expect(unescaped(line!.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim()).toBe(text);
+    expect(text(line!.replace(/<span class="visually-hidden">[^<]*<\/span>/g, ""))).toBe(visible);
+    if (words === undefined) {
+      expect(line).not.toMatch(/data-repo-stars|<svg/);
+    } else {
+      expect(/<span aria-hidden="true" title="([^"]*)">/.exec(line!)?.[1]).toBe(words);
+      expect(/<span class="visually-hidden">([^<]*)<\/span>/.exec(line!)?.[1]).toBe(words);
+      expect(line).toMatch(/<path d="M12 2l3\.09 6\.26L22 9\.27l-5 4\.87 1\.18 6\.88L12 17\.77l-6\.18 3\.25L7 14\.14 2 9\.27l6\.91-1\.01L12 2z">/);
+    }
   });
 
   test.each([
@@ -1682,7 +1694,8 @@ describe("the site colors", () => {
   const darkBlock = /@media \(prefers-color-scheme: dark\) \{\s*:root \{(.*?)\}/s.exec(layout)![1]!;
   const dark = new Map([...light, ...colors(darkBlock)]);
   // Each text token on each surface, and each status token on its own background and on
-  // the surface, at 4.5:1; each mark or icon token on the surface at 3:1.
+  // the surface, at 4.5:1; each mark or icon token on the surface at 3:1, and the star, which
+  // the plugin page head shows on the page background, on both.
   const PAIRS: [string, string, number][] = [
     ...["--text", "--muted", "--link"].flatMap((text) =>
       ["--bg", "--surface", "--hover"].map((surface): [string, string, number] => [text, surface, 4.5]),
@@ -1693,6 +1706,8 @@ describe("the site colors", () => {
     ]),
     ["--faint", "--surface", 3],
     ["--none", "--surface", 3],
+    ["--star", "--bg", 3],
+    ["--star", "--surface", 3],
   ];
 
   test.each([
@@ -1736,6 +1751,16 @@ describe("the site colors", () => {
   test("colors each report button from its verdict's pair", () => {
     expect(layout).toMatch(/\.button\[data-report="works"\] \{\s*background: var\(--ok-bg\);\s*color: var\(--ok\);\s*\}/);
     expect(layout).toMatch(/\.button\[data-report="broken"\] \{\s*background: var\(--bad-bg\);\s*color: var\(--bad\);\s*\}/);
+  });
+
+  test("fills the plugin page's star with --star and no stroke, with CanvasText in forced colors, and keeps it on one line", () => {
+    const base = /\n {6}\[data-repo-stars\] \.icon \{[^}]*fill: var\(--star\);[^}]*stroke: none;/.exec(layout);
+    const forced = /@media \(forced-colors: active\) \{\s*\[data-repo-stars\] \.icon \{\s*fill: CanvasText;/.exec(layout);
+    expect(base).not.toBeNull();
+    expect(forced).not.toBeNull();
+    // Both rules have one specificity, so the forced-colors fill wins only when it comes later.
+    expect(forced!.index).toBeGreaterThan(base!.index);
+    expect(layout).toMatch(/\[data-repo-stars\] \{\s*white-space: nowrap;/);
   });
 
   // A report button's border takes its text color, and WCAG 2.2 asks 3:1 for a control's edge.

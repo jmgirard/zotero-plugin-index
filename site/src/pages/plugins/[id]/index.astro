@@ -65,7 +65,11 @@ const { min, max } = declaredRange(record);
           {upstream?.stars !== undefined && (
             <>
               {" "}
-              <span aria-hidden="true">·</span> <span data-repo-stars>{starsText(upstream.stars)}</span>
+              <span aria-hidden="true">·</span>{" "}
+              <span data-repo-stars>
+                <span aria-hidden="true" title={starsText(upstream.stars)}><Icon name="star" /> {upstream.stars.toLocaleString("en")}</span>{" "}
+                <span class="visually-hidden">{starsText(upstream.stars)}</span>
+              </span>
             </>
           )}
         </p>

@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-30 (M063 done: 4 rows edited, M060 row pruned, 1 le
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M064 | Show the star count with a star icon | planned | — | normal | milestones/M064-star-icon.md |
+| M064 | Show the star count with a star icon | review | — | normal | milestones/M064-star-icon.md |
 | M063 | Fix the language menu arrow and release dates | done | — | normal | milestones/archive/M063-menu-arrow-release-month.md |
 | M062 | Mark full support against released Zotero versions | done | — | normal | milestones/archive/M062-full-support-marks.md |
 | M061 | Show the repo, owner, and stars on plugin pages | done | — | normal | milestones/archive/M061-repo-owner-stars.md |
@@ -47,6 +47,7 @@ _Last hygiene check: 2026-10-30 (M063 done: 4 rows edited, M060 row pruned, 1 le
 - [parked] Keep the v1 data when v2 ships: each Pages deploy replaces the whole site, so a build that moves to `plugins.v2` must keep writing `v1/plugins.json` and its schema for the transition period DESIGN.md promises; promote when a v2 schema is planned (M006 review) — added 2026-10-25 — M006, cairn/DESIGN.md Contract boundary
 - [parked] Stop rereading hosts that keep failing: `pnpm discover` records no refusal from a 429 or 5xx download answer, nor since M045 from a 403 to a GitHub release URL, so a repo whose download host keeps failing takes one of the run's 100 reads every day, newest pushed first; M030 bounds a run's time, not these rereads; promote when discover reports show the same repo refused with a 429 or 5xx answer on several runs in a row (M026 review) — added 2026-10-27 — M026
 - [parked] Drop locale folders that copy another: after M027 a folder whose files copy another folder's text, such as English text under `locale/de/`, still counts as a language; none of the 23 listed multi-language plugins read on 2026-10-27 does this, and `en-GB` copied from `en-US` can be the author's choice; promote when a listed plugin ships such a folder (M027 plan) — added 2026-10-27 — M023, M027
+- [parked] View the star in forced colors mode: the plugin page's star takes `fill: CanvasText` under `@media (forced-colors: active)`, which a source test checks (rule present, after the base rule) but no browser view has shown, as part (5) of "Close small gaps on the site pages" says for the language menu (M064 review); promote when a user reports it — added 2026-10-30 — M064
 <!-- unnumbered ideas; one line each, ordered high → normal → low → parked:
      - [high] short title: detail — added YYYY-MM-DD — links   (no token: normal)
      - [parked] short title: detail; promote when <condition> — added YYYY-MM-DD — links
