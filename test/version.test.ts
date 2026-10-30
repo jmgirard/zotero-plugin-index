@@ -130,6 +130,7 @@ describe("majorSupport", () => {
     [{ strictMaxVersion: "10.0.*" }, "10", undefined, "some"],
     [{ strictMaxVersion: "10.99.99" }, "10", undefined, "all"],
     [{ strictMaxVersion: "9.0.*" }, "9", "10.0.7", "all"],
+    [{ strictMaxVersion: "9.0.6" }, "9", "9.0.7", "some"],
     [{ strictMinVersion: "10.0.3", strictMaxVersion: "10.0.1" }, "10", "10.0.7", "none"],
   ])("reads %j for Zotero %s with the current release %s as %s", (facts, major, zoteroRelease, support) => {
     expect(majorSupport(record(facts), major, zoteroRelease)).toBe(support);

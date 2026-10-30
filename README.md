@@ -969,9 +969,9 @@ reads each plugin
 from GitHub in the same way as `pnpm add-plugin`. It writes one file,
 `dist/v1/plugins.json`. The file has a `schemaVersion` of `1`, a
 `generatedAt` time, an optional `zoteroRelease` from the read below, and
-one record for each entry. Each record keeps the
-upstream facts in an `upstream` block and the overrides of the entry, with
-their reasons, in an `overrides` block. The schema for the file is
+one record for each entry. Each record keeps the upstream facts in an
+`upstream` block and the overrides of the entry, with their reasons, in an
+`overrides` block. The schema for the file is
 [`schemas/plugins.v1.schema.json`](schemas/plugins.v1.schema.json). If the
 GitHub response for the repository says whether it is archived, the
 `upstream` block has an `archived` field, `true` or `false`. The `upstream`
@@ -1018,8 +1018,10 @@ dots, such as `10.0.7`. These cases fail the read:
 - a value that is missing or has another form.
 
 Then the command writes no `zoteroRelease`, and it prints one line that
-starts with `cannot read the Zotero release:` and names the cause. This
-read does not change the exit status.
+starts with `::warning::cannot read the Zotero release:` and names the
+cause. GitHub Actions shows this line as a warning on the run. This read
+does not change the exit status. It writes no record, so it is not a
+build-level failure or a failure of a plugin.
 
 A build-level failure usually comes from the build, not from the plugin.
 A plugin's own download host that is down also gives one. These failures
@@ -1039,8 +1041,9 @@ are build-level:
   `https://github.com/<owner>/<repo>/releases/download/<tag>/<file>`,
 - an HTTP 429 or 5xx answer from any host.
 
-Every other failure, a 404 included, belongs to the plugin. First, the
-command prints one line for each failed record. Next, it prints one line
+Every other failure of a record, a 404 included, belongs to the plugin.
+If the Zotero release read failed, the command first prints its line.
+Then it prints one line for each failed record. Next, it prints one line
 for each failure name, with the number of records that carry it. Then it
 prints the number of records with a build-level failure. If a record
 carries a build-level failure, the command also prints a `::warning::`

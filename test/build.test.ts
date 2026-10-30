@@ -328,7 +328,7 @@ describe("pnpm build", () => {
     const { result, out } = loggedBuild({ ...responses(), [ZOTERO_RELEASE_URL]: { status: 500, text: "Internal Server Error" } });
     expect(result.status).toBe(0);
     expect(result.stdout.split("\n").filter((line) => line.includes("Zotero release"))).toEqual([
-      `cannot read the Zotero release: GET ${ZOTERO_RELEASE_URL} returned HTTP 500`,
+      `::warning::cannot read the Zotero release: GET ${ZOTERO_RELEASE_URL} returned HTTP 500`,
     ]);
     expect(readOutput(out)).not.toHaveProperty("zoteroRelease");
     // The fork entry fails, but not at the build level, so the release read adds none.

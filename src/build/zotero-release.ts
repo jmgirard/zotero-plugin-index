@@ -1,3 +1,4 @@
+import pluginsSchema from "../../schemas/plugins.v1.schema.json" with { type: "json" };
 import type { Fetch } from "../upstream/reader.ts";
 import { withinLimit } from "../upstream/time-limit.ts";
 
@@ -9,8 +10,9 @@ export const ZOTERO_RELEASE_URL = "https://www.zotero.org/download/client/versio
 export const ZOTERO_RELEASE_LIMIT_MS = 30 * 1000;
 
 // A release version such as 10.0.7: numbers joined by dots, so a beta such as 10.0.7-beta
-// does not match. The schema's zoteroRelease pattern is the same.
-const RELEASE_PATTERN = /^[0-9]+(\.[0-9]+)*$/;
+// does not match. It is the schema's zoteroRelease pattern, so a value read here always passes
+// the output check.
+const RELEASE_PATTERN = new RegExp(pluginsSchema.properties.zoteroRelease.pattern);
 
 // Reads the current Zotero release, the answer's linux-x86_64 value. The request sends no
 // token, since zotero.org is not GitHub. A read that fails gives the cause instead.

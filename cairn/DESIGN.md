@@ -351,7 +351,8 @@ exception is a report that is abuse.
   `src/build/zotero-release.ts` reads the current Zotero release from
   zotero.org with no token and a 30 s limit, and the build writes it as the
   top-level `zoteroRelease`; a failed read leaves the field out, prints one
-  line, and does not change the exit code (M062, D-036). The command exits
+  `::warning::` line, and does not change the exit code (M062, D-036). It
+  writes no record, so it is not build-level. The command exits
   once stdout and stderr have flushed, so a host lookup that a limit cut
   cannot hold it open. Added M003;
   schemas and exit rule M006; build-level rule and summary M017; every-record

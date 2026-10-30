@@ -44,8 +44,9 @@ async function main(): Promise<number> {
   }
   // Without zoteroRelease, only the current major's marks fall back to the N.9 rule, until a
   // later build reads it, so this read does not change the exit code. The line comes before
-  // the writes, so a failed write still leaves it in the log.
-  if (built.releaseProblem) console.log(`cannot read the Zotero release: ${oneLine(built.releaseProblem)}`);
+  // the writes, so a failed write still leaves it in the log. GitHub Actions shows it as a
+  // warning on the run.
+  if (built.releaseProblem) console.log(`::warning::cannot read the Zotero release: ${oneLine(built.releaseProblem)}`);
   const written = await writeData(outDir, built.text);
   if (!written.ok) {
     console.error(`write-failed: ${written.message}`);
