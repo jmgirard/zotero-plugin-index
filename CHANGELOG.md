@@ -497,7 +497,9 @@
   language or Zotero filter is on, such browsers still show the filter's
   rows on every page until the script runs.
 - Each plugin page shows a line under the plugin's name, such as "By
-  windingwind · windingwind/zotero-better-notes · 8,400 stars". The owner
+  windingwind · windingwind/zotero-better-notes · ★ 8,400". The star is a
+  gold icon. A tooltip and hidden text for screen readers give the count
+  in words, such as "8,400 GitHub Stars". The owner
   links to the owner's GitHub page, and `<owner>/<repo>` links to the
   repository. The line shows only for a repository URL of the form
   `https://github.com/<owner>/<repo>`. Each `upstream` block of the data

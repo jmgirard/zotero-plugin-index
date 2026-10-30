@@ -150,7 +150,9 @@ The repository line needs an address of the form
 trailing slash is allowed. The line reads `By <owner> · <owner>/<repo>`.
 The owner links to the owner's GitHub page, and `<owner>/<repo>` links to
 the repository. If the data has a star count for the plugin, the line
-ends with it, such as "8,400 stars". For any other address, the page has
+ends with a gold star icon and the count, such as "★ 8,400". A tooltip
+and hidden text for screen readers give the count in words, such as
+"8,400 GitHub Stars". For any other address, the page has
 no repository line. Then come up to
 three links, each with an icon and text: "Download <version> (.xpi)" to the `.xpi`
 file that the index read, "Source" to the repository, and "Releases" to
