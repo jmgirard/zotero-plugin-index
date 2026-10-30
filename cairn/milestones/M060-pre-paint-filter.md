@@ -145,7 +145,7 @@ In a browser that runs the home page's module script and supports `:nth-child(â€
       source note and INDEX line; update DESIGN.md (the home page paragraph,
       the `home-filter.ts` line of the site build list, a Known issues entry
       for the browsers that drop the page rule) and add one CHANGELOG entry.
-- [ ] T5: Run `pnpm test` and `pnpm check`.
+- [x] T5: Run `pnpm test` and `pnpm check`.
 
 ## Work log
 <!-- owner: any skill Â· append-only; one line per entry; absolute dates. -->
@@ -171,6 +171,7 @@ In a browser that runs the home page's module script and supports `:nth-child(â€
 - 2026-10-30: T3 done: site built at 3e5ba2e from the deployed `v1/plugins.json` (272 rows; L=en, Z=7, Z3=8, Z2=7, last page 6), served by the excluded `m060-live` launch entry, with `pre/index.html` the home page less its module script; in the browser pane all 16 AC1 same-row addresses matched the full page's ids and first-row `border-top-width` (0px both), the full page kept no pre-paint style, and all 7 no-row addresses showed 0 rows in the copy; AC2's sandboxed iframes showed 272 of 272 rows with no pre-paint style, for the bare address and `?zotero=7&page=2`; controls: copy `?page=2` against full `?page=3` mismatched, and the copy without the border rule gave its first row 1px.
 - 2026-10-30: T3 size: the built home page is 54,544 bytes at `gzip -9`, and 53,882 with the classic script cut out, so the script adds 662 bytes (the module script's one added line is in both figures).
 - 2026-10-30: T4 done: MDN's `:nth-child` page renders its compat table with JavaScript, so the shelf also holds the compat data file it loads (`css.selectors.nth-child`, version 8.1.7), whose `of_syntax` entry gives Chrome and Edge 111, Firefox 113, Opera 97, and Safari 9; new source note `cairn/references/mdn-nth-child.md` and its INDEX line; DESIGN.md's home page paragraph, `home-filter.ts` line, and a new Known issues entry; one CHANGELOG entry. The simple-english hook flags 8 older CHANGELOG lines (`could`, long sentences) outside this milestone's entry; left as they are.
+- 2026-10-30: T5 done at 2367b08: `pnpm test` 1446 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
 
 ## Decisions
 <!-- owner: implement / review Â· append-only; milestone-local. -->
