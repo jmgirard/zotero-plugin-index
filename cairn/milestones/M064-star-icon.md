@@ -68,7 +68,7 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 
 - [x] T1: Add a filled `star` icon to `Icon.astro`, and the `--star` tokens, star rule, forced-colors rule, and
   `[data-repo-stars]` nowrap rule to `Base.astro`. Add `--star` on `--bg` and `--surface` at 3:1 to `PAIRS` in `test/site.test.ts` (near line 1686).
-- [ ] T2: Change the repo line's end in the plugin page template.
+- [x] T2: Change the repo line's end in the plugin page template.
   Change `starsText` in `site/src/data.ts` to give "1 GitHub Star" and "1,234 GitHub Stars".
   Update the repo line tests in `test/site.test.ts` (near lines 426 and 449 to 451) for the markup and both texts.
 - [ ] T3: Rewrite the README plugin page paragraph, the DESIGN.md plugin page paragraph, and the M061 CHANGELOG entry.
@@ -89,6 +89,7 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - 2026-10-30: criteria audit (full): 10 findings. Taken: the space sits inside the hidden span; AC1 states the page and names the tests as the check; the star sets `stroke: none`; `--star` joins the 3:1 contrast test; the dark view uses a served page; the computed fill is a page property, not a record; a 375 px one-line check; forced colors checked by source read only; AC4 (now AC5) searches for the plain string. No problem in AC2, AC5 (now AC6), or proportion.
 - 2026-10-30: criteria re-audit (full) of the criteria the question set changed: 4 findings, all taken. AC1 names the last two children and defines visible text as the text with the hidden span removed; AC2 checks for no `<svg`; AC3 sets the fill in a `Base.astro` rule, with a `site/src` search, and holds the nowrap rule; AC4 states the computed fills as `rgb()` and checks the longest owner and repo name. Its note that the `title` can make some screen readers read the count twice is accepted: the user asked for the tooltip, and the hidden words keep the count readable where the `title` is not read.
 - 2026-10-30: T1 done: a filled `star` path in `Icon.astro` (a five-point star in the 24-unit box); `--star` in both schemes; `[data-repo-stars] .icon` fills it with no stroke, `CanvasText` in forced colors, and the element does not wrap. The star rules are selected through `[data-repo-stars]` rather than a new icon class, so `Icon.astro` keeps one class. `PAIRS` holds `--star` at 3:1 on `--bg` and `--surface`, and a source test matches the three rules. Planted #e3b341 in light (1.81:1) and `fill: Canvas`: each turned its test red. `pnpm test` 1547 passed, `pnpm check` 0 problems.
+- 2026-10-30: T2 done: the repo line ends `·`, then `<span data-repo-stars title="1,234 GitHub Stars">`, the star, the count, and a `.visually-hidden` " GitHub Stars". `starsWord` in `data.ts` gives the words and `starsText` the count with them, so the `title` and the hidden words share one source. The head test replaces each icon with `<svg>` before its exact match, and the repo line test checks the visible text, the spoken text, the `title`, and no `<svg` without stars. Tests went red first (6 failed); a planted hidden span with no leading space turned the same 6 red. `pnpm test` 1547 passed, `pnpm check` 0 problems.
 
 ## Decisions
 

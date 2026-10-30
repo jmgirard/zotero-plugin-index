@@ -19,6 +19,7 @@ import {
   safeHref,
   shownDescription,
   starsText,
+  starsWord,
   startWords,
   SUPPORT_MARKS as MARKS,
   SUPPORT_WORDS,
@@ -65,7 +66,11 @@ const { min, max } = declaredRange(record);
           {upstream?.stars !== undefined && (
             <>
               {" "}
-              <span aria-hidden="true">·</span> <span data-repo-stars>{starsText(upstream.stars)}</span>
+              <span aria-hidden="true">·</span>{" "}
+              <span data-repo-stars title={starsText(upstream.stars)}>
+                <Icon name="star" /> {upstream.stars.toLocaleString("en")}
+                <span class="visually-hidden">{` ${starsWord(upstream.stars)}`}</span>
+              </span>
             </>
           )}
         </p>
