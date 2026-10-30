@@ -30,7 +30,7 @@ rule for declared marks is in M062.
 
 ## Acceptance criteria
 
-- [ ] AC1: A plugin page's repo URL is `upstream.repoUrl`, else the entry's `repoUrl`. If
+- [x] AC1: A plugin page's repo URL is `upstream.repoUrl`, else the entry's `repoUrl`. If
       that URL matches `^https://github\.com/([^/?#]+)/([^/?#]+?)/?$`, the page head shows a
       repo line after the `h1` and before the description. The line links the owner to
       `https://github.com/<owner>` and `<owner>/<repo>` to the repo URL. If the URL does
@@ -39,21 +39,21 @@ rule for declared marks is in M062.
       entry `repoUrl` matches. They check that a page shows no line for a non-GitHub host,
       an `http:` URL, a URL with an extra path segment, a URL with a query, and a URL with
       a fragment.
-- [ ] AC2: `pnpm build` writes GitHub's `stargazers_count` for each repo it reads as
+- [x] AC2: `pnpm build` writes GitHub's `stargazers_count` for each repo it reads as
       `upstream.stars`. `schemas/plugins.v1.schema.json` defines `stars` as an optional
       integer of at least 0. If GitHub gives no integer of at least 0, the record has no
       `stars`. Tests check the value read from a fixture repo response and a response
       with no usable count. They also check that the schema refuses `-1` and `1.5` for
       `stars`.
-- [ ] AC3: If `upstream.stars` is present, the repo line of AC1 also shows the count as
+- [x] AC3: If `upstream.stars` is present, the repo line of AC1 also shows the count as
       "N stars", or "1 star" for 1. N is written by `toLocaleString("en")`. If `stars` is
       absent, the line shows no count. A site test checks 0, 1, 1234 ("1,234 stars"), and
       a record with no `stars`.
-- [ ] AC4: README's data field list, DESIGN's list of plugin page facts, and one
+- [x] AC4: README's data field list, DESIGN's list of plugin page facts, and one
       CHANGELOG entry describe the repo line and the `stars` field. README and the
       CHANGELOG entry tell consumers that validate against a saved copy of the schema to
       fetch it again.
-- [ ] AC5: `pnpm test` and `pnpm check` pass.
+- [x] AC5: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -101,3 +101,11 @@ rule for declared marks is in M062.
 ## Decisions
 
 ## Review
+
+- AC1 evidence (2026-10-30, branch head aea6794): verbose Vitest run of `test/site.test.ts` passes "opens the main content of %s …" for all 13 fixture records (the expected head holds the repo line after the `h1` and before the description), "shows the owner, the repo, and any stars of %s under the name" for first, old, guid, no-range, and the broken failure record (entry `repoUrl` fallback), and "shows no repo line for …" for an extra path segment, an `http:` URL, a non-GitHub host on a failure record, a URL with no scheme, a query after the repo, a query after the owner, and a fragment; `githubRepo` in `site/src/data.ts:194` uses the AC1 pattern.
+- AC2 evidence (2026-10-30): `test/upstream.test.ts` passes "returns the facts of a plugin that meets the bar" (`stars: 8400` from the fixture's `stargazers_count`) and "reads a repo whose star count is %s" for 0 → 0 and absent, -1, 1.5, "12" → no `stars`; `test/build.test.ts` passes "writes the star count, and the schema takes an upstream with or without one and refuses -1 and 1.5" (`must be >= 0`, `must be integer`); `schemas/plugins.v1.schema.json` defines `stars` as optional integer, minimum 0.
+- AC3 evidence (2026-10-30): the "shows the owner, the repo, and any stars" cases pass with literal text "By example · example/first-plugin · 1,234 stars" (1234), "… · 1 star" (old, 1), "… · 0 stars" (guid, 0), and "By example · example/no-range-plugin" (no `stars`); `starsText` uses `toLocaleString("en")`.
+- AC4 evidence (2026-10-30): README.md:139-147 (plugin page paragraph: the repo line, its URL form, the star count) and README.md:252-256 (`stars` field, "fetch the schema again"); cairn/DESIGN.md:31-32 (facts list) and :89-93 (plugin page paragraph); CHANGELOG.md:499-507 (one Unreleased entry, with "fetch any saved copy of `schemas/plugins.v1.schema.json` again").
+- AC5 evidence (2026-10-30): `pnpm test` 25 files passed, 1 skipped; 1465 tests passed, 6 skipped. `pnpm check`: 272 entries, 0 problems.
+- Consistency gate (2026-10-30): `cairn_validate.py` all checks passed; no DESIGN principle changed, so no `cairn_impact` run; the generic profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
