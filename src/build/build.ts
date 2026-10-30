@@ -20,9 +20,9 @@ export interface Override {
 export interface PluginRecord {
   id: string;
   repoUrl: string;
-  // `xpiUrl` addresses the XPI file that the reader read; data written before the build
-  // wrote it has none.
-  upstream?: UpstreamFacts & { xpiUrl?: string };
+  // `xpiUrl` addresses the XPI file that the reader read, and `xpiSha256` is the SHA-256 of its
+  // bytes, the one the start plan names; data written before the build wrote them has none.
+  upstream?: UpstreamFacts & { xpiUrl?: string; xpiSha256?: string };
   // The counted user reports on the version in upstream, by Zotero major. Every record with
   // upstream that the build writes has it; data written before reports existed has none.
   reports?: ReportCount[];
@@ -56,6 +56,14 @@ export interface StartPlanItem {
   strictMaxVersion?: string;
   xpiUrl: string;
   sha256: string;
+  // The `started` results of the deployed data that `pnpm carry-start-results` reuses for this
+  // XPI, one for each Zotero version, ordered by version. Absent when it reuses none.
+  carried?: CarriedResult[];
+}
+
+export interface CarriedResult {
+  zotero: string;
+  result: "started";
 }
 
 export interface StartPlan {
@@ -280,7 +288,7 @@ async function readRecord(
 ): Promise<Pick<PluginRecord, "upstream" | "failure"> & { buildLevel?: boolean; xpi?: XpiRead }> {
   try {
     const read = await withinLimit(readMs, (signal) => readUpstream(repoUrl, fetch, { signal }));
-    if (read.ok) return { upstream: { ...read.facts, xpiUrl: read.xpi.url }, xpi: read.xpi };
+    if (read.ok) return { upstream: { ...read.facts, xpiUrl: read.xpi.url, xpiSha256: read.xpi.sha256 }, xpi: read.xpi };
     return { failure: { name: read.failure, message: read.message }, buildLevel: read.buildLevel };
   } catch (error) {
     // The reader names each problem it knows. Anything else is a bug or a surprise, and

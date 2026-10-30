@@ -1,13 +1,13 @@
 # M059: Reuse start results for unchanged XPIs
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the published data gets a field, and the site and README change what they say about start timing
-- **Branch/PR:** —
+- **Branch/PR:** m059-carry-start-results
 
 ## Goal
 
@@ -41,7 +41,7 @@ If a recent `started` result exists for the same XPI file and tested Zotero rele
 
 ## Tasks
 
-- [ ] T1: Publish `upstream.xpiSha256`. Change the record type and writer in `src/build/build.ts` (near lines 23 and 283), add the v1 schema field, and add the build and schema tests.
+- [x] T1: Publish `upstream.xpiSha256`. Change the record type and writer in `src/build/build.ts` (near lines 23 and 283), add the v1 schema field, and add the build and schema tests.
 - [ ] T2: Write `src/start-test/carry.ts`, with the pure carry selection and `retestDay`. Add the AC3 tests.
 - [ ] T3: Write the carry command, `pnpm carry-start-results --plan <file> --data <file> --previous <url>`. It fetches with a time limit and a 16 MiB cap, keeps the AC4 fallbacks, and rewrites the plan through a temporary file. Add tests with a fixture fetch.
 - [ ] T4: Add the carry step to `build.yml` after `pnpm build` and before the `start-plan` upload. Add its check to `test/workflows.test.ts`.
@@ -67,6 +67,8 @@ If a recent `started` result exists for the same XPI file and tested Zotero rele
 - 2026-10-30: plan gate chose the deployed Pages data as the source of earlier results over a previous run's artifact, because an artifact read needs `actions: read`, expires, and can come from a run that did not deploy. The Actions cache was out under D-010 and D-024. Falsified by evidence that the deployed data can change by a path other than the site job.
 - 2026-10-30: plan gate chose a fixed weekly re-test day per entry over re-testing by result age, because age needs a date field, which the user declined, and a fixed day spreads the starts. Falsified by a run log in which carried results hide a start-test harness change for more than 7 days.
 - 2026-10-30: plan gate chose to write carried results into the start plan in the build job over a carry inside the start-test jobs, because those jobs run plugin code and the site job must merge carried results from a source plugin code cannot write. Falsified by evidence that plugin code can replace the `start-plan` artifact.
+- 2026-10-30: implement started on branch m059-carry-start-results.
+- 2026-10-30: T1 done: `readRecord` writes `xpiSha256` beside `xpiUrl`, the schema adds it with pattern `^[0-9a-f]{64}$`. The fixture zips XPIs with the current time, so `mixed-failures.plugins.json` holds `PLAN_SHA256`, which the test fills from the plan. The `StartPlanItem.carried` type rides in this commit for T2. pnpm test 1332 passed, pnpm check 0 problems.
 
 ## Decisions
 

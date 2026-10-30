@@ -120,6 +120,11 @@
           "description": "The browser_download_url that GitHub gives for the first .xpi asset of the release whose manifest was read: the author's own file, of which the index keeps no copy. The author can replace the file at this address later. Absent in data written before the build wrote it.",
           "type": "string"
         },
+        "xpiSha256": {
+          "description": "The SHA-256 of the bytes that the build read from xpiUrl, in lowercase hexadecimal. A file downloaded later from xpiUrl that has another SHA-256 is not the file the build read and the start tests started. Absent in data written before the build wrote it.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
         "prerelease": {
           "description": "Whether GitHub marks the release whose manifest was read as a prerelease. The reader reads the newest stable release with an .xpi first, and a prerelease only when no stable release has an .xpi or the stable release is not a Zotero 7+ build.",
           "type": "boolean"
