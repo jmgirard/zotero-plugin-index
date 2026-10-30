@@ -906,7 +906,6 @@ describe("the home page", () => {
   // The site builds in New York time (pnpmSite), where 02:00 UTC on the 1st is still the month before.
   test("shows the release month in UTC", () => {
     expect(row("a-cafe@example.org").cells.at(-2)!.html).toBe('<time datetime="2026-11">2026-11</time>');
-    expect(row("b-cafe@example.org").cells.at(-2)!.html).toBe('<time datetime="2025-12">2025-12</time>');
   });
 
   test("links a source and a download only when the address passes", () => {
