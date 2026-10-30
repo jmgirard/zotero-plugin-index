@@ -24,17 +24,17 @@ Bot branch names and addresses written `<owner>/<repo>` elsewhere in README and 
 
 ## Acceptance criteria
 
-- [ ] AC1: On every fixture page with a repo line (the head test), and on the five records of the repo line test in
+- [x] AC1: On every fixture page with a repo line (the head test), and on the five records of the repo line test in
   `test/site.test.ts`, the `data-repo-name` link text is the repo name alone, such as "first-plugin".
   It links to the repo URL, as before.
   The `data-repo-owner` link still reads the owner and links to `https://github.com/<owner>`.
   The line's text with the `.visually-hidden` span removed reads, for example, "By example · first-plugin · 1,234".
   The head test and the repo line test check this.
-- [ ] AC2: README's plugin page paragraph, DESIGN.md's plugin page paragraph, and the M061 CHANGELOG entry give the
+- [x] AC2: README's plugin page paragraph, DESIGN.md's plugin page paragraph, and the M061 CHANGELOG entry give the
   line's form as "By <owner> · <repo>" and say that the repo name links to the repository.
   In those three passages, a joined-text search finds `<owner>/<repo>` only inside `https://github.com/<owner>/<repo>`.
   It finds no `windingwind/zotero-better-notes`.
-- [ ] AC3: `pnpm test` and `pnpm check` pass.
+- [x] AC3: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -71,3 +71,10 @@ Bot branch names and addresses written `<owner>/<repo>` elsewhere in README and 
 ## Decisions
 
 ## Review
+
+- 2026-10-30, branch head 0e03afa, default branch not moved since the cut.
+- AC1: the plugin page tests pass (96, including 19 "opens the main content" pages and the 5 "shows the owner" rows); the head test matches each fixture's line exactly with `data-repo-name>` + `github.repo`, and the rows pin the link text ("first-plugin"), the repo URL, the owner link `https://github.com/example`, and the visible text ("By example · first-plugin · 1,234"). Built Abbreviation Helper page: "By Cydoimos · zotero-abbreviation-helper · 3", the repo name linking the repo URL.
+- AC2: README (lines 150-151), DESIGN.md (lines 92-94), and the CHANGELOG entry (lines 499-505) give "By <owner> · <repo>" and say the repo name links to the repository; a joined-text search of each passage, with `https://github.com/<owner>/<repo>` removed, finds `<owner>/<repo>` and `windingwind/zotero-better-notes` 0 times.
+- AC3: `pnpm test` 25 files, 1547 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed; no principle changed; the generic profile names no toolchain checks.
+
