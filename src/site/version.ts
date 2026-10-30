@@ -95,8 +95,9 @@ export const ZOTERO_MAJORS = ["7", "8", "9", "10"];
 export type MajorSupport = "all" | "some" | "none";
 
 // The newest release of each Zotero major before the current one, from the "Changes in"
-// headings of https://www.zotero.org/support/<N>.0_changelog on 2026-10-30. Add the
-// current major here when Zotero ships the next one.
+// headings of https://www.zotero.org/support/<N>.0_changelog on 2026-10-30
+// (cairn/references/zotero-changelogs.md). Add the current major here when Zotero ships the
+// next one.
 export const LAST_RELEASES: Record<string, string> = { "7": "7.0.32", "8": "8.0.5", "9": "9.0.6" };
 
 // The known newest release of Zotero major N: `zoteroRelease`, the current release that the

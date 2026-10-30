@@ -1,6 +1,6 @@
 # M062: Mark full support against released Zotero versions
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -114,6 +114,9 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: T3 done: the home page and plugin page read `zoteroRelease` from `loadData` and pass it to `majorSupport`; `rowMajorsAttribute` takes it as a second argument. `supportText` takes the support already computed, so it needed no change. The site tests build a two-record data set twice (10.0.7 and none) in a new describe and leave the shared fixture as it was; with the `site/` changes stashed, the 10.0.7 test fails.
 - 2026-10-30: T4 done: `newestRelease` split into `knownRelease` (undefined with no known release) and the N.9 fallback, so the About page can say "no release known"; the About page lists one `data-newest-releases` item per `ZOTERO_MAJORS` entry; the legend and About mark lines now say "every release of that Zotero version, up to its newest release". README (The site, Using the data, Building the data), DESIGN (marks rule, data sources, function family, architecture), one CHANGELOG entry, and D-036 updated. The README's two old lint hits (lines 233 and 810) and CHANGELOG's eight are in earlier text and were left.
 - 2026-10-30: T5 done: `pnpm test` (1541 passed, 6 skipped) and `pnpm check` (272 entries, 0 problems) pass. Hand check in the browser pane: the site built from the deployed data (272 records, no `zoteroRelease`) with `zoteroRelease` set to 10.0.7, the value the zotero.org address gave today. Zotero 10 reads all for 206 plugins, against 135 under the old rule; AIdea (6.999 to 10.0.*) shows ✓ for 7 to 10 on its home row and "Declares all of Zotero 10" on its page; the About page lists 7.0.32, 8.0.5, 9.0.6, and 10.0.7; `?zotero=10` shows 211 of 272; no console errors.
+- 2026-10-30: claim audit: 61 claims read, 4 corrected — src/build/cli.ts (the N.9 fallback covers only the current major), src/build/zotero-release.ts (the answer's shape, dated), src/site/version.ts (cites the new source note), test/site.test.ts (describe comment); the same Opus reader re-read the 4 and found them true. Its own spawned-CLI test runs failed in its sandbox, including old tests; in this session all 1541 pass.
+- 2026-10-30: added source note `cairn/references/zotero-changelogs.md` and its INDEX line, since the repo now relies on the three changelog pages and the release address; shelf copies saved under `cairn/references/sources/`.
+- 2026-10-30: status set to review; `pnpm test` (1541 passed, 6 skipped) and `pnpm check` (0 problems) pass.
 
 ## Decisions
 

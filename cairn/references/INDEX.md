@@ -12,3 +12,4 @@ bullet lines.
 - mdn-nth-child.md: which browsers read the `of <selector>` form of `:nth-child()` (MDN and its compat data)
 - microsoft-naming-a-file.md: which file and directory names Windows refuses (Microsoft's naming rules)
 - mozilla-toolkit-version.md: how Zotero and Firefox order version strings (MDN's legacy version format)
+- zotero-changelogs.md: the newest release of each Zotero major and the release address's answer (zotero.org)

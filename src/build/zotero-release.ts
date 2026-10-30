@@ -1,7 +1,8 @@
 import type { Fetch } from "../upstream/reader.ts";
 import { withinLimit } from "../upstream/time-limit.ts";
 
-// The address that answers with the current Zotero release for each platform, as JSON.
+// The address that answers with the current Zotero release for each platform, as a JSON
+// object keyed by platform, such as "linux-x86_64" (observed 2026-10-30).
 export const ZOTERO_RELEASE_URL = "https://www.zotero.org/download/client/version?channel=release";
 
 // The longest the read of the current Zotero release may take.

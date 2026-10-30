@@ -1462,9 +1462,9 @@ describe("the built site", () => {
 });
 
 describe("the newest Zotero release", () => {
-  // Two records read from the same repo as first-plugin, with no overrides: one declares up to
-  // 10.0.*, one from 10.1. Each set of data is built once with zoteroRelease 10.0.7 and once
-  // with none.
+  // Two records read from the same repo as first-plugin, with no overrides: one declares 7.0 to
+  // 10.0.*, one 10.1 or newer. The same two records are built twice: once with zoteroRelease
+  // 10.0.7 and once with none.
   const base = records.find((record) => record.id === "first-plugin@example.org")!;
   const UP_TO = "up-to-10-0@example.org";
   const FROM = "from-10-1@example.org";
