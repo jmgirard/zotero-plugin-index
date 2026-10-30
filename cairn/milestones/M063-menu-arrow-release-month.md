@@ -1,6 +1,6 @@
 # M063: Fix the language menu arrow and release dates
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -75,6 +75,8 @@ in M062.
 - 2026-10-30: T2 done: built the site from the deployed plugins.json and served it as `m063-look` (port 4337). Computed CSS at 1280 and 375 px, light and dark: padding-left 8px, arrow layer at `calc(100% - 8px) 50%`, color `rgb(28, 28, 26)` light and `rgb(236, 236, 232)` dark; the four screenshots each show one arrow inside the box. A new style test checks `appearance: none`, both gradients in currentColor, the inset equal to the left padding, and the forced-colors fallback; it failed with the inset planted at `--space-5`. Forced colors not viewed in the pane.
 - 2026-10-30: T3 done: DESIGN's home table paragraph and README's row description state the UTC `YYYY-MM` month; two CHANGELOG entries under Unreleased cover the month form and the drawn menu arrow. The simple-english hook flagged README lines 234 and 811, which this branch does not touch; left as they are.
 - 2026-10-30: T4 done: `pnpm test` 1546 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
+- 2026-10-30: claim audit: 13 claims read, 0 corrected — CHANGELOG.md, README.md, site/src/data.ts, site/src/layouts/Base.astro, test/site.test.ts
+- 2026-10-30: the audit reader noted that the style test's forced-colors check dropped the `@media` wrapper; the test now matches the `(forced-colors: active)` block in the layout source, and it failed with that query planted as `prefers-contrast: more`. `pnpm test` 1546 passed, `pnpm check` 0 problems. Status set to review.
 
 ## Decisions
 

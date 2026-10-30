@@ -1641,7 +1641,7 @@ describe("the site styles", () => {
     // The last layer is the arrow's right half, so its offset is the arrow's inset.
     expect(drawn.get("background-position")!.split(",").at(-1)!.trim()).toBe(`right ${left} top 50%`);
     // Forced colors drop gradients, so there the browser draws its own arrow.
-    expect(menu.at(-1)!.declarations).toContainEqual(["appearance", "auto"]);
+    expect(layout).toMatch(/@media \(forced-colors: active\) \{\s*\[data-language-filter\] \{[^}]*appearance: auto;/);
   });
 
   test("leaves styles out of every other .astro file", () => {
