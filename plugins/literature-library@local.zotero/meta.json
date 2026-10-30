@@ -1,0 +1,8 @@
+{
+  "id": "literature-library@local.zotero",
+  "name": "Literature Library",
+  "description": "MinerU Markdown, local embeddings, and layered literature access for agents.",
+  "homepage": "https://github.com/lixvqing01/zotero-literature-library",
+  "repoUrl": "https://github.com/lixvqing01/zotero-literature-library",
+  "updateUrl": "https://raw.githubusercontent.com/lixvqing01/zotero-literature-library/main/updates.json"
+}
