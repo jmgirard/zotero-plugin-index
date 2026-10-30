@@ -29,8 +29,9 @@ const { plugins } = loadData();
   <div class="hero">
     <h1>Plugins for Zotero 7 and later</h1>
     <p class="intro">
-      A daily build reads these facts from each plugin's GitHub repository and releases, and starts each plugin in the
-      tested Zotero releases that its manifest's range covers.
+      A daily build reads these facts from each plugin's GitHub repository and releases. It starts each plugin in the
+      tested Zotero releases that its manifest's range covers, and starts it again for a new plugin file, after a
+      failed start, and once a week.
     </p>
   </div>
   <div class="toolbar">
@@ -186,7 +187,7 @@ const { plugins } = loadData();
     <li><span class="mark" data-support="some" aria-hidden="true">{MARKS.some}</span> Declares part of it</li>
     <li><span class="mark" data-support="none" aria-hidden="true">{MARKS.none}</span> Declares none of it</li>
     <li>No mark: the plugin declares no range</li>
-    <li><span class="start" data-start="started" aria-hidden="true">●</span> Started in the daily start test</li>
+    <li><span class="start" data-start="started" aria-hidden="true">●</span> Started in the start test</li>
     <li><span class="start" data-start="start-error" aria-hidden="true">✕</span> Failed to install, start, or answer in the start test</li>
     <li data-legend-note>
       A declared range comes from the plugin's manifest and the index's overrides, not from a test. A start test does not

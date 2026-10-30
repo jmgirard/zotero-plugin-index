@@ -47,7 +47,7 @@ If a recent `started` result exists for the same XPI file and tested Zotero rele
 - [x] T4: Add the carry step to `build.yml` after `pnpm build` and before the `start-plan` upload. Add its check to `test/workflows.test.ts`.
 - [x] T5: Make `parsePlan` read and check `carried`. Make `startTests` skip carried pairs and count them in its summary. Add tests.
 - [x] T6: Make `addResults` merge carried results and drop job results for carried pairs as `carried`. Add the AC6 tests and the chained test.
-- [ ] T7: Update README, `site/src/pages/about.astro`, `site/src/pages/index.astro`, the schema's `startTests` text, DESIGN.md, and CHANGELOG.md. Write a D-entry on reading the deployed data for the carry. It annotates D-023 and D-024, and states that a forged `started` on an unchanged XPI can last until the entry's next re-test day.
+- [x] T7: Update README, `site/src/pages/about.astro`, `site/src/pages/index.astro`, the schema's `startTests` text, DESIGN.md, and CHANGELOG.md. Write a D-entry on reading the deployed data for the carry. It annotates D-023 and D-024, and states that a forged `started` on an unchanged XPI can last until the entry's next re-test day.
 - [ ] T8: Run the verify commands. Dispatch `Build data` on the branch once, to check that the changed workflow runs. The deployed data has no hashes yet, so that run carries nothing.
 
 ## Work log
@@ -75,6 +75,7 @@ If a recent `started` result exists for the same XPI file and tested Zotero rele
 - 2026-10-30: T5 note: its `start-tests.ts` edit went through a python script, not the Edit tool, against tracking-rules' file-edit rule; the commit holds the same diff, and later edits use Edit.
 - 2026-10-30: T6 done: `addResults` adds a plan item's carried `started` results for a `--tested` version in its range, only for a record with upstream, and drops a job result for a carried pair as `carried`; the outcome and the CLI line count carried results. The chained test sits in `test/start-tests.test.ts`, which holds the Zotero stand-in, and runs `carryPlan`, `startTests`, and `addResults` as functions. Planted defect (drop rule removed) turned its test red. pnpm test 1377 passed.
 - 2026-10-30: T6 fix: AC6 names the commands, so the chained test now spawns `pnpm carry-start-results`, `pnpm start-tests`, and `pnpm add-start-results` under the fetch preload, with schema-valid records, in place of calling their functions.
+- 2026-10-30: T7 done: README (version cells, `xpiSha256` paragraph with the fetch-again notice, the start rule and the forged-carry cost, `pnpm carry-start-results`, start-tests and add-start-results rules, daily build job 1), About page `data-fact="start-when"` paragraph, home intro and legend ("Started in the start test", with its site test), the schema's `startTests` text, DESIGN.md (contract item 5, start-test family, workflow), CHANGELOG entry, and D-035. D-035 went in through a shell append, not the Edit tool. One README line that an Edit joined was rewrapped. Browser pane on a site built from the deployed data shows the new About paragraph, intro, and legend. pnpm test 1377 passed, pnpm check 0 problems.
 
 ## Decisions
 

@@ -477,3 +477,14 @@
   parameter, and Back returns to the address before. A filter change goes
   back to page 1, and the count still covers every page. Without
   JavaScript the home page still lists every plugin.
+- Each `upstream` block of the data file has a new optional `xpiSha256`
+  field: the SHA-256 of the XPI bytes that the build read from `xpiUrl`.
+  The schema rejects fields that it does not define, so fetch any saved
+  copy of `schemas/plugins.v1.schema.json` again. If an XPI's SHA-256 is
+  unchanged, the daily build now reuses its `started` result from the
+  published data, and the start-test jobs skip that start. It starts
+  a plugin again for a new XPI file, a tested release with no earlier
+  result, and a result other than `started`. It also starts each plugin
+  again on one day of each week. The new `pnpm carry-start-results`
+  command writes the reused results into the start plan, as the README
+  says.
