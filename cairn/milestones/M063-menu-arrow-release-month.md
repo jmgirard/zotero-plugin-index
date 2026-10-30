@@ -28,18 +28,18 @@ in M062.
 
 ## Acceptance criteria
 
-- [ ] AC1: The home table's "Latest release" cell shows the UTC year and month of
+- [x] AC1: The home table's "Latest release" cell shows the UTC year and month of
       `latestReleaseDate` as `YYYY-MM`. Its `<time datetime>` holds the same text. A site
       test builds in America/New_York. It checks that a fixture date of
       `2026-11-01T02:00:00Z` shows `2026-11` in both places.
-- [ ] AC2: The language menu sets `appearance: none` and draws one down arrow from page
+- [x] AC2: The language menu sets `appearance: none` and draws one down arrow from page
       CSS in `currentColor`. In the computed CSS, the arrow's inset from the menu's right
       edge equals the menu's left padding, within 1 px. Screenshots in the browser pane at
       1280 px and 375 px wide, in the light and dark color schemes, show one arrow inside
       the box.
-- [ ] AC3: DESIGN's and README's text on the release month and one CHANGELOG entry
+- [x] AC3: DESIGN's and README's text on the release month and one CHANGELOG entry
       describe the `YYYY-MM` form.
-- [ ] AC4: `pnpm test` and `pnpm check` pass.
+- [x] AC4: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -81,3 +81,9 @@ in M062.
 ## Decisions
 
 ## Review
+
+- AC1 evidence (2026-10-30, head 5e12a81): `test/site.test.ts` "shows the release month in UTC" passes; `pnpmSite` builds with `TZ: "America/New_York"`, the cafe-tools fixture date is `2026-11-01T02:00:00Z`, and the test expects `<time datetime="2026-11">2026-11</time>`. The per-row test checks every fixture row's cell as `slice(0, 7)` in both places. The live-data build showed `<time datetime="2026-07">2026-07</time>` in the first row.
+- AC2 evidence (2026-10-30, site rebuilt from 5e12a81 with the deployed plugins.json, served as `m063-look`): at 1280 px light and dark and 375 px light and dark, computed `appearance` is `none`, `background-image` holds 2 linear gradients, color is `rgb(28, 28, 26)` light and `rgb(236, 236, 232)` dark (the gradients use currentColor), and the arrow's inset from the menu's right edge is 9 px against a left inset of 9 px (8 px padding plus 1 px border on each side), a difference of 0. The four screenshots each show one down arrow inside the box. The style test "draws the language menu's arrow in currentColor, inset from the right by the left padding" passes.
+- AC3 evidence (2026-10-30): `cairn/DESIGN.md:132` says the month is the UTC year and month as `YYYY-MM` with the same `<time datetime>`; `README.md:20-21` says the year and month in UTC, such as `2026-09`; `CHANGELOG.md:519-521`, under `## Unreleased`, gives the `2026-09` form in place of `Sep 2026`.
+- AC4 evidence (2026-10-30, head 5e12a81): `pnpm test` exit 0, 25 files passed and 1 skipped, 1546 tests passed and 6 skipped; `pnpm check` checked 272 entries, 0 problems.
+- Consistency gate (2026-10-30): `cairn_validate.py` exit 0, all checks passed; no DESIGN principle changed, so `cairn_impact` skipped; the generic profile's consistency-gate slot names no toolchain checks.
