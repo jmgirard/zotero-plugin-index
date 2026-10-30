@@ -1459,6 +1459,59 @@ describe("the built site", () => {
   });
 });
 
+describe("the newest Zotero release", () => {
+  // Two records read from the same repo as first-plugin, with no overrides: one declares up to
+  // 10.0.*, one from 10.1. Each set of data is built once with zoteroRelease 10.0.7 and once
+  // with none.
+  const base = records.find((record) => record.id === "first-plugin@example.org")!;
+  const UP_TO = "up-to-10-0@example.org";
+  const FROM = "from-10-1@example.org";
+  const ranged = (id: string, range: { strictMinVersion?: string; strictMaxVersion?: string }): PluginRecord => {
+    const { strictMinVersion: _min, strictMaxVersion: _max, ...upstream } = base.upstream!;
+    return { ...base, id, upstream: { ...upstream, id, ...range }, reports: [], overrides: [] };
+  };
+  const plugins = [ranged(UP_TO, { strictMinVersion: "7.0", strictMaxVersion: "10.0.*" }), ranged(FROM, { strictMinVersion: "10.1" })];
+  const built: Record<"known" | "unknown", string> = { known: "", unknown: "" };
+  beforeAll(() => {
+    for (const [name, zoteroRelease] of [["known", "10.0.7"], ["unknown", undefined]] as const) {
+      const dir = outWith(JSON.stringify({ schemaVersion: 1, generatedAt: "2026-10-30T06:17:00.000Z", zoteroRelease, plugins }));
+      const run = pnpmSite(["--out", dir]);
+      if (run.status !== 0) throw new Error(run.stderr);
+      built[name] = dir;
+    }
+  }, 120_000);
+
+  const homeOf = (name: keyof typeof built) => readFileSync(join(built[name], "index.html"), "utf8");
+  const pageOf = (name: keyof typeof built, id: string) => readFileSync(join(built[name], "plugins", id, "index.html"), "utf8");
+  // The row's data-zotero value and its home mark for 10.
+  const row = (html: string, id: string) => {
+    const tr = new RegExp(`<tr data-plugin="${escaped(id)}"[^>]*data-zotero="([^"]*)"[^>]*>([\\s\\S]*?)</tr>`).exec(html)!;
+    return { majors: tr[1], mark: /<td class="v" data-major="10">\s*<span class="mark" data-support="(\w+)"/.exec(tr[2])?.[1] };
+  };
+  const declared = (html: string) => /<tr data-major="10">[\s\S]*?<td data-declared="([^"]+)"/.exec(html)?.[1];
+
+  test("the data files are valid against the v1 schema", () => {
+    const validate = new Ajv({ allErrors: true }).compile(pluginsSchema);
+    for (const dir of Object.values(built)) {
+      const data = JSON.parse(readFileSync(join(dir, "v1/plugins.json"), "utf8"));
+      expect(validate(data), JSON.stringify(validate.errors)).toBe(true);
+    }
+  });
+
+  test("with zoteroRelease 10.0.7, marks a maximum of 10.0.* as all of 10 and leaves 10 out of a 10.1 minimum's row", () => {
+    expect(row(homeOf("known"), UP_TO)).toEqual({ majors: "7 8 9 10", mark: "all" });
+    expect(declared(pageOf("known", UP_TO))).toBe("all");
+    expect(pageOf("known", UP_TO)).toContain('<span class="visually-hidden">Declares all of Zotero 10</span>');
+    expect(row(homeOf("known"), FROM)).toEqual({ majors: "", mark: "none" });
+  });
+
+  test("with no zoteroRelease, marks a maximum of 10.0.* as part of 10 and keeps 10 in a 10.1 minimum's row", () => {
+    expect(row(homeOf("unknown"), UP_TO)).toEqual({ majors: "7 8 9 10", mark: "some" });
+    expect(declared(pageOf("unknown", UP_TO))).toBe("some");
+    expect(row(homeOf("unknown"), FROM).majors).toBe("10");
+  });
+});
+
 describe("pnpm site failures", () => {
   test.each([[["extra"]], [["--out"]]])("rejects %j with the usage line", (args) => {
     const usage = pnpmSite(args);

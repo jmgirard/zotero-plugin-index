@@ -32,6 +32,7 @@ export function getStaticPaths() {
 }
 
 const { record } = Astro.props as { record: PluginRecord };
+const { zoteroRelease } = loadData();
 const { upstream, failure, overrides } = record;
 const repoUrl = upstream?.repoUrl ?? record.repoUrl;
 const repoHref = safeHref(repoUrl);
@@ -121,7 +122,7 @@ const { min, max } = declaredRange(record);
               </thead>
               <tbody>
                 {compatMajors(record).map((major) => {
-                  const support = majorSupport(record, major);
+                  const support = majorSupport(record, major, zoteroRelease);
                   const start = majorStart(record, major);
                   const report = majorReport(record, major);
                   return (

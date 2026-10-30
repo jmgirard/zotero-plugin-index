@@ -23,7 +23,7 @@ import {
   supportText,
 } from "../data.ts";
 
-const { plugins } = loadData();
+const { plugins, zoteroRelease } = loadData();
 
 // A classic script runs as soon as the parser reaches it, before the table's rows parse, where
 // the module script below runs only once the whole page has parsed. It hides at least the rows
@@ -124,7 +124,7 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
               ...(rest.length > 0 ? [{ text: `+${rest.length}`, title: rest.map(languageName).join(", "), more: true }] : []),
             ];
             return (
-              <tr data-plugin={record.id} data-languages={rowLanguagesAttribute(record)} data-zotero={rowMajorsAttribute(record)}>
+              <tr data-plugin={record.id} data-languages={rowLanguagesAttribute(record)} data-zotero={rowMajorsAttribute(record, zoteroRelease)}>
                 <th scope="row" class="name">
                   <a href={pluginHref(record.id)} data-name>{name}</a>
                   {upstream?.archived === true && <span class="badge" data-archived>Archived</span>}
@@ -136,7 +136,7 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
                   </td>
                 ) : (
                   ZOTERO_MAJORS.map((major) => {
-                    const support = majorSupport(record, major);
+                    const support = majorSupport(record, major, zoteroRelease);
                     const start = majorStart(record, major);
                     return (
                       <td class="v" data-major={major}>

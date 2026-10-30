@@ -86,7 +86,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
       add the fixture-response tests.
 - [x] T2: Add the hand-kept list and a newest-release argument to `majorSupport` and
       `rowMajors` in `src/site/version.ts`, and add the `test/version.test.ts` cases.
-- [ ] T3: Pass `zoteroRelease` from `loadData` in `site/src/data.ts` to every caller of
+- [x] T3: Pass `zoteroRelease` from `loadData` in `site/src/data.ts` to every caller of
       `majorSupport` and `rowMajors` (home table, plugin page, `supportText`), and add
       the fixture records and site tests.
 - [ ] T4: Rewrite the About page's "Declared range" text and the home legend, then
@@ -111,6 +111,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: T1 done: `src/build/zotero-release.ts` holds the read; `buildData` runs it after the plugin reads (so it takes no time from `buildMs`) with a `releaseMs` limit and returns `releaseProblem`, which the CLI prints to stdout as one `cannot read the Zotero release:` line; the read of a timed-out body rethrows the abort reason so a cut body reads as the limit, not as non-JSON. Tests: 7 in-process `buildData` cases and 1 spawned CLI case; the token case also checks that the GitHub reads carry the planted token.
 - 2026-10-30: T1 follow-up: added a stalled-body case, which backs the code comment on the rethrow.
 - 2026-10-30: T2 done: `LAST_RELEASES` and `newestRelease(major, zoteroRelease?)` in `src/site/version.ts`; `majorSupport` and `rowMajors` take an optional `zoteroRelease`. The list values were re-read from the three changelog pages today and match. One old case changed from some to all (`6.999`–`7.0.*` for 7, since 7.0.32 is the last 7 release), and a `7.0.31` case now holds the some reading; 9 AC3 cases added.
+- 2026-10-30: T3 done: the home page and plugin page read `zoteroRelease` from `loadData` and pass it to `majorSupport`; `rowMajorsAttribute` takes it as a second argument. `supportText` takes the support already computed, so it needed no change. The site tests build a two-record data set twice (10.0.7 and none) in a new describe and leave the shared fixture as it was; with the `site/` changes stashed, the 10.0.7 test fails.
 
 ## Decisions
 

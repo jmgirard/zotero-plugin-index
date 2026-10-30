@@ -97,9 +97,9 @@ export function rowLanguagesAttribute(record: PluginRecord): string | String {
   return attributeValue(rowLanguages(record));
 }
 
-// The row's data-zotero value (see rowMajors).
-export function rowMajorsAttribute(record: PluginRecord): string | String {
-  return attributeValue(rowMajors(record));
+// The row's data-zotero value (see rowMajors), with the data's current Zotero release.
+export function rowMajorsAttribute(record: PluginRecord, zoteroRelease: string | undefined): string | String {
+  return attributeValue(rowMajors(record, zoteroRelease));
 }
 
 // The upstream value an override corrects, under the override's field name.
