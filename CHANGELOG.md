@@ -56,7 +56,8 @@
   build then deploys nothing.
 - The daily build publishes a website at
   `https://jmgirard.github.io/zotero-plugin-index/`. The home page lists every
-  plugin. Each plugin has a page. The entry on version pills below describes
+  plugin. A later entry says how its script shows 50 at a time. Each plugin
+  has a page. The entry on version pills below describes
   what the pages show. `pnpm site` builds the pages into `dist/` beside the
   data. If `pnpm site` fails, the daily build deploys nothing.
 - A bot finds new plugins. Once a day, the `Discover plugins` workflow

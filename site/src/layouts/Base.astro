@@ -192,7 +192,7 @@ const { generatedAt } = loadData();
         margin: 0;
       }
 
-      /* The home page: heading, toolbar, table, and legend. */
+      /* The home page: heading, toolbar, table, pager, and legend. */
       .hero {
         padding: var(--space-14) 0 var(--space-4);
       }
@@ -495,6 +495,13 @@ const { generatedAt } = loadData();
       .pager button:focus-visible {
         outline: 2px solid var(--link);
         outline-offset: 2px;
+      }
+      /* Forced colors replace --faint, so GrayText marks a button at an end. */
+      @media (forced-colors: active) {
+        .pager button[aria-disabled="true"] {
+          color: GrayText;
+          border-color: GrayText;
+        }
       }
       .legend {
         display: flex;

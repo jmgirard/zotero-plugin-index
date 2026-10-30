@@ -9,8 +9,9 @@ it does not review or endorse plugins.
 The website <https://jmgirard.github.io/zotero-plugin-index/> shows the index.
 A top bar on every page links to the home page and to the About page. It
 also links to the "Add a plugin" issue form and to the data file. The home
-page lists every plugin in one table, sorted by name. Its script shows 50
-at a time, as the pager paragraph below says. The sort ignores letter case
+page lists every plugin in one table, sorted by name. Without JavaScript the
+table shows every row. With it, the table shows 50 rows at a time, as the
+pager paragraph below says. The sort ignores letter case
 and accents, and names that are then equal sort by plugin id. Each row
 shows the plugin's name and its description. If the plugin's GitHub
 repository is archived, the row shows "Archived" after the name. Then come
@@ -93,10 +94,10 @@ come first, and languages with the same number of plugins come in order of
 their names. If you pick a language, the table shows only the plugins whose
 languages list includes it. The menu groups the regional forms of a
 language, so a plugin with `zh-CN` or `zh-TW` counts under Chinese.
-"All languages" shows every plugin. The page keeps your choice in the
+"All languages" passes every plugin. The page keeps your choice in the
 `language` query parameter of its address, such as `?language=zh`, so you
 can link to the filtered table. If the parameter names no language in the
-menu, the page shows every plugin and removes the parameter.
+menu, the page passes every plugin and removes the parameter.
 
 The home page also has "Declares Zotero" buttons: "Any" and one button for
 each Zotero major from 7 to 10. If you press a major, the table shows only

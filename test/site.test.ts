@@ -1024,10 +1024,14 @@ function homeScript(href: string, generated = 0) {
   tableRows.push(...Array.from({ length: generated }, (_, i) => generatedRow(i + 1)));
   const pager = { hidden: true };
   const pageStatus = { textContent: "" };
-  const steps = ["previous", "next"].map((name) => {
+  const steps = [
+    ["previous", "-1"],
+    ["next", "1"],
+  ].map(([name, pageStep]) => {
     const attributes = new Map<string, string>();
     return {
       name,
+      dataset: { pageStep },
       attributes,
       setAttribute: (attribute: string, value: string) => attributes.set(attribute, value),
       getAttribute: (attribute: string) => attributes.get(attribute) ?? null,
@@ -1146,16 +1150,23 @@ describe("the home page script", () => {
   });
 
   describe("pages", () => {
-    // The built rows and 120 generated ones: 133 rows, 3 pages with no filter on.
+    // The built rows and 120 generated ones, 3 pages with no filter on while the fixture
+    // holds 30 rows or fewer.
     const GENERATED = 120;
+    const PAGES = Math.ceil((ids.length + GENERATED) / 50);
     const gen = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, i) => `gen-${from + i}@example.org`);
     const pressed = (page: ReturnType<typeof homeScript>) => page.steps.map((step) => step.getAttribute("aria-disabled"));
+
+    // The tests below walk pages 1 to 3, so a larger fixture fails here first, by name.
+    test("the fixture and the generated rows fill 3 pages", () => {
+      expect(PAGES).toBe(3);
+    });
 
     test("shows the first 50 rows, the pager, and a count of every row", () => {
       const page = homeScript(PAGE, GENERATED);
       const total = ids.length + GENERATED;
       expect(page.visible()).toEqual(page.all().slice(0, 50));
-      expect([page.pager.hidden, page.pageStatus.textContent, pressed(page)]).toEqual([false, "Page 1 of 3", ["true", "false"]]);
+      expect([page.pager.hidden, page.pageStatus.textContent, pressed(page)]).toEqual([false, `Page 1 of ${PAGES}`, ["true", "false"]]);
       expect(page.status.textContent).toBe(`${total} plugins`);
     });
 
@@ -1227,7 +1238,7 @@ describe("the home page script", () => {
       expect(page.writes).toEqual([]);
     });
 
-    test.each(["1", "", "0", "-2", "x", "02", "4"])("shows page 1 for page=%j and removes it from the address", (value) => {
+    test.each(["1", "", "0", "-2", "x", "02", String(PAGES + 1)])("shows page 1 for page=%j and removes it from the address", (value) => {
       const page = homeScript(`${PAGE}?page=${value}`, GENERATED);
       expect(page.visible()).toEqual(page.all().slice(0, 50));
       expect(page.writes).toEqual([PAGE]);
@@ -1520,17 +1531,18 @@ describe("the site colors", () => {
   test.each([
     ["light", light],
     ["dark", dark],
-  ])("gives the edges of the search box, the menu, the version buttons, and the plugin page links a contrast of at least 3:1 with the surface and the page in the %s scheme", (_, scheme) => {
+  ])("gives the edges of the search box, the menu, the version buttons, the pager buttons, and the plugin page links a contrast of at least 3:1 with the surface and the page in the %s scheme", (_, scheme) => {
     const edges = cssRules(layout).flatMap(({ selector, declarations }) =>
       declarations
         .filter(([property, value]) => (property === "border" || property === "border-left") && value.includes("var("))
-        .filter(() => [".search input", "[data-language-filter]", "[data-version-filter]", ".btn"].some((control) => selector.includes(control)))
+        .filter(() => [".search input", "[data-language-filter]", "[data-version-filter]", ".btn", ".pager button"].some((control) => selector.includes(control)))
         .map(([, value]) => ({ selector, token: /var\((--[\w-]+)\)/.exec(value)?.[1] })),
     );
     expect(edges.map(({ selector }) => selector)).toEqual([
       ".search input, [data-language-filter]",
       "[data-version-filter]",
       "[data-version-filter] button",
+      ".pager button",
       ".btn",
     ]);
     // The controls sit on the page background and fill with the surface color.

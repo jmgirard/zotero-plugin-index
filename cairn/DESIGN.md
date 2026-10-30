@@ -51,7 +51,11 @@ whose list is wrong or empty. Each plugin page shows them by name in the
 "Menus and settings in" fact of its Details card (M054). When no language
 is left, the fact reads "Unknown (no translations found)" (M036). The home
 page lists the plugins in one table, sorted by display name with
-`localeCompare` at base sensitivity and then by id (M053). The home
+`localeCompare` at base sensitivity and then by id (M053). Its script shows
+the rows the filters pass 50 at a time, with a pager below the table, and
+keeps the page after 1 in `?page=`; Previous and Next add a history entry
+with `pushState`, the filters still replace the address, and a filter event
+goes back to page 1 (M058). Without JavaScript every row shows. The home
 page's "Menus and settings in" menu filters the table by language subtag,
 run by the home page's script (D-014, D-026, M024, M033). The menu lists the
 languages with the most plugins first, and languages with the same number
@@ -62,8 +66,9 @@ major is all or part, one major at a time, together with the menu; the
 same script runs them and keeps the choice in `?zotero=` (D-019, M037).
 A search box filters the table to the rows whose name or description holds
 the query, both lowercased, and keeps it in `?q=` (M053). The same script
-writes a plugin count beside the filters: the total, how many plugins show
-while a filter is on, or that none match (M044, M053). Typing writes `?q=`
+writes a plugin count beside the filters: the total, how many plugins the
+filters pass on every page while a filter is on, or that none match (M044,
+M053, M058). Typing writes `?q=`
 once the visitor stops for half a second (M053 review). A top bar on every
 page links to the home page, the About page (M054), the "Add a plugin"
 issue form, and the data file (M053).
@@ -324,9 +329,10 @@ exception is a report that is abuse.
   `src/site/description.ts` holds `shownDescription` and `cjkShare`.
   `src/site/languages.ts` holds the applied languages, their names, and the
   menu options. `src/site/home-filter.ts` holds `passes`, `rowShows`,
-  `chosenValue`, `filterHref`, `filterOn`, and `filterStatus`, which the
-  home page's script imports for the search box, the language menu, the
-  version buttons, and the count (renamed from `language-filter.ts`, M037);
+  `chosenValue`, `filterHref`, `filterOn`, `filterStatus`, `PAGE_SIZE`,
+  `pageCount`, `onPage`, and `chosenPage`, which the home page's script
+  imports for the search box, the language menu, the version buttons, the
+  count, and the pager (renamed from `language-filter.ts`, M037; pages M058);
   `rowMajors` in `version.ts` gives each row's `data-zotero`.
   `site/src/data.ts` holds the template helpers, among them `homeOrder`,
   `majorStart`, `shortLanguages`, and `monthYear` for the home table, and
@@ -704,7 +710,8 @@ reused._
   pages carried no script from M015. Since M024 the home page carries one,
   for the language menu and, since M037, the version buttons and, since
   M044, the status line under them, and since M053 the search box and the
-  count that replaced that line, which Astro inlines as a
+  count that replaced that line, and since M058 the pager, which Astro
+  inlines as a
   `type="module"` script; the other pages carry none (D-014,
   D-019, D-026). The templates take the Pages path
   from `site/src/base.ts`, because a `BASE_URL` environment variable replaces

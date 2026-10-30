@@ -249,8 +249,10 @@ const { plugins } = loadData();
       if (pager) pager.hidden = shown.length <= PAGE_SIZE;
       if (pageStatus) pageStatus.textContent = `Page ${page} of ${pages}`;
       // aria-disabled rather than disabled, so a button at an end keeps the keyboard focus.
-      steps[0]?.setAttribute("aria-disabled", String(page === 1));
-      steps[1]?.setAttribute("aria-disabled", String(page === pages));
+      for (const step of steps) {
+        const end = step.dataset.pageStep === "-1" ? 1 : pages;
+        step.setAttribute("aria-disabled", String(page === end));
+      }
     };
     const address = () =>
       filterHref(
@@ -304,16 +306,16 @@ const { plugins } = loadData();
     }
     // Previous and Next add a history entry, so Back returns to the page before. The new
     // address also carries any search text that typing had not written yet.
-    steps.forEach((step, i) => {
+    for (const step of steps) {
       step.addEventListener("click", () => {
         if (step.getAttribute("aria-disabled") === "true") return;
         clearTimeout(pending);
-        page += i === 0 ? -1 : 1;
+        page += Number(step.dataset.pageStep);
         show();
         history.pushState(null, "", address());
         table?.scrollIntoView({ block: "start" });
       });
-    });
+    }
     search.closest("[hidden]")?.removeAttribute("hidden");
     select.closest("[hidden]")?.removeAttribute("hidden");
     buttons[0]!.closest("[hidden]")?.removeAttribute("hidden");

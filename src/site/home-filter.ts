@@ -37,8 +37,8 @@ function matches(row: HomeRow, query: string): boolean {
   return row.name.toLowerCase().includes(text) || row.description.toLowerCase().includes(text);
 }
 
-// Whether the home table shows a row: when the search box, the language menu, and the
-// version buttons all pass it.
+// Whether the filters pass a row, so that it shows on its page: when the search box, the
+// language menu, and the version buttons all pass it.
 export function rowShows(row: HomeRow, language: Filter, zotero: Filter, query: string): boolean {
   return matches(row, query) && passes(row.languages, language) && passes(row.zotero, zotero);
 }
