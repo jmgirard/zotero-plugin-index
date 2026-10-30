@@ -90,7 +90,8 @@ A plugin page has one column (M054). It opens with an "All plugins" link
 home, the name with an "Archived" badge for an archived repository, a
 repo line, the description, and links with icons. For a repo URL of the
 form `https://github.com/<owner>/<repo>` (`githubRepo`), the repo line
-links the owner's GitHub page and `<owner>/<repo>` and adds the
+reads "By <owner> · <repo>": the owner links to the owner's GitHub page
+and the repo name to the repository (M061, M065). It adds the
 `upstream.stars` count when the data has one (M061). The count shows as a
 star icon filled with `--star` and the number, in an `aria-hidden` span
 whose `title` gives the count and its words (`starsText`); a

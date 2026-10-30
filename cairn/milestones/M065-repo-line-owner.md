@@ -46,7 +46,7 @@ Bot branch names and addresses written `<owner>/<repo>` elsewhere in README and 
 
 - [x] T1: Change the `data-repo-name` link text to `github.repo`, then update the head test's expected line and the
   repo line test's rows (tests first).
-- [ ] T2: Rewrite README's plugin page paragraph (near line 150), DESIGN.md's (near line 92), and the M061 CHANGELOG
+- [x] T2: Rewrite README's plugin page paragraph (near line 150), DESIGN.md's (near line 92), and the M061 CHANGELOG
   entry (near line 499).
 - [ ] T3: Run `pnpm test` and `pnpm check`. Build the site from the deployed data and view a plugin page with a long
   repo name in the browser pane at 375 px.
@@ -63,6 +63,7 @@ Bot branch names and addresses written `<owner>/<repo>` elsewhere in README and 
 - 2026-10-30: plan gate chose "By owner · repo" over "By owner" alone because the repo name often differs from the plugin name and says where the code lives; falsified by users who read the repo name as noise beside the Source button.
 - 2026-10-30: criteria audit (full), run after the question set because the line's form was the set's open choice: 2 findings, both taken. AC1 covers every fixture page with a repo line through the head test. AC2 names the link sentences and searches for `<owner>/<repo>` outside an address. No problem in AC3; a repo-name-only link is clear in context (link purpose in context).
 - 2026-10-30: T1 done: `data-repo-name` reads `{github.repo}`. The head test expects `escaped(github.repo)` and the five repo line rows expect the bare repo name; they went red first (16 failed: 11 head-test pages, 5 rows) and pass with the change. `pnpm test` 1547 passed, `pnpm check` 0 problems.
+- 2026-10-30: T2 done: README, DESIGN.md, and the M061 CHANGELOG entry give "By <owner> · <repo>" and say the repo name links to the repository; the example reads "By windingwind · zotero-better-notes · ★ 8,400". A joined-text search of each passage, with `https://github.com/<owner>/<repo>` removed, finds `<owner>/<repo>` and `windingwind/zotero-better-notes` 0 times. No added line over 80 characters. `pnpm test` 1547 passed, `pnpm check` 0 problems.
 
 ## Decisions
 

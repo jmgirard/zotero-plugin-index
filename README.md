@@ -147,8 +147,8 @@ Each plugin has its own page. It opens with an "All plugins" link back to
 the home page, the plugin's name, a repository line, and its description.
 The repository line needs an address of the form
 `https://github.com/<owner>/<repo>`, with no query or fragment. A
-trailing slash is allowed. The line reads `By <owner> · <owner>/<repo>`.
-The owner links to the owner's GitHub page, and `<owner>/<repo>` links to
+trailing slash is allowed. The line reads `By <owner> · <repo>`. The
+owner links to the owner's GitHub page, and the repository name links to
 the repository. If the data has a star count for the plugin, the line
 ends with a gold star icon and the count, such as "★ 8,400". A tooltip
 gives the count with its label, such as "8,400 GitHub Stars", or
