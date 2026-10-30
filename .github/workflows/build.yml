@@ -111,6 +111,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # xvfb gives Zotero a display, as in ci.yml.
       - run: sudo apt-get update && sudo apt-get install -y xvfb libasound2t64 libdbus-glib-1-2
+      # Zotero checks for an update 30 seconds after it starts and installs it at its next
+      # start, which in run 40976358530 (2026-10-29) put each job's later starts on 10.0.7.
+      # It downloads no update when it cannot write to its own folder, so the folder is
+      # made read-only.
       - name: Download Zotero
         env:
           ZOTERO_VERSION: ${{ matrix.zotero }}
@@ -120,6 +124,7 @@ jobs:
           curl -sSfL -o "$RUNNER_TEMP/$ZOTERO_FILE" "https://download.zotero.org/client/release/$ZOTERO_VERSION/$ZOTERO_FILE"
           echo "$ZOTERO_SHA256  $RUNNER_TEMP/$ZOTERO_FILE" | sha256sum --check
           tar -xf "$RUNNER_TEMP/$ZOTERO_FILE" -C "$RUNNER_TEMP"
+          chmod -R a-w "$RUNNER_TEMP/Zotero_linux-x86_64"
       - uses: actions/download-artifact@v8
         with:
           name: start-plan

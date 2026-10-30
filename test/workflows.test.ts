@@ -9,6 +9,7 @@ const CLOSE = resolve(ROOT, ".github/workflows/close-add-plugin-issue.yml");
 const ADD = resolve(ROOT, ".github/workflows/add-plugin-issue.yml");
 const DISCOVER = resolve(ROOT, ".github/workflows/discover.yml");
 const MERGE = resolve(ROOT, ".github/workflows/merge-discover.yml");
+const CI = resolve(ROOT, ".github/workflows/ci.yml");
 
 // Each line of a workflow, other than a comment line, that uses an actions/cache action or
 // sets a `cache` key, in block or flow form. An inline comment stays in its line, so a
@@ -120,6 +121,21 @@ describe("build.yml", () => {
     ].join("\n");
     expect(cacheLines(text)).toEqual([]);
   });
+});
+
+// Zotero checks for an update 30 seconds after it starts and installs it at its next start,
+// which put a start-test job's later starts on another release. It downloads no update when
+// it cannot write to its own folder.
+test.each([
+  ["build.yml", BUILD, "xvfb-run --auto-servernum pnpm start-tests"],
+  ["ci.yml", CI, "xvfb-run --auto-servernum pnpm exec vitest run test/start-test-zotero.test.ts"],
+])("%s makes the Zotero folder read-only after unpacking it and before it starts Zotero", (_name, file, run) => {
+  const job = jobText(readFileSync(file, "utf8"), "start-test");
+  const unpack = job.search(/^ +tar -x\w* "\$RUNNER_TEMP\/[^"]+" -C "\$RUNNER_TEMP"$/m);
+  const readOnly = job.search(/^ +chmod -R a-w "\$RUNNER_TEMP\/Zotero_linux-x86_64"$/m);
+  expect(unpack).toBeGreaterThan(-1);
+  expect(readOnly).toBeGreaterThan(unpack);
+  expect(job.indexOf(run)).toBeGreaterThan(readOnly);
 });
 
 // The `on:` block of a workflow without its comment lines.
