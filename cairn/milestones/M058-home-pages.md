@@ -103,6 +103,8 @@ filters to read the data file (not asked for).
 
 ## Decisions
 
+- 2026-10-30 (review): Previous and Next add history entries with `pushState`, narrowing M037's milestone-local rule that the address is replaced, not pushed. The search box, the menu, the buttons, load, and Back still replace it. Reason: the user chose numbered pages that Back steps through (plan question set).
+
 ## Review
 
 - AC1: 2026-10-30, `pnpm test` 1328 passed. `test/home-filter.test.ts`: page counts for 0, 1, 50, 51, 100, 101, 272 passed rows (1, 1, 1, 2, 2, 3, 6); page rows for pages 1, 3, 6 of 272 (0–49, 100–149, 250–271). `test/site.test.ts` "pages", over the 13 built rows and 120 generated: page 1 shows the first 50 rows, "Page 1 of 3", Previous `aria-disabled="true"`, count "133 plugins"; `?q=bulk` gives "120 of 133 plugins" and its first 50; a 50-row filter sets the pager `hidden` and a 51-row filter shows "Page 1 of 2". The built HTML holds the pager `nav` with `hidden`, and `.pager[hidden]` is in the `display: none` rule. Implement planted counting by visible rows; the count test went red.
@@ -110,3 +112,40 @@ filters to read the data file (not asked for).
 - AC3: joined README (LESSONS M018), 2026-10-30, each once: "Its script shows 50 at a time", "The table shows 50 of the plugins that the filters pass at a time", the pager reading "Page p of P", the `page` query parameter, "the page shows page 1 and removes the parameter", "shows page 1 at once" for a filter change, "The count covers the plugins on every page", and "Without JavaScript, the home page shows none of them and lists every plugin". The Unreleased CHANGELOG holds the pages entry once.
 - AC4: 2026-10-30: `npx -y pnpm@12.15.0 test` 24 files passed, 1 skipped, 1328 tests passed, 6 skipped; `npx -y pnpm@12.15.0 check` "checked 272 entries in plugins, 0 problems".
 - consistency gate: `cairn_validate.py` all checks passed; no principle changed; the `generic` profile names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: typing, then Next within half a second, then Back returns to the address before the typing, not page 1 of the typed search — follow-up, row "Close small gaps on the site pages" (6), promote when a user reports it; AC2 asks Next to drop the waiting write.
+- diff-bug #2: "Page p of P" and the count are both polite live regions, so a keystroke that changes the page count announces both — follow-up, same row (6).
+- diff-bug #3: in forced colors an end button looks enabled — fix now: a `forced-colors` rule gives `aria-disabled` buttons `GrayText`, fixed 7b6cd08.
+- diff-bug #4: the scroll to `.table-card` leaves the toolbar above it off-screen — reject (planned change): AC2 names the table's top.
+- diff-bug #5: `?page=2` stays in the address for half a second after a search input — reject (planned change): AC2 and the README state it.
+- diff-bug #6: a reload at `?page=3` paints the full list first — follow-up, row "Filter the home list before it paints", which the plan extended with this case.
+- diff-bug #7: the `Math.min` clamp in `show()` never fires — reject (style): a guard with no effect.
+- diff-bug #8: `data-page-step` was never read; the script chose buttons by order — fix now: the script reads `dataset.pageStep` for the step and the end, fixed 7b6cd08.
+- diff-bug #9: a duplicate `page` parameter keeps its second value — reject (edge): only a hand-edited address with two `page` values reaches it, outside common use, and the page shown is still the first value's.
+- diff-bug #10: seven invalid `page` values run one script path — reject (planned change): AC2 names each.
+- diff-bug #11: some helper cases repeat paths — reject (planned change): AC1 names them.
+- diff-bug #12: the paging tests hard-code 3 pages from a 13-row fixture — fix now: `PAGES` from the fixture size, a named test that it is 3, and the past-P case `PAGES + 1`, fixed 7b6cd08.
+- diff-bug #13: generated rows slice the selector text — reject (style): the built-row stand-ins do the same.
+- diff-bug #14: no test for a version button on page 2 or page status after popstate — reject (false): the button shares `update()` with the tested menu change, and popstate runs `show()`.
+- blame-history #1: a Forward entry can restore filters that a later change replaced — reject (planned change): each pushed entry keeps its own address by design.
+- blame-history #2: M037 recorded "address replaced not pushed"; Previous and Next now push — fix now: a milestone-local decision records it, below, and DESIGN states both.
+- blame-history #3: DESIGN does not mention the pager — fix now: the home paragraph, the count, `home-filter.ts`'s exports, and the script's history, fixed 7b6cd08.
+- blame-history #4: the pager's live region repeats the M044 announcement gap — follow-up, row (6).
+- blame-history #5: README's opening said "lists every plugin" and "shows 50" side by side — fix now: it says which holds without and with JavaScript, fixed 7b6cd08.
+- blame-history #6: the count's N now counts every page — reject (false): the README and DESIGN say so.
+- prior-review #1: `?page=3` paints the top rows first — follow-up, row "Filter the home list before it paints", extended by the plan.
+- prior-review #2: the pager's first text is written while hidden, and it changes per key — follow-up, row (6).
+- prior-review #3: the page weight after the change is not measured — fixed by measuring: `main` and the branch built from the same 174-row data give home pages of 539,981 and 541,723 bytes, 22,946 and 23,476 bytes gzipped at level 9 (2026-10-30).
+- prior-review #4: the pager button edge is outside the contrast guard and has no forced-colors rule — fix now: `.pager button` joins the edge test, and the forced-colors rule above, fixed 7b6cd08.
+- prior-review #5: the pager's clicks run only against stand-ins — follow-up, row "Test the home page script in a browser", extended.
+- ripple #1: DESIGN said the home page lists the plugins in one table with no pager — fix now, fixed 7b6cd08.
+- ripple #2: DESIGN said the count gives how many plugins show — fix now, fixed 7b6cd08.
+- ripple #3: README said "All languages" shows every plugin — fix now: "passes", fixed 7b6cd08.
+- ripple #4: CHANGELOG's site entry said the home page lists every plugin — fix now: it points to the pages entry, fixed 7b6cd08.
+- ripple #5: CHANGELOG says the home page lists the plugins in one table — reject (false): it still is one table.
+- ripple #6: `rowShows`'s comment said whether the table shows a row — fix now, fixed 7b6cd08.
+- ripple #7, #8, #9: DESIGN's parameter list, `home-filter.ts` exports, and script history omitted the pager — fix now, fixed 7b6cd08.
+- ripple #10: Base.astro's home comment omitted the pager — fix now, fixed 7b6cd08.
+- ripple #11: an older CHANGELOG entry describes a "Showing N of M" line that M053 replaced — reject (false): a pre-existing change record this diff does not touch, and the M053 entry describes the count.
+- ripple #12: the source row still reads as open — reject (false): its `started M058` token graduates it at hygiene.
+- after the fixes (7b6cd08): `pnpm test` 1329 passed, 6 skipped; `pnpm check` 0 problems. No finding met the return floor.
