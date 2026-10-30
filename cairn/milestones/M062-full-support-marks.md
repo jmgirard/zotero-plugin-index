@@ -1,13 +1,13 @@
 # M062: Mark full support against released Zotero versions
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes the declared marks on every page and adds a field to the public data file
-- **Branch/PR:** —
+- **Branch/PR:** m062-full-support-marks
 
 ## Goal
 
@@ -81,7 +81,7 @@ and stars line is in M061. The menu arrow and release month are in M063.
 
 ## Tasks
 
-- [ ] T1: Add the zotero.org read to `buildData` in `src/build/build.ts` with its own
+- [x] T1: Add the zotero.org read to `buildData` in `src/build/build.ts` with its own
       30 s limit and no token, add `zoteroRelease` to the data type and the schema, and
       add the fixture-response tests.
 - [ ] T2: Add the hand-kept list and a newest-release argument to `majorSupport` and
@@ -107,6 +107,8 @@ and stars line is in M061. The menu arrow and release month are in M063.
 - 2026-10-30: criteria audit (full mode, fresh Opus reader): here AC1 adds the 30 s limit, a non-JSON body, and tests for each failure; AC2 names the list values and keeps min above max as none; AC3 adds a Zotero 9 case and a minimum-only case; AC4 tests `data-zotero` with a min `10.1` record, since the old check passed under both rules; AC5 tests the list value and the "none known" text.
 - 2026-10-30: collision check: M037 and M053 shipped the marks and the N.9 rule, and this changes their upper end; no D-entry rejects it. Inbox sweep: 0 open issues, 18 bot pull requests, none overlapping.
 - 2026-10-30: lessons used: 2026-10-27 (M030, test a time limit with a stubbed `performance.now()` so the cut needs no real wait), 2026-10-28 (M035, build the site from the deployed data for a hand check), 2026-10-29 (M053, the built script is minified, so test it in `node:vm`).
+- 2026-10-30: implement started on m062-full-support-marks, cut from main at 0170d1e.
+- 2026-10-30: T1 done: `src/build/zotero-release.ts` holds the read; `buildData` runs it after the plugin reads (so it takes no time from `buildMs`) with a `releaseMs` limit and returns `releaseProblem`, which the CLI prints to stdout as one `cannot read the Zotero release:` line; the read of a timed-out body rethrows the abort reason so a cut body reads as the limit, not as non-JSON. Tests: 7 in-process `buildData` cases and 1 spawned CLI case; the token case also checks that the GitHub reads carry the planted token.
 
 ## Decisions
 

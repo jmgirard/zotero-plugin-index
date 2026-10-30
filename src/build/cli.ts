@@ -56,6 +56,8 @@ async function main(): Promise<number> {
     }
     console.log(`wrote a start plan of ${built.plan.plugins.length} plugins to ${resolve(cwd, planFile)}`);
   }
+  // The marks fall back to the N.9 rule for a day, so this read does not change the exit code.
+  if (built.releaseProblem) console.log(`cannot read the Zotero release: ${oneLine(built.releaseProblem)}`);
   const failed = built.data.plugins.filter((plugin) => plugin.failure);
   for (const { id, failure } of failed) console.log(`${id}: ${failure!.name}: ${oneLine(failure!.message)}`);
   const counts = new Map<string, number>();

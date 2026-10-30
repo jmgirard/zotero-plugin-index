@@ -8,6 +8,7 @@ import dns from "node:dns";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json" };
 import { buildData, checkOutput, INDEX_REPO, writeData } from "../src/build/build.ts";
+import { ZOTERO_RELEASE_URL } from "../src/build/zotero-release.ts";
 import { fixtureFetch, loadFixture, type Recorded, type Responses } from "./support/fixture-fetch.ts";
 import { DNS_FAIL_HOST, mixedFailures } from "./support/mixed-failures.ts";
 import { pluginRepo } from "./support/plugin-repo.ts";
@@ -44,6 +45,7 @@ function responses(): Responses {
     ...loadFixture(resolve(ROOT, "test/fixtures/build/responses.json")).responses,
     ...loadFixture(resolve(ROOT, "test/fixtures/upstream/better-notes.json")).responses,
     [LABEL]: { json: { name: "report" } },
+    [ZOTERO_RELEASE_URL]: { json: { mac: "10.0.7", "linux-x86_64": "10.0.7" } },
   };
 }
 
@@ -322,6 +324,15 @@ describe("pnpm build and the report issues", () => {
 });
 
 describe("pnpm build", () => {
+  test("prints one line that names a failed read of the Zotero release, writes the data, and exits 0", () => {
+    const { result, out } = loggedBuild({ ...responses(), [ZOTERO_RELEASE_URL]: { status: 500, text: "Internal Server Error" } });
+    expect(result.status).toBe(0);
+    expect(result.stdout.split("\n").filter((line) => line.includes("Zotero release"))).toEqual([
+      `cannot read the Zotero release: GET ${ZOTERO_RELEASE_URL} returned HTTP 500`,
+    ]);
+    expect(readOutput(out)).not.toHaveProperty("zoteroRelease");
+  });
+
   test("names an error the reader does not expect unexpected-error, goes on, and exits 1 when 2 of 3 records fail for build-level reasons and all 3 fail", () => {
     // BETTER_NOTES is the first entry by name, so the other two are read after the error on
     // an even UTC day and before it on an odd one.
@@ -946,6 +957,43 @@ describe("buildData", () => {
     });
     expect(record(output, BETTER_NOTES)?.upstream?.id).toBe(BETTER_NOTES);
     expect(result.buildLevel).toEqual([]);
+  });
+
+  describe("and the current Zotero release", () => {
+    test("writes the linux-x86_64 value as zoteroRelease and sends no token to zotero.org", async () => {
+      vi.stubEnv("GITHUB_TOKEN", "planted-token");
+      try {
+        const { fetch, requests } = fixtureFetch(responses());
+        const result = await buildData(TREE, fetch);
+        if (!result.ok) throw new Error(result.problems.join("\n"));
+        expect(JSON.parse(result.text).zoteroRelease).toBe("10.0.7");
+        expect(result.releaseProblem).toBeUndefined();
+        const release = requests.filter((r) => r.url === ZOTERO_RELEASE_URL);
+        expect(release).toHaveLength(1);
+        expect(release[0].headers.has("authorization")).toBe(false);
+        // The token was set, so the GitHub reads carry it.
+        expect(requests.find((r) => r.url === LABEL)?.headers.get("authorization")).toBe("Bearer planted-token");
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    test.each([
+      ["a 500 answer", { status: 500, text: "Internal Server Error" }, "returned HTTP 500"],
+      ["a thrown request", { error: "getaddrinfo ENOTFOUND www.zotero.org" }, "failed: getaddrinfo ENOTFOUND www.zotero.org"],
+      ["an answer that passes the limit", { stall: "headers" }, "failed: the read passed its time limit of 100 ms"],
+      ["a body that is not JSON", { text: "<html>" }, "returned a body that is not JSON"],
+      ["no linux-x86_64 key", { json: { mac: "10.0.7" } }, "returned no linux-x86_64 value"],
+      ["a beta version", { json: { "linux-x86_64": "10.0.7-beta" } }, 'returned the linux-x86_64 value "10.0.7-beta", which is not a release version'],
+    ])("writes no zoteroRelease, names the cause, and still builds for %s", async (_, answer, cause) => {
+      const recorded = { ...responses(), [ZOTERO_RELEASE_URL]: answer as Recorded };
+      const result = await buildData(TREE, fixtureFetch(recorded).fetch, undefined, undefined, { releaseMs: 100 });
+      if (!result.ok) throw new Error(result.problems.join("\n"));
+      expect(JSON.parse(result.text)).not.toHaveProperty("zoteroRelease");
+      expect(result.releaseProblem).toBe(`GET ${ZOTERO_RELEASE_URL} ${cause}`);
+      expect(result.buildLevel).toEqual([]);
+      expect(checkOutput(JSON.parse(result.text))).toEqual([]);
+    });
   });
 });
 
