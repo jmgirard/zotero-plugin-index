@@ -96,7 +96,7 @@ in M062.
 - diff-bug #4: the style test does not check the arrow's shape (`no-repeat`, size, angles), so a tiled background would pass — follow-up: row "Test the home page script in a browser" (low), with #3.
 - diff-bug #5: the b-cafe line of "shows the release month in UTC" repeats the per-row test and tests no time-zone boundary in a New York build — fix now, fixed 2c8de3b.
 - diff-bug #6: the fixture's cafe-tools release date is after the fixture's `generatedAt` — reject (planned change): AC1 names the date `2026-11-01T02:00:00Z`, and no code or test compares a release date with `generatedAt`.
-- diff-bug #7: the two triangles may show a seam at a root font size other than 16 px, and the hard stops draw jagged edges — follow-up: row "Close small gaps on the site pages" part (5), rewritten at hygiene (parked row, unchanged rung: no report of it).
+- diff-bug #7: the two triangles may show a seam at a root font size other than 16 px, and the hard stops draw jagged edges — follow-up: row "Close small gaps on the site pages" part (5), rewritten at hygiene (low, the row's rung, unchanged: no report of it).
 - diff-bug #8: the name `monthYear` no longer matches its year-then-month output — reject (style).
 - blame-history #1: the month cell's failure on a bad timestamp moved from one cell to the whole build, which withholds the deploy — reject (edge), as diff-bug #1.
 - blame-history #2: the arrow shipped without the Safari check that row "Close small gaps on the site pages" part (5) names; the pane check covers one engine — follow-up: that row's part (5), rewritten at hygiene to name the missing Safari, Firefox, and forced-colors views.
@@ -104,7 +104,7 @@ in M062.
 - blame-history #4: the per-row expectation no longer computes UTC on its own, and the b-cafe case never tested the boundary — reject (false) for the first part, as diff-bug #2; the b-cafe part is diff-bug #5, fixed 2c8de3b.
 - blame-history #5: the fixture release date is later than its `generatedAt` and today — reject (planned change), as diff-bug #6.
 - blame-history #6: the CHANGELOG's "in place of `Sep 2026`" names a state no release shipped — reject (false): the site deploys daily from the default branch (DESIGN), so its readers saw `Sep 2026` since M053.
-- blame-history #7: one full-suite run in implement had an unnamed failure that was not chased — follow-up: new row "Name the full-suite failure seen once" (parked, promote when it repeats): it did not repeat in 7 later runs and its test is unknown.
+- blame-history #7: one full-suite run in implement had an unnamed failure that was not chased — follow-up: absorbed at hygiene into row "Steady the time-limit tests under load" (low, unchanged), the search-first match for full-run failures that pass alone; it did not repeat in 7 later runs and its test is unknown.
 - prior-review #1: the CHANGELOG claims the drawn arrow and the forced-colors arrow with no Safari check, as M049's review warned for claims on the menu's shape — follow-up: row "Close small gaps on the site pages" part (5), as blame-history #2; the entry states what the CSS sets, which the style test checks.
 - prior-review #2: `appearance: none` now applies in WebKit with no WebKit render — follow-up: same row and part, as blame-history #2.
 - prior-review #3: the per-row month expectation mirrors the code — reject (false), as diff-bug #2.
