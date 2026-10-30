@@ -450,20 +450,20 @@ describe("the plugin page", () => {
     expect(main).not.toMatch(/<header[\s>]/);
   });
 
-  // The visible text drops the screen-reader words; the spoken text keeps them.
+  // The visible text drops the visually hidden words; the full text keeps them.
   test.each<[string, string, string, string, string, string, string | undefined]>([
     ["first-plugin@example.org", "https://github.com/example", "https://github.com/example/first-plugin", "example/first-plugin", "By example · example/first-plugin · 1,234", "By example · example/first-plugin · 1,234 GitHub Stars", "1,234 GitHub Stars"],
     ["old-plugin@example.org", "https://github.com/example", "https://github.com/example/old-plugin", "example/old-plugin", "By example · example/old-plugin · 1", "By example · example/old-plugin · 1 GitHub Star", "1 GitHub Star"],
     ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "https://github.com/example", "https://github.com/example/guid-plugin", "example/guid-plugin", "By example · example/guid-plugin · 0", "By example · example/guid-plugin · 0 GitHub Stars", "0 GitHub Stars"],
     ["no-range-plugin@example.org", "https://github.com/example", "https://github.com/example/no-range-plugin", "example/no-range-plugin", "By example · example/no-range-plugin", "By example · example/no-range-plugin", undefined],
     ["broken-plugin@example.org", "https://github.com/example", "https://github.com/example/broken-plugin", "example/broken-plugin", "By example · example/broken-plugin", "By example · example/broken-plugin", undefined],
-  ])("shows the owner, the repo, and any stars of %s under the name", (id, ownerHref, repoHref, repoText, visible, spoken, title) => {
+  ])("shows the owner, the repo, and any stars of %s under the name", (id, ownerHref, repoHref, repoText, visible, full, title) => {
     const line = /<p class="repo-line" data-repo-line>(.*?)<\/p>/s.exec(page(id))?.[1];
     const text = (html: string) => unescaped(html.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim();
     expect(/<a href="([^"]*)" data-repo-owner>([^<]*)<\/a>/.exec(line ?? "")?.slice(1)).toEqual([ownerHref, "example"]);
     expect(/<a href="([^"]*)" data-repo-name>([^<]*)<\/a>/.exec(line ?? "")?.slice(1)).toEqual([repoHref, repoText]);
     expect(text(line!.replace(/<span class="visually-hidden">[^<]*<\/span>/g, ""))).toBe(visible);
-    expect(text(line!)).toBe(spoken);
+    expect(text(line!)).toBe(full);
     expect(/<span data-repo-stars title="([^"]*)">/.exec(line!)?.[1]).toBe(title);
     if (title === undefined) {
       expect(line).not.toMatch(/data-repo-stars|<svg/);

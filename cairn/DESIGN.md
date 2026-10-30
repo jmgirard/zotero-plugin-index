@@ -92,9 +92,9 @@ repo line, the description, and links with icons. For a repo URL of the
 form `https://github.com/<owner>/<repo>` (`githubRepo`), the repo line
 links the owner's GitHub page and `<owner>/<repo>` and adds the
 `upstream.stars` count when the data has one (M061). The count shows as a
-star icon filled with `--star` and the number; a `title` and a
-`.visually-hidden` span give the words "GitHub Stars" (`starsText`,
-`starsWord`, M064). The links are: the
+star icon filled with `--star` and the number; a `title` gives the count
+and its words (`starsText`), and a `.visually-hidden` span gives "GitHub
+Star" or "GitHub Stars" (`starsWord`, M064). The links are: the
 `.xpi` file (`upstream.xpiUrl`, only when it passes `safeHref`, in the
 same plain button style as the others, D-029), the source, and the
 releases; a repo URL that fails `safeHref` shows as plain text. A

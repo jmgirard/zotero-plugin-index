@@ -93,6 +93,7 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - 2026-10-30: T3 done: README's plugin page paragraph and the M061 CHANGELOG entry give "★ 8,400" and the "8,400 GitHub Stars" tooltip and hidden text; DESIGN.md's plugin page paragraph names the icon, `--star`, the `title`, the hidden span, `starsText`, and `starsWord`. A joined-text search finds "8,400 stars" 0 times in each of the three files. No added line is over 80 characters. `pnpm test` 1547 passed, `pnpm check` 0 problems.
 - 2026-10-30: T4 done: built the site from the deployed `v1/plugins.json` and served it as `m064-look` (port 4338) in `.claude/launch.json`. Better BibTeX's page: light fill `rgb(176, 125, 0)`, dark fill `rgb(227, 179, 65)`, stroke `none`, `title` "7,253 GitHub Stars". At 375 px, the page of `scientific-name-italicizer@example.com` (the longest owner and repo name with stars, 52 characters) shows "· ★ 0" on one line, `[data-repo-stars]` has 1 client rect, and the page width is 375 with no side scroll.
 - 2026-10-30: status review; all tasks checked, `pnpm test` and `pnpm check` clean.
+- 2026-10-30: claim audit: 17 claims read, 3 corrected — README.md, CHANGELOG.md (the tooltip gives the count with its label; the hidden text adds only the words), cairn/DESIGN.md (the `title` holds the count, the span "GitHub Star" or "GitHub Stars"), test/site.test.ts (the column is the full text, not the spoken text). Re-read of the 3 by the same reader pending. `pnpm test` 1547 passed, `pnpm check` 0 problems.
 
 ## Decisions
 
