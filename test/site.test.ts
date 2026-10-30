@@ -888,7 +888,7 @@ describe("the home page", () => {
     const released = record.upstream?.latestReleaseDate;
     expect(date!.html).toBe(
       released
-        ? `<time datetime="${released.slice(0, 10)}">${new Date(released).toLocaleDateString("en", { month: "short", year: "numeric", timeZone: "UTC" })}</time>`
+        ? `<time datetime="${released.slice(0, 7)}">${released.slice(0, 7)}</time>`
         : "",
     );
     const linked = [...links!.html.matchAll(/<a href="([^"]*)" data-link="([^"]+)"/g)].map(([, href, kind]) => [kind, unescaped(href!)]);
@@ -903,10 +903,10 @@ describe("the home page", () => {
     expect(row("b-cafe@example.org").cells.at(-3)!.html).toBe(`<abbr title="${languageName("en")}">en</abbr>`);
   });
 
-  // The site builds in New York time (pnpmSite), where 00:30 UTC on the 1st is still the month before.
+  // The site builds in New York time (pnpmSite), where 02:00 UTC on the 1st is still the month before.
   test("shows the release month in UTC", () => {
-    expect(row("a-cafe@example.org").cells.at(-2)!.html).toBe('<time datetime="2026-07-01">Jul 2026</time>');
-    expect(row("b-cafe@example.org").cells.at(-2)!.html).toBe('<time datetime="2025-12-31">Dec 2025</time>');
+    expect(row("a-cafe@example.org").cells.at(-2)!.html).toBe('<time datetime="2026-11">2026-11</time>');
+    expect(row("b-cafe@example.org").cells.at(-2)!.html).toBe('<time datetime="2025-12">2025-12</time>');
   });
 
   test("links a source and a download only when the address passes", () => {

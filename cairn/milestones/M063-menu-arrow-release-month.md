@@ -1,13 +1,13 @@
 # M063: Fix the language menu arrow and release dates
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes how the home page looks
-- **Branch/PR:** —
+- **Branch/PR:** m063-menu-arrow-release-month
 
 ## Goal
 
@@ -50,7 +50,7 @@ in M062.
 
 ## Tasks
 
-- [ ] T1: Change `monthYear` (line 195 of `site/src/data.ts`) to give `YYYY-MM` from the
+- [x] T1: Change `monthYear` (line 195 of `site/src/data.ts`) to give `YYYY-MM` from the
       UTC date, use it for both the cell text and `datetime`, and add the fixture date
       and site test.
 - [ ] T2: Style `[data-language-filter]` in `site/src/layouts/Base.astro` with
@@ -69,6 +69,8 @@ in M062.
 - 2026-10-30: absorbs part (3) of candidate "Close three gaps in the release read" (the `<time datetime>` day against the UTC month) and part (5) of "Close small gaps on the site pages" (`appearance: none` on the language menu); review hygiene narrows both rows.
 - 2026-10-30: collision check: M049 and M053 shipped the menu's look and the month cell; no D-entry covers either. Inbox sweep: 0 open issues, 18 bot pull requests, none overlapping.
 - 2026-10-30: lessons used: 2026-10-26 (M015, serve the built site for the browser pane), 2026-10-29 (M053, the built CSS is minified, so a test cannot match a style by its source text), 2026-10-29 (M048, check page width in same-origin iframes).
+- 2026-10-30: implement started on branch m063-menu-arrow-release-month, cut from main at ad9f627.
+- 2026-10-30: T1 done: `monthYear` now returns `toISOString().slice(0, 7)` and feeds both the cell text and `datetime`; `day` import dropped from index.astro; the cafe-tools fixture date moved from 2026-07-01T00:30:00Z to 2026-11-01T02:00:00Z, and the UTC test expects `2026-11` and `2025-12`; the tests failed before the change (11 in site.test.ts) and pass after. One full-suite run had 1 unnamed failure that did not repeat in 3 more runs.
 
 ## Decisions
 

@@ -204,7 +204,7 @@ export function day(timestamp: string): string {
   return timestamp.slice(0, 10);
 }
 
-// The month and year of a timestamp in UTC, such as "Sep 2026".
+// The year and month of a timestamp in UTC, such as "2026-09".
 export function monthYear(timestamp: string): string {
-  return new Date(timestamp).toLocaleDateString("en", { month: "short", year: "numeric", timeZone: "UTC" });
+  return new Date(timestamp).toISOString().slice(0, 7);
 }

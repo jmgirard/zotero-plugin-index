@@ -4,7 +4,6 @@ import { majorSupport, ZOTERO_MAJORS } from "../../../src/site/version.ts";
 import Icon from "../components/Icon.astro";
 import Base from "../layouts/Base.astro";
 import {
-  day,
   displayName,
   homeOrder,
   languageName,
@@ -168,7 +167,7 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
                     ))
                   }
                 </td>
-                <td class="date">{upstream && <time datetime={day(upstream.latestReleaseDate)}>{monthYear(upstream.latestReleaseDate)}</time>}</td>
+                <td class="date">{upstream && <time datetime={monthYear(upstream.latestReleaseDate)}>{monthYear(upstream.latestReleaseDate)}</time>}</td>
                 <td class="links">
                   {sourceHref && (
                     <a href={sourceHref} data-link="source" title="Source code" aria-label={`Source code of ${name}`}>
