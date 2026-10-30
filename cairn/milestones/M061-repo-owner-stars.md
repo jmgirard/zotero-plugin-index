@@ -1,13 +1,13 @@
 # M061: Show the repo, owner, and stars on plugin pages
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — it changes the plugin pages and adds a field to the public data file
-- **Branch/PR:** —
+- **Branch/PR:** m061-repo-owner-stars
 
 ## Goal
 
@@ -64,7 +64,7 @@ rule for declared marks is in M062.
 
 ## Tasks
 
-- [ ] T1: Read `stargazers_count` into `upstream.stars` in `src/upstream/reader.ts` (near
+- [x] T1: Read `stargazers_count` into `upstream.stars` in `src/upstream/reader.ts` (near
       `repoDescription`, line 213), add `stars` to the record type and to
       `schemas/plugins.v1.schema.json`, and add the reader and schema tests.
 - [ ] T2: Add a repo-line helper in `site/src/data.ts` that returns the owner and repo for
@@ -86,6 +86,8 @@ rule for declared marks is in M062.
 - 2026-10-30: plan split the request into M061 (owner and stars), M062 (full-support marks), and M063 (menu arrow and release month); each ships alone, with no dependency.
 - 2026-10-30: ROADMAP line cap: rows "Shorten the languages override error" and "Quote entry text in check messages" merged into "Fix two pnpm check message problems" to make room for three milestone rows.
 - 2026-10-30: lessons used: 2026-10-27 (M021, Astro drops the space before an element on the next line), 2026-10-28 (M035, build the site from the deployed data for a hand check), 2026-10-26 (M015, serve the built site for the browser pane), 2026-10-28 (M036, end an Edit's old text at a line break when rewrapping docs).
+- 2026-10-30: implement started on m061-repo-owner-stars, cut from main at 3bf8979; tree clean.
+- 2026-10-30: T1 done: `src/upstream/reader.ts` writes `stars` from `stargazers_count` only for an integer of at least 0; the better-notes fixture gained its 2026-10-30 count, 8400; reader tests cover 0, absent, -1, 1.5, and "12", and a build test covers the schema; a planted `>= -5` failed the -1 case. `pnpm test` 1453 passed, `pnpm check` 0 problems.
 
 ## Decisions
 

@@ -60,6 +60,7 @@ describe("readUpstream", () => {
         repoUrl: REPO_URL,
         repoCreatedAt: "2022-04-27T15:46:23Z",
         openIssues: 15,
+        stars: 8400,
         releaseCount: 2,
         latestReleaseDate: "2026-08-24T13:25:16Z",
         prerelease: false,
@@ -95,6 +96,18 @@ describe("readUpstream", () => {
     const { result } = await read((r) => edit(r[REPO].json as Json));
     expect(result.ok).toBe(true);
     expect(result.ok && result.facts.repoDescription).toBe(repoDescription);
+  });
+
+  test.each<[string, (repo: Json) => void, number | undefined]>([
+    ["0", (repo) => (repo.stargazers_count = 0), 0],
+    ["absent", (repo) => delete repo.stargazers_count, undefined],
+    ["-1", (repo) => (repo.stargazers_count = -1), undefined],
+    ["1.5", (repo) => (repo.stargazers_count = 1.5), undefined],
+    ['the string "12"', (repo) => (repo.stargazers_count = "12"), undefined],
+  ])("reads a repo whose star count is %s", async (_name, edit, stars) => {
+    const { result } = await read((r) => edit(r[REPO].json as Json));
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.facts.stars).toBe(stars);
   });
 
   test("sends GITHUB_TOKEN with each GitHub API request and with no other request", async () => {

@@ -1,5 +1,5 @@
 {
-  "source": "Recorded from windingwind/zotero-better-notes on 2026-10-25. The repo body is trimmed to six fields, `archived` added from a read on 2026-10-26, and each release to five. The release list keeps three of its 378 releases, split over two pages, and the page-1 link header was rewritten to point at that second page. The XPI holds only the manifest.json of release v3.3.3.",
+  "source": "Recorded from windingwind/zotero-better-notes on 2026-10-25. The repo body is trimmed to six fields, `archived` added from a read on 2026-10-26, `stargazers_count` from a read on 2026-10-30, and each release to five. The release list keeps three of its 378 releases, split over two pages, and the page-1 link header was rewritten to point at that second page. The XPI holds only the manifest.json of release v3.3.3.",
   "repoUrl": "https://github.com/windingwind/zotero-better-notes",
   "responses": {
     "https://api.github.com/repos/windingwind/zotero-better-notes": {
@@ -9,7 +9,8 @@
         "fork": false,
         "archived": false,
         "created_at": "2022-04-27T15:46:23Z",
-        "open_issues_count": 15
+        "open_issues_count": 15,
+        "stargazers_count": 8400
       }
     },
     "https://api.github.com/repos/windingwind/zotero-better-notes/releases?per_page=100": {

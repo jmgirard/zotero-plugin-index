@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-30 (M060 done and archived; 1 row graduated, 1 exte
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M061 | Show the repo, owner, and stars on plugin pages | planned | — | normal | milestones/M061-repo-owner-stars.md |
+| M061 | Show the repo, owner, and stars on plugin pages | in-progress | — | normal | milestones/M061-repo-owner-stars.md |
 | M062 | Mark full support against released Zotero versions | planned | — | normal | milestones/M062-full-support-marks.md |
 | M063 | Fix the language menu arrow and release dates | planned | — | normal | milestones/M063-menu-arrow-release-month.md |
 | M060 | Filter the home list before it paints | done | — | normal | milestones/archive/M060-pre-paint-filter.md |

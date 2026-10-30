@@ -22,6 +22,8 @@ export interface UpstreamFacts {
   repoDescription?: string;
   repoCreatedAt: string;
   openIssues: number;
+  // GitHub's star count, left out when it is not an integer of at least 0.
+  stars?: number;
   // Releases that carry an .xpi asset, drafts excluded.
   releaseCount: number;
   // The publish date of the release whose manifest was read.
@@ -213,6 +215,7 @@ async function read(repoUrl: string, fetch: Fetch, download: Download): Promise<
       repoDescription: typeof meta.description === "string" && meta.description.trim() !== "" ? meta.description.trim() : undefined,
       repoCreatedAt: meta.created_at,
       openIssues: meta.open_issues_count,
+      stars: Number.isInteger(meta.stargazers_count) && (meta.stargazers_count as number) >= 0 ? (meta.stargazers_count as number) : undefined,
       releaseCount: withXpi.length,
       latestReleaseDate: release.published_at,
       prerelease: release.prerelease === true,
@@ -283,6 +286,7 @@ interface RepoJson {
   description?: unknown;
   created_at: string;
   open_issues_count: number;
+  stargazers_count?: unknown;
   topics?: unknown;
 }
 
