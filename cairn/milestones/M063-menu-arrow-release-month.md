@@ -57,7 +57,7 @@ in M062.
       `appearance: none`, right padding for the arrow, and an arrow drawn in
       `currentColor`. Measure the insets and take the four screenshots in the browser
       pane.
-- [ ] T3: Update DESIGN, README, and CHANGELOG.
+- [x] T3: Update DESIGN, README, and CHANGELOG.
 - [ ] T4: Run `pnpm test` and `pnpm check`.
 
 ## Work log
@@ -73,6 +73,7 @@ in M062.
 - 2026-10-30: T1 done: `monthYear` now returns `toISOString().slice(0, 7)` and feeds both the cell text and `datetime`; `day` import dropped from index.astro; the cafe-tools fixture date moved from 2026-07-01T00:30:00Z to 2026-11-01T02:00:00Z, and the UTC test expects `2026-11` and `2025-12`; the tests failed before the change (11 in site.test.ts) and pass after. One full-suite run had 1 unnamed failure that did not repeat in 3 more runs.
 - 2026-10-30: T2 choice: the arrow is two 6 px `linear-gradient` triangles in `currentColor` as the menu's background, the right one at `right var(--space-4)`, with right padding `--space-14` so the text clears it; a `forced-colors: active` block puts back `appearance: auto`, since CSS Color Adjust 1 says `background-image` computes to `none` there unless it holds a `url()` (read on w3.org this session).
 - 2026-10-30: T2 done: built the site from the deployed plugins.json and served it as `m063-look` (port 4337). Computed CSS at 1280 and 375 px, light and dark: padding-left 8px, arrow layer at `calc(100% - 8px) 50%`, color `rgb(28, 28, 26)` light and `rgb(236, 236, 232)` dark; the four screenshots each show one arrow inside the box. A new style test checks `appearance: none`, both gradients in currentColor, the inset equal to the left padding, and the forced-colors fallback; it failed with the inset planted at `--space-5`. Forced colors not viewed in the pane.
+- 2026-10-30: T3 done: DESIGN's home table paragraph and README's row description state the UTC `YYYY-MM` month; two CHANGELOG entries under Unreleased cover the month form and the drawn menu arrow. The simple-english hook flagged README lines 234 and 811, which this branch does not touch; left as they are.
 
 ## Decisions
 
