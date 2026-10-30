@@ -16,23 +16,25 @@
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
 
-A visitor who opens a home page address never sees a table row that the page's script then hides.
+In a browser that runs the home page's module script and supports `:nth-child(… of S)`, a visitor who opens a home page address sees no table row that the script then hides.
 
 ## Scope
 <!-- owner: plan · create/amend-via-gate -->
 
 **In:**
 - `prePaintStyle(search, size)` in `src/site/home-filter.ts`: a function
-  that calls no other function and reads no module constant, so its source
-  text runs on its own. It returns CSS text for an address's search string.
-  With a non-blank `q`, or a `language` or `zotero` value that is not
-  `[A-Za-z0-9-]+`, the CSS hides every `.plugins tbody tr`. Otherwise it
-  hides each row outside the asked page of the rows whose `data-languages`
-  and `data-zotero` hold the asked values (`[data-x~="v"]`, and
+  that calls no function and reads no binding from outside its body, except
+  JavaScript built-ins, so its source text runs on its own. It returns CSS
+  text for an address's search string, read with `URLSearchParams.get` as
+  the script reads it. With a non-blank `q`, a non-empty `language` or
+  `zotero` value that is not `[A-Za-z0-9-]+`, or a `page` value of more than
+  6 digits, the CSS hides every `.plugins tbody tr`. Otherwise it hides each
+  row outside the asked page of the rows whose `data-languages` and
+  `data-zotero` hold the asked values (`[data-x~="v"]`, and
   `:nth-child(An+B of S)` when a filter is on), and drops the top border of
-  that page's first row. A `page` value is the asked page only when it is
-  digits with no leading zero and is 2 or more, as `chosenPage` reads it;
-  any other value asks for page 1.
+  that page's first row. An empty value is no filter. A `page` value is the
+  asked page only when it is digits with no leading zero and is 2 or more,
+  as `chosenPage` reads it; any other value asks for page 1.
 - A classic inline script in `site/src/pages/index.astro`, before the table,
   built at site build from the source text of `prePaintStyle`. Where the
   browser runs module scripts (`"noModule" in HTMLScriptElement.prototype`),
@@ -61,34 +63,47 @@ A visitor who opens a home page address never sees a table row that the page's s
 
 - [ ] AC1: In the browser pane, on a site built from the deployed data file,
       a copy of the home page with its module script removed displays the
-      same rows, by `data-plugin` id, as the full page displays, for each of
-      these addresses: the bare address, `?page=2`, the last page,
-      `?page=02`, `?zotero=Z` and `?zotero=Z&page=2` for a major Z that more
-      than 50 rows declare, `?language=L` for the subtag L with the most
-      rows, and `?language=L&zotero=Z2&page=2` for a major Z2 that more than
-      50 of those rows declare. For `?q=pdf`, `?language=xx`, and `?page=99`
-      the copy displays no row.
+      same rows, by `data-plugin` id, as the full page displays, with the
+      same computed `border-top-width` on the first displayed row, for each
+      of these addresses: the bare address, `?page=2`, the last page,
+      `?page=02`, `?page=`, `?page=2&page=3`, `?zotero=`, `?q=`, `?q=+`,
+      `?q=%20`, `?zotero=Z`, `?zotero=Z&page=2`, and `?zotero=Z&zotero=Z3`
+      for majors Z and Z3 that more than 50 rows declare, `?language=L` and
+      its percent-encoded form for the subtag L with the most rows, and
+      `?language=L&zotero=Z2&page=2` for a major Z2 that more than 50 of
+      those rows declare (`?language=L&page=2` if none does). For `?q=pdf`,
+      `?q=pdf&page=2`, `?language=xx`, `?zotero=99`, `?page=99`,
+      `?zotero=Z&page=99`, and `?page=99999999999999999999` the copy
+      displays no row.
 - [ ] AC2: In the browser pane, the built home page loaded in an iframe whose
       `sandbox` attribute holds `allow-same-origin` and not `allow-scripts`
       displays every row, for the bare address and for `?zotero=Z&page=2`.
 - [ ] AC3: A site test runs the built home page's classic inline script in
       `node:vm` with a stand-in `location.search` and document, for each
-      search string of AC1's list. Each run appends one
+      search string that AC4 lists. Each run appends one
       `style[data-pre-paint]` to the head, whose text equals
       `prePaintStyle(<that search string>, PAGE_SIZE)`. A run whose stand-in
       `HTMLScriptElement.prototype` lacks `noModule` appends no style.
-- [ ] AC4: Unit tests of `prePaintStyle` assert its exact CSS text for: the
-      empty search; each `page` value of `2`, `1`, `02`, `0`, `-2`, `2.0`,
-      `abc`, and an empty value; a `language`, a `zotero`, and both, each
-      with and without `page=2`; a `language` value holding `"`, `]`, or a
-      space; and a `q` that is blank and one that is not.
+- [ ] AC4: Unit tests of `prePaintStyle` assert its exact CSS text for each
+      of these search strings: `""`; `?page=` with each of `2`, `1`, `02`,
+      `0`, `-2`, `2.0`, `abc`, `99`, `999999`, `1234567`, and an empty
+      value; `?page=2&page=3`; `?language=en`, `?zotero=7`, and
+      `?language=en&zotero=7`, each also with `&page=2`; `?language=EN`,
+      `?language=zh-Hant`, `?language=e%6E`, `?zotero=99`,
+      `?zotero=7&zotero=8`, `?language=`, and `?zotero=`; `?language=`
+      with each of `a"b`, `a]b`, and `a%20b`; `?q`, `?q=`, `?q=+`,
+      `?q=%20`, `?q=pdf`, and `?q=pdf&page=2`.
 - [ ] AC5: Site tests in `node:vm` show that no `style[data-pre-paint]` is
       left in the stand-in head once the module script's first pass ends,
-      on the built page and on a page whose search box is missing.
-- [ ] AC6: DESIGN.md and one CHANGELOG entry state that the home page paints
-      only the asked rows before its script runs, that a `q` address paints
-      no row until then, and which browsers paint a filter's rows on every
-      page; each claim is written against the AC1 check or a test.
+      on the built page and on pages that lack the search box, the language
+      menu, or the version buttons.
+- [ ] AC6: DESIGN.md's home page paragraph and one CHANGELOG entry state
+      that, in a browser that runs module scripts, the home page paints
+      only the asked rows before its script runs and paints no row for an
+      address with a non-blank `q`; DESIGN.md's `home-filter.ts` line names
+      `prePaintStyle`; a DESIGN.md Known issues entry names the browser
+      releases that lack `:nth-child(… of S)`, citing MDN's compatibility
+      data through a `cairn/references/` source note.
 - [ ] AC7: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
@@ -106,8 +121,9 @@ A visitor who opens a home page address never sees a table row that the page's s
 <!-- owner: plan (create) / implement (check-off, minor edits) -->
 
 - [ ] T1: Write the AC4 tests in `test/home-filter.test.ts`, then
-      `prePaintStyle` in `src/site/home-filter.ts`, with no call to another
-      function and no read of `PAGE_SIZE` (the size is an argument).
+      `prePaintStyle` in `src/site/home-filter.ts`, with no call to or read
+      of a binding outside its body except built-ins, so no read of
+      `PAGE_SIZE` (the size is an argument).
 - [ ] T2: In `site/src/pages/index.astro`, add before `.table-card` a
       `<script is:inline>` whose text is built with `set:html` from
       `String(prePaintStyle)`, `PAGE_SIZE`, and the `noModule` check; in the
@@ -122,11 +138,13 @@ A visitor who opens a home page address never sees a table row that the page's s
       kept out of git, and write the copy without the module script beside
       the home page. In one `javascript_tool` call per list, load each AC1
       address in an iframe and compare the `data-plugin` ids of rows whose
-      computed `display` is not `none`; load the AC2 iframes. Log the
-      home page's gzipped bytes before and after.
-- [ ] T4: Update DESIGN.md (the home page paragraph, the `home-filter.ts`
-      line of the site build list, a Known issues entry for the browsers
-      that drop the page rule) and add one CHANGELOG entry.
+      computed `display` is not `none`, and the first one's computed
+      `border-top-width`; load the AC2 iframes. Log the home page's gzipped
+      bytes before and after.
+- [ ] T4: Save MDN's `:nth-child` page to the source shelf and write its
+      source note and INDEX line; update DESIGN.md (the home page paragraph,
+      the `home-filter.ts` line of the site build list, a Known issues entry
+      for the browsers that drop the page rule) and add one CHANGELOG entry.
 - [ ] T5: Run `pnpm test` and `pnpm check`.
 
 ## Work log
@@ -144,6 +162,7 @@ A visitor who opens a home page address never sees a table row that the page's s
 - 2026-10-30: inbox sweep: no open issues; 18 open bot "Add …" pull requests, none overlapping.
 - 2026-10-30: added item (7) on the home page's markup size to candidate row "Close small gaps on the site pages", from the investigation's size read of the deployed page; a new row would pass the ROADMAP's 60-line cap.
 - 2026-10-30: checkpoint: plan committed while the full criteria audit runs; a second plan commit applies its findings before implement starts.
+- 2026-10-30: criteria audit (full, fresh Opus reader): 9 findings, all taken: Goal narrowed to browsers that run the module script and support `of S`; AC1 adds empty, repeated, encoded, blank-`q`, past-the-end, and 20-digit page cases, and the first row's border; a page value over 6 digits now hides every row, since a template literal writes a large offset as `5e+21`, which CSS drops; AC3 runs AC4's literal strings, not data-dependent ones; AC4 adds the same forms; AC5 adds a missing menu and missing buttons; AC6 drops its "written against" clause, scopes its claims to module-script browsers and non-blank `q`, names the three DESIGN.md places, and cites MDN through a source note (T4); Scope says built-ins are the one outside call; AC2 and AC7 passed.
 - 2026-10-30: lessons used: 2026-10-25 (M001), 2026-10-25 (M007), 2026-10-26 (M015), 2026-10-28 (M035), 2026-10-29 (M048, iframe widths), 2026-10-29 (M053).
 
 ## Decisions
