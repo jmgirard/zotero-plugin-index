@@ -104,6 +104,7 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - 2026-10-30: T5 added and done (minor amendment for the review return): the amended structure, tests, and docs; Coverage maps AC1 and AC5 to T5 too. All criterion boxes unticked so review re-verifies at the new head.
 - 2026-10-30: status review; `pnpm test` 1547 passed, `pnpm check` 0 problems.
 - 2026-10-30: claim audit: 21 claims read, 0 corrected — README.md, CHANGELOG.md, cairn/DESIGN.md, Icon.astro, test/site.test.ts (the lines added since 9c7f547).
+- 2026-10-30: step-7 approval: m064-star-icon approved for merge
 
 ## Decisions
 
