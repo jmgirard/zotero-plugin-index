@@ -27,6 +27,7 @@
         "repoDescription": "Tests the site & its <pages>.",
         "repoCreatedAt": "2023-03-14T09:26:53Z",
         "openIssues": 12,
+        "stars": 1234,
         "releaseCount": 27,
         "latestReleaseDate": "2026-09-30T18:04:11Z",
         "prerelease": false,
@@ -66,6 +67,7 @@
         "repoDescription": "An old plugin kept for history.",
         "repoCreatedAt": "2019-11-02T12:00:00Z",
         "openIssues": 3,
+        "stars": 1,
         "releaseCount": 5,
         "latestReleaseDate": "2024-07-01T08:30:00Z",
         "prerelease": true,
@@ -89,6 +91,7 @@
         "repoUrl": "https://github.com/example/guid-plugin",
         "repoCreatedAt": "2025-01-20T15:45:00Z",
         "openIssues": 0,
+        "stars": 0,
         "releaseCount": 1,
         "latestReleaseDate": "2026-10-01T00:00:00Z"
       },
@@ -321,6 +324,42 @@
         "name": "not-github-repo",
         "message": "git@github.com:example/ssh-plugin.git is not a GitHub repo URL such as https://github.com/<owner>/<repo>"
       },
+      "overrides": []
+    },
+    {
+      "id": "repo-path@example.org",
+      "repoUrl": "https://github.com/example/repo-path/tree/main",
+      "failure": { "name": "no-xpi-release", "message": "no release of example/repo-path has an .xpi asset" },
+      "overrides": []
+    },
+    {
+      "id": "repo-http@example.org",
+      "repoUrl": "http://github.com/example/repo-http",
+      "failure": { "name": "no-xpi-release", "message": "no release of example/repo-http has an .xpi asset" },
+      "overrides": []
+    },
+    {
+      "id": "repo-gitlab@example.org",
+      "repoUrl": "https://gitlab.com/example/repo-gitlab",
+      "failure": { "name": "not-github-repo", "message": "https://gitlab.com/example/repo-gitlab is not a GitHub repo URL such as https://github.com/<owner>/<repo>" },
+      "overrides": []
+    },
+    {
+      "id": "repo-query@example.org",
+      "repoUrl": "https://github.com/example/repo-query?tab=readme",
+      "failure": { "name": "no-xpi-release", "message": "no release of example/repo-query has an .xpi asset" },
+      "overrides": []
+    },
+    {
+      "id": "repo-owner-query@example.org",
+      "repoUrl": "https://github.com/example?x=/repo-owner-query",
+      "failure": { "name": "no-xpi-release", "message": "no release of example/repo-owner-query has an .xpi asset" },
+      "overrides": []
+    },
+    {
+      "id": "repo-fragment@example.org",
+      "repoUrl": "https://github.com/example/repo-fragment#readme",
+      "failure": { "name": "no-xpi-release", "message": "no release of example/repo-fragment has an .xpi asset" },
       "overrides": []
     }
   ]

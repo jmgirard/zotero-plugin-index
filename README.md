@@ -137,7 +137,14 @@ The "Add a plugin" link in the top bar opens the issue form that
 account.
 
 Each plugin has its own page. It opens with an "All plugins" link back to
-the home page, the plugin's name, and its description. Then come up to
+the home page, the plugin's name, a repository line, and its description.
+The repository line needs an address of the form
+`https://github.com/<owner>/<repo>`, with no query or fragment. A
+trailing slash is allowed. The line reads `By <owner> · <owner>/<repo>`.
+The owner links to the owner's GitHub page, and `<owner>/<repo>` links to
+the repository. If the data has a star count for the plugin, the line
+ends with it, such as "8,400 stars". For any other address, the page has
+no repository line. Then come up to
 three links, each with an icon and text: "Download <version> (.xpi)" to the `.xpi`
 file that the index read, "Source" to the repository, and "Releases" to
 the repository's releases page. If the download address does not start
@@ -241,6 +248,12 @@ text of the plugin's GitHub repository, with the spaces before and after
 it removed. If GitHub gives no such text, or the text is blank, the field
 is absent. Data written before the build wrote this field has none. The
 site uses the field by the description rule above.
+
+An `upstream` block can have a `stars` field. It is the star count that
+the build read for the plugin's GitHub repository. If GitHub gives no
+whole number of 0 or more, the field is absent. Data written before the
+build wrote this field has none. The field is new in schema v1. If you
+validate against a saved copy of the schema, fetch the schema again.
 
 Each `upstream` block has a `languages` list, such as `["en-US", "zh-CN"]`.
 It holds the language tags of the locale folders in the plugin's XPI, the

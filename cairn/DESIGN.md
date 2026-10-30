@@ -28,7 +28,9 @@ code, and it does not endorse plugins.
 
 Each plugin page shows facts that a reader can check. These facts are the
 declared range of Zotero versions, source availability, whether GitHub marks
-the repository archived (when GitHub's response says), repository age, the
+the repository archived (when GitHub's response says), for a repo URL of
+the form `https://github.com/<owner>/<repo>` the repository's owner and
+name and its GitHub star count (M061), repository age, the
 release the index read and whether it is a prerelease (corrected M014),
 release count, open issues, the host of the `update.json` file, the
 counted user reports on the release the index read (M021), the
@@ -85,12 +87,16 @@ once the visitor stops for half a second (M053 review). A top bar on every
 page links to the home page, the About page (M054), the "Add a plugin"
 issue form, and the data file (M053).
 A plugin page has one column (M054). It opens with an "All plugins" link
-home, the name with an "Archived" badge for an archived repository, the
-description, and links with icons: the `.xpi` file (`upstream.xpiUrl`, only
-when it passes `safeHref`, in the same plain button style as the others,
-D-029), the source, and the releases; a repo URL that fails `safeHref`
-shows as plain text. A "Zotero compatibility" card follows. For a read
-record it names the version read and holds one table row per major,
+home, the name with an "Archived" badge for an archived repository, a
+repo line, the description, and links with icons. For a repo URL of the
+form `https://github.com/<owner>/<repo>` (`githubRepo`), the repo line
+links the owner's GitHub page and `<owner>/<repo>` and adds the
+`upstream.stars` count when the data has one (M061). The links are: the
+`.xpi` file (`upstream.xpiUrl`, only when it passes `safeHref`, in the
+same plain button style as the others, D-029), the source, and the
+releases; a repo URL that fails `safeHref` shows as plain text. A
+"Zotero compatibility" card follows. For a read record it names the
+version read and holds one table row per major,
 newest first, for `ZOTERO_MAJORS` and each other major that the record's
 reports or start results name. The row's cells are the declared support,
 the major's newest start result (`majorStart`, M053), and that major's

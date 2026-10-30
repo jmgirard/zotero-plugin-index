@@ -114,6 +114,11 @@
         },
         "repoCreatedAt": { "description": "When the repo was created.", "type": "string" },
         "openIssues": { "description": "Open issues and pull requests in the repo.", "type": "integer", "minimum": 0 },
+        "stars": {
+          "description": "The repo's star count that GitHub returns. Absent when GitHub gives no integer of at least 0, and in data written before the build wrote it.",
+          "type": "integer",
+          "minimum": 0
+        },
         "releaseCount": { "description": "Releases that carry an .xpi asset, drafts excluded.", "type": "integer", "minimum": 1 },
         "latestReleaseDate": { "description": "The publish date of the release whose manifest was read.", "type": "string" },
         "xpiUrl": {

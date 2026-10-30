@@ -758,6 +758,23 @@ describe("buildData", () => {
     expect(checkOutput(output)).toEqual([`/plugins/${index}/upstream/repoDescription must match pattern "\\S"`]);
   });
 
+  test("writes the star count, and the schema takes an upstream with or without one and refuses -1 and 1.5", async () => {
+    const recorded = responses();
+    (recorded["https://api.github.com/repos/windingwind/zotero-better-notes"].json as Record<string, unknown>).stargazers_count = 8401;
+    const result = await buildData(TREE, fixtureFetch(recorded).fetch);
+    if (!result.ok) throw new Error(result.problems.join("\n"));
+    const output: Output = JSON.parse(result.text);
+    const index = output.plugins.findIndex((plugin) => plugin.id === BETTER_NOTES);
+    expect(output.plugins[index].upstream!.stars).toBe(8401);
+    expect(checkOutput(output)).toEqual([]);
+    delete output.plugins[index].upstream!.stars;
+    expect(checkOutput(output)).toEqual([]);
+    output.plugins[index].upstream!.stars = -1;
+    expect(checkOutput(output)).toEqual([`/plugins/${index}/upstream/stars must be >= 0`]);
+    output.plugins[index].upstream!.stars = 1.5;
+    expect(checkOutput(output)).toEqual([`/plugins/${index}/upstream/stars must be integer`]);
+  });
+
   test("writes the reader's language list, with tags or empty, and the output passes the schema", async () => {
     const recorded = responses();
     const xpi = recorded["https://github.com/example/second-plugin/releases/download/v1.0.0/second-plugin.xpi"].xpi!;
