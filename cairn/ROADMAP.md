@@ -7,6 +7,7 @@ _Last hygiene check: 2026-10-30 (M063 done: 4 rows edited, M060 row pruned, 1 le
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
+| M064 | Show the star count with a star icon | planned | — | normal | milestones/M064-star-icon.md |
 | M063 | Fix the language menu arrow and release dates | done | — | normal | milestones/archive/M063-menu-arrow-release-month.md |
 | M062 | Mark full support against released Zotero versions | done | — | normal | milestones/archive/M062-full-support-marks.md |
 | M061 | Show the repo, owner, and stars on plugin pages | done | — | normal | milestones/archive/M061-repo-owner-stars.md |
