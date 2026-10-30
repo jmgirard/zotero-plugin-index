@@ -28,8 +28,9 @@ code, and it does not endorse plugins.
 
 Each plugin page shows facts that a reader can check. These facts are the
 declared range of Zotero versions, source availability, whether GitHub marks
-the repository archived (when GitHub's response says), the repository's
-owner and name and its GitHub star count (M061), repository age, the
+the repository archived (when GitHub's response says), for a repo URL of
+the form `https://github.com/<owner>/<repo>` the repository's owner and
+name and its GitHub star count (M061), repository age, the
 release the index read and whether it is a prerelease (corrected M014),
 release count, open issues, the host of the `update.json` file, the
 counted user reports on the release the index read (M021), the

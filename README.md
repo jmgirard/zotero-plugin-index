@@ -141,10 +141,10 @@ the home page, the plugin's name, a repository line, and its description.
 The repository line needs an address of the form
 `https://github.com/<owner>/<repo>`, with no query or fragment. A
 trailing slash is allowed. The line reads `By <owner> · <owner>/<repo>`.
-The owner links to the owner's GitHub page,
-and `<owner>/<repo>` links to the repository. If the data has a star
-count for the plugin, the line ends with it, such as "8,400 stars". For
-any other address, the page has no repository line. Then come up to
+The owner links to the owner's GitHub page, and `<owner>/<repo>` links to
+the repository. If the data has a star count for the plugin, the line
+ends with it, such as "8,400 stars". For any other address, the page has
+no repository line. Then come up to
 three links, each with an icon and text: "Download <version> (.xpi)" to the `.xpi`
 file that the index read, "Source" to the repository, and "Releases" to
 the repository's releases page. If the download address does not start

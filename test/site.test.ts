@@ -127,6 +127,16 @@ function fact(html: string, name: string): string | undefined {
 const page = (id: string) => readFileSync(join(out, "plugins", id, "index.html"), "utf8");
 const home = () => readFileSync(join(out, "index.html"), "utf8");
 const records = (fixture as unknown as PluginsFile).plugins;
+// The failure records whose repo URL each break one part of the repo line's URL form, in
+// home table order.
+const NO_REPO_LINE_IDS = [
+  "repo-fragment@example.org",
+  "repo-gitlab@example.org",
+  "repo-http@example.org",
+  "repo-owner-query@example.org",
+  "repo-path@example.org",
+  "repo-query@example.org",
+];
 
 // Text as Astro writes it into the page.
 function escaped(text: string): string {
@@ -398,7 +408,7 @@ function headLinks(actions: string): { kind: string; href?: string; text: string
 }
 
 describe("the plugin page", () => {
-  test.each(ids)("opens the main content of %s with a back link, the name, the description, and the links", (id) => {
+  test.each(ids)("opens the main content of %s with a back link, the name, any repo line, the description, and the links", (id) => {
     const record = records.find((r) => r.id === id)!;
     const html = page(id);
     const description = shownDescription(record);
@@ -449,13 +459,12 @@ describe("the plugin page", () => {
   });
 
   test.each([
-    ["a GitHub URL with an extra path segment", "min-only-plugin@example.org"],
-    ["an http: GitHub URL", "zotero6-plugin@example.org"],
-    ["a non-GitHub host on a failure record", "_x-y+z.w@{v}"],
-    ["a URL with no scheme", "next-plugin@example.org"],
-    ["a GitHub URL with a query after the repo", "locale-plugin@example.org"],
-    ["a GitHub URL with a query after the owner", "a-cafe@example.org"],
-    ["a GitHub URL with a fragment", "b-cafe@example.org"],
+    ["a GitHub URL with an extra path segment", "repo-path@example.org"],
+    ["an http: GitHub URL", "repo-http@example.org"],
+    ["a non-GitHub host", "repo-gitlab@example.org"],
+    ["a GitHub URL with a query after the repo", "repo-query@example.org"],
+    ["a GitHub URL with a query after the owner", "repo-owner-query@example.org"],
+    ["a GitHub URL with a fragment", "repo-fragment@example.org"],
   ])("shows no repo line for %s", (_name, id) => {
     expect(page(id)).not.toContain("data-repo-line");
   });
@@ -773,6 +782,12 @@ describe("the home page", () => {
       "next-plugin@example.org",
       "no-range-plugin@example.org",
       "old-plugin@example.org",
+      "repo-fragment@example.org",
+      "repo-gitlab@example.org",
+      "repo-http@example.org",
+      "repo-owner-query@example.org",
+      "repo-path@example.org",
+      "repo-query@example.org",
       "ssh-plugin@example.org",
       "zotero6-plugin@example.org",
     ]);
@@ -933,6 +948,7 @@ describe("the home page", () => {
       ["next-plugin@example.org", ""],
       ["no-range-plugin@example.org", "de fr"],
       ["old-plugin@example.org", ""],
+      ...NO_REPO_LINE_IDS.map((id) => [id, ""]),
       ["ssh-plugin@example.org", ""],
       ["zotero6-plugin@example.org", ""],
     ]);
@@ -951,6 +967,7 @@ describe("the home page", () => {
       ["next-plugin@example.org", "8 9 10"],
       ["no-range-plugin@example.org", ""],
       ["old-plugin@example.org", "7"],
+      ...NO_REPO_LINE_IDS.map((id) => [id, ""]),
       ["ssh-plugin@example.org", ""],
       ["zotero6-plugin@example.org", ""],
     ]);

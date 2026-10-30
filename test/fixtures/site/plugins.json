@@ -141,7 +141,7 @@
         "strictMinVersion": "8.0.1",
         "updateUrl": "https://example.org/min-only-plugin/update.json",
         "updateHost": "example.org",
-        "repoUrl": "https://github.com/example/min-only-plugin/tree/main",
+        "repoUrl": "https://github.com/example/min-only-plugin",
         "repoCreatedAt": "2024-02-02T00:00:00Z",
         "openIssues": 4,
         "releaseCount": 9,
@@ -176,7 +176,7 @@
         "strictMaxVersion": "9.*",
         "updateUrl": "https://example.org/locale-plugin/update.json",
         "updateHost": "example.org",
-        "repoUrl": "https://github.com/example/locale-plugin?tab=readme",
+        "repoUrl": "https://github.com/example/locale-plugin",
         "repoCreatedAt": "2024-05-05T00:00:00Z",
         "openIssues": 2,
         "releaseCount": 11,
@@ -201,7 +201,7 @@
     },
     {
       "id": "_x-y+z.w@{v}",
-      "repoUrl": "https://gitlab.com/example/punctuation-plugin",
+      "repoUrl": "https://github.com/example/punctuation-plugin",
       "failure": {
         "name": "no-xpi-release",
         "message": "no release of example/punctuation-plugin has an .xpi asset"
@@ -219,7 +219,7 @@
         "strictMaxVersion": "6.*",
         "updateUrl": "https://github.com/example/zotero6-plugin/releases/download/release/update.json",
         "updateHost": "github.com",
-        "repoUrl": "http://github.com/example/zotero6-plugin",
+        "repoUrl": "https://github.com/example/zotero6-plugin",
         "repoCreatedAt": "2022-03-01T12:00:00Z",
         "openIssues": 0,
         "releaseCount": 1,
@@ -243,7 +243,7 @@
         "strictMaxVersion": "7.*",
         "updateUrl": "https://github.com/example/cafe-log/releases/download/release/update.json",
         "updateHost": "github.com",
-        "repoUrl": "https://github.com/example/cafe-log#readme",
+        "repoUrl": "https://github.com/example/cafe-log",
         "repoCreatedAt": "2025-02-02T00:00:00Z",
         "openIssues": 0,
         "releaseCount": 3,
@@ -267,7 +267,7 @@
         "strictMaxVersion": "9.*",
         "updateUrl": "https://github.com/example/cafe-tools/releases/download/release/update.json",
         "updateHost": "github.com",
-        "repoUrl": "https://github.com/example?x=/cafe-tools",
+        "repoUrl": "https://github.com/example/cafe-tools",
         "repoCreatedAt": "2024-08-08T00:00:00Z",
         "openIssues": 5,
         "releaseCount": 14,
@@ -324,6 +324,42 @@
         "name": "not-github-repo",
         "message": "git@github.com:example/ssh-plugin.git is not a GitHub repo URL such as https://github.com/<owner>/<repo>"
       },
+      "overrides": []
+    },
+    {
+      "id": "repo-path@example.org",
+      "repoUrl": "https://github.com/example/repo-path/tree/main",
+      "failure": { "name": "no-xpi-release", "message": "no release of example/repo-path has an .xpi asset" },
+      "overrides": []
+    },
+    {
+      "id": "repo-http@example.org",
+      "repoUrl": "http://github.com/example/repo-http",
+      "failure": { "name": "no-xpi-release", "message": "no release of example/repo-http has an .xpi asset" },
+      "overrides": []
+    },
+    {
+      "id": "repo-gitlab@example.org",
+      "repoUrl": "https://gitlab.com/example/repo-gitlab",
+      "failure": { "name": "not-github-repo", "message": "https://gitlab.com/example/repo-gitlab is not a GitHub repo URL such as https://github.com/<owner>/<repo>" },
+      "overrides": []
+    },
+    {
+      "id": "repo-query@example.org",
+      "repoUrl": "https://github.com/example/repo-query?tab=readme",
+      "failure": { "name": "no-xpi-release", "message": "no release of example/repo-query has an .xpi asset" },
+      "overrides": []
+    },
+    {
+      "id": "repo-owner-query@example.org",
+      "repoUrl": "https://github.com/example?x=/repo-owner-query",
+      "failure": { "name": "no-xpi-release", "message": "no release of example/repo-owner-query has an .xpi asset" },
+      "overrides": []
+    },
+    {
+      "id": "repo-fragment@example.org",
+      "repoUrl": "https://github.com/example/repo-fragment#readme",
+      "failure": { "name": "no-xpi-release", "message": "no release of example/repo-fragment has an .xpi asset" },
       "overrides": []
     }
   ]

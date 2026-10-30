@@ -760,12 +760,12 @@ describe("buildData", () => {
 
   test("writes the star count, and the schema takes an upstream with or without one and refuses -1 and 1.5", async () => {
     const recorded = responses();
-    (recorded["https://api.github.com/repos/windingwind/zotero-better-notes"].json as Record<string, unknown>).stargazers_count = 8400;
+    (recorded["https://api.github.com/repos/windingwind/zotero-better-notes"].json as Record<string, unknown>).stargazers_count = 8401;
     const result = await buildData(TREE, fixtureFetch(recorded).fetch);
     if (!result.ok) throw new Error(result.problems.join("\n"));
     const output: Output = JSON.parse(result.text);
     const index = output.plugins.findIndex((plugin) => plugin.id === BETTER_NOTES);
-    expect(output.plugins[index].upstream!.stars).toBe(8400);
+    expect(output.plugins[index].upstream!.stars).toBe(8401);
     expect(checkOutput(output)).toEqual([]);
     delete output.plugins[index].upstream!.stars;
     expect(checkOutput(output)).toEqual([]);

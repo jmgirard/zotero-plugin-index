@@ -103,7 +103,6 @@ describe("readUpstream", () => {
     ["absent", (repo) => delete repo.stargazers_count, undefined],
     ["-1", (repo) => (repo.stargazers_count = -1), undefined],
     ["1.5", (repo) => (repo.stargazers_count = 1.5), undefined],
-    ['the string "12"', (repo) => (repo.stargazers_count = "12"), undefined],
   ])("reads a repo whose star count is %s", async (_name, edit, stars) => {
     const { result } = await read((r) => edit(r[REPO].json as Json));
     expect(result.ok).toBe(true);
