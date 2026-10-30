@@ -56,7 +56,14 @@ page lists the plugins in one table, sorted by display name with
 the rows the filters pass 50 at a time, with a pager below the table, and
 keeps the page after 1 in `?page=`; Previous and Next add a history entry
 with `pushState`, the filters still replace the address, and a filter event
-goes back to page 1 (M058). Without JavaScript every row shows. The home
+goes back to page 1 (M058). Without JavaScript every row shows. A classic
+script before the table runs before the rows parse. In a browser that runs
+module scripts, it adds a style that `prePaintStyle` writes from the
+address. The style hides the rows outside the asked page of the rows that
+`?language=` and `?zotero=` pass, so no row that the script hides paints
+while the page loads. For an address with a non-blank `?q=`, it hides every
+row until the script runs. The script removes the style after its first
+pass (M060). The home
 page's "Menus and settings in" menu filters the table by language subtag,
 run by the home page's script (D-014, D-026, M024, M033). The menu lists the
 languages with the most plugins first, and languages with the same number
@@ -338,7 +345,10 @@ exception is a report that is abuse.
   `chosenValue`, `filterHref`, `filterOn`, `filterStatus`, `PAGE_SIZE`,
   `pageCount`, `onPage`, and `chosenPage`, which the home page's script
   imports for the search box, the language menu, the version buttons, the
-  count, and the pager (renamed from `language-filter.ts`, M037; pages M058);
+  count, and the pager (renamed from `language-filter.ts`, M037; pages M058).
+  It also holds `prePaintStyle`, whose source text the home page's classic
+  script carries, so it calls and reads nothing outside its body except
+  built-ins (M060);
   `rowMajors` in `version.ts` gives each row's `data-zotero`.
   `site/src/data.ts` holds the template helpers, among them `homeOrder`,
   `majorStart`, `shortLanguages`, and `monthYear` for the home table, and
@@ -805,3 +815,10 @@ reused._
   deployed data stays until the entry's re-test day, or longer if that
   day's build deploys nothing, and plugin code can forge it again on that
   day (D-035).
+- If a language or Zotero filter is on, a browser that cannot read the
+  `of <selector>` form of `:nth-child()` paints every row that the filter
+  passes, on every page, until the home page's script runs. Chrome and Edge
+  before 111, Firefox before 113, and Opera before 97 cannot read it; Safari
+  reads it since 9 (`cairn/references/mdn-nth-child.md`). Such a browser
+  drops only the rules that use the form, so it still hides the rows that
+  the filter does not pass. Recorded at M060, 2026-10-30.

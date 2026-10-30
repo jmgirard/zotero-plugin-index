@@ -141,7 +141,7 @@ In a browser that runs the home page's module script and supports `:nth-child(â€
       computed `display` is not `none`, and the first one's computed
       `border-top-width`; load the AC2 iframes. Log the home page's gzipped
       bytes before and after.
-- [ ] T4: Save MDN's `:nth-child` page to the source shelf and write its
+- [x] T4: Save MDN's `:nth-child` page to the source shelf and write its
       source note and INDEX line; update DESIGN.md (the home page paragraph,
       the `home-filter.ts` line of the site build list, a Known issues entry
       for the browsers that drop the page rule) and add one CHANGELOG entry.
@@ -170,6 +170,7 @@ In a browser that runs the home page's module script and supports `:nth-child(â€
 - 2026-10-30: T2 check discrimination: removing the module script's `remove()` failed the 4 AC5 tests, a page size of 49 in the classic script failed the AC3 cases, and dropping the `noModule` check failed the no-module test; each file was restored from a copy; `pnpm test` 1446 passed, `pnpm check` 0 problems.
 - 2026-10-30: T3 done: site built at 3e5ba2e from the deployed `v1/plugins.json` (272 rows; L=en, Z=7, Z3=8, Z2=7, last page 6), served by the excluded `m060-live` launch entry, with `pre/index.html` the home page less its module script; in the browser pane all 16 AC1 same-row addresses matched the full page's ids and first-row `border-top-width` (0px both), the full page kept no pre-paint style, and all 7 no-row addresses showed 0 rows in the copy; AC2's sandboxed iframes showed 272 of 272 rows with no pre-paint style, for the bare address and `?zotero=7&page=2`; controls: copy `?page=2` against full `?page=3` mismatched, and the copy without the border rule gave its first row 1px.
 - 2026-10-30: T3 size: the built home page is 54,544 bytes at `gzip -9`, and 53,882 with the classic script cut out, so the script adds 662 bytes (the module script's one added line is in both figures).
+- 2026-10-30: T4 done: MDN's `:nth-child` page renders its compat table with JavaScript, so the shelf also holds the compat data file it loads (`css.selectors.nth-child`, version 8.1.7), whose `of_syntax` entry gives Chrome and Edge 111, Firefox 113, Opera 97, and Safari 9; new source note `cairn/references/mdn-nth-child.md` and its INDEX line; DESIGN.md's home page paragraph, `home-filter.ts` line, and a new Known issues entry; one CHANGELOG entry. The simple-english hook flags 8 older CHANGELOG lines (`could`, long sentences) outside this milestone's entry; left as they are.
 
 ## Decisions
 <!-- owner: implement / review Â· append-only; milestone-local. -->

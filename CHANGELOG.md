@@ -488,3 +488,11 @@
   again on one day of each week. The new `pnpm carry-start-results`
   command writes the reused results into the start plan, as the README
   says.
+- In a browser that runs module scripts, the home table no longer shows
+  rows that its filters or page leave out while the page loads. An
+  address with `language`, `zotero`, or `page` shows only the rows of
+  that page. An address with a non-blank `q` shows no row until the
+  search runs. Chrome before 111 and Firefox before 113 cannot read the
+  `of <selector>` form of `:nth-child()`. If a language or Zotero filter
+  is on, such browsers still show the filter's rows on every page until
+  the script runs.
