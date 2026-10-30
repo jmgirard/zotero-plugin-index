@@ -6,7 +6,17 @@ import { runInNewContext } from "node:vm";
 import { Ajv } from "ajv";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json" };
-import { displayName, majorReport, pluginHref, rangeText, reportHref, safeHref, type PluginRecord } from "../site/src/data.ts";
+import {
+  displayName,
+  githubRepo,
+  majorReport,
+  pluginHref,
+  rangeText,
+  reportHref,
+  safeHref,
+  starsText,
+  type PluginRecord,
+} from "../site/src/data.ts";
 import type { PluginsFile } from "../src/build/build.ts";
 import { shownDescription } from "../src/site/description.ts";
 import { PAGE_SIZE, prePaintStyle } from "../src/site/home-filter.ts";
@@ -400,12 +410,18 @@ describe("the plugin page", () => {
         `<div class="page-head" data-page-head>(.*?)<div class="actions" data-links>(.*?)</div></div>`,
       "s",
     ).exec(main.replace(/>\s+</g, "><").trim());
-    expect(head?.[1]).toBe(
-      `<h1>${escaped(displayName(record))}${archived}</h1>` +
-        (description ? `<p class="description" data-description>${escaped(description)}</p>` : ""),
-    );
     const { upstream } = record;
     const repoUrl = upstream?.repoUrl ?? record.repoUrl;
+    const github = githubRepo(repoUrl);
+    const stars = upstream?.stars !== undefined ? `<span aria-hidden="true">·</span><span data-repo-stars>${starsText(upstream.stars)}</span>` : "";
+    expect(head?.[1]).toBe(
+      `<h1>${escaped(displayName(record))}${archived}</h1>` +
+        (github
+          ? `<p class="repo-line" data-repo-line>By <a href="https://github.com/${escaped(github.owner)}" data-repo-owner>${escaped(github.owner)}</a>` +
+            `<span aria-hidden="true">·</span><a href="${escaped(repoUrl)}" data-repo-name>${escaped(`${github.owner}/${github.repo}`)}</a>${stars}</p>`
+          : "") +
+        (description ? `<p class="description" data-description>${escaped(description)}</p>` : ""),
+    );
     const repo = safeHref(repoUrl) !== undefined;
     expect(headLinks(head![2]!)).toEqual([
       ...(upstream?.xpiUrl && safeHref(upstream.xpiUrl)
@@ -417,6 +433,28 @@ describe("the plugin page", () => {
         : []),
     ]);
     expect(main).not.toMatch(/<header[\s>]/);
+  });
+
+  test.each<[string, string, string, string, string]>([
+    ["first-plugin@example.org", "https://github.com/example", "https://github.com/example/first-plugin", "example/first-plugin", "By example · example/first-plugin · 1,234 stars"],
+    ["old-plugin@example.org", "https://github.com/example", "https://github.com/example/old-plugin", "example/old-plugin", "By example · example/old-plugin · 1 star"],
+    ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "https://github.com/example", "https://github.com/example/guid-plugin", "example/guid-plugin", "By example · example/guid-plugin · 0 stars"],
+    ["no-range-plugin@example.org", "https://github.com/example", "https://github.com/example/no-range-plugin", "example/no-range-plugin", "By example · example/no-range-plugin"],
+    ["broken-plugin@example.org", "https://github.com/example", "https://github.com/example/broken-plugin", "example/broken-plugin", "By example · example/broken-plugin"],
+  ])("shows the owner, the repo, and the stars of %s under the name", (id, ownerHref, repoHref, repoText, text) => {
+    const line = /<p class="repo-line" data-repo-line>(.*?)<\/p>/s.exec(page(id))?.[1];
+    expect(/<a href="([^"]*)" data-repo-owner>([^<]*)<\/a>/.exec(line ?? "")?.slice(1)).toEqual([ownerHref, "example"]);
+    expect(/<a href="([^"]*)" data-repo-name>([^<]*)<\/a>/.exec(line ?? "")?.slice(1)).toEqual([repoHref, repoText]);
+    expect(unescaped(line!.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim()).toBe(text);
+  });
+
+  test.each([
+    ["a GitHub URL with an extra path segment", "min-only-plugin@example.org"],
+    ["an http: GitHub URL", "zotero6-plugin@example.org"],
+    ["a non-GitHub host on a failure record", "_x-y+z.w@{v}"],
+    ["a URL with no scheme", "next-plugin@example.org"],
+  ])("shows no repo line for %s", (_name, id) => {
+    expect(page(id)).not.toContain("data-repo-line");
   });
 
   test("covers each shape of page head link in the site fixture", () => {

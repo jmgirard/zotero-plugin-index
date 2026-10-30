@@ -67,7 +67,7 @@ rule for declared marks is in M062.
 - [x] T1: Read `stargazers_count` into `upstream.stars` in `src/upstream/reader.ts` (near
       `repoDescription`, line 213), add `stars` to the record type and to
       `schemas/plugins.v1.schema.json`, and add the reader and schema tests.
-- [ ] T2: Add a repo-line helper in `site/src/data.ts` that returns the owner and repo for
+- [x] T2: Add a repo-line helper in `site/src/data.ts` that returns the owner and repo for
       a matching URL, render the line and the star count in the page head, style it in
       `site/src/layouts/Base.astro`, and add fixture records and site tests. Look at the
       page at 375 px and 1280 px in the browser pane with the deployed data.
@@ -88,6 +88,8 @@ rule for declared marks is in M062.
 - 2026-10-30: lessons used: 2026-10-27 (M021, Astro drops the space before an element on the next line), 2026-10-28 (M035, build the site from the deployed data for a hand check), 2026-10-26 (M015, serve the built site for the browser pane), 2026-10-28 (M036, end an Edit's old text at a line break when rewrapping docs).
 - 2026-10-30: implement started on m061-repo-owner-stars, cut from main at 3bf8979; tree clean.
 - 2026-10-30: T1 done: `src/upstream/reader.ts` writes `stars` from `stargazers_count` only for an integer of at least 0; the better-notes fixture gained its 2026-10-30 count, 8400; reader tests cover 0, absent, -1, 1.5, and "12", and a build test covers the schema; a planted `>= -5` failed the -1 case. `pnpm test` 1453 passed, `pnpm check` 0 problems.
+- 2026-10-30: T2 choice: the repo line reads "By <owner> · <owner>/<repo> · N stars", muted text with bold links in the text color, chosen over an icon row to keep the head one line at 800 px.
+- 2026-10-30: T2 done: `githubRepo` and `starsText` in `site/src/data.ts`, the line in the plugin page head, `.repo-line` CSS; site fixture gained stars 1234, 1, and 0, an extra-segment URL (min-only), an `http:` URL (zotero6), and a gitlab entry URL (punctuation failure record); planting `https?` and dropping the space after the owner link each failed the new tests. Browser pane, deployed data plus hand-set stars: no sideways scroll at 375 and 1280 px.
 
 ## Decisions
 

@@ -8,6 +8,7 @@ import {
   day,
   declaredRange,
   displayName,
+  githubRepo,
   languagesText,
   loadData,
   majorReport,
@@ -17,6 +18,7 @@ import {
   reportHref,
   safeHref,
   shownDescription,
+  starsText,
   startWords,
   SUPPORT_MARKS as MARKS,
   SUPPORT_WORDS,
@@ -33,6 +35,7 @@ const { record } = Astro.props as { record: PluginRecord };
 const { upstream, failure, overrides } = record;
 const repoUrl = upstream?.repoUrl ?? record.repoUrl;
 const repoHref = safeHref(repoUrl);
+const github = githubRepo(repoUrl);
 const xpiHref = upstream?.xpiUrl === undefined ? undefined : safeHref(upstream.xpiUrl);
 const description = shownDescription(record);
 const { min, max } = declaredRange(record);
@@ -52,6 +55,21 @@ const { min, max } = declaredRange(record);
         )
       }
     </h1>
+    {
+      github && (
+        <p class="repo-line" data-repo-line>
+          By <a href={`https://github.com/${github.owner}`} data-repo-owner>{github.owner}</a>{" "}
+          <span aria-hidden="true">·</span>{" "}
+          <a href={repoUrl} data-repo-name>{`${github.owner}/${github.repo}`}</a>
+          {upstream?.stars !== undefined && (
+            <>
+              {" "}
+              <span aria-hidden="true">·</span> <span data-repo-stars>{starsText(upstream.stars)}</span>
+            </>
+          )}
+        </p>
+      )
+    }
     {description && <p class="description" data-description>{description}</p>}
     <div class="actions" data-links>
       {

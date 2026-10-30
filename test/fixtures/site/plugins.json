@@ -27,6 +27,7 @@
         "repoDescription": "Tests the site & its <pages>.",
         "repoCreatedAt": "2023-03-14T09:26:53Z",
         "openIssues": 12,
+        "stars": 1234,
         "releaseCount": 27,
         "latestReleaseDate": "2026-09-30T18:04:11Z",
         "prerelease": false,
@@ -66,6 +67,7 @@
         "repoDescription": "An old plugin kept for history.",
         "repoCreatedAt": "2019-11-02T12:00:00Z",
         "openIssues": 3,
+        "stars": 1,
         "releaseCount": 5,
         "latestReleaseDate": "2024-07-01T08:30:00Z",
         "prerelease": true,
@@ -89,6 +91,7 @@
         "repoUrl": "https://github.com/example/guid-plugin",
         "repoCreatedAt": "2025-01-20T15:45:00Z",
         "openIssues": 0,
+        "stars": 0,
         "releaseCount": 1,
         "latestReleaseDate": "2026-10-01T00:00:00Z"
       },
@@ -138,7 +141,7 @@
         "strictMinVersion": "8.0.1",
         "updateUrl": "https://example.org/min-only-plugin/update.json",
         "updateHost": "example.org",
-        "repoUrl": "https://github.com/example/min-only-plugin",
+        "repoUrl": "https://github.com/example/min-only-plugin/tree/main",
         "repoCreatedAt": "2024-02-02T00:00:00Z",
         "openIssues": 4,
         "releaseCount": 9,
@@ -198,7 +201,7 @@
     },
     {
       "id": "_x-y+z.w@{v}",
-      "repoUrl": "https://github.com/example/punctuation-plugin",
+      "repoUrl": "https://gitlab.com/example/punctuation-plugin",
       "failure": {
         "name": "no-xpi-release",
         "message": "no release of example/punctuation-plugin has an .xpi asset"
@@ -216,7 +219,7 @@
         "strictMaxVersion": "6.*",
         "updateUrl": "https://github.com/example/zotero6-plugin/releases/download/release/update.json",
         "updateHost": "github.com",
-        "repoUrl": "https://github.com/example/zotero6-plugin",
+        "repoUrl": "http://github.com/example/zotero6-plugin",
         "repoCreatedAt": "2022-03-01T12:00:00Z",
         "openIssues": 0,
         "releaseCount": 1,

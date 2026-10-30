@@ -188,6 +188,18 @@ export function safeHref(url: string): string | undefined {
   return /^https?:\/\//i.test(url) ? url : undefined;
 }
 
+// The owner and repo of a URL of the form https://github.com/<owner>/<repo>, with or without
+// a trailing slash, or undefined for any other URL.
+export function githubRepo(url: string): { owner: string; repo: string } | undefined {
+  const match = /^https:\/\/github\.com\/([^/]+)\/([^/]+?)\/?$/.exec(url);
+  return match ? { owner: match[1]!, repo: match[2]! } : undefined;
+}
+
+// A star count in words, such as "1 star" or "1,234 stars".
+export function starsText(stars: number): string {
+  return `${stars.toLocaleString("en")} ${stars === 1 ? "star" : "stars"}`;
+}
+
 export function day(timestamp: string): string {
   return timestamp.slice(0, 10);
 }
