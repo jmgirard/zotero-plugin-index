@@ -26,7 +26,7 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 
 ## Acceptance criteria
 
-- [ ] AC1: For each fixture record whose `upstream.stars` is set (counts 1,234, 1, and 0), the plugin page's repo line's
+- [x] AC1: For each fixture record whose `upstream.stars` is set (counts 1,234, 1, and 0), the plugin page's repo line's
   last two children are the `aria-hidden` `·` span and a `data-repo-stars` element.
   That element has no `title` and has exactly two child elements, both spans, in order.
   The first span has `aria-hidden="true"` and a `title` that gives the count and its words.
@@ -36,23 +36,23 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
   With the `.visually-hidden` span removed, the line's text with tags removed reads, for example,
   "By example · example/first-plugin · 1,234".
   Tests in `test/site.test.ts` check this.
-- [ ] AC2: For a record with no `upstream.stars`, the repo line holds no `data-repo-stars` element and no `<svg`.
+- [x] AC2: For a record with no `upstream.stars`, the repo line holds no `data-repo-stars` element and no `<svg`.
   The tests for `no-range-plugin@example.org` and `broken-plugin@example.org` check this.
-- [ ] AC3: A rule in `site/src/layouts/Base.astro` sets `fill: var(--star)` and `stroke: none` on the star icon.
+- [x] AC3: A rule in `site/src/layouts/Base.astro` sets `fill: var(--star)` and `stroke: none` on the star icon.
   This overrides `.icon`'s `fill: none` and `stroke: currentColor`. A search of `site/src` for `fill` finds it set in no file but `Base.astro`.
   In `Base.astro`, `--star` is `#b07d00` in the light `:root` block.
   It is `#e3b341` in the `prefers-color-scheme: dark` block.
   The site's contrast test holds `--star` to 3:1 on `--bg` and on `--surface` in both schemes.
   Inside a `@media (forced-colors: active)` block, the star's fill is `CanvasText`.
   `Base.astro` gives `[data-repo-stars]` `white-space: nowrap`.
-- [ ] AC4: A built plugin page is served over HTTP and viewed in the browser pane, in the light and dark schemes.
+- [x] AC4: A built plugin page is served over HTTP and viewed in the browser pane, in the light and dark schemes.
   The star path's computed fill is `rgb(176, 125, 0)` in light and `rgb(227, 179, 65)` in dark.
   At a 375 px width, on the page of the indexed plugin with the longest owner and repo name, the star and the count
   share one line.
-- [ ] AC5: Three texts describe the line's end as a star icon, the count, and the "GitHub Stars" tooltip.
+- [x] AC5: Three texts describe the line's end as a star icon, the count, and the "GitHub Stars" tooltip.
   They are the README plugin page paragraph, the DESIGN.md plugin page paragraph, and the M061 CHANGELOG entry.
   None of the three files contains the string "8,400 stars", by a joined-text search of each file.
-- [ ] AC6: `pnpm test` and `pnpm check` pass.
+- [x] AC6: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -103,6 +103,7 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - 2026-10-30: amendment return: AC1 — "That element has no `title` and has exactly two child elements, both spans, in order. The first span has `aria-hidden="true"` and a `title` that gives the count and its words."
 - 2026-10-30: T5 added and done (minor amendment for the review return): the amended structure, tests, and docs; Coverage maps AC1 and AC5 to T5 too. All criterion boxes unticked so review re-verifies at the new head.
 - 2026-10-30: status review; `pnpm test` 1547 passed, `pnpm check` 0 problems.
+- 2026-10-30: claim audit: 21 claims read, 0 corrected — README.md, CHANGELOG.md, cairn/DESIGN.md, Icon.astro, test/site.test.ts (the lines added since 9c7f547).
 
 ## Decisions
 
@@ -143,3 +144,12 @@ The repo-line gaps in part (8) of the candidate row "Close small gaps on the sit
 - diff-bug #9: the 1,234 and 0 rows share the plural branch — reject, false: the reviewer finds both rows in scope (the guard on 0 and the grouping on 1,234)
 - diff-bug #10: the template formats the count with `toLocaleString` apart from `starsText` — reject, style: one call, the same format, and the test pins both
 - diff-bug #12: the star path is Feather's polygon while the other paths look like Lucide's — reject, false: Lucide's paths come from Feather under the same permissive terms, and the repo credits neither, as before
+- Re-review after the AC1 amendment return, 2026-10-30, branch head f6544d8, default branch not moved.
+- AC1: the 3 "opens the main content" tests match the head exactly: `·` span, then `<span data-repo-stars>` with no `title` and two child spans, the `aria-hidden` one with `title="<starsText>"` holding the icon and the count, then `.visually-hidden` with the same text. The 3 "shows the owner…" tests pass on the visible text ("… · 1,234"), the `title` and the hidden text ("1,234 GitHub Stars", "1 GitHub Star", "0 GitHub Stars"), and the star path. Built Better BibTeX page: outer `title` null, inner `title` "7,253 GitHub Stars", hidden text the same.
+- AC2: the no-range-plugin and broken-plugin tests pass, asserting no `data-repo-stars` and no `<svg` in the line.
+- AC3: `--star` #b07d00 (line 38) and #e3b341 (line 87); `[data-repo-stars] .icon` fill `var(--star)`, stroke `none`; `CanvasText` in the forced-colors block, which the source test shows comes after the base rule; nowrap rule present. `grep -rn fill site/src` outside `Base.astro`: 4 prose lines, no fill set. Both scheme contrast tests pass.
+- AC4: site rebuilt at f6544d8. Better BibTeX: light fill `rgb(176, 125, 0)`, dark `rgb(227, 179, 65)`, stroke `none`. At 375 px on `scientific-name-italicizer@example.com`, the visible star-and-count span has 1 client rect, page scroll width 375.
+- AC5: README, CHANGELOG and DESIGN.md describe the icon, the count, the "GitHub Stars" tooltip ("1 GitHub Star" for 1), and the hidden copy; "8,400 stars" found 0 times in each by joined-text search.
+- AC6: `pnpm test` 1547 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed; no principle changed; the generic profile names no toolchain checks.
+
