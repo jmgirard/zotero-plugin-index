@@ -83,6 +83,7 @@ If a recent `started` result exists for the same XPI file and tested Zotero rele
 - 2026-10-30: review: evidence for AC1 to AC7 recorded and ticked, consistency gate passed; four-lens review spawned, findings not yet settled (checkpoint).
 - 2026-10-30: review: 39 findings settled (26 fix now in 81b4098, 1 follow-up, 9 rejected, 3 noted), plus follow-up row A for the wider gap behind diff-bug #1; 2 rows written at hygiene; no finding showed a criterion failing, so no return. Open-PR read: 0 open PRs of mine, under the feature cap of 1.
 - 2026-10-30: review resumed by `/milestone-review M059` after the merge chip was dismissed with no answer; route (d), no PR, main unmoved, head 11f3f0f; pnpm test 1370 passed, pnpm check 0 problems, cairn_validate passed; merge question posed again.
+- 2026-10-30: step-7 approval: m059-carry-start-results approved for merge
 
 ## Decisions
 
