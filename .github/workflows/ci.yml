@@ -42,12 +42,14 @@ jobs:
       # xvfb gives Zotero a display. zotero-plugin-scaffold installs the two libraries for
       # Zotero on Ubuntu 24.04, which ubuntu-latest is.
       - run: sudo apt-get update && sudo apt-get install -y xvfb libasound2t64 libdbus-glib-1-2
+      # Read-only, so that Zotero downloads no update of itself, as in build.yml.
       - name: Download Zotero
         run: |
           curl -sSfL -o "$RUNNER_TEMP/zotero.tar.xz" \
             "https://download.zotero.org/client/release/$ZOTERO_VERSION/Zotero-${ZOTERO_VERSION}_linux-x86_64.tar.xz"
           echo "$ZOTERO_SHA256  $RUNNER_TEMP/zotero.tar.xz" | sha256sum --check
           tar -xJf "$RUNNER_TEMP/zotero.tar.xz" -C "$RUNNER_TEMP"
+          chmod -R a-w "$RUNNER_TEMP/Zotero_linux-x86_64"
       - run: xvfb-run --auto-servernum pnpm exec vitest run test/start-test-zotero.test.ts --reporter=verbose
         env:
           ZOTERO_BIN: ${{ runner.temp }}/Zotero_linux-x86_64/zotero
