@@ -125,6 +125,52 @@ describe("addResults", () => {
     ]);
   });
 
+  test("adds each started result the plan carries for a tested version in range, in version order among the jobs' results", async () => {
+    const plan = structuredClone(PLAN);
+    plan.plugins[0].carried = [
+      { zotero: "7.0.32", result: "started" },
+      // Not a tested version.
+      { zotero: "11.0.1", result: "started" },
+    ];
+    // 9.0.6 is outside beta's range of 7.0 to 8.*.
+    plan.plugins[1].carried = [
+      { zotero: "8.0.5", result: "started" },
+      { zotero: "9.0.6", result: "started" },
+    ];
+    // gamma's record has no upstream.
+    plan.plugins[2].carried = [{ zotero: "7.0.32", result: "started" }];
+    const dir = resultsDir({ "start-results-10.0.6": [alpha("10.0.6", "start-error")], "start-results-7.0.32": [beta("7.0.32")] });
+    const outcome = addResults(data(), plan, await readResultsDir(dir), TESTED);
+    expect(outcome.dropped).toEqual([]);
+    expect(outcome.kept).toBe(4);
+    expect(outcome.carried).toBe(2);
+    expect(outcome.data.plugins.map((record) => record.startTests)).toEqual([
+      [
+        { zotero: "7.0.32", result: "started" },
+        { zotero: "10.0.6", result: "start-error" },
+      ],
+      [
+        { zotero: "7.0.32", result: "started" },
+        { zotero: "8.0.5", result: "started" },
+      ],
+      undefined,
+    ]);
+  });
+
+  test("drops a job result for an entry and version that the plan carries, and keeps the carried result", async () => {
+    const plan = structuredClone(PLAN);
+    plan.plugins[0].carried = [{ zotero: "10.0.6", result: "started" }];
+    const dir = resultsDir({ "start-results-10.0.6": [alpha("10.0.6", "start-error"), beta("10.0.6", "not-installed")] });
+    const outcome = addResults(data(), plan, await readResultsDir(dir), TESTED);
+    const file = join("start-results-10.0.6", "start-results.json");
+    // beta carries nothing, so its result drops for its range of 7.0 to 8.*, not as carried.
+    expect(outcome.dropped).toEqual([
+      { file, index: 0, reason: "carried" },
+      { file, index: 1, reason: "zotero-out-of-range" },
+    ]);
+    expect(outcome.data.plugins[0].startTests).toEqual([{ zotero: "10.0.6", result: "started" }]);
+  });
+
   test("drops every result of an artifact whose name holds no tested version", async () => {
     const dir = resultsDir({ "other-artifact": [alpha("10.0.6")], "start-results-99": [alpha("99")] });
     const outcome = addResults(data(), PLAN, await readResultsDir(dir), TESTED);
@@ -224,7 +270,7 @@ describe("pnpm add-start-results", () => {
     expect(Object.keys(written.plugins[0])).toEqual(["id", "repoUrl", "upstream", "reports", "startTests", "overrides"]);
     expect(stdout).toContain('dropped "start-results-10.0.6/start-results.json" item 1: zotero-out-of-range\n');
     expect(stdout).toContain('dropped "start-results-7.0.32/start-results.json": not a readable JSON array\n');
-    expect(stdout).toContain("kept 1 start results; dropped 1 results and 1 files that are not a readable JSON array\n");
+    expect(stdout).toContain("kept 1 start results, 0 of them carried; dropped 1 results and 1 files that are not a readable JSON array\n");
   });
 
   test("adds no results and exits 0 when the results directory is missing", async () => {

@@ -5,7 +5,9 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { afterAll, afterEach, describe, expect, test, vi } from "vitest";
-import type { StartPlanItem } from "../src/build/build.ts";
+import type { PluginsFile, StartPlan, StartPlanItem, StartTestRecord } from "../src/build/build.ts";
+import { addResults, readResultsDir } from "../src/start-test/add-results.ts";
+import { carryPlan, isRetestDay } from "../src/start-test/carry.ts";
 import { parsePlan, startTests, summaryLines } from "../src/start-test/start-tests.ts";
 import { fixtureFetch, type Responses } from "./support/fixture-fetch.ts";
 import { fixtureXpi } from "./support/start-fixtures.ts";
@@ -207,6 +209,50 @@ describe("startTests", () => {
       "Zotero 10.0.6: 1 results, 0 without a result, 0 carried, 0 outside the manifest range",
       "::warning::2 plugins were not started after the limit of 20 minutes",
     ]);
+  });
+});
+
+describe("the carry chain", () => {
+  test("carries, skips, and merges results that the next carry reads and carries again", async () => {
+    const { binary, starts } = shim("report");
+    const alpha = item("alpha", {});
+    const beta = item("beta", {});
+    const plan: StartPlan = { plugins: [alpha, beta] };
+    const upstream = { id: alpha.id, version: alpha.version, xpiSha256: SHA256 };
+    const records = (startTests?: StartTestRecord[]) => [
+      { id: "alpha", repoUrl: "https://github.com/example/alpha", upstream, ...(startTests ? { startTests } : {}), overrides: [] },
+      { id: "beta", repoUrl: "https://github.com/example/beta", upstream, overrides: [] },
+    ];
+    const deployed = { schemaVersion: 1, generatedAt: "2026-10-29T06:17:00.000Z", plugins: records([{ zotero: "10.0.6", result: "started" }]) };
+    // A day that is neither entry's re-test day.
+    const day = [0, 1, 2, 3, 4, 5, 6].map((i) => (20_000 + i) * 86_400_000).find((t) => !isRetestDay("alpha", t) && !isRetestDay("beta", t))!;
+    const dir = tempDir();
+    const planPath = join(dir, "start-plan.json");
+    const dataPath = join(dir, "plugins.json");
+    writeFileSync(planPath, JSON.stringify(plan));
+    const built = { schemaVersion: 1 as const, generatedAt: new Date(day).toISOString(), plugins: records() } as unknown as PluginsFile;
+    writeFileSync(dataPath, JSON.stringify(built));
+    const previous = "https://example.org/v1/plugins.json";
+
+    await carryPlan({ plan: planPath, data: dataPath, previous, fetch: fixtureFetch({ [previous]: { json: deployed } }).fetch });
+    const carried = parsePlan(readFileSync(planPath, "utf8"));
+    if (!carried.ok) throw new Error(carried.problem);
+    const run = await startTests({ plan: carried.plan, zotero: binary, fetch: fixtureFetch(served(plan.plugins)).fetch, lookup: publicLookup });
+    expect(run.carried).toEqual(["alpha"]);
+    expect(startCount(starts)).toBe(1);
+    const results = join(dir, "results");
+    mkdirSync(join(results, "start-results-10.0.6"), { recursive: true });
+    writeFileSync(join(results, "start-results-10.0.6", "start-results.json"), JSON.stringify(run.results));
+    const merged = addResults(built, carried.plan, await readResultsDir(results), ["10.0.6"]).data;
+    expect(merged.plugins.map((record) => record.startTests)).toEqual([[{ zotero: "10.0.6", result: "started" }], [{ zotero: "10.0.6", result: "started" }]]);
+
+    // The next day's build reads the merged data as the deployed data.
+    writeFileSync(planPath, JSON.stringify(plan));
+    const next = [1, 2, 3, 4, 5, 6].map((i) => day + i * 86_400_000).find((t) => !isRetestDay("alpha", t) && !isRetestDay("beta", t))!;
+    writeFileSync(dataPath, JSON.stringify({ ...built, generatedAt: new Date(next).toISOString() }));
+    await carryPlan({ plan: planPath, data: dataPath, previous, fetch: fixtureFetch({ [previous]: { json: merged } }).fetch });
+    const again = JSON.parse(readFileSync(planPath, "utf8")) as StartPlan;
+    expect(again.plugins.map((p) => p.carried)).toEqual([[{ zotero: "10.0.6", result: "started" }], [{ zotero: "10.0.6", result: "started" }]]);
   });
 });
 

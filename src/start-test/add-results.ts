@@ -20,6 +20,7 @@ export type DropReason =
   | "id-mismatch"
   | "version-mismatch"
   | "zotero-not-artifact"
+  | "carried"
   | "zotero-out-of-range"
   | "bad-result"
   | "duplicate";
@@ -32,7 +33,9 @@ export interface Dropped {
 
 export interface AddResultsOutcome {
   data: PluginsFile;
+  // The results written, and how many of them the plan carried.
   kept: number;
+  carried: number;
   dropped: Dropped[];
   // The results entries that are not a JSON array, or that cannot be read as a file.
   badFiles: string[];
@@ -79,8 +82,11 @@ async function readEntry(path: string): Promise<string | undefined> {
 // result is one of the four names. Two or more such results for one entry and one Zotero
 // version all drop, since at most one job tests each pair. Plugin code in a start-test job can
 // write that job's file, and can upload an artifact under a name the workflow did not set, so
-// each result is read as untrusted. Each record's results are ordered by Zotero version; a
-// record with none gets no field, and any `startTests` the data already has is replaced.
+// each result is read as untrusted. It also adds each `started` result that a plan item
+// carries for a `tested` version in its range, and drops a job result for that entry and
+// version as `carried`, since no job started it. Each record's results are ordered by Zotero
+// version; a record with none gets no field, and any `startTests` the data already has is
+// replaced.
 export function addResults(data: PluginsFile, plan: StartPlan, files: ResultsFile[], tested: string[]): AddResultsOutcome {
   const items = new Map<string, StartPlanItem>(plan.plugins.map((item) => [item.entry, item]));
   const read = new Set(data.plugins.filter((record) => record.upstream).map((record) => record.id));
@@ -111,6 +117,15 @@ export function addResults(data: PluginsFile, plan: StartPlan, files: ResultsFil
   const counts = new Map<string, number>();
   for (const candidate of candidates) counts.set(key(candidate), (counts.get(key(candidate)) ?? 0) + 1);
   const byEntry = new Map<string, StartTestRecord[]>();
+  let carried = 0;
+  for (const item of plan.plugins) {
+    if (!read.has(item.entry)) continue;
+    for (const { zotero, result } of item.carried ?? []) {
+      if (result !== "started" || !tested.includes(zotero) || !inRange(item, zotero)) continue;
+      byEntry.set(item.entry, [...(byEntry.get(item.entry) ?? []), { zotero, result }]);
+      carried++;
+    }
+  }
   for (const candidate of candidates) {
     if (counts.get(key(candidate))! > 1) {
       dropped.push({ file: candidate.file, index: candidate.index, reason: "duplicate" });
@@ -130,7 +145,7 @@ export function addResults(data: PluginsFile, plan: StartPlan, files: ResultsFil
     const { overrides, ...rest } = record;
     return { ...rest, startTests: tests, overrides };
   });
-  return { data: { ...data, plugins }, kept, dropped, badFiles };
+  return { data: { ...data, plugins }, kept, carried, dropped, badFiles };
 }
 
 function dropReason(
@@ -148,6 +163,7 @@ function dropReason(
   if (fields.id !== item.id) return "id-mismatch";
   if (fields.version !== item.version) return "version-mismatch";
   if (typeof fields.zotero !== "string" || fields.zotero !== artifactZotero) return "zotero-not-artifact";
+  if (item.carried?.some((result) => result.zotero === fields.zotero)) return "carried";
   if (!inRange(item, fields.zotero)) return "zotero-out-of-range";
   if (!RESULT_NAMES.includes(fields.result as StartResultName)) return "bad-result";
   return undefined;

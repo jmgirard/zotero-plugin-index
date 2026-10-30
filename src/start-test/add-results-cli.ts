@@ -82,7 +82,7 @@ async function main(): Promise<number> {
     return 1;
   }
   console.log(
-    `kept ${outcome.kept} start results; dropped ${outcome.dropped.length} results and ${outcome.badFiles.length} files that are not a readable JSON array`,
+    `kept ${outcome.kept} start results, ${outcome.carried} of them carried; dropped ${outcome.dropped.length} results and ${outcome.badFiles.length} files that are not a readable JSON array`,
   );
   return 0;
 }
