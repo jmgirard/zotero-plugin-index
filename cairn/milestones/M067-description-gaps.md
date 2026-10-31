@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M067: Fill the description gaps
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** user-facing — it changes the description that the site shows for each plugin
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m067-description-gaps   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -95,7 +95,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
      cites; an insertion, removal, or reorder renumbers the labels and the
      Coverage lines together. -->
 
-- [ ] T1: Tests first in `test/description.test.ts` for AC1's inputs, then the Latin-script part in
+- [x] T1: Tests first in `test/description.test.ts` for AC1's inputs, then the Latin-script part in
       `src/site/description.ts`, applied to the manifest and GitHub texts before `informative` and the pick.
 - [ ] T2: Tests first in `test/description-gaps.test.ts`, then the command in `src/site/` with a
       `description-gaps` script in `package.json`. Reuse `shownDescription`, `cjkShare`, and the checker's entry and
@@ -126,6 +126,9 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - 2026-10-31: criteria re-audit (full mode, same reader, after the set changed AC3 to AC5): 5 findings. Mixed texts below 0.5 dropped from the ledger toward the narrower promise, since no rule covers them. The data file pinned by `generatedAt` and SHA-256 on the shelf. "Word" defined once. The rule named the Latin-script part. Noted that AC1 makes zotero-keep-window short, which the ledger run catches.
 - 2026-10-31: plan gate chose the Latin-script part rule over an override for each mixed text because new ones arrive often and an override hides author edits; falsified by a shown part that is a fragment and does not describe the plugin.
 - 2026-10-31: plan chose a plain count of six words over a count that leaves out the name and filler words, because it is simpler to state and the set replaces every short text; falsified by short overrides that keep replacing clear author text that readers prefer.
+
+- 2026-10-31: implement started on branch m067-description-gaps.
+- 2026-10-31: T1 done: `latinPart` in `src/site/description.ts` runs on each upstream text before `informative`, falling back to the whole text; 7 new cases in `test/description.test.ts`. Over the shelf copy it changes 5 shown descriptions (focus-note-column, papercompare, popfish, structured-tags, zotero-keep-window). pnpm test and pnpm check pass.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

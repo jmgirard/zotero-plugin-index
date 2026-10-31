@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-31 (M066 done: M063 row pruned, 15 lessons marked u
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M067 | Fill the description gaps | planned | — | normal | milestones/M067-description-gaps.md |
+| M067 | Fill the description gaps | in-progress | — | normal | milestones/M067-description-gaps.md |
 | M066 | Filter plugins by category | done | — | normal | milestones/archive/M066-plugin-categories.md |
 | M065 | Drop the repeated owner from the repo line | done | — | normal | milestones/archive/M065-repo-line-owner.md |
 | M064 | Show the star count with a star icon | done | — | normal | milestones/archive/M064-star-icon.md |

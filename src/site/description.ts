@@ -38,15 +38,31 @@ export function cjkShare(text: string): number {
   return cjk + other === 0 ? 0 : cjk / (cjk + other);
 }
 
+const NON_LATIN_LETTER = /[\p{L}--\p{Script=Latin}]/v;
+const WORD = /[\p{L}\p{M}\p{N}]+/gu;
+
+// For a text half or more CJK, its pieces cut at " / " and after "。" whose letters are all
+// Latin and that hold at least three words, joined with one space, when they are not only the
+// name. Otherwise the text itself, so a list of short terms or a name keeps the whole text.
+function latinPart(text: string | undefined, name: Set<string>): string | undefined {
+  if (text === undefined || cjkShare(text) < 0.5) return text;
+  const pieces = text
+    .split(/ \/ |(?<=。)/u)
+    .map((piece) => piece.trim())
+    .filter((piece) => !NON_LATIN_LETTER.test(piece) && (piece.match(WORD)?.length ?? 0) >= 3);
+  return informative(pieces.join(" "), name) ?? text;
+}
+
 // The description override when one applies. Otherwise the manifest description when it is
 // informative and under half CJK; else the GitHub description when it is informative and the
 // manifest one is not, or has a higher CJK share; else the informative manifest description.
+// Each upstream text takes its Latin-script part first.
 export function shownDescription(record: DescriptionRecord): string | undefined {
   const override = appliedValue(record, "description", undefined);
   if (override !== undefined) return override;
   const name = words(appliedValue(record, "name", record.upstream?.name) ?? record.id);
-  const manifest = informative(record.upstream?.description, name);
-  const github = informative(record.upstream?.repoDescription, name);
+  const manifest = informative(latinPart(record.upstream?.description, name), name);
+  const github = informative(latinPart(record.upstream?.repoDescription, name), name);
   if (manifest !== undefined && cjkShare(manifest) < 0.5) return manifest;
   if (github !== undefined && (manifest === undefined || cjkShare(github) < cjkShare(manifest))) return github;
   return manifest;
