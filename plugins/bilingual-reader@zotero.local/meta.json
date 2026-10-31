@@ -1,0 +1,8 @@
+{
+  "id": "bilingual-reader@zotero.local",
+  "name": "Bilingual Reader",
+  "description": "Zotero 10 阅读模式 PDF 段落中英对照翻译",
+  "homepage": "https://github.com/quillamio/bilingual-reader",
+  "repoUrl": "https://github.com/quillamio/bilingual-reader",
+  "updateUrl": "https://github.com/quillamio/bilingual-reader/releases/download/release/update.json"
+}
