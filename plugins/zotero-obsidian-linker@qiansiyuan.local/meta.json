@@ -1,0 +1,8 @@
+{
+  "id": "zotero-obsidian-linker@qiansiyuan.local",
+  "name": "Zotero Obsidian Linker",
+  "description": "Create Obsidian literature notes from Zotero items and add bidirectional links.",
+  "homepage": "https://github.com/SiriYep/zotero-obsidian-linker",
+  "repoUrl": "https://github.com/SiriYep/zotero-obsidian-linker",
+  "updateUrl": "https://raw.githubusercontent.com/SiriYep/zotero-obsidian-linker/main/updates.json"
+}
