@@ -1,0 +1,8 @@
+{
+  "id": "litmatrix@bapungiri",
+  "name": "LitMatrix",
+  "description": "A literature-review matrix for Zotero: papers as rows, your highlight-color meanings as columns.",
+  "homepage": "https://github.com/bapungiri/litmatrix",
+  "repoUrl": "https://github.com/bapungiri/litmatrix",
+  "updateUrl": "https://raw.githubusercontent.com/bapungiri/litmatrix/main/update.json"
+}
