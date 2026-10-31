@@ -1,0 +1,7 @@
+{
+  "id": "pdf-page-tools@yuukibarns",
+  "name": "PDF Page Tools",
+  "description": "Copy the current PDF page as an image or PDF file, and export page ranges.",
+  "repoUrl": "https://github.com/yuukibarns/zotero-page-tools",
+  "updateUrl": "https://raw.githubusercontent.com/yuukibarns/zotero-page-tools/main/updates.json"
+}
