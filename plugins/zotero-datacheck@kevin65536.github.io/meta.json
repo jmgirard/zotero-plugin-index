@@ -1,0 +1,8 @@
+{
+  "id": "zotero-datacheck@kevin65536.github.io",
+  "name": "Zotero DataCheck",
+  "description": "Zotero plugin for statistical anomaly checks on table data.",
+  "homepage": "https://github.com/Kevin65536/zotero-datacheck-plugin#readme",
+  "repoUrl": "https://github.com/Kevin65536/zotero-datacheck-plugin",
+  "updateUrl": "https://github.com/Kevin65536/zotero-datacheck-plugin/releases/download/release/update.json"
+}
