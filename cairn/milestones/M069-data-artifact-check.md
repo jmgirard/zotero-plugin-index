@@ -52,7 +52,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 ## Tasks
 
 - [x] T1: Read the artifact client that `actions/upload-artifact@v7` runs: its `overwrite` path and the credential it uses. Find out whether a job with `permissions: {}` can delete and upload again an artifact that another job of the run uploaded. Find out whether the artifact keeps hidden files and empty directories. Also find out whether a start-test job can upload a `github-pages` artifact that stops or changes the deploy. Record each finding in a work-log line. The reason sentence of T4 states only what this read found. If the Pages artifact can be stopped or changed, add a candidate row. This task is a read, and no criterion checks it.
-- [ ] T2: Write `test/data-digest.test.ts` for AC1 and AC2 first. Then write `src/build/digest.ts` (the tree walk and the digest), `src/build/digest-cli.ts`, and the `data-digest` script in `package.json`.
+- [x] T2: Write `test/data-digest.test.ts` for AC1 and AC2 first. Then write `src/build/digest.ts` (the tree walk and the digest), `src/build/digest-cli.ts`, and the `data-digest` script in `package.json`.
 - [ ] T3: In `build.yml`, add the `data-sha256` output and the digest step to the build job. Add the check step to the site job. Write comments for both. Extend `test/workflows.test.ts`.
 - [ ] T4: Write the README command section, the README section "The daily build", the `build.yml` paragraph of DESIGN, and the CHANGELOG entry.
 - [ ] T5: Run `pnpm test` and `pnpm check`. Push the branch and run `gh workflow run build.yml --ref <branch>`. Record the run id and the result of the data check step of the site job.
@@ -74,6 +74,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - 2026-10-31: T1 read: upload-artifact v7.0.2 with `overwrite: true` calls `deleteArtifactIfExists`, and `@actions/artifact`'s `deleteArtifactInternal` finds the artifact by name across the whole run with `ACTIONS_RUNTIME_TOKEN` alone (no repo permission), so a job that holds that token can delete `plugins-data` and upload a new one under the same name.
 - 2026-10-31: T1 read: upload-artifact v7 leaves out hidden files (`include-hidden-files` defaults to false) and its zip spec keeps directory entries; `pnpm build` writes no hidden file and no empty directory into `dist/`, so the honest tree uploads whole.
 - 2026-10-31: T1 read: upload-pages-artifact v5 tars with `--dereference` and uploads `github-pages` without `overwrite`, so a `github-pages` artifact that a start-test job uploads first fails the site job's upload and stops the deploy, but cannot become the deployed site; filed parked row "Keep plugin code from stopping deploys".
+- 2026-10-31: T2: `src/build/digest.ts` hashes one JSON line per entry, `[kind, path, file SHA-256 or null]`, sorted by UTF-8 path bytes; `readdir` dirents refuse links and pipes without following them; the CLI prints `data digest matches: <sha>` on a match. `test/data-digest.test.ts` 22 tests pass. Plants: unframed `path + bytes` failed the two framing probes; dropping `kind` failed none, since a directory's null SHA-256 already tells it from a file.
 
 ## Decisions
 

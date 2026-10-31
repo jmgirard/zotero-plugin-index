@@ -14,6 +14,7 @@
     "build": "node src/build/cli.ts",
     "carry-start-results": "node src/start-test/carry-cli.ts",
     "check": "node src/check/cli.ts",
+    "data-digest": "node src/build/digest-cli.ts",
     "close-issue": "node src/discover/close-issue-cli.ts",
     "description-gaps": "node src/site/description-gaps-cli.ts",
     "discover": "node src/discover/cli.ts",
