@@ -1,0 +1,8 @@
+{
+  "id": "title-without-articles@daihum.org",
+  "name": "Title Without Articles",
+  "description": "Zotero plugin to automatically generate sort titles without articles for bibliography sorting",
+  "homepage": "https://github.com/boan-anbo/zotero-title-without-articles#readme",
+  "repoUrl": "https://github.com/boan-anbo/zotero-title-without-articles",
+  "updateUrl": "https://github.com/boan-anbo/zotero-title-without-articles/releases/download/release/update.json"
+}
