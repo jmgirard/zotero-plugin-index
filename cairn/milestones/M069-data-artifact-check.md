@@ -89,6 +89,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - 2026-10-31: re-audit: AC3 (full) — wording cleared on questions 2 to 6; question 1 found that the test's `indexOf("carry-start-results")` matched a timeout comment above every step, so the carry order went unchecked; fixed in the test, wording kept.
 - 2026-10-31: amendment return: AC3 — "the build job gives the job output `data-sha256` from a `pnpm --silent data-digest --dir dist` step ... The site job runs `pnpm --silent data-digest --dir dist --expect` with that output"
 - 2026-10-31: T7 added (minor amendment) and done: both carry-order checks in `test/workflows.test.ts` (the data digest's and the start plan's) now search the `pnpm carry-start-results --plan` run line; a digest step planted before `pnpm build` failed the data test; 57 pass.
+- 2026-10-31: correction of the T1 read: upload-artifact v7's `findFilesToUpload` drops every directory from the file list (`src/shared/search.ts`), so empty directories are not uploaded; the earlier line's "zip spec keeps directory entries" was wrong. `dist/` holds no empty directory, so honest runs are unaffected.
 - 2026-10-31: verify after return 1: `pnpm test` 1660 passed, 6 skipped; `pnpm check` 272 entries, 0 problems. Status review.
 
 ## Decisions
@@ -105,3 +106,30 @@ Pass 2 (2026-10-31, branch head b17848f, main d2f7ec1 unchanged):
 - AC4: `gh run view 41208668356` — `Build data` dispatched on the branch at 5f5d48c succeeded; site job step 7 `pnpm --silent data-digest --dir dist --expect "$DATA_SHA256"` succeeded and logged `data digest matches: d3f6a0fd…57cf`; deploy skipped. Since 5f5d48c, `git diff --stat` over `.github src package.json` shows only a 2-line comment change in `src/build/digest.ts`.
 - AC5: joined-text greps — README has the `pnpm data-digest --dir <dir> [--expect <sha256>]` block with its output, options, and exit statuses, "The daily build" item 3 ("site job checks the downloaded data with `pnpm data-digest --dir dist --expect`" against the build job's output) and "If the downloaded data or the start plan fails its check, the workflow also deploys nothing"; DESIGN's `build.yml` paragraph ends the check sentence "so a mismatch deploys nothing"; `CHANGELOG.md` `## Unreleased` opens with the one new entry.
 - AC6: `npx -y pnpm@12.15.0 test` — 28 files passed, 1 skipped; 1660 tests passed, 6 skipped. `npx -y pnpm@12.15.0 check` — 272 entries, 0 problems.
+- Gate: `cairn_validate.py` all checks passed; `generic` profile names no toolchain checks; no principle changed.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: upload-artifact leaves out hidden files and (source read) empty directories, so a future one in `dist/` fails every honest site check — fix now: build.yml comment states it; T1's record corrected in the work log, fixed ed63e65.
+- diff-bug #2: no D-entry records that plugin code can replace another job's artifact — fix now: D-041, fixed ed63e65.
+- diff-bug #3: a symbolic link as the `--dir` root is followed — reject (false): the root is not an entry, and README refuses entries under `--dir`.
+- diff-bug #4: `--dir ""` hashes the caller's folder — fix now: usage error and a test case, fixed ed63e65.
+- diff-bug #5: README "Any other argument does the same" overstates, and omits the cannot-read exit — fix now: wording, fixed ed63e65.
+- diff-bug #6: an entry's kind can change between `readdir` and `readFile` — reject (false): no process writes under `dist/` while either job runs the digest.
+- diff-bug #7: `data-digest` out of order in `package.json` scripts — fix now, fixed ed63e65.
+- diff-bug #8: stray "exit status" line in README — fix now, fixed ed63e65.
+- diff-bug #9: test notes — regex before `toBe` reject (false: the regex is the fact stated apart from `treeDigest`); same-path cases reject (planned change: AC2 names each); prefix-only usage regexes reject (style); link to `/` fix now (links to `v1/` now), fixed ed63e65; T7's tightening noted.
+- blame-history #1: D-025 says plugin code cannot cause the site job's faults, now untrue for the checks — fix now: D-041 narrows it, fixed ed63e65.
+- blame-history #2: D-023 and D-035 record only forgery as the cost — fix now: D-041 adds the stopped deploy, fixed ed63e65.
+- blame-history #3: the carry-order anchor change strengthens M059's test — noted.
+- blame-history #4: README reflow fragment — fix now (same as diff-bug #8), fixed ed63e65.
+- blame-history #5: a CHANGELOG entry for a CI-only check — reject (planned change: AC5).
+- prior-review #1: README's data summary (line 255) omits the new deploy-nothing case — fix now, fixed ed63e65.
+- prior-review #2: "plugin code that reaches the run's artifact token" understates — reject (false): the runner hands `ACTIONS_RUNTIME_TOKEN` to JavaScript action steps, not to `run` steps, so plugin code must reach it.
+- prior-review #3: README stray wrap — fix now (same as diff-bug #8), fixed ed63e65.
+- prior-review #4: hidden files or empty directories make a false mismatch — fix now (same as diff-bug #1), fixed ed63e65.
+- ripple #1: README line 259 list lacks the data check — fix now (same as prior-review #1), fixed ed63e65.
+- ripple #2: the candidate row still says the site job deploys the artifact as downloaded — reject (planned change): hygiene graduates the row.
+- ripple #3: "no token permission" beside the artifact-token finding — reject (false): the text is about the GITHUB_TOKEN's permissions, which stay none.
+- ripple #4: DESIGN's later site-job sentence omits the checks — reject (false): the sentence before it states both checks.
+- ripple #5: docs quote `pnpm data-digest` where the steps run `pnpm --silent data-digest` — reject (style): `--silent` only drops pnpm's banner.
+- ripple #6: DESIGN line 890 says "the build job's output" for the plan — reject (false): the plan has one output.
+- Fix-now verify: `pnpm test` 1661 passed, 6 skipped; `pnpm check` 0 problems; the empty `--dir` case failed with the fix stashed.
