@@ -172,33 +172,41 @@ generic profile's consistency-gate slot names no toolchain checks.
 spawned: diff-bug, blame-history, prior-review, ripple
 
 - diff-bug #1: the AC3 outcomes on the 9.0 page compare only the data text in-process, so a change that made a failed
-  changelog read build-level would pass them — fix now (assert `buildLevel` equal to the quiet build's).
+  changelog read build-level would pass them — fix now, fixed 9501830 (assert `buildLevel` equal to the quiet build's).
 - diff-bug #2: the new-major warning names only `ZOTERO_MAJORS`, though the edit also needs the last release of the
-  old major in `LAST_RELEASES`, while README says the lines name what to edit — fix now.
+  old major in `LAST_RELEASES`, while README says the lines name what to edit — fix now, fixed 9501830.
 - diff-bug #3: the new-major check fires when `ZOTERO_MAJORS` is ahead of the release (`!==`, not newer), so adding
-  "11" early warns daily; CHANGELOG's "does not mark yet" does not match the code — fix now (warn only when the
+  "11" early warns daily; CHANGELOG's "does not mark yet" does not match the code — fix now, fixed 9501830 (warn only when the
   release's major is newer than the last).
-- diff-bug #4: the `TimeLimits` comment says `releaseMs` bounds only the release read — fix now.
+- diff-bug #4: the `TimeLimits` comment says `releaseMs` bounds only the release read — fix now, fixed 9501830.
 - diff-bug #5: the in-process 11.0.0 test overwrites `zoteroRelease` before comparing, so it does not check that
-  11.0.0 was written — fix now.
+  11.0.0 was written — fix now, fixed 9501830.
 - diff-bug #6: the quiet-path no-warning check appears in-process twice and in the spawned test, and the token test
-  repeats the URL list — fix now (drop the in-process repeats; keep a non-empty count for the token check).
+  repeats the URL list — fix now, fixed 9501830 (drop the in-process repeats; keep a non-empty count for the token check).
 - diff-bug #7: the new tests pin the current list values, so the hand edit a warning asks for breaks them — reject,
   planned change: AC2 names the 9.0.6 and 9.0.7 pages, and existing tests pin the same lists ("ZOTERO_MAJORS lists
   Zotero 7 to 10", the About page list); the source note's "Traces to" gains `NEWER_9_PAGE` with the other fixes.
 - diff-bug #8: prose says one line per case where the code gives one per page, DESIGN says `releaseListWarnings`
-  gives `::warning::` lines, and the `BuildResult` comment leaves out failed reads — fix now.
+  gives `::warning::` lines, and the `BuildResult` comment leaves out failed reads — fix now, fixed 9501830.
 - diff-bug #9: `../site/version.ts` is imported out of path order in `src/build/build.ts` — reject, style.
-- diff-bug #10: the heading match takes any `9.x` text, so "Changes in 9.1.0 beta" reads as 9.1.0 — fix now, with
+- diff-bug #10: the heading match takes any `9.x` text, so "Changes in 9.1.0 beta" reads as 9.1.0 — fix now, fixed 9501830, with
   blame-history #2.
-- blame-history #1: the `build.yml` time-budget comment names only the release read in the 30 s window — fix now.
+- blame-history #1: the `build.yml` time-budget comment names only the release read in the 30 s window — fix now, fixed 9501830.
 - blame-history #2: "Changes in 9.0.7-beta" would read as 9.0.7, though M062 kept betas out of the release read —
   fix now (a version followed by a letter, digit, `.`, or `-` does not match, so the next heading counts).
 - prior-review #1: the test file lists majors 7, 8, and 9 by hand in three places — reject, planned change, as for
   diff-bug #7 (the M061 lesson records the same cost in `test/site.test.ts`).
 - ripple #1: README says that after a failed release read the command "first prints its line. Then it prints one
-  line for each failed record", which leaves out the list warnings printed between — fix now.
-- ripple #2: DESIGN's "the build reads one fact that is not about a plugin" leaves out the changelog reads — fix now.
-- ripple #3: the `TimeLimits` comment — fix now, with diff-bug #4.
-- ripple #4: the `ZOTERO_RELEASE_LIMIT_MS` comment names only the release read — fix now.
-- ripple #5: the `build.yml` time-budget comment — fix now, with blame-history #1.
+  line for each failed record", which leaves out the list warnings printed between — fix now, fixed 9501830.
+- ripple #2: DESIGN's "the build reads one fact that is not about a plugin" leaves out the changelog reads — fix now, fixed 9501830.
+- ripple #3: the `TimeLimits` comment — fix now, fixed 9501830, with diff-bug #4.
+- ripple #4: the `ZOTERO_RELEASE_LIMIT_MS` comment names only the release read — fix now, fixed 9501830.
+- ripple #5: the `build.yml` time-budget comment — fix now, fixed 9501830, with blame-history #1.
+
+After the fixes, on 9501830: `pnpm test` 1638 passed, 6 skipped; `pnpm check` 0 problems; no added doc line over 80
+columns. New tests for the two changed branches each failed when planted (lookahead removed: the beta-heading test;
+`!==` restored: the older-major test). The direct CLI runs repeated with the same exit codes and data; the 11.0.0 line
+now reads `::warning::Zotero 11.0.0 is the current release, but the last Zotero version in ZOTERO_MAJORS in
+src/site/version.ts is 10; add 11 to ZOTERO_MAJORS and the last release of 10 to LAST_RELEASES`, still naming 11.0.0
+and 10 as AC1 asks. No finding showed a criterion failing, so no return. Of 18 findings: 15 fixed now (some lenses
+found the same item), 3 rejected (2 planned change, 1 style), 0 follow-ups.
