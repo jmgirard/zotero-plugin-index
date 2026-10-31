@@ -1,0 +1,7 @@
+{
+  "id": "perma-archiver@kirinchang.law",
+  "name": "Perma Archiver",
+  "description": "Automatically archives webpages to perma.cc when you save them in Zotero, and adds the [perma.cc/...] link to your Word citations automatically. Bluebook 22nd ed. Rule 18.2.1(d) compliance with no extra steps.",
+  "repoUrl": "https://github.com/kirinccchang/zotero-perma-archiver",
+  "updateUrl": "https://raw.githubusercontent.com/kirinccchang/zotero-perma-archiver/main/update.json"
+}
