@@ -1,0 +1,8 @@
+{
+  "id": "zotero-auto-tagger@dnnunn.github.io",
+  "name": "Zotero Auto-Tagger",
+  "description": "Automatically tag Zotero items using PubMed and a local LLM (Ollama)",
+  "homepage": "https://github.com/dnnunn/zotero-auto-tagger",
+  "repoUrl": "https://github.com/dnnunn/zotero-auto-tagger",
+  "updateUrl": "https://raw.githubusercontent.com/dnnunn/zotero-auto-tagger/main/update.json"
+}
