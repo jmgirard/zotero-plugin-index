@@ -1,0 +1,8 @@
+{
+  "id": "google-this@visser.dev",
+  "name": "Google This",
+  "description": "Adds a \"Google this\" action to the PDF/EPUB reader selection context menu.",
+  "homepage": "https://github.com/visserle/zotero-google-this",
+  "repoUrl": "https://github.com/visserle/zotero-google-this",
+  "updateUrl": "https://raw.githubusercontent.com/visserle/zotero-google-this/main/updates.json"
+}
