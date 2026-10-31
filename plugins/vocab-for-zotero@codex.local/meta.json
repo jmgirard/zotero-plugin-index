@@ -1,0 +1,7 @@
+{
+  "id": "vocab-for-zotero@codex.local",
+  "name": "Vocab for Zotero",
+  "description": "Collect, review, and remember vocabulary while reading in Zotero.",
+  "repoUrl": "https://github.com/shi-keke/vocab-for-zotero",
+  "updateUrl": "https://raw.githubusercontent.com/shi-keke/vocab-for-zotero/main/updates.json"
+}
