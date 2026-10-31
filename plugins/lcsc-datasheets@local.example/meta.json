@@ -1,0 +1,7 @@
+{
+  "id": "lcsc-datasheets@local.example",
+  "name": "LCSC Datasheets",
+  "description": "安装立创数据手册转换器，并从新下载的 PDF 首页补全空白日期。",
+  "repoUrl": "https://github.com/earnest-zhang/zotero-component-datasheets",
+  "updateUrl": "https://github.com/earnest-zhang/zotero-component-datasheets/releases/latest/download/updates.json"
+}
