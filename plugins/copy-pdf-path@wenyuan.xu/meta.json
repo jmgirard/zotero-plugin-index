@@ -1,0 +1,7 @@
+{
+  "id": "copy-pdf-path@wenyuan.xu",
+  "name": "Copy PDF Path",
+  "description": "Right-click items to copy their PDF file paths to the clipboard",
+  "repoUrl": "https://github.com/Anemone95/zotero-copy-pdf-path",
+  "updateUrl": "https://github.com/Anemone95/zotero-copy-pdf-path/releases/latest/download/update.json"
+}
