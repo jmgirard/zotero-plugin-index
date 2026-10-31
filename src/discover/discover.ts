@@ -474,10 +474,10 @@ async function readCatalog(fetch: Fetch, url: string, max: number, ms: number, w
 
 // The owner/repo names that the code searches return, paging through each query. A request
 // waits until the last CODE_SEARCH_WINDOW_MS holds fewer than CODE_SEARCH_RATE of them. A
-// failed request, or a page with no list of items, warns and stops its query, except that a
-// page refused with HTTP 403 or 429 and a named wait is sent once more first, and the run
+// failed request, or a page with no list of items, warns and stops its query, and the run
 // keeps the names of its earlier pages and goes on to the next query. So does a request that
-// could not be sent before CODE_SEARCH_CUTOFF_MS after `startedAt`. Queries that all finish
+// could not be sent before CODE_SEARCH_CUTOFF_MS after `startedAt`. A page refused with HTTP
+// 403 or 429 and a named wait is sent once more, and warns only if it fails again. Queries that all finish
 // with no item warn once, since a token that cannot see the code index can get empty pages.
 // The requests carry CODE_SEARCH_TOKEN when it is set, else GITHUB_TOKEN: the GitHub Actions
 // token got HTTP 429 on every code search request (discover run 41224882790, 2026-10-31).

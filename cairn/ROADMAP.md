@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-31 (M071 review: M071 archived; candidate "Find plu
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M072 | Wait for GitHub's code search reset | in-progress | — | high | milestones/M072-code-search-reset.md |
+| M072 | Wait for GitHub's code search reset | review | — | high | milestones/M072-code-search-reset.md |
 | M071 | Find plugins by GitHub code search | done | M070 | normal | milestones/archive/M071-code-search-discovery.md |
 | M070 | Find plugins in the zotero-chinese catalog | done | — | normal | milestones/archive/M070-catalog-discovery.md |
 | M069 | Check the data artifact in the site job | done | — | normal | milestones/archive/M069-data-artifact-check.md |
