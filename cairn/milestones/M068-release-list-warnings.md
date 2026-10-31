@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M068: Warn when the Zotero release lists fall behind
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -91,7 +91,7 @@ stays a hand edit, which the warning names.
 - [x] T3: Docs: README "Building the data", the `CHANGELOG.md` Unreleased entry, DESIGN's Architecture line for
       the build, the `LAST_RELEASES` comment in `src/site/version.ts`, and the "Traces to" list of
       `cairn/references/zotero-changelogs.md`. Wrap prose near 76 columns (the M036 lesson).
-- [ ] T4: Run the `verify` slot. Dispatch Build data on the milestone branch with
+- [x] T4: Run the `verify` slot. Dispatch Build data on the milestone branch with
       `gh workflow run build.yml --ref <branch>`, and log whether its build step printed a changelog warning on
       the live pages.
 
@@ -122,6 +122,9 @@ stays a hand edit, which the warning names.
 - 2026-10-31: T2 done: `changelogUrl`, `readChangelogRelease`, `releaseListWarnings`, and the shared `ReleaseRead` type in `src/build/zotero-release.ts`; `buildData` runs the reads with `Promise.all` under `releaseMs` and returns `releaseWarnings`; the CLI prints each as `::warning::`. Planting no CLI print and no newer-release compare each turned one new test red. `pnpm test` 1637 passed.
 - 2026-10-31: implementation choice: the time-cut case uses a real 1000 ms limit, as the release cases do, not the M030 `performance.now` spy, since `withinLimit` cuts by a timer and the release tests already use that form.
 - 2026-10-31: T3 done: README "Building the data" (time-limit sentence and a new paragraph with the three warning cases), one CHANGELOG Unreleased entry, DESIGN's build line, the `LAST_RELEASES` comment, and the source note's "Traces to"; no added line over 80 columns. The simple-english hook flagged only lines older than this branch in README, CHANGELOG, and the source note, which stay as they are. `pnpm test` 1637 passed; `pnpm check` 0 problems.
+- 2026-10-31: T4 done: Build data run 41205738969 on the branch at 5e67246; its build job passed and printed no `::warning::` line (272 records, 0 build-level), so the live 7.0, 8.0, and 9.0 changelog reads did not fail and named no release newer than the lists; the start-test jobs were still running and are not changed by this branch.
+- 2026-10-31: claim audit: not owed — internal tier
+- 2026-10-31: implement done; status review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote
