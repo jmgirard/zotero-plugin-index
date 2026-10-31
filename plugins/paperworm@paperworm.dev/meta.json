@@ -1,0 +1,8 @@
+{
+  "id": "paperworm@paperworm.dev",
+  "name": "PaperWorm",
+  "description": "AI-powered paper reading assistant for Zotero",
+  "homepage": "https://github.com/TLzh/paperworm#readme",
+  "repoUrl": "https://github.com/TLzh/paperworm",
+  "updateUrl": "https://github.com/TLzh/paperworm/releases/download/release/update.json"
+}
