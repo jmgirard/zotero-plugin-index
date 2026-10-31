@@ -1,0 +1,8 @@
+{
+  "id": "zotero-cat@qianjindexiaozu.dev",
+  "name": "Zotero-Cat",
+  "description": "An item-pane Cat agent plugin for Zotero with pluggable model providers.",
+  "homepage": "https://github.com/Zotero-Cat/Zotero-Cat#readme",
+  "repoUrl": "https://github.com/Zotero-Cat/Zotero-Cat",
+  "updateUrl": "https://github.com/Zotero-Cat/Zotero-Cat/releases/download/release/update.json"
+}
