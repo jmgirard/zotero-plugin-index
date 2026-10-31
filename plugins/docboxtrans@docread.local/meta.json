@@ -1,0 +1,8 @@
+{
+  "id": "docboxtrans@docread.local",
+  "name": "DocBoxTrans for Zotero",
+  "description": "在 Zotero 阅读器中划词翻译，移植 DocBoxTrans 的翻译引擎与「上下文增强翻译」。",
+  "homepage": "https://github.com/onlyls/DocBoxTrans#readme",
+  "repoUrl": "https://github.com/onlyls/DocBoxTrans",
+  "updateUrl": "https://github.com/onlyls/DocBoxTrans/releases/download/release/update.json"
+}
