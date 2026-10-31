@@ -1,0 +1,8 @@
+{
+  "id": "zotag@arrancurran.github.io",
+  "name": "ZoTag",
+  "description": "Styles Zotero item tags as clean, shaded chips.",
+  "homepage": "https://github.com/arrancurran/ZoTag",
+  "repoUrl": "https://github.com/arrancurran/ZoTag",
+  "updateUrl": "https://raw.githubusercontent.com/arrancurran/ZoTag/main/updates.json"
+}
