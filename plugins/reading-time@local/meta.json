@@ -1,0 +1,8 @@
+{
+  "id": "reading-time@local",
+  "name": "Reading Time",
+  "description": "Tracks reading time per item: a stopwatch, a pomodoro timer and manual entry in the reader toolbar, totalled into a \"Reading time\" field.",
+  "homepage": "https://github.com/ievlevpn/zotero-time-tracking",
+  "repoUrl": "https://github.com/ievlevpn/zotero-time-tracking",
+  "updateUrl": "https://raw.githubusercontent.com/ievlevpn/zotero-time-tracking/master/update.json"
+}
