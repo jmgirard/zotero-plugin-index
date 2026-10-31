@@ -1,0 +1,8 @@
+{
+  "id": "zotobs-bridge@zotobs-io",
+  "name": "zotobs-bridge",
+  "description": "Recebe anotações do CLI zotobs por um endpoint local e as cria no Zotero.",
+  "homepage": "https://github.com/zepadovani/zotobs-io",
+  "repoUrl": "https://github.com/zepadovani/zotobs-io",
+  "updateUrl": "https://raw.githubusercontent.com/zepadovani/zotobs-io/main/extension/updates.json"
+}
