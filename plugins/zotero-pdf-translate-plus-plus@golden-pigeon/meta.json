@@ -1,0 +1,8 @@
+{
+  "id": "zotero-pdf-translate-plus-plus@golden-pigeon",
+  "name": "Translate for Zotero++",
+  "description": "Independently maintained Zotero translation plugin with reader popup math rendering and 20+ translation services.",
+  "homepage": "https://github.com/Golden-Pigeon/zotero-pdf-translate-plus-plus#readme",
+  "repoUrl": "https://github.com/Golden-Pigeon/zotero-pdf-translate-plus-plus",
+  "updateUrl": "https://github.com/Golden-Pigeon/zotero-pdf-translate-plus-plus/releases/download/release/update.json"
+}
