@@ -90,6 +90,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - 2026-10-31: amendment return: AC3 — "the build job gives the job output `data-sha256` from a `pnpm --silent data-digest --dir dist` step ... The site job runs `pnpm --silent data-digest --dir dist --expect` with that output"
 - 2026-10-31: T7 added (minor amendment) and done: both carry-order checks in `test/workflows.test.ts` (the data digest's and the start plan's) now search the `pnpm carry-start-results --plan` run line; a digest step planted before `pnpm build` failed the data test; 57 pass.
 - 2026-10-31: correction of the T1 read: upload-artifact v7's `findFilesToUpload` drops every directory from the file list (`src/shared/search.ts`), so empty directories are not uploaded; the earlier line's "zip spec keeps directory entries" was wrong. `dist/` holds no empty directory, so honest runs are unaffected.
+- 2026-10-31: step-7 approval: m069-data-artifact-check approved for merge
 - 2026-10-31: verify after return 1: `pnpm test` 1660 passed, 6 skipped; `pnpm check` 272 entries, 0 problems. Status review.
 
 ## Decisions
