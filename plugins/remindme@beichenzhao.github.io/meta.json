@@ -1,0 +1,8 @@
+{
+  "id": "remindme@beichenzhao.github.io",
+  "name": "RemindMe",
+  "description": "Hover over an item in Zotero to preview a one-sentence summary of the paper",
+  "homepage": "https://github.com/BeichenZhao/zotero-remind-me#readme",
+  "repoUrl": "https://github.com/BeichenZhao/zotero-remind-me",
+  "updateUrl": "https://github.com/BeichenZhao/zotero-remind-me/releases/download/release/update.json"
+}
