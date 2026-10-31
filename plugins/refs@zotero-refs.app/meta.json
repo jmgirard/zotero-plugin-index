@@ -1,0 +1,8 @@
+{
+  "id": "refs@zotero-refs.app",
+  "name": "Refs",
+  "description": "Refs — references, citations, related papers and a citation graph for every Zotero item",
+  "homepage": "https://github.com/yimmy23/zotero-refs#readme",
+  "repoUrl": "https://github.com/yimmy23/zotero-refs",
+  "updateUrl": "https://github.com/yimmy23/zotero-refs/releases/download/release/update.json"
+}
