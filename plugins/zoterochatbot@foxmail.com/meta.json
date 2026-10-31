@@ -1,0 +1,8 @@
+{
+  "id": "zoterochatbot@foxmail.com",
+  "name": "Zotero ChatGPT",
+  "description": "ChatGPT in Zotero",
+  "homepage": "https://github.com/kazgu/zotero-chatgpt#readme",
+  "repoUrl": "https://github.com/kazgu/zotero-chatgpt",
+  "updateUrl": "https://github.com/kazgu/zotero-chatgpt/releases/download/release/update.json"
+}
