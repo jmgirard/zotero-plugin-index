@@ -1,0 +1,8 @@
+{
+  "id": "marginfit@septyagu.local",
+  "name": "MarginFit",
+  "description": "Fit PDF content width or height with automatic margin detection and stable zoom. 自动识别 PDF 白边，适合内容宽度或高度，保持阅读位置稳定。",
+  "homepage": "https://github.com/SeptYagu/zotero-margin-fit",
+  "repoUrl": "https://github.com/SeptYagu/zotero-margin-fit",
+  "updateUrl": "https://raw.githubusercontent.com/SeptYagu/zotero-margin-fit/main/updates.json"
+}
