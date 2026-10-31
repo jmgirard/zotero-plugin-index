@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Zotero companion for ZotLit, an Obsidian plugin that turns Zotero items into Markdown literature notes: it pushes changes from Zotero to Obsidian as they happen, for live updates.",
+      "reason": "Condensed from the Overview, Features table, and network disclosure of README.md. The manifest description, \"Zotero companion plugin for ZotLit\", is in English and has fewer than six words, and the GitHub About text is in English and not shown."
+    }
+  ]
 }

@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Reading assistant for scientific articles with your own Gemini, ChatGPT, or IAEdu account: summaries, critical appraisal, reading sheets, article comparison, and literature reviews, with checked page citations.",
+      "reason": "Condensed from the opening paragraph and \"What it does\" section of README.md, which is in English. The manifest description is in Portuguese, with a short English gloss, and the GitHub About text is in English and not shown."
+    }
+  ]
 }

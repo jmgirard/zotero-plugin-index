@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Minimizes the main window instead of quitting when you click the close button or press Alt+F4, so sync and Zotero Connector keep running in the background. Windows only.",
+      "reason": "Translated from the opening paragraph and platform note of README.md, which is in Chinese. The manifest description pairs a Chinese sentence with a short English one, \"Minimize Zotero instead of quitting.\", which is in English and has fewer than six words, and the GitHub About text is half or more Chinese."
+    }
+  ]
 }

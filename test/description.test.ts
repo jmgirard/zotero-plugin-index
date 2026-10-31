@@ -80,6 +80,21 @@ describe("shownDescription", () => {
   ])("picks between a %s", (_name, manifest, github, shown) => {
     expect(shownDescription(withGitHub(record("Notes", manifest), github))).toBe(shown);
   });
+
+  const BELOW_HALF = "Takes notes on each paper you read in your library / 在文献旁边记录笔记";
+  test.each<[string, string | undefined, string | undefined, string | undefined]>([
+    ["piece after ` / ` in the manifest", "用可追溯的原文证据比较论文实验 / Compare paper experiments with PDF evidence.", undefined, "Compare paper experiments with PDF evidence."],
+    ["piece before ` / ` in the GitHub text", ZH, "Configurable structured tags for notes / 结构化标签与表格式文献批注插件", "Configurable structured tags for notes"],
+    ["piece after `。`", "点击关闭按钮只最小化窗口，不退出。Minimize the window instead of quitting.", undefined, "Minimize the window instead of quitting."],
+    ["two pieces", "为主列表增加重点内容列。Adds a key content column. / 允许为每个条目选择子笔记。 / Shows one child note per item.", undefined, "Adds a key content column. Shows one child note per item."],
+    ["list of short pieces", "期刊分区 / 中科院 / JCR / 影响因子", undefined, "期刊分区 / 中科院 / JCR / 影响因子"],
+    ["piece that only repeats the name", "在文献旁边记录笔记 / Zotero Notes plugin", undefined, "在文献旁边记录笔记 / Zotero Notes plugin"],
+    ["text just below half CJK", BELOW_HALF, undefined, BELOW_HALF],
+    ["text at exactly half CJK", "记录论文笔记 / Takes notes on each paper you", undefined, "Takes notes on each paper you"],
+    ["piece that mixes CJK and Latin words", "为文献添加结构化标签 / 支持 PDF export to Word 格式 / Adds tags to items", undefined, "Adds tags to items"],
+  ])("shows the Latin-script part or the whole text of a %s", (_name, manifest, github, shown) => {
+    expect(shownDescription(withGitHub(record("Notes", manifest), github))).toBe(shown);
+  });
 });
 
 function withGitHub(record: DescriptionRecord, repoDescription: string | undefined): DescriptionRecord {

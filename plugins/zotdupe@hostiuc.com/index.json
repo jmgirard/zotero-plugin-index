@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Finds duplicate items that exact matching misses, such as preprints and published versions, translations, and cross-type records, and groups them for review and merging with a preview of what is kept.",
+      "reason": "Condensed from the opening paragraph and Reviewing duplicates section of README.md. The manifest description, \"Semantic duplicate detector for Zotero\", is in English and has fewer than six words, and the GitHub About text is in English and not shown."
+    }
+  ]
 }

@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Translates text selected in the reader: single words go to a dictionary and phrases or sentences to an OpenAI-compatible AI service, with editable output in the selection popup and a list of saved passages.",
+      "reason": "Translated from the opening paragraphs of README.md, which is in Chinese. The manifest description is half or more Chinese, and the GitHub About text is missing."
+    }
+  ]
 }

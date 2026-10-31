@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Customizes the color and icon of collections: 14 preset colors plus a custom color, 136 icons grouped by subject, and applying one look to several collections at once.",
+      "reason": "Translated from the opening paragraph and feature list of README.md, which is in Portuguese. The upstream has no description in English: the manifest description and the GitHub About text are both in Portuguese."
+    }
+  ]
 }

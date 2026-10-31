@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Formats references to the Universidade Federal do Ceará (UFC) reference guide, based on ABNT NBR 6023:2018 and NBR 10520:2023: installs a custom CSL style and fixes output the style alone cannot express.",
+      "reason": "Translated from the opening paragraph and feature list of README.md, which is in Portuguese. The manifest description is in Portuguese, and the GitHub About text is in English and not shown."
+    }
+  ]
 }

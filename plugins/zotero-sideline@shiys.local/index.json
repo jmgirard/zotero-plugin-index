@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "AI chat sidebar for the PDF reader: summarize the full text, explain selections, translate, and add automatic highlights, using an OpenAI-compatible API or a local agent such as Codex. Replies can be saved as child notes.",
+      "reason": "Translated from the opening paragraph and feature table of README.md, which is in Chinese. The upstream has no description in English: the manifest description and the GitHub About text are both half or more Chinese."
+    }
+  ]
 }

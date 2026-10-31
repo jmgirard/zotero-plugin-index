@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Adds author columns to the item list: last author, first author, and an authors list with options for how many authors to show, separators, a last-author mark, and name order.",
+      "reason": "Condensed from the Features list of README.md. The manifest description only repeats the name, and the GitHub About text, \"Customize the displayed authors list\", is in English and has fewer than six words."
+    }
+  ]
 }

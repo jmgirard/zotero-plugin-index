@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "AI guided reading of papers: parses PDFs with MinerU and writes a structured guide whose points link back to the source text, with a figure and table index, saving to Zotero notes, and Anki export.",
+      "reason": "Translated from the opening paragraph and the generation section of README.md, which is in Chinese. The upstream has no description in English: the manifest description and the GitHub About text are both half or more Chinese."
+    }
+  ]
 }

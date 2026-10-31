@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Helps prepare references for GB/T 7714—2025: converts confirmed romanized Chinese names to single-field form, marks online resources with Medium: OL, keeps a local undo history, and adds a bilingual CSL style.",
+      "reason": "Condensed from the opening paragraph and Highlights list of README.en.md, the English README. The manifest description and the GitHub About text are half or more Chinese."
+    }
+  ]
 }

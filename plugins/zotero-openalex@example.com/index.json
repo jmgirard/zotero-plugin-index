@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Fetches OpenAlex metadata for items by DOI and keeps citation counts current: stores the OpenAlex Work ID and citation count in Extra, adds a Citations column, and draws citation and co-author graphs for collections.",
+      "reason": "Condensed from the opening paragraph and Usage section of README.md. The manifest description, \"Set the OpenAlex WorkID\", is in English and has fewer than six words, and the GitHub About text, \"Enrich your Zotero library with OpenAlex metadata\", is in English and not shown."
+    }
+  ]
 }

@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Renames PDF attachments from the item context menu as {short journal name}_{year}_{short title}, taking the journal abbreviation from a Jab/# tag or from the capital letters of the journal name.",
+      "reason": "Condensed from the Usage, Default rules, and Journal tags sections of README.md. The manifest description, \"Custom rename pdf\", is in English and has fewer than six words, and the GitHub About text is in English and not shown."
+    }
+  ]
 }

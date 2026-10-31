@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Manages attachments and syncs them through GitHub: moves or copies imported attachments into a custom folder, deletes linked files when items are deleted, and syncs settings and PDFs to a GitHub repository.",
+      "reason": "Condensed from the feature list and settings section of README.md. The manifest description, \"Mooves attachments and links them\", is in English and has fewer than six words, and the GitHub About text is in English and not shown."
+    }
+  ]
 }
