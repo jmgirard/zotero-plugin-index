@@ -1,0 +1,8 @@
+{
+  "id": "zotero@bibsonomy.org",
+  "name": "BibSonomy Zotero Connector",
+  "description": "Connect Zotero to BibSonomy",
+  "homepage": "https://github.com/tomvoelker/bibsonomy-zotero-sync#readme",
+  "repoUrl": "https://github.com/LSX-UniWue/bibsonomy-zotero-sync",
+  "updateUrl": "https://raw.githubusercontent.com/tomvoelker/bibsonomy-zotero-sync/main/update.json"
+}
