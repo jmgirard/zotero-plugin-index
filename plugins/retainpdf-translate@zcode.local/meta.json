@@ -1,0 +1,8 @@
+{
+  "id": "retainpdf-translate@zcode.local",
+  "name": "RetainPDF Translate",
+  "description": "用 RetainPDF 本地服务自动翻译新抓取的 PDF 全文，并把译文 PDF 挂到对应条目下。",
+  "homepage": "https://github.com/linxbxxh/retainpdf-zotero-plugin",
+  "repoUrl": "https://github.com/linxbxxh/retainpdf-zotero-plugin",
+  "updateUrl": "https://raw.githubusercontent.com/linxbxxh/retainpdf-zotero-plugin/main/update.json"
+}
