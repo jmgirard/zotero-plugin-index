@@ -430,6 +430,22 @@ export function githubClient(fetch: Fetch) {
     patch: (url: string, payload: unknown) => send("PATCH", url, payload),
     put: (url: string, payload: unknown) => send("PUT", url, payload),
     json: async (url: string): Promise<unknown> => (await get(url)).body,
+    // A file of the contents API as raw text. The request, the body included, stops at
+    // `ms`, and a body past `max` bytes fails the read.
+    async raw(url: string, max: number, ms = FETCH_TIMEOUT_MS): Promise<string> {
+      if (!URL.canParse(url) || new URL(url).origin !== API) fail("request-failed", `${url} is not on ${API}`);
+      let response: Response;
+      try {
+        response = await fetch(url, { headers: { ...headers, accept: "application/vnd.github.raw+json" }, signal: AbortSignal.timeout(ms) });
+      } catch (error) {
+        fail("request-failed", `GET ${url} failed: ${(error as Error).message}`, true);
+      }
+      if (!response.ok) {
+        fail("github-http-error", `GET ${url} returned HTTP ${response.status}`, buildLevelStatus(response.status, "github-api"));
+      }
+      const bytes = await readCapped(response, url, max, () => fail("request-failed", `GET ${url} returned a body larger than ${max} bytes`));
+      return new TextDecoder().decode(bytes);
+    },
     // Follows the Link header's rel="next" and joins the pages' arrays. The token
     // goes only to the API host, and a page seen before ends the read.
     async pages(url: string): Promise<unknown[]> {

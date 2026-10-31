@@ -94,6 +94,8 @@ export interface DiscoverReadOptions {
   limit: number;
   budget: number;
   now?: Date;
+  // The catalog to read, as for discover.
+  catalog?: string;
   // The index repo as owner/repo.
   indexRepo: string;
 }
@@ -511,7 +513,12 @@ export function body(entry: Written, checked: { status: number; output: string }
   // the closing fence.
   const output = cut ? chars.slice(0, CHECK_OUTPUT_MAX).join("").trimEnd() : trimmed;
   const fence = "`".repeat(Math.max(3, ...[...output.matchAll(/`+/g)].map(([run]) => run.length + 1)));
-  const found = issue === undefined ? `found ${entry.repoUrl} by its GitHub topic` : `read ${entry.repoUrl} from issue #${issue}`;
+  const found =
+    issue !== undefined
+      ? `read ${entry.repoUrl} from issue #${issue}`
+      : entry.source === "catalog"
+        ? `found ${entry.repoUrl} in the [zotero-chinese plugin catalog](https://github.com/zotero-chinese/zotero-plugins)`
+        : `found ${entry.repoUrl} by its GitHub topic`;
   return [
     `The discovery bot ${found} and drafted this entry from its newest stable release with an \`.xpi\` file, or from its newest prerelease if no stable release has one or that release is not a Zotero 7+ build.`,
     ...(issue === undefined ? [] : ["", `Closes #${issue}`]),
@@ -531,7 +538,7 @@ export function body(entry: Written, checked: { status: number; output: string }
       ? ["Hold: none", "", UNHELD_TEXT]
       : [`Hold: ${entry.holds.join(", ")}`, "", "The bot does not merge this pull request itself.", "", ...entry.holds.map((reason) => `- \`${reason}\`: ${HOLD_TEXT[reason]}`)]),
     "",
-    "If this pull request is closed without a merge, the bot does not propose this repo again, from its topic or from an issue.",
+    "If this pull request is closed without a merge, the bot does not propose this repo again, from discovery or from an issue.",
   ].join("\n");
 }
 

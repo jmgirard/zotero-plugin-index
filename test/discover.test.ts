@@ -73,14 +73,17 @@ interface RunOptions {
   runMs?: number;
   startedAt?: number;
   refCheckMs?: number;
+  catalog?: string;
+  catalogMs?: number;
+  catalogMaxBytes?: number;
   onRequest?: (seen: SeenRequest) => void;
 }
 
 async function runResult(responses: Responses, options: RunOptions = {}) {
   const { root = tempDir(), outDir = tempDir(), state = {}, skip = new Set<string>(), limit = 50, budget = 100, now = NOW } = options;
-  const { readMs, runMs, startedAt, refCheckMs } = options;
+  const { readMs, runMs, startedAt, refCheckMs, catalog, catalogMs, catalogMaxBytes } = options;
   const { fetch, requests } = fixtureFetch(responses, options.onRequest);
-  const limits = { readMs, runMs, startedAt, refCheckMs };
+  const limits = { readMs, runMs, startedAt, refCheckMs, catalog, catalogMs, catalogMaxBytes };
   const result = await discover({ root, outDir, fetch, lookup: publicLookup, state, skip, limit, budget, now, ...limits });
   return { result, requests };
 }
@@ -261,16 +264,206 @@ describe("the discovery state", () => {
     expect(state).toEqual(kept ? { [repo]: { pushedAt: "2026-10-01T00:00:00Z", failure, checkedAt: NOW.toISOString() } } : {});
   });
 
-  test("drops records of repos the search no longer finds or the index now has", async () => {
+  test("keeps records under 30 days old of repos the run did not find, and drops old ones and those the index now has", async () => {
     // example/no-release was pushed at this time in the search fixture, so its record stays.
     const record = { pushedAt: "2026-10-17T10:00:00Z", failure: "no-release" as const, checkedAt: NOW.toISOString() };
+    const old = { ...record, checkedAt: new Date(NOW.getTime() - 30 * DAY).toISOString() };
     const { state } = await run(recorded(), {
       root: TREE,
-      state: { "example/gone": record, "example/second-plugin": record, "example/no-release": record },
+      state: { "example/gone": record, "example/gone-long": old, "example/second-plugin": record, "example/no-release": record },
     });
-    expect(Object.keys(state)).toEqual(expect.arrayContaining(["example/no-release"]));
-    expect(state["example/gone"]).toBeUndefined();
+    expect(Object.keys(state)).toEqual(expect.arrayContaining(["example/no-release", "example/gone"]));
+    expect(state["example/gone-long"]).toBeUndefined();
     expect(state["example/second-plugin"]).toBeUndefined();
+  });
+});
+
+describe("the catalog", () => {
+  const CATALOG = "https://api.github.com/repos/example/catalog/contents/plugins.json?ref=gh-pages";
+  const GRAPHQL = "POST https://api.github.com/graphql";
+  const listed = (repos: unknown[]): Responses => ({ [CATALOG]: { json: repos.map((repo) => (typeof repo === "string" ? { repo } : repo)) } });
+  // The GraphQL answer for the repos of one lookup request, in the order it names them:
+  // a [nameWithOwner, pushedAt] pair, or null for a repo GitHub does not have.
+  const found = (...repos: ([string, string | null] | null)[]) => ({
+    json: {
+      data: Object.fromEntries(
+        repos.map((repo, i) => [`r${i}`, repo && { nameWithOwner: repo[0], url: `https://github.com/${repo[0]}`, pushedAt: repo[1] }]),
+      ),
+      errors: repos.flatMap((repo, i) => (repo ? [] : [{ type: "NOT_FOUND", path: [`r${i}`], message: `Could not resolve r${i}` }])),
+    },
+  });
+  // example/alpha carries a topic; example/listed carries none and is pushed later.
+  const base = (): Responses => ({
+    ...searched([["example/alpha", "2026-10-01T00:00:00Z"]]),
+    ...pluginRepo("example/alpha", "alpha@example.org"),
+    ...pluginRepo("example/listed", "listed@example.org", { topics: [] }),
+  });
+  const withCatalog = { catalog: CATALOG };
+  const lookups = (requests: SeenRequest[]) => requests.filter(({ method, url }) => method === "POST" && url.endsWith("/graphql"));
+
+  test("writes the entry of a repo that only the catalog lists, with no topic and no hold", async () => {
+    const responses = { ...base(), ...listed(["example/listed"]), [GRAPHQL]: found(["example/listed", "2026-10-20T00:00:00Z"]) };
+    const { result, requests } = await runResult(responses, withCatalog);
+    if (!result.ok) throw new Error(result.message);
+    expect(result.report.read).toContainEqual(
+      expect.objectContaining({ repo: "example/listed", source: "catalog", outcome: "written", id: "listed@example.org", holds: [] }),
+    );
+    expect(result.report.read).toContainEqual(expect.objectContaining({ repo: "example/alpha", source: "topic" }));
+    // The name reaches GitHub as a variable, not in the query text.
+    const sent = JSON.parse(lookups(requests)[0].body!);
+    expect(sent.variables).toEqual({ o0: "example", n0: "listed" });
+    expect(sent.query).not.toContain("listed");
+  });
+
+  test.each([
+    ["the topic search returns it in other letter case", ["example/ALPHA"], null, "topic"],
+    ["the topic search returns the name the lookup gives", ["example/old-alpha"], found(["example/alpha", "2026-10-01T00:00:00Z"]), "topic"],
+    ["the catalog lists its old and new names", ["example/old-listed", "example/listed"], found(["example/listed", "2026-10-20T00:00:00Z"], ["example/listed", "2026-10-20T00:00:00Z"]), "catalog"],
+    ["the catalog lists it twice in other letter case", ["example/listed", "Example/Listed"], found(["example/listed", "2026-10-20T00:00:00Z"]), "catalog"],
+  ])("reads a repo once when %s", async (_name, names, answer, source) => {
+    const responses = { ...base(), ...listed(names), ...(answer && { [GRAPHQL]: answer }) };
+    const { reads, report } = await run(responses, withCatalog);
+    const repo = source === "topic" ? "example/alpha" : "example/listed";
+    expect(reads.filter((read) => read.toLowerCase() === repo)).toHaveLength(1);
+    expect(report.read.filter((item) => item.repo === repo)).toEqual([expect.objectContaining({ source })]);
+    expect(report.warnings).toEqual([]);
+  });
+
+  test("skips a renamed catalog repo as in-index when an entry names its new name", async () => {
+    const root = tempDir();
+    mkdirSync(join(root, "listed@example.org"));
+    writeFileSync(join(root, "listed@example.org/meta.json"), JSON.stringify({ repoUrl: "https://github.com/example/listed" }));
+    const responses = { ...base(), ...listed(["example/old-listed"]), [GRAPHQL]: found(["example/listed", "2026-10-20T00:00:00Z"]) };
+    const { reads, report } = await run(responses, { ...withCatalog, root });
+    expect(reads).not.toContain("example/listed");
+    expect(report.skipped).toContainEqual({ repo: "example/listed", reason: "in-index" });
+  });
+
+  // A refusal of a catalog-only repo that the run keeps whenever the catalog or the
+  // lookup fails, since it is under 30 days old and the index lacks the repo.
+  const kept = { "example/refused": { pushedAt: "2026-10-01T00:00:00Z", failure: "no-release" as const, checkedAt: NOW.toISOString() } };
+
+  test.each([
+    ["an HTTP 5xx answer", { status: 503, text: "unavailable" }, {}],
+    ["a fetch that rejects", { error: "connection reset" }, {}],
+    ["a fetch that passes its time limit", { stall: "headers" as const }, { catalogMs: 50 }],
+    ["a body over its size limit", { text: `[${'{"repo":"example/listed"},'.repeat(10)}{}]` }, { catalogMaxBytes: 100 }],
+    ["a body that is not JSON", { text: "<html>busy</html>" }, {}],
+    ["a JSON body that is not a list", { json: { plugins: [] } }, {}],
+  ])("warns and reads the topic repos when the catalog read fails with %s", async (_name, answer, limits) => {
+    const responses = { ...base(), [CATALOG]: answer };
+    const { reads, report, state } = await run(responses, { ...withCatalog, ...limits, state: kept });
+    expect(report.warnings).toEqual([expect.stringMatching(/^the run reads no repo from the catalog, since its read failed: .*plugins\.json/)]);
+    expect(reads).toEqual(["example/alpha"]);
+    expect(state).toEqual(kept);
+  });
+
+  test("warns about each catalog item with no usable owner/repo name and reads the others", async () => {
+    const bad = [42, null, {}, { repo: 5 }, { repo: "listed" }, { repo: "example/listed/more" }, { repo: "/listed" }, { repo: 'example/"listed' }];
+    const responses = { ...base(), ...listed([...bad, "example/listed"]), [GRAPHQL]: found(["example/listed", "2026-10-20T00:00:00Z"]) };
+    const { reads, report } = await run(responses, withCatalog);
+    expect(report.warnings).toEqual(bad.map((_, at) => expect.stringMatching(new RegExp(`^catalog item ${at} has no owner/repo name`))));
+    expect(report.warnings[7]).toContain('example/\\"listed');
+    expect(reads).toContain("example/listed");
+  });
+
+  test("warns about and does not read a repo that GitHub does not have or that has no pushed_at", async () => {
+    const responses = {
+      ...base(),
+      ...listed(["example/gone", "example/empty", "example/listed"]),
+      [GRAPHQL]: found(null, ["example/empty", null], ["example/listed", "2026-10-20T00:00:00Z"]),
+    };
+    const { reads, report } = await run(responses, withCatalog);
+    expect(report.warnings).toEqual([
+      "GitHub has no repo example/gone, which the catalog names, so the run does not read it",
+      "the lookup of example/empty gave no name, URL, or valid pushed_at, so the run does not read it",
+    ]);
+    expect([...reads].sort()).toEqual(["example/alpha", "example/listed"]);
+  });
+
+  test.each([
+    ["an HTTP 401 answer", { status: 401, json: { message: "Requires authentication" } }],
+    ["an HTTP 403 answer", { status: 403, json: { message: "rate limit" } }],
+    ["an HTTP 429 answer", { status: 429, json: { message: "slow down" } }],
+    ["an HTTP 5xx answer", { status: 502, text: "bad gateway" }],
+    ["a fetch that rejects", { error: "connection reset" }],
+    ["a body that is not JSON", { text: "<html>busy</html>" }],
+    ["an answer with no data", { json: { errors: [{ type: "RATE_LIMITED", message: "API rate limit exceeded" }] } }],
+  ])("warns, reads the other repos, and keeps the state when the lookup fails with %s", async (_name, answer) => {
+    const responses = { ...base(), ...listed(["example/listed"]), [GRAPHQL]: answer };
+    const { reads, report, state } = await run(responses, { ...withCatalog, state: kept });
+    expect(report.warnings).toEqual([expect.stringMatching(/^the run reads none of 1 catalog repos from example\/listed, since their lookup failed: /)]);
+    expect(reads).toEqual(["example/alpha"]);
+    expect(state).toEqual(kept);
+  });
+
+  test("warns about a repo whose lookup failed with another error type, and reads the others", async () => {
+    const answer = {
+      json: {
+        data: { r0: null, r1: { nameWithOwner: "example/listed", url: "https://github.com/example/listed", pushedAt: "2026-10-20T00:00:00Z" } },
+        errors: [{ type: "FORBIDDEN", path: ["r0"], message: "Resource protected by organization SAML enforcement" }],
+      },
+    };
+    const responses = { ...base(), ...listed(["example/saml", "example/listed"]), [GRAPHQL]: answer };
+    const { reads, report, state } = await run(responses, { ...withCatalog, state: kept });
+    expect(report.warnings).toEqual(["the lookup of example/saml failed, so the run does not read it: Resource protected by organization SAML enforcement"]);
+    expect([...reads].sort()).toEqual(["example/alpha", "example/listed"]);
+    expect(state).toEqual(expect.objectContaining(kept));
+  });
+
+  test("looks up at most 100 repos in one request", async () => {
+    const names = Array.from({ length: 101 }, (_, i) => `example/n${i}`);
+    const responses = { ...base(), ...listed(names), [`${GRAPHQL} #1`]: found(), [`${GRAPHQL} #2`]: found() };
+    const { requests } = await runResult(responses, withCatalog);
+    expect(lookups(requests).map(({ body }) => Object.keys(JSON.parse(body!).variables).length)).toEqual([200, 2]);
+  });
+
+  describe("a catalog-only repo", () => {
+    const refusedListed = pluginRepo("example/listed", "listed@example.org", { noRelease: true, topics: [] });
+    const responses = (pushedAt = "2026-10-20T00:00:00Z") => ({
+      ...base(),
+      ...refusedListed,
+      ...listed(["example/listed"]),
+      [GRAPHQL]: found(["example/listed", pushedAt]),
+    });
+
+    test("is read before an older topic repo", async () => {
+      const { reads } = await run(responses(), withCatalog);
+      expect(reads).toEqual(["example/listed", "example/alpha"]);
+    });
+
+    test("is skipped as in-index when an entry names it", async () => {
+      const root = tempDir();
+      mkdirSync(join(root, "listed@example.org"));
+      writeFileSync(join(root, "listed@example.org/meta.json"), JSON.stringify({ repoUrl: "https://github.com/Example/Listed" }));
+      const { reads, report } = await run(responses(), { ...withCatalog, root });
+      expect(reads).not.toContain("example/listed");
+      expect(report.skipped).toContainEqual({ repo: "example/listed", reason: "in-index" });
+    });
+
+    test("is skipped as in-skip-set when the skip set names it", async () => {
+      const { reads, report } = await run(responses(), { ...withCatalog, skip: new Set(["example/listed"]) });
+      expect(reads).not.toContain("example/listed");
+      expect(report.skipped).toContainEqual({ repo: "example/listed", reason: "in-skip-set" });
+    });
+
+    test("is skipped as refused-before while its pushed_at is unchanged and its refusal is under 30 days old", async () => {
+      const first = await run(responses(), withCatalog);
+      expect(first.state["example/listed"]).toMatchObject({ pushedAt: "2026-10-20T00:00:00Z", failure: "no-release" });
+      const later = { ...withCatalog, state: first.state, now: new Date(NOW.getTime() + DAY) };
+      const same = await run(responses(), later);
+      expect(same.report.skipped).toContainEqual({ repo: "example/listed", reason: "refused-before" });
+      const pushed = await run(responses("2026-10-26T00:00:00Z"), later);
+      expect(pushed.reads).toContain("example/listed");
+    });
+
+    test("keeps its record under 30 days old when a run does not find it", async () => {
+      const first = await run(responses(), withCatalog);
+      const { state } = await run(base(), { state: first.state, now: new Date(NOW.getTime() + DAY) });
+      expect(state["example/listed"]).toEqual(first.state["example/listed"]);
+      const { state: later } = await run(base(), { state: first.state, now: new Date(NOW.getTime() + 30 * DAY) });
+      expect(later["example/listed"]).toBeUndefined();
+    });
   });
 });
 

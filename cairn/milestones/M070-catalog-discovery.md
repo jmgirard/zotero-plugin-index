@@ -1,13 +1,13 @@
 # M070: Find plugins in the zotero-chinese catalog
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the index's plugin list and the bot's pull request text change
-- **Branch/PR:** —
+- **Branch/PR:** m070-catalog-discovery
 
 ## Goal
 
@@ -71,10 +71,10 @@
 
 ## Tasks
 
-- [ ] T1: In `src/discover/discover.ts`, add the catalog read (contents API, raw media type, 60 s, 8 MiB) and the item check. Add tests for AC2 and for the catalog part of AC1.
-- [ ] T2: Add the GraphQL lookup (batches of 100, names as variables, POST to the API host only) and the join by the looked-up name. Add tests for AC3 and for the join cases of AC1.
-- [ ] T3: Change the state rule in `discover()` and the ordering of the joined candidates. Add tests for AC4.
-- [ ] T4: Add `source` to `ReadItem`, `PlannedEntry`, `planned()`, and `entrySchema`. Change `body()` in `src/discover/propose.ts` and its closing line. Add the `twoStep` test and the `body()` tests of AC5.
+- [x] T1: In `src/discover/discover.ts`, add the catalog read (contents API, raw media type, 60 s, 8 MiB) and the item check. Add tests for AC2 and for the catalog part of AC1.
+- [x] T2: Add the GraphQL lookup (batches of 100, names as variables, POST to the API host only) and the join by the looked-up name. Add tests for AC3 and for the join cases of AC1.
+- [x] T3: Change the state rule in `discover()` and the ordering of the joined candidates. Add tests for AC4.
+- [x] T4: Add `source` to `ReadItem`, `PlannedEntry`, `planned()`, and `entrySchema`. Change `body()` in `src/discover/propose.ts` and its closing line. Add the `twoStep` test and the `body()` tests of AC5.
 - [ ] T5: Write the README, DESIGN, and CHANGELOG text of AC6, and wrap it near 76 columns.
 - [ ] T6: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
 
@@ -92,6 +92,12 @@
 - 2026-10-31: plan chose one GraphQL request for each 100 names over a REST `GET /repos` for each name because the Actions token allows 1,000 REST requests an hour and M071 adds about 1,000 names; falsified by a run where batched lookups cost more requests or fail more often than single ones.
 - 2026-10-31: plan chose the contents API over the catalog's GitHub Pages URL because `githubClient` sends requests only to the API host; falsified by the contents API refusing or truncating the file.
 - 2026-10-31: plan chose to keep refusal records of repos a run did not find, for 30 days, over dropping them because code-search results shift between runs; falsified by a state file that grows past the size the cache step can save.
+- 2026-10-31: started on branch m070-catalog-discovery.
+- 2026-10-31: T1-T4 landed in one commit, since a catalog repo needs the lookup's pushed_at before the run can read it (minor amendment).
+- 2026-10-31: implementation choices: `discover()` reads the catalog only when its new `catalog` option is set, and `pnpm discover` sets it to `CATALOG_URL`, so tests without a catalog need no catalog fixture; `githubClient` gains `raw(url, max, ms)`; `SOURCES` lives in `holds.ts` beside `TOPICS`, since `handoff.ts` cannot import `discover.ts` without a cycle; a catalog name that a topic search returned is not looked up.
+- 2026-10-31: the state rule also keeps a record of a repo the run found whatever its age, as before, since an old record never causes a skip; two time-limit tests rely on it.
+- 2026-10-31: check discrimination: a planted `planned()` that drops `source` turned the catalog `twoStep` test red; restored from a copy.
+- 2026-10-31: verify: `pnpm test` 1691 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
 
 ## Decisions
 
