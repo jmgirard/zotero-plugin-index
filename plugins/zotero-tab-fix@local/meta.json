@@ -1,0 +1,8 @@
+{
+  "id": "zotero-tab-fix@local",
+  "name": "Zotero Tab Fix",
+  "description": "A small Zotero add-on that fixes tab keyboard shortcut behavior.",
+  "homepage": "https://github.com/OliverDudgeon/zotero-tab-fix#readme",
+  "repoUrl": "https://github.com/OliverDudgeon/zotero-tab-fix",
+  "updateUrl": "https://github.com/OliverDudgeon/zotero-tab-fix/releases/download/release/update.json"
+}
