@@ -1,0 +1,8 @@
+{
+  "id": "claudero@muisedestiny.com",
+  "name": "Claudero",
+  "description": "AI research assistant embedded in Zotero",
+  "homepage": "https://github.com/MuiseDestiny/zotero-claudero#readme",
+  "repoUrl": "https://github.com/MuiseDestiny/zotero-claudero",
+  "updateUrl": "https://github.com/MuiseDestiny/zotero-claudero/releases/download/release/update-beta.json"
+}
