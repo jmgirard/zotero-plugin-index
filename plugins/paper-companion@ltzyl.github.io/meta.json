@@ -1,0 +1,7 @@
+{
+  "id": "paper-companion@ltzyl.github.io",
+  "name": "Paper Companion · 论文助手",
+  "description": "自动配置运行组件，提供中英阅读、本地总结、中文摘要和文库内引用关系。",
+  "repoUrl": "https://github.com/ltzyl/zotero-paper-companion",
+  "updateUrl": "https://raw.githubusercontent.com/ltzyl/zotero-paper-companion/main/updates.json"
+}
