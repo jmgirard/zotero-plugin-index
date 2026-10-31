@@ -1,0 +1,8 @@
+{
+  "id": "zotero-wakatime@xinxzk.github.io",
+  "name": "Zotero WakaTime",
+  "description": "Track Zotero PDF reading time with WakaTime",
+  "homepage": "https://github.com/xinxzk/zotero-wakatime#readme",
+  "repoUrl": "https://github.com/xinxzk/zotero-wakatime",
+  "updateUrl": "https://github.com/xinxzk/zotero-wakatime/releases/download/release/update.json"
+}
