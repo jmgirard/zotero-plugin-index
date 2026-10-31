@@ -1,0 +1,8 @@
+{
+  "id": "citekey-url@dinh.ai",
+  "name": "Citekey URL",
+  "description": "Directly link to Zotero entries by their citekeys",
+  "homepage": "https://github.com/gdinh/citekey-url",
+  "repoUrl": "https://github.com/gdinh/citekey-url",
+  "updateUrl": "https://raw.githubusercontent.com/gdinh/citekey-url/refs/heads/master/updates.json"
+}
