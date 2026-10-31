@@ -1,0 +1,8 @@
+{
+  "id": "extra-columns@petersharp.org",
+  "name": "Extra Columns",
+  "description": "Show values stored in an item's Extra field, and Zotero fields without a column of their own, as sortable columns in the Zotero item list.",
+  "homepage": "https://github.com/mrpsharp/zotero-extra-columns#readme",
+  "repoUrl": "https://github.com/mrpsharp/zotero-extra-columns",
+  "updateUrl": "https://github.com/mrpsharp/zotero-extra-columns/releases/download/release/update.json"
+}
