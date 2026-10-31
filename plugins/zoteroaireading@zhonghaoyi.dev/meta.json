@@ -1,0 +1,8 @@
+{
+  "id": "zoteroaireading@zhonghaoyi.dev",
+  "name": "Zotero AI Reading (Windows)",
+  "description": "Send the selected Zotero item's PDF and a saved prompt to a configurable web AI chat.",
+  "homepage": "https://github.com/zhonghaoyi/zotero-ai-reading",
+  "repoUrl": "https://github.com/zhonghaoyi/zotero-ai-reading",
+  "updateUrl": "https://raw.githubusercontent.com/zhonghaoyi/zotero-ai-reading/windows/update.json"
+}
