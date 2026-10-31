@@ -1,0 +1,7 @@
+{
+  "id": "zrr-companion@zotero-redisearch-rag",
+  "name": "Zotero Redis RAG Companion",
+  "description": "Local HTTP endpoint for Zotero annotation images",
+  "repoUrl": "https://github.com/jmiba/zotero-redisearch-rag",
+  "updateUrl": "https://raw.githubusercontent.com/jmiba/zotero-redisearch-rag/main/zotero-companion/updates.json"
+}
