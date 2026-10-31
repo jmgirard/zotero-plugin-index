@@ -1,0 +1,8 @@
+{
+  "id": "zotero-settings-key@hegghammer.github.io",
+  "name": "Zotero Settings Key",
+  "description": "Adds a configurable keyboard shortcut for toggling Zotero Settings.",
+  "homepage": "https://github.com/Hegghammer/zotero-settings-key",
+  "repoUrl": "https://github.com/Hegghammer/zotero-settings-key",
+  "updateUrl": "https://github.com/Hegghammer/zotero-settings-key/releases/latest/download/updates.json"
+}
