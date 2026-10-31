@@ -1337,9 +1337,10 @@ hand. It has four jobs:
 
 1. The build job runs `pnpm check` and `pnpm build --plan start-plan.json`.
    Then it runs `pnpm carry-start-results` on the plan with the published
-   data, as "Starting plugins in Zotero" says. It keeps `dist/` as a
-   workflow artifact named `plugins-data`, and the plan as an artifact
-   named `start-plan`. No artifact holds an XPI.
+   data, as "Starting plugins in Zotero" says. It gives the SHA-256 of the
+   plan and the `pnpm data-digest` value of `dist/` as job outputs. It
+   keeps `dist/` as a workflow artifact named `plugins-data`, and the plan
+   as an artifact named `start-plan`. No artifact holds an XPI.
 2. The start-test job runs once for each tested Zotero release for Linux.
    It downloads Zotero from download.zotero.org and checks the file against
    a SHA-256 in the workflow. Then it runs `pnpm start-tests` under
@@ -1347,16 +1348,21 @@ hand. It has four jobs:
    `start-results-<version>`. The job has no token permission, reads no
    secret, keeps no git credentials, and uses no cache, since plugin code
    runs in it.
-3. The site job checks the start plan against a SHA-256 that the build job
-   gives as a job output, since plugin code in a start-test job can upload
-   artifacts. Then it runs `pnpm add-start-results` and `pnpm site`. It runs
-   when the build job succeeded, whatever the start-test jobs' results.
+3. The site job checks the downloaded data with
+   `pnpm data-digest --dir dist --expect`, and the start plan against its
+   SHA-256, each against the value that the build job gives as a job
+   output. Plugin code in a start-test job can upload artifacts. If that
+   code reaches the run's artifact token, it can also delete
+   `plugins-data` and upload another under that name. Then the site job runs
+   `pnpm add-start-results` and `pnpm site`. It runs when the build job
+   succeeded, whatever the start-test jobs' results.
 4. If the site job succeeded, the deploy job deploys `dist/` to GitHub
    Pages, whatever the start-test jobs' results.
 
 If `pnpm build`, `pnpm add-start-results`, or `pnpm site` exits with
-status 1, the workflow deploys nothing. If the start plan fails its
-SHA-256 check, the workflow also deploys nothing. So does an exit status
+status 1, the workflow deploys nothing. If the downloaded data or the
+start plan fails its check, the workflow also deploys nothing. So does an
+exit status
 of 1 from `pnpm carry-start-results`, which it gives only for a usage
 error. The site and data from the last good build then stay published.
 GitHub stops the build job at 30 minutes, and then the workflow also
@@ -1371,6 +1377,25 @@ To publish the change sooner, start the workflow on `main` by hand:
 ```bash
 gh workflow run build.yml --ref main
 ```
+
+To print the value that the data check compares, run:
+
+```bash
+pnpm data-digest --dir <dir> [--expect <sha256>]
+```
+
+The command prints one SHA-256 value. It hashes one JSON line for each
+entry under `--dir`, sorted by path. A line holds the entry's kind (file
+or directory), its path relative to `--dir`, and the SHA-256 of a file's
+bytes. File times and modes do not change the value.
+
+If an entry is not a file or a directory, the command prints no value. A
+symbolic link and a named pipe are such entries. The command then names
+the entry and exits with status 1. If the value equals the `--expect`
+value, the command exits 0. If the two values differ, it prints both and
+exits with status 1. These arguments give the usage line and status 1: no
+`--dir`, a `--dir` that is not a directory, and an `--expect` value that
+is not 64 lowercase hex digits. Any other argument does the same.
 
 ## Running the tests
 

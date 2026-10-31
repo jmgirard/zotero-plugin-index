@@ -54,7 +54,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - [x] T1: Read the artifact client that `actions/upload-artifact@v7` runs: its `overwrite` path and the credential it uses. Find out whether a job with `permissions: {}` can delete and upload again an artifact that another job of the run uploaded. Find out whether the artifact keeps hidden files and empty directories. Also find out whether a start-test job can upload a `github-pages` artifact that stops or changes the deploy. Record each finding in a work-log line. The reason sentence of T4 states only what this read found. If the Pages artifact can be stopped or changed, add a candidate row. This task is a read, and no criterion checks it.
 - [x] T2: Write `test/data-digest.test.ts` for AC1 and AC2 first. Then write `src/build/digest.ts` (the tree walk and the digest), `src/build/digest-cli.ts`, and the `data-digest` script in `package.json`.
 - [x] T3: In `build.yml`, add the `data-sha256` output and the digest step to the build job. Add the check step to the site job. Write comments for both. Extend `test/workflows.test.ts`.
-- [ ] T4: Write the README command section, the README section "The daily build", the `build.yml` paragraph of DESIGN, and the CHANGELOG entry.
+- [x] T4: Write the README command section, the README section "The daily build", the `build.yml` paragraph of DESIGN, and the CHANGELOG entry.
 - [ ] T5: Run `pnpm test` and `pnpm check`. Push the branch and run `gh workflow run build.yml --ref <branch>`. Record the run id and the result of the data check step of the site job.
 
 ## Work log
@@ -76,6 +76,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - 2026-10-31: T1 read: upload-pages-artifact v5 tars with `--dereference` and uploads `github-pages` without `overwrite`, so a `github-pages` artifact that a start-test job uploads first fails the site job's upload and stops the deploy, but cannot become the deployed site; filed parked row "Keep plugin code from stopping deploys".
 - 2026-10-31: T2: `src/build/digest.ts` hashes one JSON line per entry, `[kind, path, file SHA-256 or null]`, sorted by UTF-8 path bytes; `readdir` dirents refuse links and pipes without following them; the CLI prints `data digest matches: <sha>` on a match. `test/data-digest.test.ts` 22 tests pass. Plants: unframed `path + bytes` failed the two framing probes; dropping `kind` failed none, since a directory's null SHA-256 already tells it from a file.
 - 2026-10-31: T3: build job output `data-sha256` from `pnpm --silent data-digest --dir dist` (`--silent` drops pnpm's script banner from the captured line, as `add-plugin-issue.yml` does), after the plan hash and before the uploads; site check step right after the `plugins-data` download. `test/workflows.test.ts` 57 pass; a planted `continue-on-error: true` and a planted `if:` each failed the new test.
+- 2026-10-31: T4: README "The daily build" (items 1 and 3, the deploy-nothing paragraph, and a `pnpm data-digest` section after it), DESIGN's `build.yml` paragraph, and one CHANGELOG entry; the replacement sentence states T1's read; no added line passes 80 columns.
 
 ## Decisions
 

@@ -766,9 +766,16 @@ reused._
   (D-011). Since M047 the workflow has four jobs. The build job runs
   `pnpm build --plan start-plan.json`, then since M059 `pnpm
   carry-start-results` on the plan, gives the plan's SHA-256 as the job
-  output `plan-sha256`, and uploads `dist/` as `plugins-data` and the plan
-  as `start-plan`; the site job checks the downloaded plan against that
-  output with `sha256sum --check` before `pnpm add-start-results`. A
+  output `plan-sha256` and, since M069, the `pnpm data-digest --dir dist`
+  value as `data-sha256`, and uploads `dist/` as `plugins-data` and the
+  plan as `start-plan`. The site job checks the downloaded `dist/` with
+  `pnpm data-digest --dir dist --expect` and the downloaded plan with
+  `sha256sum --check`, each against its output, before
+  `pnpm add-start-results`, so a mismatch deploys nothing. Plugin code that
+  reaches the run's artifact token can delete and upload again an artifact
+  of another job (M069). `src/build/digest.ts` hashes one JSON line per
+  entry, its kind, path, and file SHA-256, sorted by path, and refuses an
+  entry that is not a file or a directory. A
   `start-test` matrix job, one line per tested Zotero release with its
   file name and SHA-256, runs `pnpm start-tests` and uploads
   `start-results-<version>`; it holds

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- If the data that the daily build's site job downloads differs from the
+  data that the build job wrote, the daily build deploys nothing. The site
+  job compares the two with the new `pnpm data-digest` command, as the
+  README says.
 - Each plugin entry is a directory `plugins/<id>/` with a registry `meta.json`
   and an `index.json` for index-only data, such as overrides with reasons.
 - `pnpm check` checks every entry. It makes sure that both files exist, that
