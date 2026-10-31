@@ -1,0 +1,8 @@
+{
+  "id": "excel-like-column-resize@local.codex",
+  "name": "Excel-like Column Resize",
+  "description": "Resize a library column while keeping the intervening columns unchanged and using the last resizable column to absorb the width change.",
+  "homepage": "https://github.com/Ning703/zotero-excel-column-resize",
+  "repoUrl": "https://github.com/Ning703/zotero-excel-column-resize",
+  "updateUrl": "https://raw.githubusercontent.com/Ning703/zotero-excel-column-resize/main/updates.json"
+}
