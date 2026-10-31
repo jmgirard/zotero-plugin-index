@@ -1,0 +1,8 @@
+{
+  "id": "zoteroif@qnscholar",
+  "name": "Zotero IF",
+  "description": "Update IF for Zotero Items.",
+  "homepage": "https://github.com/qnscholar/zotero-if",
+  "repoUrl": "https://github.com/qnscholar/zotero-if",
+  "updateUrl": "https://raw.githubusercontent.com/qnscholar/zotero-if/main/update.json"
+}
