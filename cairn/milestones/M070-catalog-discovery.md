@@ -103,6 +103,7 @@
 - 2026-10-31: claim audit: 80 claims read, 5 corrected — README.md (hold wording, 30-day state wording, at most 100 per request, failed connection), CHANGELOG.md (hold and state wording), src/discover/discover.ts (`lookUp` warning comment). Not changed: `raw()` checks only the first URL's origin, as `get` does, so after a redirect the token relies on fetch dropping it across origins.
 - 2026-10-31: implement done; status review.
 - 2026-10-31: review stopped before the merge question at the feature PR cap of 1: PR #353 (`add/retorquere-zotero-pmcid-fetcher`, the PMCID Fetcher entry, CI green) is open; no branch pushed, no PR opened.
+- 2026-10-31: PR #353 merged at the user's request; main merged into the branch (5c05855).
 
 ## Decisions
 
@@ -148,3 +149,4 @@
 - diff-bug #13: no test asserts `source` on a refused item or refuses a bad `source` in a handoff — fix now (both added)
 - diff-bug (c): the lookup-failure, bad-item, and failed-read cases repeat one code path — reject (planned change): AC2 and AC3 name each input
 - Re-verified after the fix-now work: `pnpm test` 1701 passed, 6 skipped (the AC1 to AC5 tests above among them, the AC3 lookup-failure regex now matching "… on, since their lookup failed"); `pnpm check` 272 entries, 0 problems; `cairn_validate.py` all checks passed.
+- Re-verified after merging main at 5c05855 (PR #353): `pnpm test` 1701 passed, 6 skipped; `pnpm check` 273 entries, 0 problems; `cairn_validate.py` all checks passed. Changed snapshot files: none. Feature PR cap: 0 open PRs.
