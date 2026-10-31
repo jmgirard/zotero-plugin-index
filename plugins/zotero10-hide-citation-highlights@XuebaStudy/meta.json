@@ -1,0 +1,7 @@
+{
+  "id": "zotero10-hide-citation-highlights@XuebaStudy",
+  "name": "Zotero 10 Hide Citation Highlights",
+  "description": "Hides citation and cross-reference highlights in the Zotero PDF reader. Optionally disables citation and internal-link clicks to prevent accidental jumps.",
+  "repoUrl": "https://github.com/XuebaStudy/zotero10-hide-citation-highlights",
+  "updateUrl": "https://github.com/XuebaStudy/zotero10-hide-citation-highlights/releases/download/release/updates.json"
+}
