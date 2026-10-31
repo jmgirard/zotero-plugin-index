@@ -1288,9 +1288,9 @@ It prints one line for each record in one of these cases:
 - `short`: the shown description has fewer than six words.
 
 The line holds the plugin id, the case, and the shown text, with a tab
-between them. A `missing` line has no shown text. The command prints each
-run of whitespace in the shown text as one space, so each gap stays on one
-line. The line names the first of these cases that applies, in that order.
+between them. A `missing` line has no shown text. The command drops
+whitespace at the start and end of the shown text and prints each other
+run of whitespace as one space, so each gap stays on one line. The line names the first of these cases that applies, in that order.
 The last line gives the count, as `description gaps: <count>`, and the
 command exits with status 0.
 

@@ -61,7 +61,7 @@ Notes from the README reads. G1 is a developer template, not a plugin for end us
 
 ## Category changes
 
-The site's categories (D-037) read the shown description, so the new override texts changed the categories of 15 plugins. A hand read marked each new assignment by the rule of `category-ledger.md`. The read found 17 of 26 right and 9 wrong. Each wrong one is now on its category's `exclude` list in `src/site/categories.ts`.
+The site's categories (D-037) read the shown description, so the new override texts changed the categories of 15 plugins. A hand read marked each new assignment by the rule of `category-ledger.md`. The read found 13 of 22 right and 9 wrong. Each wrong one is now on its category's `exclude` list in `src/site/categories.ts`.
 
 - Right: betterauthors (organization), register02 (export), zenotes (ai, translation, attachments, export, organization), zontex-bridge (organization), zotero-citation-counts (organization), zotero-openalex (rankings, organization), zoterogpt (translation, notes).
 - Wrong, excluded: creator-pinyin-sort (organization, from a column sort), gbt7714-2025-helper (translation, from a bilingual style), paper-outline (organization), pdfrename (organization, from journal tags), zotdupe (search, from "published versions"), zotero-keep-window (export, from "sync"), zotero-pdf2zh (attachments, from a child attachment), zoterogpt (organization, from command tags), zoterotag (notes, from writing a note).

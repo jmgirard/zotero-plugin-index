@@ -22,8 +22,8 @@ async function main(): Promise<number> {
     console.error(result.message);
     return 1;
   }
-  // Whitespace in the shown text, tabs and line breaks included, prints as one space, so
-  // each gap stays one line of tab-separated fields.
+  // The shown text loses whitespace at its ends, and each other run of whitespace, tabs and
+  // line breaks included, prints as one space, so each gap stays one line of tab-separated fields.
   for (const { id, gap, shown } of result.gaps) {
     console.log([id, gap, ...(shown === undefined ? [] : [shown.trim().replace(/\s+/g, " ")])].join("\t"));
   }

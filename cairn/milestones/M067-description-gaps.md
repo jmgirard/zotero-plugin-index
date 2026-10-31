@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M067: Fill the description gaps
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -144,6 +144,8 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - 2026-10-31: review return 1: AC4 — the ledger rows give no shown text, so the ledger does not list each line `pnpm description-gaps` prints (diff-bug #13). The same return carries the pass-1 fix-now findings listed in the Review section: the CLI's plugins root, the 9 wrong category assignments, the docs order and wording, the line widths, the CLI line format, and three test changes.
 - 2026-10-31: T8 added for review return 1 (minor amendment; Coverage AC1 to AC4 gain T8).
 - 2026-10-31: T8 done: the ledger gains a Shown text column (AC4) and a Category changes section; 9 category excludes in `src/site/categories.ts` leave 7 plugins with 17 new assignments the read marked right; the CLI reads `plugins/` from its own folder, prints whitespace as one space, prints no trailing tab for `missing`, and ends "description gaps: N"; README, About, and DESIGN state override first, then the Latin-script part, then the drop and the pick; README says a short other-language text lists as `short`; both schema prose fixes; CHANGELOG and README within 80 columns; tests: exactly-0.5, mixed-piece, CLI from another directory, CLI line format, redundant `ok` check dropped, About test lines for the new rules. Planted defects (`<=` at 0.5, no Latin filter, cwd root) each failed their test. pnpm test (1622 passed, 6 skipped) and pnpm check pass.
+- 2026-10-31: claim audit: 81 claims read, 2 corrected — cairn/references/description-ledger.md (the category read is 13 of 22 right and 9 wrong, not 17 of 26, which also corrects the T8 line above and the diff-bug #2 Review line's count), README.md and src/site/description-gaps-cli.ts (the CLI also trims the shown text's ends)
+- 2026-10-31: status set to review after return 1.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
