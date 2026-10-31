@@ -1,0 +1,8 @@
+{
+  "id": "ask-my-paper@euclpts.com",
+  "name": "Ask My Paper",
+  "description": "Ask My Paper Plugin",
+  "homepage": "https://github.com/NakamuraTakumu/Zotero-Gemini-PDF#readme",
+  "repoUrl": "https://github.com/NakamuraTakumu/Zotero-Gemini-PDF",
+  "updateUrl": "https://github.com/NakamuraTakumu/Zotero-Gemini-PDF/releases/download/release/update.json"
+}
