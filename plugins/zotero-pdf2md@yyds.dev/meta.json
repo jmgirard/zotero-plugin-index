@@ -1,0 +1,8 @@
+{
+  "id": "zotero-pdf2md@yyds.dev",
+  "name": "zotero-pdf2md",
+  "description": "Zotero plugin for PDF to Markdown, translation, and HTML preview",
+  "homepage": "https://github.com/CrushDemo01/zotero-pdf2md#readme",
+  "repoUrl": "https://github.com/CrushDemo01/zotero-pdf2md",
+  "updateUrl": "https://github.com/CrushDemo01/zotero-pdf2md/releases/download/release/update.json"
+}
