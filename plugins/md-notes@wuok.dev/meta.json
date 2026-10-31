@@ -1,0 +1,8 @@
+{
+  "id": "md-notes@wuok.dev",
+  "name": "SideMark for Zotero",
+  "description": "Read and edit Markdown notes linked to Zotero items in the item pane and PDF reader sidebar. GFM, KaTeX, Mermaid. AI: online MinerU PDF→Markdown conversion, streaming AI chat grounded in the paper's full text (transcripts saved as MD notes), LLM translation (Chinese/bilingual) and deep-read reports.",
+  "homepage": "https://github.com/wuok0618/zotero-sidemark",
+  "repoUrl": "https://github.com/wuok0618/zotero-sidemark",
+  "updateUrl": "https://raw.githubusercontent.com/wuok0618/zotero-sidemark/main/update.json"
+}
