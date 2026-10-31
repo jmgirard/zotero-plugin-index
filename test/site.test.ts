@@ -1069,7 +1069,7 @@ describe("the home page", () => {
     ]);
   });
 
-  test("holds every row without hidden, and the search box, the menu, the buttons, the count, and the pager inside hidden elements", () => {
+  test("holds every row without hidden, and the search box, the menus, the buttons, the count, and the pager inside hidden elements", () => {
     const html = home();
     expect(rows().length).toBe(ids.length);
     for (const { id, attributes } of rows()) expect(attributes, id).not.toMatch(/\shidden[\s=]|\shidden$/);
@@ -1902,7 +1902,7 @@ describe("the site colors", () => {
   test.each([
     ["light", light],
     ["dark", dark],
-  ])("gives the edges of the search box, the menu, the version buttons, the pager buttons, and the plugin page links a contrast of at least 3:1 with the surface and the page in the %s scheme", (_, scheme) => {
+  ])("gives the edges of the search box, the menus, the version buttons, the pager buttons, and the plugin page links a contrast of at least 3:1 with the surface and the page in the %s scheme", (_, scheme) => {
     const edges = cssRules(layout).flatMap(({ selector, declarations }) =>
       declarations
         .filter(([property, value]) => (property === "border" || property === "border-left") && value.includes("var("))
