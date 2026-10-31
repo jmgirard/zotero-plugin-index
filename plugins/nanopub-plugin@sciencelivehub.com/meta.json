@@ -1,0 +1,8 @@
+{
+  "id": "nanopub-plugin@sciencelivehub.com",
+  "name": "Science Live",
+  "description": "Science Live plugin for Zotero - Create nanopublications from Zotero items and link them to your bibliography",
+  "homepage": "https://sciencelive4all.org/science-live-platform/",
+  "repoUrl": "https://github.com/ScienceLiveHub/science-live-platform",
+  "updateUrl": "https://github.com/ScienceLiveHub/science-live-platform/releases/download/release/update.json"
+}
