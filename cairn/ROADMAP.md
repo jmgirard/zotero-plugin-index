@@ -1,20 +1,18 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-31 (M068 review: M068 archived; candidate "Keep the Zotero release lists current" graduated; M065 row pruned; 8 lessons marked used M068; validate green)_
+_Last hygiene check: 2026-10-31 (M069 review: M069 archived; candidate "Check the data artifact in the site job" graduated; M066 row pruned; 6 lessons marked used M069, 2 captured, 2 evicted by rank; validate green)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M069 | Check the data artifact in the site job | review | — | normal | milestones/M069-data-artifact-check.md |
+| M069 | Check the data artifact in the site job | done | — | normal | milestones/archive/M069-data-artifact-check.md |
 | M068 | Warn when the Zotero release lists fall behind | done | — | normal | milestones/archive/M068-release-list-warnings.md |
 | M067 | Fill the description gaps | done | — | normal | milestones/archive/M067-description-gaps.md |
-| M066 | Filter plugins by category | done | — | normal | milestones/archive/M066-plugin-categories.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
-- Check the data artifact in the site job: the site job deploys the `plugins-data` artifact as downloaded, and plugin code in a start-test job that reaches the runner's artifact token could replace it, as README already assumes for result artifacts; check it against a SHA-256 job output, as M059 does for `start-plan`, after first confirming whether a job's token can replace another job's artifact (M059 review) — added 2026-10-30 — M059, D-023, D-035 — started M069
 - [low] Close gaps in bot holds and merges: M056 holds a bot pull request for five fixed reasons; also (1) start each candidate in Zotero before the merge job merges it, as the daily start-test does after; (2) `name-match` sees only indexed entries, not those of open bot pull requests or drafted earlier in the same run, and its name key keeps only a-z and 0-9, so a name wholly in another script never matches and a homoglyph passes; (3) hold a repo under 30 days old, which would have held 16 of the first 44 merged bot pull requests against 8 for the chosen rules (M056 plan); (4) put the `hold` label on a pull request whose merge-time check fails, so the daily job stops failing on it (M056 criteria audit); (5) a rate limit or 5xx on `GET /users/<owner>` holds for good as `owner-unread`; (6) `pnpm merge-discover` has no whole-run limit and prints only at the end, so a job cut at 30 minutes loses the summary, as "Bound the whole discover workflow's time" says for discover runs; (7) it checks against its checkout, not the commit the squash lands on (M056 review) — added 2026-10-29 — M056, D-033
 - [low] Check the restored discovery state: the discover read job restores `discovery-state-` by prefix from the default branch's cache in the same job that reads repos anyone can tag, so a job that a crafted repo took over could save a state entry that hides repos from later runs for up to 30 days; check the restored state's shape or keep the state outside the cache (M016 review) — added 2026-10-26 — M009, M016
 - [low] Block more IPv6 ranges in the host check: the M004 host check lets through ::ffff:0:0:0/96 (SIIT), 64:ff9b:1::/48 (local NAT64), 100::/64, 2001::/23 (Teredo included), fec0::/10, 3fff::/20, 5f00::/16, and 192.88.99.0/24; the translated ones reach a private address only on a NAT64 or SIIT network (M004 review) — added 2026-10-25 — M004
