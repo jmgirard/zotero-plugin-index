@@ -1,0 +1,8 @@
+{
+  "id": "scihub-fetcher@dnnunn.github.io",
+  "name": "PDFetcher",
+  "description": "Zotero plugin for fetching PDF attachments from OpenAlex and Sci-Hub",
+  "homepage": "https://github.com/dnnunn/zotero-scihub-fetcher#readme",
+  "repoUrl": "https://github.com/dnnunn/zotero-scihub-fetcher",
+  "updateUrl": "https://github.com/dnnunn/zotero-scihub-fetcher/releases/download/release/update.json"
+}
