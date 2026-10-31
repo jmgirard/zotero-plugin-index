@@ -1,0 +1,8 @@
+{
+  "id": "sort-by-color-tag@allanchain.github.com",
+  "name": "Color tag sort for Zotero",
+  "description": "Zotero plugin to sort items based on color tags.",
+  "homepage": "https://github.com/AllanChain/zotero-sort-by-color-tag#readme",
+  "repoUrl": "https://github.com/AllanChain/zotero-sort-by-color-tag",
+  "updateUrl": "https://github.com/AllanChain/zotero-sort-by-color-tag/releases/download/release/update.json"
+}
