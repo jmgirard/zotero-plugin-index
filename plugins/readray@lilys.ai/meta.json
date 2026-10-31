@@ -1,0 +1,8 @@
+{
+  "id": "readray@lilys.ai",
+  "name": "Readray for Zotero",
+  "description": "Open a Zotero item's PDF in Chrome and read it with Readray.",
+  "homepage": "https://lilys.ai",
+  "repoUrl": "https://github.com/teamlilysai/zotero-readray",
+  "updateUrl": "https://raw.githubusercontent.com/teamlilysai/zotero-readray/main/update.json"
+}
