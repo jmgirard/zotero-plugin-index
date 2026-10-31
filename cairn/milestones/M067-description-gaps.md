@@ -106,7 +106,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - [x] T5: Overrides for the short rows. Zotgit and ZotMoov share one text, and each gets its own override.
 - [x] T6: Docs: DESIGN item 3 and the description paragraph, README, the About page, both schema prose spots, and
       CHANGELOG. Find split phrases with a joined copy, and keep added lines within 80 columns.
-- [ ] T7: Run `pnpm description-gaps` over the shelf copy again and check its output against the ledger's kept
+- [x] T7: Run `pnpm description-gaps` over the shelf copy again and check its output against the ledger's kept
       rows. Then run `pnpm test` and `pnpm check`.
 
 ## Work log
@@ -135,6 +135,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - 2026-10-31: T4 done: 14 `description` overrides with no `version` (1 missing, 10 cjk, 3 Portuguese), each file byte-equal to the checked draft.
 - 2026-10-31: T5 done: 17 short-case overrides, each byte-equal to the checked draft; zotgit and zotmoov each have their own text. `pnpm description-gaps` over the shelf copy now prints 0 gaps, and pnpm check passes. T3's ledger comes next, written from the T2 run and these dispositions.
 - 2026-10-31: T3 done after T4 and T5 (a minor reorder): `cairn/references/description-ledger.md` and its INDEX line, 31 rows (28 from the T2 run, 3 Portuguese from the plan's scan), all override.
+- 2026-10-31: T7 done: `pnpm description-gaps` over the shelf copy prints "0 plugins with a description gap", matching the ledger's 0 kept rows; pnpm test (1619 passed, 6 skipped) and pnpm check (272 entries, 0 problems) pass.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
