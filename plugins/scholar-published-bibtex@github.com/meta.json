@@ -1,0 +1,8 @@
+{
+  "id": "scholar-published-bibtex@github.com",
+  "name": "Scholar Published BibTeX",
+  "description": "Fetches current Google Scholar BibTeX and prioritizes journal and conference originals over later book chapters and preprints.",
+  "homepage": "https://github.com/yedadasd/scholar-published-bibtex",
+  "repoUrl": "https://github.com/yedadasd/scholar-published-bibtex",
+  "updateUrl": "https://github.com/yedadasd/scholar-published-bibtex/releases/latest/download/update.json"
+}
