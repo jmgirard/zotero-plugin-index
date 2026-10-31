@@ -1,0 +1,7 @@
+{
+  "id": "zotero-codex@local",
+  "name": "Zotero Codex MCP",
+  "description": "让 Codex 读取 Zotero 论文、选区并协作 Better Notes",
+  "repoUrl": "https://github.com/haohaomin/zotero-codex",
+  "updateUrl": "https://raw.githubusercontent.com/haohaomin/zotero-codex/main/updates.json"
+}
