@@ -1,0 +1,8 @@
+{
+  "id": "sentence-focus@local",
+  "name": "Sentence Focus",
+  "description": "A reading ruler that highlights whole sentences, not lines. Understands display equations, inline math, abbreviations and hyphenation in academic PDFs, and reads EPUBs and web snapshots too.",
+  "homepage": "https://github.com/ievlevpn/zotero-sentence-focus",
+  "repoUrl": "https://github.com/ievlevpn/zotero-sentence-focus",
+  "updateUrl": "https://raw.githubusercontent.com/ievlevpn/zotero-sentence-focus/master/update.json"
+}
