@@ -1,0 +1,8 @@
+{
+  "id": "zotero-wikicite@wikidata.org",
+  "name": "Zotero Cita",
+  "description": "Citations metadata support for Zotero",
+  "homepage": "https://github.com/zotero-cita/zotero-cita",
+  "repoUrl": "https://github.com/zotero-cita/zotero-cita",
+  "updateUrl": "https://github.com/zotero-cita/zotero-cita/releases/download/update/update.json"
+}
