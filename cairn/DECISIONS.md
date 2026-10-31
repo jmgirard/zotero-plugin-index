@@ -495,3 +495,20 @@ major, which shows part, never a false all, so D-011's rule of withholding a
 deploy only for build-level failures holds. A range that starts after the
 newest release reads none. This choice is wrong if the address changes its
 shape or fails on most days.
+
+### D-037: Plugin categories are the site's own grouping, shown apart from the checkable facts, annotating DESIGN's Contract boundary
+
+2026-10-31, M066 plan. With hundreds of listed plugins, many of one kind,
+the user asked for groups of related plugins to filter and explore. DESIGN's
+Contract boundary says a plugin page shows facts that a reader can check, and
+a category is not such a fact: the index assigns it from a fixed list of
+categories by words in the plugin's name and descriptions, with a hand list
+of fixes. At the question set the user chose this over machine clustering,
+whose groups and names shift as plugins are added and which puts each plugin
+in one group, and over a hand tag in each `index.json`, which needs work on
+each bot merge. So the site shows categories as the index's own grouping,
+labeled so and linked to the About page, which says they can be wrong or
+missing and that authors do not choose them. The site build computes them,
+and the published data carries none, so they add nothing to the data's
+contract (D-006). This choice is wrong if a hand read finds more than 1 in 10
+assignments wrong after tuning, or if data users ask for the categories.
