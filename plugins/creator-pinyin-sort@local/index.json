@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Fixes pinyin sorting of Chinese author surnames that have more than one reading: corrects the Creator column sort in Zotero and the bibliography and citation order in Word and WPS after a refresh.",
+      "reason": "Translated from the opening paragraph and feature list of README.md, which is in Chinese. The manifest description and the GitHub About text are half or more Chinese."
+    }
+  ]
 }

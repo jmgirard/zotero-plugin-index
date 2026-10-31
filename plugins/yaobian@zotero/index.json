@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Color themes for Zotero: 36 color families that recolor both the reader and the library window, with light and dark modes, a custom background image, and a frosted-glass effect.",
+      "reason": "Translated from the tagline and Usage table of README.md, which is in Chinese. The manifest description and the GitHub About text are half or more Chinese."
+    }
+  ]
 }

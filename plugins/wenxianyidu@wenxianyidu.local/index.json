@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Translates research papers inside Zotero: side-by-side PDF translation, paragraph-by-paragraph comparison, selection translation, and translation of typed text, with an optional offline English-to-Chinese engine.",
+      "reason": "Condensed from the opening paragraph and mode table of README.en.md, the English README. The manifest description and the GitHub About text are half or more Chinese."
+    }
+  ]
 }

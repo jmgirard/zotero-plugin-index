@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Word lookup and translation in the Zotero PDF reader: local MDX, StarDict, and DSL dictionaries, four optional online translation services, ordered or combined lookup across sources, and a draggable popup.",
+      "reason": "Translated from the opening paragraph and the online translation and local features sections of README.md, which is in Chinese. The manifest description and the GitHub About text are half or more Chinese."
+    }
+  ]
 }

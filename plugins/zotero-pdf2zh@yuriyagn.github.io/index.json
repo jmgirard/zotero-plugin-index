@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Translates English PDFs into Simplified Chinese with local PDFMathTranslate Next and BabelDOC and SiliconFlow models, protecting formulas and tables, and adds the result as a child attachment of the item.",
+      "reason": "Translated from the opening paragraphs and feature list of README.md, which is in Chinese. The upstream has no description in English: the manifest description and the GitHub About text are both half or more Chinese."
+    }
+  ]
 }

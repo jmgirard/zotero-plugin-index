@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "A starting template for building Zotero plugins: TypeScript with Zotero type definitions, API usage examples, auto hot reload, automated build and GitHub release, and Prettier and ESLint setup.",
+      "reason": "Condensed from the Features list of README.md. The manifest description only repeats the name, and the GitHub About text, \"A plugin template for Zotero.\", only repeats it too."
+    }
+  ]
 }

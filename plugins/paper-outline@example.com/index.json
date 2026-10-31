@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Uses AI to read papers: writes a full-paper summary to a child note and builds a page-linked heading outline with section summaries in the reader's outline pane, with MinerU text recognition for scanned PDFs.",
+      "reason": "Translated from the \"Paper Outline 是什么？\" section of README.md, which is in Chinese. The manifest description and the GitHub About text are half or more Chinese."
+    }
+  ]
 }
