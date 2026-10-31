@@ -1,0 +1,8 @@
+{
+  "id": "zot-plus-plus@rnicrosoft-studio.github.io",
+  "name": "Zot Plus Plus",
+  "description": "Zotero++ (ZotPP), an enhancement plugin to [Zotero](https://www.zotero.org/).",
+  "homepage": "https://github.com/rnicrosoft-studio/zot-plus-plus#readme",
+  "repoUrl": "https://github.com/rnicrosoft-studio/zot-plus-plus",
+  "updateUrl": "https://github.com/rnicrosoft-studio/zot-plus-plus/releases/download/release/update.json"
+}
