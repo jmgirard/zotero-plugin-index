@@ -1,0 +1,8 @@
+{
+  "id": "BetterRSSforZotero@cloudchewie.com",
+  "name": "Better RSS for Zotero",
+  "description": "Enhanced RSS functionality for Zotero with full content extraction",
+  "homepage": "https://github.com/Robert-Stackflow/better-rss-for-zotero#readme",
+  "repoUrl": "https://github.com/Robert-Stackflow/better-rss-for-zotero",
+  "updateUrl": "https://github.com/Robert-Stackflow/better-rss-for-zotero/releases/download/release/update.json"
+}
