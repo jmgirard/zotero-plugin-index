@@ -1,0 +1,8 @@
+{
+  "id": "paperplanex@windlx",
+  "name": "Paper Plane X",
+  "description": "Zotero plugin for Paper Plane X",
+  "homepage": "https://github.com/WindLX/paper_plane_x/tree/main/paper_plane_x_zotero#readme",
+  "repoUrl": "https://github.com/WindLX/paper_plane_x",
+  "updateUrl": "https://github.com/WindLX/paper_plane_x/releases/latest/download/update.json"
+}
