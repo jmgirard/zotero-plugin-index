@@ -1,0 +1,8 @@
+{
+  "id": "tabgroups@shourovj.github.io",
+  "name": "Zotero Tab Groups",
+  "description": "Edge-style horizontal tab groups for Zotero 7+: named, colored, collapsible tab clusters with drag-and-drop",
+  "homepage": "https://github.com/shourovj/zotero-tab-groups#readme",
+  "repoUrl": "https://github.com/shourovj/zotero-tab-groups",
+  "updateUrl": "https://github.com/shourovj/zotero-tab-groups/releases/download/release/update.json"
+}
