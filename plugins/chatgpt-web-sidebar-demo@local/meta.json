@@ -1,0 +1,7 @@
+{
+  "id": "chatgpt-web-sidebar-demo@local",
+  "name": "AI Web for Zotero",
+  "description": "AI websites beside Zotero, with PDF uploads, conversation bookmarks and note exports.",
+  "repoUrl": "https://github.com/liyang-tju/AI-Web-for-Zotero",
+  "updateUrl": "https://raw.githubusercontent.com/liyang-tju/AI-Web-for-Zotero/main/updates.json"
+}
