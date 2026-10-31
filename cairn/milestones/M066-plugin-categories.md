@@ -42,7 +42,7 @@ deployed data.
 
 ## Acceptance criteria
 
-- [ ] AC1: `CATEGORIES` in `src/site/categories.ts` holds the 13 categories
+- [x] AC1: `CATEGORIES` in `src/site/categories.ts` holds the 13 categories
       that Scope In names, each with a unique slug that matches
       `^[a-z0-9-]+$`, a name, a pattern, and `include` and `exclude` id
       lists, and no id is in both lists of one category. `categories(record)`
@@ -57,7 +57,7 @@ deployed data.
       description override among them; a record that no pattern matches; and
       an `include` entry, an `exclude` entry, and an `exclude` entry over a
       matching pattern, each changing one record's result.
-- [ ] AC2: On the built home page each row carries `data-categories` with
+- [x] AC2: On the built home page each row carries `data-categories` with
       its record's `categories` joined by spaces, empty for none, and a
       "Category" menu, hidden in the HTML as the language menu is, offers
       "All categories" and then one option for each category that at least
@@ -66,7 +66,7 @@ deployed data.
       against fixture records that give two different counts, a tie, and a
       category with no rows, and checks each fixture row's
       `data-categories` against `categories(record)`.
-- [ ] AC3: The home script runs the menu with the other filters. Choosing a
+- [x] AC3: The home script runs the menu with the other filters. Choosing a
       category shows only the rows whose `data-categories` holds its slug
       that the other filters also pass, writes `?category=<slug>`, goes back
       to page 1, and makes the count read "M of N plugins"; "All categories"
@@ -77,12 +77,12 @@ deployed data.
       these, for a category together with the search box, with the language
       menu, and with the version buttons, and for the return to page 1 from
       page 2 with more than 50 passing rows.
-- [ ] AC4: `prePaintStyle` reads `category` as it reads `language`, matched
+- [x] AC4: `prePaintStyle` reads `category` as it reads `language`, matched
       against `data-categories`. Cases in `test/support/pre-paint.ts`, which
       the classic-script test also runs, check `?category=<slug>`, that value
       with `?language=`, with `?zotero=`, and with `&page=2`, and a value
       that is not letters, digits, and hyphens.
-- [ ] AC5: Each built fixture plugin page whose record has a category lists
+- [x] AC5: Each built fixture plugin page whose record has a category lists
       the categories' names in `CATEGORIES` order, each a link to
       `${BASE}?category=<slug>`, under a label that names them as the index's
       grouping and links to the About page's categories section; a page
@@ -90,13 +90,13 @@ deployed data.
       page against `categories(record)`, with one record whose two
       categories' `CATEGORIES` order differs from the alphabetical order of
       their names.
-- [ ] AC6: The built About page has a section with `id="categories"` that
+- [x] AC6: The built About page has a section with `id="categories"` that
       names every category of `CATEGORIES` and says that the index assigns
       categories from words in a plugin's name and descriptions and adds or
       removes some by hand, that a category can be wrong or missing, and that
       plugin authors do not choose them. A site test checks the section and
       each name; review reads the three statements.
-- [ ] AC7: On the deployed `v1/plugins.json` of the date that
+- [x] AC7: On the deployed `v1/plugins.json` of the date that
       `cairn/references/category-ledger.md` names, by the agent's hand read
       that the ledger records, at most 1 in 10 of the assignments that
       `categories` makes are wrong, at most 1 in 10 records get no category,
@@ -173,3 +173,14 @@ deployed data.
 ## Decisions
 
 ## Review
+
+Evidence gathered 2026-10-31 on branch m066-plugin-categories at 5b15244, main unmoved since the cut: `pnpm test` 1610 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
+
+- AC1: `test/categories.test.ts` 25 of 25 pass, among them "holds the 13 categories in the planned order", "gives each category a unique slug…", "puts no id in both the include and exclude lists…", "has a case for each category", 13 "matches and leaves out records for <slug>", "gives a record that no pattern matches no category", the four "reads each of the four texts" tests (name override, description override, manifest while GitHub shown, GitHub while manifest shown), "adds a category for an id on its include list", and "leaves out a category for an id on its exclude list, over a matching pattern"; T1's plants (dropped GitHub text, ignored exclude) each failed one test.
+- AC2: `test/site.test.ts` passes "gives each row the slugs of its record's categories" (every fixture row's `data-categories` equals `categories(record)` in home order, with more than one row with categories and more than one with none) and "holds a hidden category menu with one option for each category a row has, most rows first and ties in list order" (options "All categories", "Attachments and full text (2)", "Translation and dictionaries (1)", "PDF reading (1)", "Library organization (1)": two counts, a three-way tie whose name order would differ, and 9 categories with no row), plus the toolbar test that finds the menu inside `<p class="category-filter" hidden>`.
+- AC3: the `node:vm` group "the home page script > the category menu" passes 8 of 8: a choice shows the 2 attachments rows, counts "2 of 19 plugins", and writes `?category=attachments`; "All categories" shows every row and leaves `PAGE`; `?category=translation` selects on load and `?category=organization` on Back; `?category=notes&q=log` selects "All categories" and writes `?q=log`; the category with the search box, the language menu, and the version buttons each show 1 row; a change on page 2 with 121 passing rows shows their first 50 on "Page 1 of 3". "removes the classic script's style on a page with no category" passes; T3–T5's plants (count, address) failed 1 and 3 tests.
+- AC4: the 9 category cases in `test/support/pre-paint.ts` (`?category=ai`, with `language=en`, with `zotero=7`, with `page=2`, with `language` and `page=2`, `pdf-reading`, `a"b`, `a%20b`, empty) pass in `test/home-filter.test.ts` "prePaintStyle > writes the style for …" and in "the home page's classic script > adds the style that prePaintStyle writes for …"; a `prePaintStyle` without the category entry failed 8 tests.
+- AC5: "the plugin page > opens the main content of %s…" passes for all 19 fixture pages, each checking the page head's category line against `categories(record)` (the "Index categories" link to `/zotero-plugin-index/about/#categories`, then `?category=<slug>` links in `CATEGORIES` order, or no line); "lists a page's categories in list order…" passes, locale-plugin listing "Translation and dictionaries", "PDF reading", whose name order differs, and first-plugin showing no list; a name sort failed 2 tests (T6).
+- AC6: "the About page > has one section for each part of the method…" passes with `["categories", "Categories"]` before "not-vetted", and "lists every category, links each to the home page filtered by it, and says where categories come from" passes (13 list items equal to `CATEGORIES`' slug, name, and `about`). Review read of `site/src/pages/about.astro`: "It assigns them from words in a plugin's name and descriptions, and it adds or removes some by hand." (source and hand fixes), "A category can be wrong or missing" (can be wrong or missing), and "plugin authors do not choose them" (authors do not choose); all three statements hold.
+- AC7: the deployed data file read (`generatedAt` 2026-10-30T21:13:54.875Z, 272 records, the date `cairn/references/category-ledger.md` names) run through the branch's `categories` gives output that equals the ledger's 272 lines; 363 assignments, 0 marked wrong (0 ≤ 1 in 10); 20 of 272 records with none (7.4% ≤ 10%); 8 of 363 from an include alone (2.2% ≤ 5%). The ledger states the read does not measure a missing category on a record that has another.
+- Consistency gate: `cairn_validate.py` all checks passed; no DESIGN principle changed, so `cairn_impact` was skipped; the generic profile's consistency-gate slot names no toolchain checks.
