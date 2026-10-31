@@ -541,3 +541,35 @@ is. A text whose CJK share is below 0.5 gets no override by these rules.
 This choice is wrong if the Latin-script part shows a fragment that does
 not describe the plugin, or if the short overrides keep hiding better
 author text. The rest of D-030, D-031, and D-032 stands.
+
+### D-039: A triage pass drops seven candidate rows as not worth keeping
+
+2026-10-31, triage pass. A `/cairn-triage` pass weighed every candidate row
+and Known issues entry. The user accepted dropping seven rows, each because
+the case it covers does not arise in this repo or costs almost nothing:
+
+- "Read plugins folders alike in both steps" would have made the read step
+  fail on a missing `plugins/` folder and made `pnpm propose` and `pnpm
+  check` treat symlinked or submodule entry folders alike. The index always
+  has `plugins/`, and entries come from the bot or a reviewed pull request.
+- "Name the failure when --out is a file" would have replaced the untrue
+  `entry-exists` message that `pnpm add-plugin` prints when `--out` names a
+  file. Only the maintainer uses `--out`, and the run still stops.
+- "Bound per-entry work in the locale walk" would have charged each tiny
+  locale file a minimum cost, so a crafted XPI of many such files could not
+  add seconds to a read, and made the half rule past 8 MiB of locale files
+  not depend on zip order. The XPI size cap and the read time limit bound
+  the cost.
+- "Drop stale state records on a reread" would have removed a discovery
+  state record whose reread fails without a record. The old record hides no
+  repo.
+- "Answer issues when a handoff read throws" would have caught `readdir` and
+  `lstat` errors in `readHandoff` and answered the issue. The job's own read
+  step writes those files.
+- "Keep the check summary in a cut body" would have kept the `pnpm check`
+  summary line when the pull request body is cut. The exit status still
+  shows.
+- "View the star in forced colors mode" would have added a browser view of
+  the plugin page star's `CanvasText` fill, which a source test pins.
+
+Each drop can be reopened by an entry that supersedes this one.

@@ -885,3 +885,17 @@ reused._
   drops only the rules that use the form. Each filter's `:not()` rule holds
   one attribute selector, so the browser still hides the rows that the
   filter does not pass. Recorded at M060, 2026-10-30.
+- A saved copy of a v1 schema rejects data that carries an optional field
+  added after the copy was saved, because the v1 objects keep
+  `additionalProperties: false` while D-006 lets v1 gain optional fields
+  (`upstream.repoDescription` since M055). Allowing unknown fields would
+  change what the schema checks. Routed from candidates 2026-10-31; added
+  2026-10-26 — M013, M055, D-007.
+- The reader judges a plugin by the one release it reads, the newest stable
+  release first (D-008), so a plugin whose read release fails is refused
+  even when another release has a readable `update.json`, though the
+  inclusion bar asks for at least one such release. It also trusts GitHub's
+  `published_at` to be a valid UTC timestamp: an invalid date would leave
+  the release order undefined, and an offset would give the plugin page and
+  the home page different months. Routed from candidates 2026-10-31; added
+  2026-10-26 — M014, M053, M063.
