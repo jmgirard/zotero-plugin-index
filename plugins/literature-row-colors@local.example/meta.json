@@ -1,0 +1,8 @@
+{
+  "id": "literature-row-colors@local.example",
+  "name": "文献行颜色 · Row Colors",
+  "description": "为文献列表整行设置颜色，提供已读、重要、没用及更多自选颜色。",
+  "homepage": "https://github.com/wangzikai01/zotero-row-colors",
+  "repoUrl": "https://github.com/wangzikai01/zotero-row-colors",
+  "updateUrl": "https://github.com/wangzikai01/zotero-row-colors/releases/latest/download/updates.json"
+}
