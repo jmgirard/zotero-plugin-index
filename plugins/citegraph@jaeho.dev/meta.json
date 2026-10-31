@@ -1,0 +1,8 @@
+{
+  "id": "citegraph@jaeho.dev",
+  "name": "Citation Graph",
+  "description": "Citation relationships in a clean force graph",
+  "homepage": "https://github.com/jaehho/zotero-citegraph",
+  "repoUrl": "https://github.com/jaehho/zotero-citegraph",
+  "updateUrl": "https://github.com/jaehho/zotero-citegraph/releases/latest/download/updates.json"
+}
