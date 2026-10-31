@@ -1,0 +1,8 @@
+{
+  "id": "zotero-readtrans@github.com",
+  "name": "Translate for ReadingMode",
+  "description": "Translate Zotero PDF reading mode with local and online translation services",
+  "homepage": "https://github.com/bionux-th/Zotero-Translate-for-ReadingMode",
+  "repoUrl": "https://github.com/bionux-th/Zotero-Translate-for-ReadingMode",
+  "updateUrl": "https://raw.githubusercontent.com/bionux-th/Zotero-Translate-for-ReadingMode/main/update.json"
+}
