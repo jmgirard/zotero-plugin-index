@@ -1,0 +1,8 @@
+{
+  "id": "semantic-scholar-citations@example.com",
+  "name": "Semantic Scholar Citations",
+  "description": "Fetches citation counts from Semantic Scholar and displays them in the Extra field. Compatible with Zotero 8 and 9.",
+  "homepage": "https://github.com/jun0404/Zotero-Semantic-Scholar-Citation-Count",
+  "repoUrl": "https://github.com/jun0404/Zotero-Semantic-Scholar-Citation-Count",
+  "updateUrl": "https://raw.githubusercontent.com/jun0404/Zotero-Semantic-Scholar-Citation-Count/main/update.json"
+}
