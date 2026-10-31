@@ -1,0 +1,8 @@
+{
+  "id": "mineru-to-zotero@example.com",
+  "name": "Document Parser for Zotero",
+  "description": "Parse Zotero attachments into Markdown with MinerU, markitdown, docling, vision OCR, Baidu OCR, TextIn, or Doc2X",
+  "homepage": "https://github.com/Jiahaohong/mineru-to-zotero",
+  "repoUrl": "https://github.com/Jiahaohong/mineru-to-zotero",
+  "updateUrl": "https://raw.githubusercontent.com/Jiahaohong/mineru-to-zotero/main/updates.json"
+}
