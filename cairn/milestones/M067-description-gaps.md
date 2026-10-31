@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M067: Fill the description gaps
 
-- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -61,7 +61,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
       `overrides` and `reason` prose of `schemas/index.v1.schema.json` each name the short case of D-038. README,
       DESIGN, and the About page's Descriptions section state AC1's rule. README names `pnpm description-gaps`.
       CHANGELOG.md's Unreleased section names AC1's rule and the short case.
-- [x] AC4: `cairn/references/description-ledger.md` names its data file: the deployed `v1/plugins.json` with
+- [ ] AC4: `cairn/references/description-ledger.md` names its data file: the deployed `v1/plugins.json` with
       `generatedAt` 2026-10-31T07:51:22.433Z and SHA-256 `d1c883cc6f945563ba133033491e8f9c21c69a088f527f18574287bff4e77287`,
       on the shelf as `cairn/references/sources/plugins-data-2026-10-31.json`. The ledger lists each line that
       `pnpm description-gaps` prints over that file on the branch, with AC1's rule and before any new override. It
@@ -138,6 +138,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - 2026-10-31: T7 done: `pnpm description-gaps` over the shelf copy prints "0 plugins with a description gap", matching the ledger's 0 kept rows; pnpm test (1619 passed, 6 skipped) and pnpm check (272 entries, 0 problems) pass.
 - 2026-10-31: claim audit: 150 claims read, 5 corrected — plugins/register02@cn.nutstore.net/index.json, plugins/zoterogpt@polygon.org/index.json, plugins/zoterotag@euclpts.com/index.json (plus bionicReader, same note), test/description.test.ts, CHANGELOG.md
 - 2026-10-31: claim audit re-read of the corrected claims by the same reader: all hold. pnpm test and pnpm check pass. Status set to review.
+- 2026-10-31: review return 1: AC4 — the ledger rows give no shown text, so the ledger does not list each line `pnpm description-gaps` prints (diff-bug #13). The same return carries the pass-1 fix-now findings listed in the Review section: the CLI's plugins root, the 9 wrong category assignments, the docs order and wording, the line widths, the CLI line format, and three test changes.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
@@ -154,3 +155,31 @@ Pass 1, 2026-10-31, on branch m067-description-gaps at 9a5d42a, main at c6f6954 
 - AC5 evidence: for all 31 override rows, a script reads `plugins/<id>/index.json` and finds one `description` override with no `version`, a value of 27 to 37 words, and a reason that opens "Condensed from" or "Translated from" a named `.md` file. The claim audit checked each case claim and each quoted upstream text against the shelf file, and 4 corrected reasons passed its re-read. `pnpm check`: 272 entries, 0 problems.
 - AC6 evidence: `pnpm description-gaps` over the shelf file prints "0 plugins with a description gap", and the ledger marks no row kept. `pnpm test`: 27 files passed, 1 skipped; 1619 tests passed, 6 skipped. `pnpm check`: 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed. No principle changed, so no `cairn_impact`. The generic profile's consistency-gate slot names no toolchain checks.
+- Hand look: a site built from the shelf file with the branch's overrides merged in shows Pop-Fish's English part, the KeepZotero and Zotero Keep Window overrides on the home page, and both new rules on the About page.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: the CLI resolves `plugins` against the current directory, so `node src/site/description-gaps-cli.ts` run elsewhere drops every override and lists 36 gaps with exit 0 — fix now (resolve the root from the script's own folder)
+- diff-bug #2: the new override texts change the categories of 15 plugins (D-037), unread; some look wrong — fix now (hand read of the 26 new assignments: 9 wrong, excluded, and a section in the description ledger)
+- diff-bug #3: home search matches the shown text, so a Chinese search no longer finds the 5 plugins whose shown text is now the Latin-script part — reject, planned change: AC1 replaces the shown text, and the search contract (name or shown description) is unchanged
+- diff-bug #4: `latinPart` would show a 3-word piece that is not a description, such as "JCR SCI SSCI", a URL, or "v1.2.3 beta" — follow-up, new row "Refine the Latin part and short picks" ([parked]); AC1 fixes the rule's wording, and no record in the shelf file has such a piece
+- diff-bug #5: a short Latin-script part now beats a longer English GitHub text — reject, planned change: AC1 puts the part in place of the whole text in the pick
+- diff-bug #6: no test input reaches the Latin-only letter filter, since every CJK piece has fewer than three words — fix now (a test with a mixed piece of four Latin words)
+- diff-bug #7: 8 short-case overrides hide a longer English GitHub text already upstream — reject, planned change: the set chose an override for every short text (D-038); the pick-rule idea goes to the new row
+- diff-bug #8: the command adds its own index.json read and schema compile, though T2 said to reuse src/check — reject, false premise: `compileValidators` needs the registry schema download, and build's `readEntry` also reads meta.json and stops on a missing entry, which this command must treat as no overrides
+- diff-bug #9: CHANGELOG.md:463 and README.md:102 pass 80 columns — fix now
+- diff-bug #10: the About Descriptions paragraph leaves out "joined with one space" — fix now
+- diff-bug #11: the schema `reason` prose ends in a clause that does not fit its "whether each" sentence — fix now
+- diff-bug #12: the CLI prints the shown text raw, so a tab or newline breaks the line format; a missing case leaves a trailing tab; the count line says "1 plugins" — fix now
+- diff-bug #13: the ledger rows give no shown text, so the ledger does not list each line the command prints, as AC4 says — fix now; AC4 fails as written, so this is a floor return (review return 1)
+- diff-bug #14: "short" fires for a short text in any language, while D-038 speaks of English text — reject for the code, which matches AC2's wording; the README claim that it finds no other-language text is fixed under blame-history #3
+- diff-bug (c): test/description-gaps.test.ts:102 checks `result.ok` before an exact message match that covers it — fix now (drop it); the exact stdout line and the CLI exit-1 test stay, since the line format and the exit code are the contract
+- blame-history #1: a mostly-CJK manifest with a Latin-script part now beats an English GitHub text, which reverses M055's pick for that input — reject, planned change (AC1)
+- blame-history #2: D-038 widens DESIGN's source-of-truth rule and hides later author edits — reject, planned change recorded in D-038
+- blame-history #3: README says the command does not find other-language Latin text, but it lists one under six words as short — fix now
+- blame-history #4: "If that part is left" is unclear in README and DESIGN; the schema's last clause names no checked case — fix now (wording, with diff-bug #11)
+- prior-review #1: README and About state the Latin-script step after the override sentence and call it "first", so they read as if it came before the override, which repeats M055's override-first defect — fix now (reorder: override first, then the Latin-script part, then the drop and the pick)
+- prior-review #2: no test reaches the Latin-script part at a share of exactly 0.5 — fix now
+- prior-review #3: ragged wrapping in the new README text — fix now
+- ripple #1: README, DESIGN, About, and the schema still list "half or more CJK" as an override case — reject, false: D-038 keeps D-032's case ("The rest of D-030, D-031, and D-032 stands")
+- ripple #2: same finding as prior-review #1 — fix now with it
+- ripple #3: `schemas/plugins.v1.schema.json:195` says an override "fills in" an English description, which leaves out the short case's replacement — fix now
+- AC4 unticked: diff-bug #13 shows it failing as written.
