@@ -1,0 +1,8 @@
+{
+  "id": "zotero-mcp@agentsmith29.github.io",
+  "name": "Zotero MCP",
+  "description": "MCP server inside Zotero for agents (search, cite, edit, collections, lookups, duplicates, Better BibTeX) plus folder export and sync of attachment files.",
+  "homepage": "https://github.com/agentsmith29/Zotero-MCP-Plugin",
+  "repoUrl": "https://github.com/agentsmith29/Zotero-MCP-Plugin",
+  "updateUrl": "https://github.com/agentsmith29/Zotero-MCP-Plugin/releases/latest/download/updates.json"
+}
