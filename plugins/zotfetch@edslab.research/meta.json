@@ -1,0 +1,7 @@
+{
+  "id": "zotfetch@edslab.research",
+  "name": "ZotFetch",
+  "description": "ZotFetch: Batch PDF downloader",
+  "repoUrl": "https://github.com/fdossi/zotfetch",
+  "updateUrl": "https://raw.githubusercontent.com/fdossi/zotfetch/master/updates.json"
+}
