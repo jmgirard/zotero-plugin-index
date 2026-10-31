@@ -1,0 +1,8 @@
+{
+  "id": "zoteroragflow@yourname.com",
+  "name": "Zotero RAGFlow",
+  "description": "连接 Zotero 和 RAGFlow，用于构建知识库并进行知识问答",
+  "homepage": "https://github.com/WuGuangHeng/zotero-ragflow#readme",
+  "repoUrl": "https://github.com/WuGuangHeng/zotero-ragflow",
+  "updateUrl": "https://github.com/WuGuangHeng/zotero-ragflow/releases/download/release/update.json"
+}
