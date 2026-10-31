@@ -1,0 +1,8 @@
+{
+  "id": "zotero@immersivetranslate.com",
+  "name": "Immersive Translate 沉浸式翻译",
+  "description": "Zotero BabelDOC plugin, for Immersive Translate Pro members.",
+  "homepage": "https://github.com/immersive-translate/zotero-immersivetranslate#readme",
+  "repoUrl": "https://github.com/immersive-translate/zotero-immersivetranslate",
+  "updateUrl": "https://github.com/immersive-translate/zotero-immersivetranslate/releases/download/release/update.json"
+}
