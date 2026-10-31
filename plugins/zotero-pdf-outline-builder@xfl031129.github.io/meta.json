@@ -1,0 +1,8 @@
+{
+  "id": "zotero-pdf-outline-builder@xfl031129.github.io",
+  "name": "PDF Outline Builder for Zotero",
+  "description": "Generate PDF bookmarks/outlines for selected Zotero PDF attachments.",
+  "homepage": "https://github.com/xfl031129/zotero-pdf-outline-builder",
+  "repoUrl": "https://github.com/xfl031129/zotero-pdf-outline-builder",
+  "updateUrl": "https://github.com/xfl031129/zotero-pdf-outline-builder/releases/latest/download/updates.json"
+}
