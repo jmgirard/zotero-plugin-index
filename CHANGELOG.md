@@ -12,7 +12,8 @@
   name a wait: `retry-after`, or `x-ratelimit-remaining: 0` with
   `x-ratelimit-reset`. Then the code search sends no request until 1
   second after that wait ends. A page that HTTP 403 or 429 refused with
-  such a wait is sent once more. The code search sends no request from 8
+  such a wait is sent once more, with a warning. The code search sends no
+  request from 8
   minutes after the run starts, and its time counts toward the run's 18
   minutes. A request that fails otherwise adds a warning that names the
   query, and so does a page that fails twice. The run keeps that query's

@@ -95,11 +95,13 @@ export const UNZIPPED_MAX_BYTES = 1024 * 1024;
 
 // The rate-limit headers of a GitHub API answer: `x-ratelimit-remaining`, `x-ratelimit-reset`
 // as epoch milliseconds, and `retry-after` as milliseconds. A header that is missing or not a
-// non-negative whole number is left out.
+// non-negative whole number is left out. `dateMs` is the answer's `date` header, GitHub's
+// clock when it answered, when it parses.
 export interface RateLimit {
   remaining?: number;
   resetMs?: number;
   retryAfterMs?: number;
+  dateMs?: number;
 }
 
 export function rateLimitOf(headers: Headers): RateLimit {
@@ -110,10 +112,12 @@ export function rateLimitOf(headers: Headers): RateLimit {
   const remaining = whole("x-ratelimit-remaining");
   const reset = whole("x-ratelimit-reset");
   const retryAfter = whole("retry-after");
+  const date = Date.parse(headers.get("date") ?? "");
   return {
     ...(remaining !== undefined && { remaining }),
     ...(reset !== undefined && { resetMs: reset * 1000 }),
     ...(retryAfter !== undefined && { retryAfterMs: retryAfter * 1000 }),
+    ...(!Number.isNaN(date) && { dateMs: date }),
   };
 }
 

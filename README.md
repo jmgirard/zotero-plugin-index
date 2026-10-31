@@ -610,9 +610,10 @@ the command skips it. The report names at most 10 such items and counts
 the rest. The catalog and the code search each have their own lookup. If a
 lookup request fails, the report gets one warning. The command then looks
 up no more repositories of that source. It reads none of the repositories
-that it did not look up. Without `GITHUB_TOKEN`, the first lookup request fails, so the
-command reads no repository that only the catalog or the code search names. A repository that GitHub does not have, or that has no last
-push, also gets a warning, and the command does not read it. A failed topic
+that it did not look up. Without `GITHUB_TOKEN`, the first lookup request
+fails, so the command reads no repository that only the catalog or the
+code search names. A repository that GitHub does not have, or that has no
+last push, also gets a warning, and the command does not read it. A failed topic
 search still ends the run before any read.
 
 GitHub allows 10 code search requests a minute. So the command sends at
@@ -620,7 +621,9 @@ most 10 of them in any 60 seconds, failed requests included, and waits
 before the next one. An answer can also name a wait: `retry-after` in
 seconds, or `x-ratelimit-remaining: 0` with the `x-ratelimit-reset` time.
 Then no query sends a code search request until 1 second after that wait
-ends. If GitHub refuses a page with HTTP 403 or 429 and names a wait, the
+ends. The command reads a reset against the `date` of the answer, so a
+runner clock ahead of GitHub's waits longer. GitHub can refuse a page with
+HTTP 403 or 429 and name a wait. Then the report gets a warning, and the
 command sends that page once more after the wait. If a code search request
 fails otherwise, or a page fails twice, the report gets a warning that
 names the query. The command keeps the repositories of that

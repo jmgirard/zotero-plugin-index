@@ -52,7 +52,8 @@ export const CODE_SEARCH_WINDOW_MS = 60 * 1000;
 export const CODE_SEARCH_CUTOFF_MS = 8 * 60 * 1000;
 export const CODE_SEARCH_MS = 60 * 1000;
 
-// The clock of the run's time limits and the code search pacing, in performance.now() time.
+// The clock of the run's time limits and the code search pacing: `now` is performance.now()
+// time.
 // `wall` is epoch milliseconds, for the times that GitHub's rate-limit headers name; `sleep`
 // moves it as it moves `now`.
 export interface Clock {
@@ -147,7 +148,7 @@ export interface DiscoverOptions {
   // Each request stops at `codeSearchMs`.
   codeSearch?: string[];
   codeSearchMs?: number;
-  // performance.now() and setTimeout when unset.
+  // performance.now(), Date.now(), and setTimeout when unset.
   clock?: Clock;
 }
 
@@ -492,10 +493,14 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
   // any wait an answer named. GitHub's window ends at the second its reset names, which
   // can be later than 60 seconds after the window's first request.
   let holdUntil = 0;
+  // A reset is in GitHub's time. When the runner's clock is ahead of the answer's `date`, the
+  // reset is moved forward by that much, and a reset already past still waits from now.
   const hold = (rateLimit: RateLimit | undefined) => {
+    const now = clock.wall();
+    const ahead = rateLimit?.dateMs === undefined ? 0 : Math.max(0, now - rateLimit.dateMs);
     const ends = [
-      ...(rateLimit?.remaining === 0 && rateLimit.resetMs !== undefined ? [rateLimit.resetMs] : []),
-      ...(rateLimit?.retryAfterMs !== undefined ? [clock.wall() + rateLimit.retryAfterMs] : []),
+      ...(rateLimit?.remaining === 0 && rateLimit.resetMs !== undefined ? [Math.max(now, rateLimit.resetMs + ahead)] : []),
+      ...(rateLimit?.retryAfterMs !== undefined ? [now + rateLimit.retryAfterMs] : []),
     ];
     if (ends.length === 0) return false;
     holdUntil = Math.max(holdUntil, Math.max(...ends) + 1000);
@@ -526,7 +531,7 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
       }
       // One more millisecond, since a timer can fire up to 1 ms early against performance.now().
       const paced = sent.length < CODE_SEARCH_RATE ? 0 : sent[sent.length - CODE_SEARCH_RATE] + CODE_SEARCH_WINDOW_MS + 1 - clock.now();
-      const wait = Math.max(0, paced, holdUntil - clock.wall());
+      const wait = Math.max(0, paced, holdUntil > 0 ? holdUntil + 1 - clock.wall() : 0);
       if (clock.now() + wait - startedAt >= CODE_SEARCH_CUTOFF_MS) {
         stop(`the run sends no code search request ${duration(CODE_SEARCH_CUTOFF_MS)} after it starts`);
         break;
@@ -542,6 +547,7 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
         if (!(error instanceof ReadFailure)) throw error;
         const named = hold(error.rateLimit);
         if (named && !retry && (error.status === 403 || error.status === 429)) {
+          warnings.push(`the code search for ${query} got HTTP ${error.status} on page ${pages + 1}, so it sends that page once more after the wait the answer names`);
           retry = true;
           continue;
         }
