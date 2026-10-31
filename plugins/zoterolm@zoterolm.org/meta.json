@@ -1,0 +1,8 @@
+{
+  "id": "zoterolm@zoterolm.org",
+  "name": "ZoteroLM",
+  "description": "LLM-powered summarization for Zotero library items",
+  "homepage": "https://github.com/techczech/zoterolm#readme",
+  "repoUrl": "https://github.com/techczech/zoterolm",
+  "updateUrl": "https://github.com/techczech/zoterolm/releases/download/release/update.json"
+}
