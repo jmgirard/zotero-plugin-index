@@ -1,0 +1,8 @@
+{
+  "id": "scholium-bridge@zotero-scholium",
+  "name": "Scholium Bridge",
+  "description": "Annotates papers with Claude Code or Codex from the Scholium section of the item pane, and shows or hides the tool's annotations in the reader. It also lets the tool write annotations through local endpoints, those of a run in one transaction.",
+  "homepage": "https://github.com/weilr/zotero-scholium",
+  "repoUrl": "https://github.com/weilr/zotero-scholium",
+  "updateUrl": "https://github.com/weilr/zotero-scholium/releases/latest/download/update.json"
+}
