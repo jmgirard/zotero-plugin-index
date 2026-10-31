@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ai-reply@eginez.xyz",
+  "name": "Zotero AI Reply",
+  "description": "Answer commented Zotero PDF annotations using an OpenAI-compatible endpoint.",
+  "homepage": "https://github.com/eginez/zotero-ai-reply",
+  "repoUrl": "https://github.com/eginez/zotero-ai-reply",
+  "updateUrl": "https://raw.githubusercontent.com/eginez/zotero-ai-reply/main/updates.json"
+}
