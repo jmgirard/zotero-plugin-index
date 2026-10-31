@@ -1,0 +1,7 @@
+{
+  "id": "zotero-folder-import@iris-advies.com",
+  "name": "Folder Import for Zotero",
+  "description": "Import folder of attachments into a collection hierarchy",
+  "repoUrl": "https://github.com/retorquere/zotero-folder-import",
+  "updateUrl": "https://github.com/retorquere/zotero-folder-import/releases/download/release/updates.json"
+}
