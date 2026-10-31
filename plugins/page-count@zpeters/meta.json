@@ -1,0 +1,8 @@
+{
+  "id": "page-count@zpeters",
+  "name": "Page Count",
+  "description": "Adds a #Pages column to the item list: from the page range, the numPages field, or the PDF",
+  "homepage": "https://zpeters.github.io/zotero-page-count/",
+  "repoUrl": "https://github.com/zpeters/zotero-page-count",
+  "updateUrl": "https://github.com/zpeters/zotero-page-count/releases/latest/download/update.json"
+}
