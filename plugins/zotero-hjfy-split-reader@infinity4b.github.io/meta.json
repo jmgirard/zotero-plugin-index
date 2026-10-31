@@ -1,0 +1,8 @@
+{
+  "id": "zotero-hjfy-split-reader@infinity4b.github.io",
+  "name": "HJFY Split Reader",
+  "description": "Fetch HJFY translations for papers and open them in a split-view reader",
+  "homepage": "https://github.com/Infinity4B/zotero-hjfy-split-reader#readme",
+  "repoUrl": "https://github.com/Infinity4B/zotero-hjfy-split-reader",
+  "updateUrl": "https://github.com/Infinity4B/zotero-hjfy-split-reader/releases/download/release/update.json"
+}
