@@ -1,0 +1,7 @@
+{
+  "id": "zotero-pubpeer@pubpeer.com",
+  "name": "Pubpeer Plugin for Zotero",
+  "description": "Plugin to show if references in Zotero have PubPeer comments",
+  "repoUrl": "https://github.com/PubPeerFoundation/pubpeer_zotero_plugin",
+  "updateUrl": "https://github.com/PubPeerFoundation/pubpeer_zotero_plugin/releases/download/release/updates.json"
+}
