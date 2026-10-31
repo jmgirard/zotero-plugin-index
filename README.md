@@ -1282,6 +1282,14 @@ deploys nothing. The repository's
 `github-pages` environment, set in its GitHub settings, lets only runs on the
 `main` branch deploy.
 
+A merge to `main` deploys nothing by itself. A change to the pages, the
+build, or the data format reaches the site at the next run of `Build data`.
+To publish the change sooner, start the workflow on `main` by hand:
+
+```bash
+gh workflow run build.yml --ref main
+```
+
 ## Running the tests
 
 To run the tests, run:
