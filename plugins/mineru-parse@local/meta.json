@@ -1,0 +1,8 @@
+{
+  "id": "mineru-parse@local",
+  "name": "Mineru Parse",
+  "description": "Mineru PDF 解析到笔记",
+  "homepage": "https://github.com/LYN6969/mineru-parse#readme",
+  "repoUrl": "https://github.com/Lyn6969/mineru-parse",
+  "updateUrl": "https://github.com/LYN6969/mineru-parse/releases/download/release/update.json"
+}
