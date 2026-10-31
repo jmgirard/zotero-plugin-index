@@ -1,0 +1,7 @@
+{
+  "id": "citegeist@opusvita.org",
+  "name": "Citegeist",
+  "description": "Citation intelligence powered by OpenAlex — counts, networks, and one-click import. Configure your OpenAlex email and other settings in Zotero → Settings → Citegeist (not in this Add-ons window).",
+  "repoUrl": "https://github.com/phdemotions/zotero-citegeist",
+  "updateUrl": "https://github.com/phdemotions/zotero-citegeist/releases/download/release/update.json"
+}
