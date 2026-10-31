@@ -1,0 +1,8 @@
+{
+  "id": "wikipedia-to-zotero@phobrla.github.io",
+  "name": "Wikipedia to Zotero",
+  "description": "Import Wikipedia Saved lists with folder tags, original saved timestamps, CSV backups, and optional verified deletion.",
+  "homepage": "https://github.com/phobrla/wikipedia-to-zotero",
+  "repoUrl": "https://github.com/phobrla/wikipedia-to-zotero",
+  "updateUrl": "https://raw.githubusercontent.com/phobrla/wikipedia-to-zotero/main/plugin/updates.json"
+}
