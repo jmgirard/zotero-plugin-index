@@ -1,0 +1,8 @@
+{
+  "id": "zotero-adobe-ocr@tshippen",
+  "name": "Zotero Adobe OCR",
+  "description": "OCR PDFs using Adobe PDF Services API",
+  "homepage": "https://github.com/tshippen/zotero-adobe-ocr-plugin",
+  "repoUrl": "https://github.com/TShippen/zotero-adobe-ocr-plugin",
+  "updateUrl": "https://github.com/tshippen/zotero-adobe-ocr-plugin/releases/download/release/update.json"
+}
