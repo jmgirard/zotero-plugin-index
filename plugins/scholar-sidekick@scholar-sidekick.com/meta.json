@@ -1,0 +1,8 @@
+{
+  "id": "scholar-sidekick@scholar-sidekick.com",
+  "name": "Scholar Sidekick",
+  "description": "Verify a bibliography before importing it. Resolve identifiers, flag claimed-vs-resolved mismatches, surface retractions and open-access copies, then add clean items to your library.",
+  "homepage": "https://scholar-sidekick.com",
+  "repoUrl": "https://github.com/mlava/scholar-sidekick-zotero",
+  "updateUrl": "https://scholar-sidekick.com/zotero-plugin/update.json"
+}
