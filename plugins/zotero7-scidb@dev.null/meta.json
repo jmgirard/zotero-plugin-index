@@ -1,0 +1,8 @@
+{
+  "id": "zotero7-scidb@dev.null",
+  "name": "Zotero SciDB Downloader",
+  "description": "Zotero SciDB Downloader",
+  "homepage": "https://github.com/0xc1c4da/zotero7-scidb#readme",
+  "repoUrl": "https://github.com/0xc1c4da/zotero7-scidb",
+  "updateUrl": "https://github.com/0xc1c4da/zotero7-scidb/releases/download/release/update.json"
+}
