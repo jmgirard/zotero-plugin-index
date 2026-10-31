@@ -1,0 +1,8 @@
+{
+  "id": "center-pdf@dylan.ac",
+  "name": "Center PDF",
+  "description": "Zotero plugin to center a PDF in the view when navigating between pages.",
+  "homepage": "https://github.com/dawaltconley/zotero-center-pdf#readme",
+  "repoUrl": "https://github.com/dawaltconley/zotero-center-pdf",
+  "updateUrl": "https://github.com/dawaltconley/zotero-center-pdf/releases/download/release/update.json"
+}
