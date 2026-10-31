@@ -1,0 +1,7 @@
+{
+  "id": "zotero-trilium@jellytussle.org",
+  "name": "Zotero-Trilium",
+  "description": "Send references and notes to Trilium Next",
+  "repoUrl": "https://github.com/paulusm/zotero-trilium",
+  "updateUrl": "https://raw.githubusercontent.com/paulusm/zotero-trilium/refs/heads/master/src/updates.json"
+}
