@@ -1,0 +1,8 @@
+{
+  "id": "zoterochat@loveychen.com",
+  "name": "Zotero Chat",
+  "description": "AI Reading Assistant for Zotero with ReAct Agent",
+  "homepage": "https://github.com/loveychen/zotero-chat#readme",
+  "repoUrl": "https://github.com/loveychen/zotero-chat",
+  "updateUrl": "https://github.com/loveychen/zotero-chat/releases/download/release/update.json"
+}
