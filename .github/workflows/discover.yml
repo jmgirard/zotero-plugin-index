@@ -9,6 +9,10 @@ on:
         description: The most pull requests the run opens
         type: number
         default: 5
+      budget:
+        description: The most repos the run reads
+        type: number
+        default: 100
 
 # Each job sets its own permissions. The read job reads repos that anyone can tag, so it
 # cannot write; the write job pushes the discover/ branches and opens their pull requests
@@ -57,12 +61,14 @@ jobs:
           path: .cache/discovery-state.json
           key: discovery-state-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: discovery-state-
-      # Scheduled runs have no inputs, so LIMIT is empty and the command's default of 5
-      # applies. A dispatched limit reaches the command as given, so 0 is refused.
-      - run: pnpm discover --handoff handoff ${LIMIT:+--limit "$LIMIT"}
+      # Scheduled runs have no inputs, so LIMIT and BUDGET are empty and the command's
+      # defaults of 5 and 100 apply. A dispatched value reaches the command as given, so 0
+      # is refused.
+      - run: pnpm discover --handoff handoff ${LIMIT:+--limit "$LIMIT"} ${BUDGET:+--budget "$BUDGET"}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LIMIT: ${{ inputs.limit }}
+          BUDGET: ${{ inputs.budget }}
       # Saved after a failed run too: the state records repos that were refused.
       - uses: actions/cache/save@v6
         if: always()

@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- `pnpm discover` also runs five GitHub code searches for the
+  `manifest.json` and `package.json` files of Zotero plugins, as the README
+  lists, so a plugin that no topic and no catalog names can reach the index.
+  The code search needs `GITHUB_TOKEN`. It sends at most 10 requests in any
+  60 seconds. It sends none from 8 minutes after the run starts. Its time
+  counts toward the run's 18 minutes. A failed request adds a warning that
+  names the query, and the run keeps that query's earlier pages and reads
+  the other repositories. A repository that the topic search or the catalog
+  also names keeps that source. If the bot found a repository by code
+  search, its pull request says so, and it gets no `issue-no-topic` hold.
+  A `Discover plugins` run started by hand takes a `budget` input, the most
+  repositories the run reads.
 - `pnpm discover` also reads the repositories that the zotero-chinese plugin
   catalog lists, so a plugin whose repository has neither topic can reach
   the index. It looks up each such repository's current name and last push

@@ -94,8 +94,9 @@ export interface DiscoverReadOptions {
   limit: number;
   budget: number;
   now?: Date;
-  // The catalog to read, as for discover.
+  // The catalog to read and the code searches to run, as for discover.
   catalog?: string;
+  codeSearch?: string[];
   // The index repo as owner/repo.
   indexRepo: string;
 }
@@ -518,7 +519,9 @@ export function body(entry: Written, checked: { status: number; output: string }
       ? `read ${entry.repoUrl} from issue #${issue}`
       : entry.source === "catalog"
         ? `found ${entry.repoUrl} in the [zotero-chinese plugin catalog](https://github.com/zotero-chinese/zotero-plugins)`
-        : `found ${entry.repoUrl} by its GitHub topic`;
+        : entry.source === "code-search"
+          ? `found ${entry.repoUrl} by GitHub code search for Zotero plugin files`
+          : `found ${entry.repoUrl} by its GitHub topic`;
   return [
     `The discovery bot ${found} and drafted this entry from its newest stable release with an \`.xpi\` file, or from its newest prerelease if no stable release has one or that release is not a Zotero 7+ build.`,
     ...(issue === undefined ? [] : ["", `Closes #${issue}`]),

@@ -202,8 +202,17 @@ shows each one separately. A combined verdict is out of scope.
    `zotero-plugin` or `zotero-addon`. In total, 400 and 109 repositories carry
    these topics (observed 2026-10-24). The bot also reads the repos that
    the zotero-chinese plugin catalog lists, which its maintainers keep by
-   hand (M070, D-042). A failed read of the catalog, or of a repo's current
-   name and last push, warns, and the run reads the other repos. The bot
+   hand (M070, D-042), and the repos of five GitHub code searches for
+   Zotero plugin files, `manifest.json` files with `applications`, `zotero`,
+   and `strict_min_version` or `update_url`, and `package.json` files that
+   name `zotero-plugin-toolkit`, `zotero-plugin-scaffold`, or
+   `zotero-plugin` with `zotero-types` (M071, D-042). The code search sends
+   at most 10 requests in any 60 seconds and none from 8 minutes after the
+   run starts. A failed read of the catalog, a failed code search request,
+   or a failed lookup of a repo's current name and last push warns, and the
+   run reads the other repos; a failed code search request keeps the
+   repos of its query's earlier pages. A dispatched run can set `limit` and
+   `budget` (M071). The bot
    opens a pull request for each
    new candidate that passes the inclusion bar, at most 5 a run, with the
    result of `pnpm check` on the entry in its body. A bot pull request closed
@@ -215,8 +224,8 @@ shows each one separately. A combined verdict is out of scope.
    maintainer when its name or repo name matches another owner's entry, its
    owner's account is under 30 days old or cannot be read, its `update.json`
    is not on github.com or raw.githubusercontent.com, or an issue proposed a
-   repo with neither topic. A catalog repo with neither topic gets no hold
-   (D-042). A held pull request gets the `hold` label. A
+   repo with neither topic. A catalog or code-search repo with neither
+   topic gets no hold (D-042). A held pull request gets the `hold` label. A
    daily job merges a pull request that says `Hold: none` and has no `hold`
    label at its first daily run at least 48 hours after it opens, once its
    entry passes `pnpm check` beside the current entries. A run started by
@@ -322,7 +331,8 @@ exception is a report that is abuse.
 - Discovery (`src/discover/`): `pnpm discover [--out <dir> | --handoff
   <dir>] [--state <file>] [--limit <n>] [--budget <n>]` searches the
   `zotero-plugin` and `zotero-addon` topics, adds the repos of the
-  zotero-chinese catalog (M070), reads each repo that no entry names, and
+  zotero-chinese catalog (M070) and of five code searches (M071), reads each
+  repo that no entry names, and
   writes the entries of up to `limit` repos (5 by default) that
   pass the inclusion bar. It prints a JSON report of what it wrote, refused,
   and skipped. Added M008. With `--handoff <dir>`, it also skips the repos of
@@ -340,7 +350,8 @@ exception is a report that is abuse.
   `entry-exists` or `write-failed` (M028), and a branch-name check in
   `pnpm propose` that cannot run (M038). Each repo read stops at 3
   minutes as a build-level `request-failed`, not recorded, and `pnpm
-  discover` starts no read after 18 minutes from the command's start,
+  discover` starts no lookup request and no read after 18 minutes from the
+  command's start (lookups corrected M071),
   counting the rest in `unread` with a warning. The `git check-ref-format`
   check stops at 30 seconds and throws; in `pnpm propose` each other git
   process stops at 2 minutes and `pnpm check` at 5 minutes, failing only
@@ -594,11 +605,25 @@ reused._
   `CATALOG_URL`, it also reads the zotero-chinese catalog's `plugins.json`
   through the contents API (`githubClient().raw`, 60 s, 8 MiB). A catalog
   name that an entry or the skip set names is skipped there; each other
-  name that no topic search returned is looked up with one GraphQL request
+  name that no earlier source returned and no earlier lookup gave
+  (corrected M071) is looked up with one GraphQL request
   for each 100 names, the names sent as variables. A failed request ends
-  the lookups, and so does `runMs` (M070). It joins
+  that source's lookups, and `runMs` ends all of them (M070; corrected
+  M071). With the `codeSearch` option,
+  which `pnpm discover` sets to `CODE_SEARCHES`, it then pages through
+  `/search/code` for each query (`githubClient().get`, 60 s a request),
+  sending at most `CODE_SEARCH_RATE` (10) requests in any
+  `CODE_SEARCH_WINDOW_MS` (60 s), failed ones included, and none from
+  `CODE_SEARCH_CUTOFF_MS` (8 minutes) after `startedAt`. A failed request
+  or a page with no items warns and ends only its query. Items with no
+  owner/repo name warn, at most 10 a query, and queries that all finish
+  with no item warn once. The names go through the same skip and lookup;
+  a name that an earlier source or lookup gave needs none, and a name
+  whose lookup failed stays open to a later source's lookup. One injected `Clock` drives the pacing and every
+  `runMs` check, so the search time counts toward `runMs` (M071). It joins
   the result lists by the lowercase owner/repo that the search or the
-  lookup gives, a topic find before a catalog find, and reads the newest
+  lookup gives, a topic find before a catalog find before a code-search
+  find, and reads the newest
   pushed repos first, at most `budget` (100 by default) per run. It leaves out
   each repo whose owner/repo, ignoring case, an entry's `repoUrl` names,
   and it refuses a plugin id that an entry directory already has. A state
@@ -613,8 +638,8 @@ reused._
   or by a 403 to a download that requested a GitHub release URL, which the
   reader marks build-level (M026, M045).
   A failed topic search ends the run before any read and leaves the state
-  file as it was; a failed catalog read or lookup only warns (corrected
-  M070). The report names, for each entry written, its version and declared
+  file as it was; a failed catalog read, code search, or lookup only warns
+  (corrected M070, M071). The report names, for each entry written, its version and declared
   range (M008).
 - Each bot workflow that reads plugin repos splits the work into a read job
   and a write job (M011); `add-plugin-issue.yml` adds a `pick` job before
@@ -678,7 +703,8 @@ reused._
   one of them adds, and the write step skips such an entry. `githubClient` gains `post`, which fails on a redirect, and
   M010 adds `patch` and M056 `put`, which share that code.
   `.github/workflows/discover.yml` runs it daily and on dispatch on the
-  default branch only, with a `limit` input, in the `discover` concurrency
+  default branch only, with `limit` and `budget` inputs (`budget` M071), in
+  the `discover` concurrency
   group. Its write job holds `contents: write` and `pull-requests: write`.
   The read job restores the state file from the newest cache by prefix and
   saves it under a key with the run id, after a failed run too. Pull requests opened with the built-in token start no CI run, so
@@ -869,9 +895,12 @@ reused._
   repositories. Topic search also misses plugins without a topic. Expected at
   design time, 2026-10-24. The reader sends `GITHUB_TOKEN` when it is set,
   which raises the limit (M002). Since M070 discovery also reads the
-  zotero-chinese catalog, so a plugin with no topic is missed only when the
-  catalog does not list it either (corrected M070). On 2026-10-31 the
-  catalog listed 132 such plugins that passed the inclusion bar.
+  zotero-chinese catalog, and since M071 five GitHub code searches, so a
+  plugin with no topic is missed only when neither the catalog nor GitHub's
+  code index names it, or when its files match none of the five queries
+  (corrected M070, M071). On 2026-10-31 the catalog listed 132 such plugins
+  that passed the inclusion bar, and the five queries returned 1,053 repos,
+  158 of the 273 then indexed (M071 plan).
 - The host check looks up a download host before the request, and fetch
   looks it up again when it connects. A DNS server that answers differently
   the second time (DNS rebinding) can still reach a private address. The

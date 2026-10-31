@@ -81,7 +81,7 @@ function logged(path: string): { method: string; url: string; body?: string }[] 
 
 // Runs the read step and then the write step in-process against `responses`, through a
 // handoff written to disk, with a check that always passes unless one is given.
-async function twoStep(responses: Responses, gitDir = tempDir(), check?: CheckRunner, root = tempDir(), gitMs?: number, catalog?: string) {
+async function twoStep(responses: Responses, gitDir = tempDir(), check?: CheckRunner, root = tempDir(), gitMs?: number, catalog?: string, codeSearch?: string[]) {
   const { fetch, requests } = fixtureFetch(responses);
   const handoff = tempDir();
   const read = await discoverRead({
@@ -95,6 +95,7 @@ async function twoStep(responses: Responses, gitDir = tempDir(), check?: CheckRu
     now: NOW,
     indexRepo: "example/index",
     catalog,
+    codeSearch,
   });
   if (!read.ok) return { read, posts: requests.filter(({ method }) => method === "POST"), requests };
   const written = read.report.read.filter((item): item is Written => item.outcome === "written");
@@ -223,10 +224,12 @@ describe("proposing pull requests", () => {
     const bodies = {
       topic: body({ ...entry, source: "topic" }, checked),
       catalog: body({ ...entry, source: "catalog" }, checked),
+      codeSearch: body({ ...entry, source: "code-search" }, checked),
       issue: body(entry, checked, 7),
     };
     expect(bodies.topic).toMatch(/^The discovery bot found https:\/\/github\.com\/example\/x by its GitHub topic and drafted/);
     expect(bodies.catalog).toMatch(/^The discovery bot found https:\/\/github\.com\/example\/x in the \[zotero-chinese plugin catalog\]/);
+    expect(bodies.codeSearch).toMatch(/^The discovery bot found https:\/\/github\.com\/example\/x by GitHub code search for Zotero plugin files and drafted/);
     expect(bodies.issue).toMatch(/^The discovery bot read https:\/\/github\.com\/example\/x from issue #7 and drafted/);
     for (const sent of Object.values(bodies)) expect(sent.endsWith(`\n${closing}`)).toBe(true);
   });
@@ -304,6 +307,25 @@ describe("the Hold line and the hold label", () => {
       /^The discovery bot found https:\/\/github\.com\/example\/listed in the \[zotero-chinese plugin catalog\]\(https:\/\/github\.com\/zotero-chinese\/zotero-plugins\) and drafted/,
     );
     expect(sent).toContain("\nHold: none\n");
+  });
+
+  test("a code-search entry's body says the bot found the repo by GitHub code search, and closes with the no-repeat line", async () => {
+    const query = '"zotero-plugin-toolkit" filename:package.json';
+    const coded = { nameWithOwner: "example/coded", url: "https://github.com/example/coded", pushedAt: "2026-10-20T00:00:00Z" };
+    const responses: Responses = {
+      ...indexRepo,
+      ...searched([]),
+      ...pluginRepo("example/coded", "coded@example.org", { topics: [] }),
+      [`https://api.github.com/search/code?${new URLSearchParams({ q: query, per_page: "100" })}`]: { json: { total_count: 1, items: [{ repository: { full_name: "example/coded" } }] } },
+      "POST https://api.github.com/graphql": { json: { data: { r0: coded } } },
+      [`POST ${PULLS}`]: created,
+    };
+    const { read, result, posts } = await twoStep(responses, checkout().work, undefined, undefined, undefined, undefined, [query]);
+    if (!result?.ok) throw new Error(JSON.stringify(result));
+    expect(read.ok && read.report.read).toEqual([expect.objectContaining({ repo: "example/coded", source: "code-search", holds: [] })]);
+    const sent = JSON.parse(posts.find(({ url }) => url === PULLS)!.body!).body as string;
+    expect(sent).toMatch(/^The discovery bot found https:\/\/github\.com\/example\/coded by GitHub code search for Zotero plugin files and drafted/);
+    expect(sent.endsWith("\nIf this pull request is closed without a merge, the bot does not propose this repo again, from discovery or from an issue.")).toBe(true);
   });
 
   test("an entry with no hold reason gets Hold: none and the merge sentence, and no label request", async () => {

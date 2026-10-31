@@ -360,6 +360,23 @@ describe("discover.yml", () => {
       keys: ["concurrency:"],
     });
   });
+
+  test("takes a budget input on dispatch, which reaches pnpm discover as --budget only through env", () => {
+    expect(triggers(discover)).toBe(
+      'schedule:\n    - cron: "43 14 * * *"\n  workflow_dispatch:\n    inputs:\n' +
+        "      limit:\n        description: The most pull requests the run opens\n        type: number\n        default: 5\n" +
+        "      budget:\n        description: The most repos the run reads\n        type: number\n        default: 100",
+    );
+    const read = jobText(discover, "read");
+    // The run step: its run line and the lines indented under it.
+    expect(read.match(/^ {6}- run: pnpm discover .*\n(?: {8,}\S.*\n)*/gm)).toEqual([
+      '      - run: pnpm discover --handoff handoff ${LIMIT:+--limit "$LIMIT"} ${BUDGET:+--budget "$BUDGET"}\n        env:\n' +
+        "          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n          LIMIT: ${{ inputs.limit }}\n          BUDGET: ${{ inputs.budget }}\n",
+    ]);
+    // The input's one expression is the env line, with no `||` default, so a scheduled run passes no --budget.
+    const expressions = [...discover.matchAll(/\$\{\{[^}]*\}\}/g)].map(([use]) => use);
+    expect(expressions.filter((use) => use.includes("budget"))).toEqual(["${{ inputs.budget }}"]);
+  });
 });
 
 describe("merge-discover.yml", () => {

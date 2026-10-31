@@ -570,10 +570,23 @@ The command searches for repositories with the topic `zotero-plugin` or
 [zotero-chinese plugin catalog](https://github.com/zotero-chinese/zotero-plugins),
 a list of plugins that its maintainers add by hand. It reads the list from
 the file `plugins.json` on the catalog's `gh-pages` branch, through the
-GitHub API. Some repositories in the catalog are not in the topic search.
-For each of them, the command asks the GitHub GraphQL API for the current
-name and the time of the last push. One request asks about at most 100
-repositories. This lookup needs the `GITHUB_TOKEN` environment variable.
+GitHub API. Then it runs five GitHub code searches for files of Zotero
+plugins, and takes the repository of each file found:
+
+- `"applications" "zotero" "strict_min_version" filename:manifest.json`
+- `"applications" "zotero" "update_url" filename:manifest.json`
+- `"zotero-plugin-toolkit" filename:package.json`
+- `"zotero-plugin-scaffold" filename:package.json`
+- `"zotero-plugin" "zotero-types" filename:package.json`
+
+Some repositories in the catalog or the code search results are not in the
+topic search. For each of them, the command asks the GitHub GraphQL API for
+the current name and the time of the last push. One request asks about at
+most 100 repositories. This lookup and the code search need the
+`GITHUB_TOKEN` environment variable. A repository that more than one
+source names counts once, by its lowercase owner/repo name after the
+lookup. The report names its source as the first of the topic search, the
+catalog, and the code search that names it.
 The command leaves out each repository that an entry already names. It
 reads the other repositories in the same way as `pnpm add-plugin`, the
 newest pushed first. It writes the entries of at most 5 repositories that
@@ -593,12 +606,35 @@ fail:
 
 A catalog item whose `repo` is not an owner/repo name gets a warning, and
 the command skips it. The report names at most 10 such items and counts
-the rest. If a lookup request fails, the report gets one warning. The
-command then looks up no more repositories, and it reads none of the
-repositories that it did not look up. Without `GITHUB_TOKEN`, the first lookup request fails, so the
-command reads no repository that only the catalog names. A repository that GitHub does not have, or that has no last
+the rest. The catalog and the code search each have their own lookup. If a
+lookup request fails, the report gets one warning. The command then looks
+up no more repositories of that source. It reads none of the repositories
+that it did not look up. Without `GITHUB_TOKEN`, the first lookup request fails, so the
+command reads no repository that only the catalog or the code search names. A repository that GitHub does not have, or that has no last
 push, also gets a warning, and the command does not read it. A failed topic
 search still ends the run before any read.
+
+GitHub allows 10 code search requests a minute. So the command sends at
+most 10 of them in any 60 seconds, failed requests included, and waits
+before the next one. If a code search request fails, the report gets a
+warning that names the query. The command keeps the repositories of that
+query's earlier pages and runs the next query. A page with no list of items
+counts as a failed request. These cause a request to fail:
+
+- a failed connection or an HTTP error answer
+- a body that is not JSON
+- a request longer than 60 seconds
+
+The command sends no code search request from 8 minutes after its start.
+Each query that it did not finish then gets a warning, and the command goes
+on with the repositories that it found. An item with no owner/repo name
+gets a warning, and the command skips it. The report names at most 10 such
+items for each query and counts the rest. A query with more than 1,000
+results also gets a warning, since GitHub returns only the first 1,000. If
+every query ends with no item and no failure, the report gets one warning.
+A token that cannot see GitHub's code index can get such empty pages. The
+time of the code search counts toward the run's time limit of 18 minutes,
+which the paragraphs below describe.
 
 The command also refuses a plugin that the bot cannot propose, with the
 failure name `not-proposable`. Some examples:
@@ -618,8 +654,8 @@ any redirects. Nor does it record a 403 answer to a download that requested
 a GitHub release download URL, as "Building the data" defines it. Such a
 repository is read again on the next run. If a run does not find a refused
 repository, the file still keeps its record until 30 days after the
-refusal. So a failed catalog read loses no record that makes a run skip a
-repository. To use another file, add `--state <file>`.
+refusal. So a failed catalog read or code search loses no record that makes
+a run skip a repository. To use another file, add `--state <file>`.
 
 The command gives each repository read 3 minutes, as `pnpm build` does. If a
 read takes longer, the command stops it and refuses the repository with
@@ -627,7 +663,8 @@ read takes longer, the command stops it and refuses the repository with
 run reads the repository again. The check of the branch name with git stops
 after 30 seconds. If it takes longer, the command refuses the repository with
 `unexpected-error`, which the state file also does not record. The command
-starts no repository read after 18 minutes from its start. The `unread` field
+starts no lookup request and no repository read after 18 minutes from its
+start. The `unread` field
 of the report counts each repository that it did not reach. The report also
 gets a warning that names the time limit. The command still writes its state
 file and, with `--handoff`, its handoff. These limits leave time for the
@@ -638,8 +675,10 @@ none on the whole run.
 ### Pull requests from the bot
 
 The `Discover plugins` workflow runs once a day in two jobs. You can also
-start it by hand on the default branch and set its `limit` input. A run
-started on another branch does nothing.
+start it by hand on the default branch and set its `limit` and `budget`
+inputs. They reach `pnpm discover` as `--limit` and `--budget`, and
+`limit` also reaches `pnpm propose`. A scheduled run sets neither, so the
+defaults of 5 and 100 apply. A run started on another branch does nothing.
 
 The first job can only read the index repository, and its checkout keeps no
 token. It runs `pnpm discover --handoff handoff`. With `--handoff <dir>`, the
@@ -681,7 +720,8 @@ is longer than 10,000 characters, the body quotes only its first 10,000
 characters and says that the output is cut. The body also gives the
 repository URL, the plugin version, and the declared range of Zotero
 versions. Its first sentence says how the bot found the repository: by its
-GitHub topic, in the zotero-chinese plugin catalog, or from an issue.
+GitHub topic, in the zotero-chinese plugin catalog, by GitHub code search
+for Zotero plugin files, or from an issue.
 
 The body also has a Hold line. The read job reads the hold reasons of each
 entry, and the line names them, or says `Hold: none`. An entry has these
@@ -700,8 +740,8 @@ reasons, in this order:
   than the default one, is not `github.com` or `raw.githubusercontent.com`.
 - `issue-no-topic`: an issue proposed the repository, and it has neither the
   topic `zotero-plugin` nor `zotero-addon`. A repository that
-  `pnpm discover` finds in the catalog never gets this hold, since no issue
-  proposed it.
+  `pnpm discover` finds in the catalog or by code search never gets this
+  hold, since no issue proposed it.
 
 A held pull request also gets the label `hold`, and the maintainer merges or
 closes it. If the label request fails, `pnpm propose` names the pull request
@@ -791,7 +831,10 @@ rounds of these two steps:
 
 GitHub does not promise the order of runs that wait in the group, so start
 the merge only after the discover run ends. Repeat both steps while a
-discover run reports unread repos. Held pull requests stay open for you.
+discover run reports unread repos. Held pull requests stay open for you. A
+run reads at most `budget` repositories, 100 by default, within its time
+limit of 18 minutes. The code search takes part of that time, so a larger
+`budget` can end at the time limit instead.
 
 Before it merges, the command reads the two files at the head commit of the
 pull request. It copies the checkout's `plugins/` folder, adds the new entry,
