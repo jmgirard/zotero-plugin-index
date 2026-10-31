@@ -1,0 +1,8 @@
+{
+  "id": "zotero-figure-overview@xuan.dev",
+  "name": "Zotero Figure Overview",
+  "description": "Browse Zotero image annotations in an Eagle-style overview window.",
+  "homepage": "https://github.com/heimi98/zotero-figure-overview",
+  "repoUrl": "https://github.com/heimi98/zotero-figure-overview",
+  "updateUrl": "https://github.com/heimi98/zotero-figure-overview/releases/download/release/update.json"
+}
