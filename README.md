@@ -582,8 +582,9 @@ plugins, and takes the repository of each file found:
 Some repositories in the catalog or the code search results are not in the
 topic search. For each of them, the command asks the GitHub GraphQL API for
 the current name and the time of the last push. One request asks about at
-most 100 repositories. This lookup and the code search need the
-`GITHUB_TOKEN` environment variable. A repository that more than one
+most 100 repositories. This lookup needs the `GITHUB_TOKEN` environment
+variable. If `CODE_SEARCH_TOKEN` is set, the code search sends it.
+Otherwise it sends `GITHUB_TOKEN`. A repository that more than one
 source names counts once, by its lowercase owner/repo name after the
 lookup. The report names its source as the first of the topic search, the
 catalog, and the code search that names it.
@@ -685,6 +686,14 @@ token. It runs `pnpm discover --handoff handoff`. With `--handoff <dir>`, the
 command writes each new entry under `<dir>/entries/` and a plan file,
 `<dir>/plan.json`, that lists them. The command makes no change on GitHub.
 The job keeps the directory as a workflow artifact.
+
+The `pnpm discover` step also gets the repository secret
+`CODE_SEARCH_TOKEN`, and no other step gets it. Only the code search
+requests use it. On 2026-10-31, GitHub answered HTTP 429 to every code
+search request that the workflow's built-in token sent (discover run
+41224882790). Make the secret a fine-grained personal token with
+read-only access to public repositories. If the secret is not set, the
+code search uses the built-in token, and each query gets a warning.
 
 The second job can push and open pull requests, and it reads no plugin
 repository. It runs `pnpm propose handoff`. For each entry in the handoff,

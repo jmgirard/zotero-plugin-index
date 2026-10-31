@@ -5,8 +5,11 @@
 - `pnpm discover` also runs five GitHub code searches for the
   `manifest.json` and `package.json` files of Zotero plugins, as the README
   lists, so a plugin that no topic and no catalog names can reach the index.
-  The code search needs `GITHUB_TOKEN`. It sends at most 10 requests in any
-  60 seconds. It sends none from 8 minutes after the run starts. Its time
+  If `CODE_SEARCH_TOKEN` is set, the code search sends it, and otherwise
+  `GITHUB_TOKEN`. `Discover plugins` passes it from a repository secret of
+  that name, since the built-in token gets HTTP 429 from code search. The
+  code search sends at most 10 requests in any 60 seconds. It sends none
+  from 8 minutes after the run starts. Its time
   counts toward the run's 18 minutes. A failed request adds a warning that
   names the query, and the run keeps that query's earlier pages and reads
   the other repositories. A repository that the topic search or the catalog

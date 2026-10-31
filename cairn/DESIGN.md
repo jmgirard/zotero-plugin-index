@@ -212,7 +212,10 @@ shows each one separately. A combined verdict is out of scope.
    or a failed lookup of a repo's current name and last push warns, and the
    run reads the other repos; a failed code search request keeps the
    repos of its query's earlier pages. A dispatched run can set `limit` and
-   `budget` (M071). The bot
+   `budget` (M071). The code search requests carry the `CODE_SEARCH_TOKEN`
+   secret, a read-only personal token that only the `pnpm discover` step
+   gets, since the Actions token got HTTP 429 on each of them (2026-10-31
+   hotfix). The bot
    opens a pull request for each
    new candidate that passes the inclusion bar, at most 5 a run, with the
    result of `pnpm check` on the entry in its body. A bot pull request closed
