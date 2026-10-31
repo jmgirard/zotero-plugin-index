@@ -2,7 +2,7 @@
      section ownership". A phase skill never rewrites another phase's section. -->
 # M069: Check the data artifact in the site job
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -55,7 +55,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - [x] T2: Write `test/data-digest.test.ts` for AC1 and AC2 first. Then write `src/build/digest.ts` (the tree walk and the digest), `src/build/digest-cli.ts`, and the `data-digest` script in `package.json`.
 - [x] T3: In `build.yml`, add the `data-sha256` output and the digest step to the build job. Add the check step to the site job. Write comments for both. Extend `test/workflows.test.ts`.
 - [x] T4: Write the README command section, the README section "The daily build", the `build.yml` paragraph of DESIGN, and the CHANGELOG entry.
-- [ ] T5: Run `pnpm test` and `pnpm check`. Push the branch and run `gh workflow run build.yml --ref <branch>`. Record the run id and the result of the data check step of the site job.
+- [x] T5: Run `pnpm test` and `pnpm check`. Push the branch and run `gh workflow run build.yml --ref <branch>`. Record the run id and the result of the data check step of the site job.
 
 ## Work log
 
@@ -79,6 +79,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - 2026-10-31: T4: README "The daily build" (items 1 and 3, the deploy-nothing paragraph, and a `pnpm data-digest` section after it), DESIGN's `build.yml` paragraph, and one CHANGELOG entry; the replacement sentence states T1's read; no added line passes 80 columns.
 - 2026-10-31: T5: `pnpm test` 1661 passed, 6 skipped; `pnpm check` 272 entries, 0 problems. Branch pushed; `Build data` run 41208668356 started on it.
 - 2026-10-31: claim audit: 46 claims read, 2 corrected — README.md (the command prints one value only without `--expect`), src/build/digest.ts (JSON framing keeps a path from running into the next field, not "no two trees"; a non-UTF-8 name decodes with replacement characters).
+- 2026-10-31: T5: run 41208668356 on the branch succeeded; the site job's step 7 (`pnpm --silent data-digest --dir dist --expect "$DATA_SHA256"`) printed `data digest matches: d3f6a0fd…57cf`; deploy skipped, as on any branch. Status review.
 
 ## Decisions
 
