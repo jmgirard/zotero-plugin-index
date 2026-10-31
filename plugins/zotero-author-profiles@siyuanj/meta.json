@@ -1,0 +1,8 @@
+{
+  "id": "zotero-author-profiles@siyuanj",
+  "name": "Zotero Author Profiles",
+  "description": "Show and generate Chinese corresponding-author profiles in the Zotero item pane using OpenAlex, Semantic Scholar, and the configured AIdea/GMN API.",
+  "homepage": "https://github.com/siyuanj/zotero-author-profiles",
+  "repoUrl": "https://github.com/siyuanj/zotero-author-profiles",
+  "updateUrl": "https://raw.githubusercontent.com/siyuanj/zotero-author-profiles/main/update.json"
+}
