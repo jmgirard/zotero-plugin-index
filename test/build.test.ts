@@ -8,7 +8,7 @@ import dns from "node:dns";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import pluginsSchema from "../schemas/plugins.v1.schema.json" with { type: "json" };
 import { buildData, checkOutput, INDEX_REPO, writeData } from "../src/build/build.ts";
-import { ZOTERO_RELEASE_URL } from "../src/build/zotero-release.ts";
+import { changelogUrl, ZOTERO_RELEASE_URL } from "../src/build/zotero-release.ts";
 import { fixtureFetch, loadFixture, type Recorded, type Responses } from "./support/fixture-fetch.ts";
 import { DNS_FAIL_HOST, mixedFailures } from "./support/mixed-failures.ts";
 import { pluginRepo } from "./support/plugin-repo.ts";
@@ -39,6 +39,24 @@ function tempDir(): string {
   return dir;
 }
 
+// The first two release headings of each zotero.org changelog page saved on 2026-10-30
+// (cairn/references/zotero-changelogs.md). The 8.0 and 9.0 pages put a paragraph that also
+// starts with "Changes in" before them, here cut after its second sentence.
+const heading = (version: string, date: string) => {
+  const id = `changes_in_${version.replaceAll(".", "")}_${date.toLowerCase().replace(/,? /g, "_")}`;
+  return `<h2 id="${id}">Changes in ${version} (${date})<a class="headerlink" href="#${id}" title="Permanent link">#</a></h2>`;
+};
+const intro = (major: string) =>
+  `<p>Changes in released versions of Zotero ${major}.0 are documented on this page. To follow development, see the <a href="https://github.com/zotero/zotero/commits/">commit log on GitHub</a>.</p>`;
+const CHANGELOG_PAGES: Record<string, string> = {
+  "7": [heading("7.0.32", "January 14, 2026"), heading("7.0.31", "January 12, 2026")].join("\n"),
+  "8": [intro("8"), heading("8.0.5", "March 26, 2026"), heading("8.0.4", "March 6, 2026")].join("\n"),
+  "9": [intro("9"), heading("9.0.6", "July 7, 2026"), heading("9.0.5", "June 10, 2026")].join("\n"),
+};
+const NEWER_9_PAGE = [intro("9"), heading("9.0.7", "November 2, 2026"), heading("9.0.6", "July 7, 2026")].join("\n");
+const NEW_MAJOR_WARNING =
+  "Zotero 11.0.0 is the current release, but the last Zotero version in ZOTERO_MAJORS in src/site/version.ts is 10; add 11 to ZOTERO_MAJORS and the last release of 10 to LAST_RELEASES";
+
 // The recorded responses for every repo in TREE.
 function responses(): Responses {
   return {
@@ -46,6 +64,7 @@ function responses(): Responses {
     ...loadFixture(resolve(ROOT, "test/fixtures/upstream/better-notes.json")).responses,
     [LABEL]: { json: { name: "report" } },
     [ZOTERO_RELEASE_URL]: { json: { mac: "10.0.7", "linux-x86_64": "10.0.7" } },
+    ...Object.fromEntries(Object.entries(CHANGELOG_PAGES).map(([major, text]) => [changelogUrl(major), { text }])),
   };
 }
 
@@ -333,6 +352,43 @@ describe("pnpm build", () => {
     expect(readOutput(out)).not.toHaveProperty("zoteroRelease");
     // The fork entry fails, but not at the build level, so the release read adds none.
     expect(summary(result.stdout).at(-1)).toBe("build-level failures: 0 of 3 records");
+  });
+
+  describe("and the Zotero release lists", () => {
+    const warnings = (stdout: string) => stdout.split("\n").filter((line) => line.startsWith("::warning::"));
+    const data = (out: string) => {
+      const { generatedAt: _at, zoteroRelease: _release, ...rest } = readOutput(out) as Output & Record<string, unknown>;
+      return rest;
+    };
+    let quiet: ReturnType<typeof loggedBuild>;
+    beforeAll(() => {
+      quiet = loggedBuild(responses());
+    }, 60_000);
+
+    test("reads each changelog page and prints no warning when the lists hold the releases on the pages", () => {
+      expect(quiet.result.status).toBe(0);
+      expect(warnings(quiet.result.stdout)).toEqual([]);
+      expect(quiet.urls.filter((url) => url.startsWith("https://www.zotero.org/support/"))).toEqual(
+        ["7", "8", "9"].map(changelogUrl),
+      );
+    });
+
+    test("prints one warning each for a new major, a newer release on a changelog page, and a failed page read, and exits and writes as without them", () => {
+      const { result, out } = loggedBuild({
+        ...responses(),
+        [ZOTERO_RELEASE_URL]: { json: { "linux-x86_64": "11.0.0" } },
+        [changelogUrl("9")]: { text: NEWER_9_PAGE },
+        [changelogUrl("8")]: { status: 500, text: "Internal Server Error" },
+      });
+      expect(result.status).toBe(quiet.result.status);
+      expect(warnings(result.stdout)).toEqual([
+        `::warning::${NEW_MAJOR_WARNING}`,
+        `::warning::cannot read the Zotero 8 changelog: GET ${changelogUrl("8")} returned HTTP 500`,
+        "::warning::the Zotero 9 changelog names 9.0.7, newer than 9.0.6 in LAST_RELEASES in src/site/version.ts",
+      ]);
+      expect(readOutput(out)).toHaveProperty("zoteroRelease", "11.0.0");
+      expect(data(out)).toEqual(data(quiet.out));
+    });
   });
 
   test("names an error the reader does not expect unexpected-error, goes on, and exits 1 when 2 of 3 records fail for build-level reasons and all 3 fail", () => {
@@ -970,9 +1026,10 @@ describe("buildData", () => {
         if (!result.ok) throw new Error(result.problems.join("\n"));
         expect(JSON.parse(result.text).zoteroRelease).toBe("10.0.7");
         expect(result.releaseProblem).toBeUndefined();
-        const release = requests.filter((r) => r.url === ZOTERO_RELEASE_URL);
-        expect(release).toHaveLength(1);
-        expect(release[0].headers.has("authorization")).toBe(false);
+        // The release read and the three changelog reads.
+        const zotero = requests.filter((r) => r.url.startsWith("https://www.zotero.org/"));
+        expect(zotero).toHaveLength(4);
+        for (const request of zotero) expect(request.headers.has("authorization"), request.url).toBe(false);
         // The token was set, so the GitHub reads carry it.
         expect(requests.find((r) => r.url === LABEL)?.headers.get("authorization")).toBe("Bearer planted-token");
       } finally {
@@ -995,6 +1052,67 @@ describe("buildData", () => {
       if (!result.ok) throw new Error(result.problems.join("\n"));
       expect(JSON.parse(result.text)).not.toHaveProperty("zoteroRelease");
       expect(result.releaseProblem).toBe(`GET ${ZOTERO_RELEASE_URL} ${cause}`);
+    });
+  });
+
+  describe("and the Zotero changelog pages", () => {
+    const now = new Date("2026-10-31T06:17:00Z");
+    const build = async (recorded: Responses) => {
+      const result = await buildData(TREE, fixtureFetch(recorded).fetch, now, undefined, { releaseMs: 1000 });
+      if (!result.ok) throw new Error(result.problems.join("\n"));
+      return result;
+    };
+    let quiet: Awaited<ReturnType<typeof build>>;
+    beforeAll(async () => {
+      quiet = await build(responses());
+    });
+
+    // A warning leaves the build-level list, which the exit code reads, and the data as they are.
+    const expectSameBuild = (result: Awaited<ReturnType<typeof build>>) => {
+      expect(result.buildLevel).toEqual(quiet.buildLevel);
+      expect(result.text).toBe(quiet.text);
+    };
+
+    test.each([
+      ["a 500 answer", { status: 500, text: "Internal Server Error" }, "returned HTTP 500"],
+      ["a thrown request", { error: "getaddrinfo ENOTFOUND www.zotero.org" }, "failed: getaddrinfo ENOTFOUND www.zotero.org"],
+      ["a body read that fails", { bodyError: "read ECONNRESET" }, "failed: read ECONNRESET"],
+      ["an answer that passes the limit", { stall: "headers" }, "failed: the read passed its time limit of 1000 ms"],
+      ["a body that passes the limit", { stall: "body" }, "failed: the read passed its time limit of 1000 ms"],
+      // The first "Changes in" text is a paragraph, and the only heading is for another major.
+      ["a page with no 9. heading", { text: [intro("9"), heading("8.0.5", "March 26, 2026")].join("\n") }, 'returned a page with no "Changes in 9." heading'],
+    ])("names the major and the cause for %s, and writes the same data", async (_, answer, cause) => {
+      const result = await build({ ...responses(), [changelogUrl("9")]: answer as Recorded });
+      expect(result.releaseWarnings).toEqual([`cannot read the Zotero 9 changelog: GET ${changelogUrl("9")} ${cause}`]);
+      expectSameBuild(result);
+    });
+
+    test("names the major, the page's release, and the list's release when the page names a newer one, and writes the same data", async () => {
+      const result = await build({ ...responses(), [changelogUrl("9")]: { text: NEWER_9_PAGE } });
+      expect(result.releaseWarnings).toEqual([
+        "the Zotero 9 changelog names 9.0.7, newer than 9.0.6 in LAST_RELEASES in src/site/version.ts",
+      ]);
+      expectSameBuild(result);
+    });
+
+    test("passes over a beta heading and takes the release heading after it", async () => {
+      const page = [intro("9"), heading("9.0.7-beta", "November 2, 2026"), heading("9.0.6", "July 7, 2026")].join("\n");
+      const result = await build({ ...responses(), [changelogUrl("9")]: { text: page } });
+      expect(result.releaseWarnings).toEqual([]);
+    });
+
+    test("names the current release, the last major, and both lists when the release is from a newer major, and writes the release only", async () => {
+      const result = await build({ ...responses(), [ZOTERO_RELEASE_URL]: { json: { "linux-x86_64": "11.0.0" } } });
+      expect(result.releaseWarnings).toEqual([NEW_MAJOR_WARNING]);
+      expect(result.buildLevel).toEqual(quiet.buildLevel);
+      const data = JSON.parse(result.text);
+      expect(data.zoteroRelease).toBe("11.0.0");
+      expect({ ...data, zoteroRelease: "10.0.7" }).toEqual(JSON.parse(quiet.text));
+    });
+
+    test("gives no warning when the release is from an older major than the last, as when the list ends ahead", async () => {
+      const result = await build({ ...responses(), [ZOTERO_RELEASE_URL]: { json: { "linux-x86_64": "9.0.6" } } });
+      expect(result.releaseWarnings).toEqual([]);
     });
   });
 });

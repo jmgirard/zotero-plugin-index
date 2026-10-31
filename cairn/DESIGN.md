@@ -273,7 +273,9 @@ shows each one separately. A combined verdict is out of scope.
 
 Beside these, the build reads one fact that is not about a plugin: the
 current Zotero release, from zotero.org, which the declared marks use as
-the newest release of its major (M062, D-036).
+the newest release of its major (M062, D-036). It also reads the zotero.org
+changelog page of each earlier major, which never enters the data and only
+warns when the hand-kept release lists fall behind (M068, D-040).
 
 Inclusion bar: a public repository, a Zotero 7+ manifest, and at least one
 release with a readable `update.json`. The bot checks all three, and it
@@ -378,13 +380,19 @@ exception is a report that is abuse.
   zotero.org with no token and a 30 s limit, and the build writes it as the
   top-level `zoteroRelease`; a failed read leaves the field out, prints one
   `::warning::` line, and does not change the exit code (M062, D-036). It
-  writes no record, so it is not build-level. The command exits
-  once stdout and stderr have flushed, so a host lookup that a limit cut
-  cannot hold it open. Added M003;
+  writes no record, so it is not build-level. In the same limit and at the
+  same time, `readChangelogRelease` reads the changelog page of each
+  `LAST_RELEASES` major, and `releaseListWarnings` gives one warning, which
+  the CLI prints as a `::warning::` line, for a current release from a
+  newer major than the last of `ZOTERO_MAJORS`, for each page naming a
+  newer release than the list, and for each failed page read; they change
+  neither the exit code nor the data (M068, D-040). The
+  command exits once stdout and stderr have flushed, so a host lookup that
+  a limit cut cannot hold it open. Added M003;
   schemas and exit rule M006; build-level rule and summary M017; every-record
   rule M018; reports M021; time limits M029; label read and `closed_by`
   check M041; report read limit and exit M050; read order by day M051;
-  Zotero release read M062.
+  Zotero release read M062; release list warnings M068.
 - Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
   home page, the About page (M054), and one page per record into `dist/`,
   or `<dir>`, from the data file there. `src/site/version.ts` holds the version and range functions

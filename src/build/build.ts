@@ -8,7 +8,8 @@ import { countReports, type ReportCount } from "../reports/count.ts";
 import type { StartResultName } from "../start-test/start-test.ts";
 import { boundFetch, type Fetch, githubClient, ReadFailure, readUpstream, type UpstreamFacts, type XpiRead } from "../upstream/reader.ts";
 import { duration, READ_LIMIT_MS, withinLimit } from "../upstream/time-limit.ts";
-import { readZoteroRelease, ZOTERO_RELEASE_LIMIT_MS } from "./zotero-release.ts";
+import { LAST_RELEASES } from "../site/version.ts";
+import { readChangelogRelease, readZoteroRelease, releaseListWarnings, ZOTERO_RELEASE_LIMIT_MS } from "./zotero-release.ts";
 
 export interface Override {
   field: string;
@@ -77,9 +78,19 @@ export interface StartPlan {
 // `buildLevel` lists the ids of the records whose failure usually points at the build, such as a
 // rate limit or a network error, in record order. It and the plan stay out of the data. The
 // plan has one item for each record with upstream, in record order. `releaseProblem` names why
-// the read of the current Zotero release failed, when it did.
+// the read of the current Zotero release failed, when it did. `releaseWarnings` says where the
+// Zotero release lists in src/site/version.ts fall behind and which changelog reads failed, and
+// stays out of the data.
 export type BuildResult =
-  | { ok: true; data: PluginsFile; text: string; buildLevel: string[]; plan: StartPlan; releaseProblem?: string }
+  | {
+      ok: true;
+      data: PluginsFile;
+      text: string;
+      buildLevel: string[];
+      plan: StartPlan;
+      releaseProblem?: string;
+      releaseWarnings: string[];
+    }
   | { ok: false; problems: string[] };
 
 const ajv = new Ajv({ allErrors: true });
@@ -102,7 +113,7 @@ export const REPORTS_LIMIT_MS = 3 * 60 * 1000;
 
 // `startedAt` is a performance.now() time. Its default, 0, is when the process started.
 // `reportsMs` bounds the label read and every page of the report issues together, and
-// `releaseMs` the read of the current Zotero release.
+// `releaseMs` the read of the current Zotero release and each changelog read.
 export interface TimeLimits {
   readMs?: number;
   reportsMs?: number;
@@ -120,8 +131,8 @@ export interface TimeLimits {
 // `readMs` fails as request-failed. Once `buildMs` has passed since `startedAt`, the build
 // reads no more plugins, and each entry left gets the failure not-read. Both count as
 // build-level. The UTC day of `now` sets the read order. Last, it reads the current Zotero
-// release from zotero.org. A failed read of it leaves zoteroRelease out and does not stop the
-// build.
+// release and the changelog page of each LAST_RELEASES major from zotero.org. A failed read of
+// the release leaves zoteroRelease out, and no read of these stops the build.
 export async function buildData(
   root: string,
   fetch: Fetch,
@@ -216,7 +227,13 @@ export async function buildData(
   const plugins = records.map(({ id, repoUrl, upstream, failure, overrides }) =>
     upstream ? { id, repoUrl, upstream, reports: reports.get(id) ?? [], overrides } : { id, repoUrl, failure, overrides },
   );
-  const release = await readZoteroRelease(fetch, releaseMs);
+  // The changelog reads run at the same time as the release read, so all of them end within
+  // `releaseMs`.
+  const majors = Object.keys(LAST_RELEASES);
+  const [release, ...changelogs] = await Promise.all([
+    readZoteroRelease(fetch, releaseMs),
+    ...majors.map((major) => readChangelogRelease(fetch, major, releaseMs)),
+  ]);
   const zoteroRelease = release.ok ? release.version : undefined;
   const data: PluginsFile = { schemaVersion: 1, generatedAt: now.toISOString(), zoteroRelease, plugins };
   const text = `${JSON.stringify(data, null, 2)}\n`;
@@ -231,7 +248,8 @@ export async function buildData(
       return [{ entry, id, version, strictMinVersion, strictMaxVersion, xpiUrl: xpi.url, sha256: xpi.sha256 }];
     }),
   };
-  return { ok: true, data, text, buildLevel, plan, ...(release.ok ? {} : { releaseProblem: release.message }) };
+  const releaseWarnings = releaseListWarnings(zoteroRelease, majors.map((major, i) => [major, changelogs[i]]));
+  return { ok: true, data, text, buildLevel, plan, releaseWarnings, ...(release.ok ? {} : { releaseProblem: release.message }) };
 }
 
 // The problems schemas/plugins.v1.schema.json finds in value, or none.

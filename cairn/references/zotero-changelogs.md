@@ -32,6 +32,8 @@ If a major gets another release, its changelog page and its value here change.
 - `src/build/zotero-release.ts` `ZOTERO_RELEASE_URL` and `readZoteroRelease`: the address and its `linux-x86_64` key.
 - `test/build.test.ts` `responses()`: the fixture answer for the release address.
 - `test/site.test.ts` "the newest Zotero release": the About page list of 7.0.32, 8.0.5, and 9.0.6.
+- `src/build/zotero-release.ts` `changelogUrl` and `readChangelogRelease`: the page address and its "Changes in" headings. The daily build reads them to find a release that `LAST_RELEASES` lacks, and warns (M068).
+- `test/build.test.ts` `CHANGELOG_PAGES`: the first two release headings of each page, and the first paragraph of the 8.0 and 9.0 pages cut after its second sentence. `NEWER_9_PAGE` and the expected warnings also name 9.0.6, so a change to `LAST_RELEASES` changes them too.
 
 ## Open questions
 

@@ -47,6 +47,9 @@ async function main(): Promise<number> {
   // the writes, so a failed write still leaves it in the log. GitHub Actions shows it as a
   // warning on the run.
   if (built.releaseProblem) console.log(`::warning::cannot read the Zotero release: ${oneLine(built.releaseProblem)}`);
+  // A list in src/site/version.ts that a Zotero release left behind keeps its marks as they
+  // were until someone edits it, so these lines do not change the exit code either.
+  for (const warning of built.releaseWarnings) console.log(`::warning::${oneLine(warning)}`);
   const written = await writeData(outDir, built.text);
   if (!written.ok) {
     console.error(`write-failed: ${written.message}`);

@@ -3,6 +3,7 @@ import {
   appliedValue,
   compareVersions,
   declaredRange,
+  LAST_RELEASES,
   majorSupport,
   type RangeRecord,
   ZOTERO_MAJORS,
@@ -99,6 +100,11 @@ describe("declaredRange", () => {
 describe("majorSupport", () => {
   test("ZOTERO_MAJORS lists Zotero 7 to 10", () => {
     expect(ZOTERO_MAJORS).toEqual(["7", "8", "9", "10"]);
+  });
+
+  test("LAST_RELEASES has a release for each major of ZOTERO_MAJORS before the last, and for no other", () => {
+    // Object.keys lists integer keys in ascending order, as ZOTERO_MAJORS lists the majors.
+    expect(Object.keys(LAST_RELEASES)).toEqual(ZOTERO_MAJORS.slice(0, -1));
   });
 
   test.each([

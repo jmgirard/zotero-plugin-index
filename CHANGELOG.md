@@ -543,3 +543,10 @@
   index assigns them from words in a plugin's name and descriptions. It
   adds or removes some by hand, so a category can be wrong or missing. The
   data file does not carry them.
+- `pnpm build` also reads the zotero.org changelog page of each earlier
+  Zotero version that the site keeps a last release for. It prints a
+  `::warning::` line in three cases. The current release is from a newer
+  Zotero version than the site marks. A changelog page names a newer
+  release than the site keeps, one line for each such page. A changelog
+  read fails, one line for each such page. These lines change neither the
+  exit status nor the data file.
