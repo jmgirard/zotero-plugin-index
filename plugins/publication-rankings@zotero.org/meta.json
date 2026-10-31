@@ -1,0 +1,8 @@
+{
+  "id": "publication-rankings@zotero.org",
+  "name": "Publication Rankings",
+  "description": "Displays journal and conference rankings (SJR, CORE, and more) in a custom Ranking column",
+  "homepage": "https://github.com/ben-AI-cybersec/zotero-publication-rankings",
+  "repoUrl": "https://github.com/ben-AI-cybersec/zotero-publication-rankings",
+  "updateUrl": "https://raw.githubusercontent.com/ben-AI-cybersec/zotero-publication-rankings/main/updates.json"
+}
