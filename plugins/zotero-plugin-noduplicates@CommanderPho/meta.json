@@ -1,0 +1,8 @@
+{
+  "id": "zotero-plugin-noduplicates@CommanderPho",
+  "name": "Zotero NoDuplicates",
+  "description": "A Zotero plugin to detect and manage duplicate items",
+  "homepage": "https://github.com/CommanderPho/zotero-plugin-noduplicates#readme",
+  "repoUrl": "https://github.com/CommanderPho/zotero-plugin-noduplicates",
+  "updateUrl": "https://github.com/CommanderPho/zotero-plugin-noduplicates/releases/download/release/update.json"
+}
