@@ -1,0 +1,7 @@
+{
+  "id": "zotxt@e6h.org",
+  "name": "zotxt",
+  "description": "Plain text extensions for Zotero",
+  "repoUrl": "https://github.com/egh/zotxt",
+  "updateUrl": "https://raw.githubusercontent.com/egh/zotxt/master/update.json"
+}
