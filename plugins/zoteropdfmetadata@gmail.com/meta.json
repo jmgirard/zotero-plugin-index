@@ -1,0 +1,8 @@
+{
+  "id": "zoteropdfmetadata@gmail.com",
+  "name": "Zotero Addon",
+  "description": "Zotero Addon",
+  "homepage": "https://github.com/franzbischoff/zotero-pdf-metadata#readme",
+  "repoUrl": "https://github.com/franzbischoff/zotero-pdf-metadata",
+  "updateUrl": "https://raw.githubusercontent.com/franzbischoff/zotero-pdf-metadata/main/update.json"
+}
