@@ -1,0 +1,7 @@
+{
+  "id": "default-attachment@zotero-plugin",
+  "name": "Default Attachment",
+  "description": "Set the default attachment for Zotero items with multiple files",
+  "repoUrl": "https://github.com/PikaPei/zotero-default-attachment",
+  "updateUrl": "https://github.com/PikaPei/zotero-default-attachment/releases/download/release/update.json"
+}
