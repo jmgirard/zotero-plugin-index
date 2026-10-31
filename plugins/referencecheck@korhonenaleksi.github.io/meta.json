@@ -1,0 +1,8 @@
+{
+  "id": "referencecheck@korhonenaleksi.github.io",
+  "name": "Zotero Reference Check",
+  "description": "Gets references ready for submission: cleans database leftovers out of them and fills missing details from Crossref, after confirmation",
+  "homepage": "https://github.com/KorhonenAleksi/zotero-reference-check#readme",
+  "repoUrl": "https://github.com/KorhonenAleksi/zotero-reference-check",
+  "updateUrl": "https://github.com/KorhonenAleksi/zotero-reference-check/releases/download/release/update.json"
+}
