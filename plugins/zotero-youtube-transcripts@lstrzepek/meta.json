@@ -1,0 +1,8 @@
+{
+  "id": "zotero-youtube-transcripts@lstrzepek",
+  "name": "YouTube Transcripts",
+  "description": "Fetch YouTube transcripts into Zotero as annotatable HTML attachments.",
+  "homepage": "https://github.com/janbaykara/zotero-youtube-transcripts#readme",
+  "repoUrl": "https://github.com/janbaykara/zotero-youtube-transcripts",
+  "updateUrl": "https://github.com/janbaykara/zotero-youtube-transcripts/releases/download/release/update.json"
+}
