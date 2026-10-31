@@ -1,0 +1,8 @@
+{
+  "id": "zotero-translator-next@echouniverse.io",
+  "name": "ZoteroTranslatorNext",
+  "description": "Zotero 文献翻译插件：格式优化 + 多渠道翻译 + 翻译历史 + AI 总结",
+  "homepage": "https://github.com/ECHOUniverse/zotero-translator-next#readme",
+  "repoUrl": "https://github.com/ECHOUniverse/zotero-translator-next",
+  "updateUrl": "https://github.com/ECHOUniverse/zotero-translator-next/releases/download/release/update.json"
+}
