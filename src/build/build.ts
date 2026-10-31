@@ -79,7 +79,8 @@ export interface StartPlan {
 // rate limit or a network error, in record order. It and the plan stay out of the data. The
 // plan has one item for each record with upstream, in record order. `releaseProblem` names why
 // the read of the current Zotero release failed, when it did. `releaseWarnings` says where the
-// Zotero release lists in src/site/version.ts fall behind, and stays out of the data.
+// Zotero release lists in src/site/version.ts fall behind and which changelog reads failed, and
+// stays out of the data.
 export type BuildResult =
   | {
       ok: true;
@@ -112,7 +113,7 @@ export const REPORTS_LIMIT_MS = 3 * 60 * 1000;
 
 // `startedAt` is a performance.now() time. Its default, 0, is when the process started.
 // `reportsMs` bounds the label read and every page of the report issues together, and
-// `releaseMs` the read of the current Zotero release.
+// `releaseMs` the read of the current Zotero release and each changelog read.
 export interface TimeLimits {
   readMs?: number;
   reportsMs?: number;

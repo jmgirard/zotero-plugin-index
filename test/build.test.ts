@@ -54,6 +54,8 @@ const CHANGELOG_PAGES: Record<string, string> = {
   "9": [intro("9"), heading("9.0.6", "July 7, 2026"), heading("9.0.5", "June 10, 2026")].join("\n"),
 };
 const NEWER_9_PAGE = [intro("9"), heading("9.0.7", "November 2, 2026"), heading("9.0.6", "July 7, 2026")].join("\n");
+const NEW_MAJOR_WARNING =
+  "Zotero 11.0.0 is the current release, but the last Zotero version in ZOTERO_MAJORS in src/site/version.ts is 10; add 11 to ZOTERO_MAJORS and the last release of 10 to LAST_RELEASES";
 
 // The recorded responses for every repo in TREE.
 function responses(): Responses {
@@ -380,7 +382,7 @@ describe("pnpm build", () => {
       });
       expect(result.status).toBe(quiet.result.status);
       expect(warnings(result.stdout)).toEqual([
-        "::warning::Zotero 11.0.0 is the current release, but the last Zotero version in ZOTERO_MAJORS in src/site/version.ts is 10",
+        `::warning::${NEW_MAJOR_WARNING}`,
         `::warning::cannot read the Zotero 8 changelog: GET ${changelogUrl("8")} returned HTTP 500`,
         "::warning::the Zotero 9 changelog names 9.0.7, newer than 9.0.6 in LAST_RELEASES in src/site/version.ts",
       ]);
@@ -1024,9 +1026,9 @@ describe("buildData", () => {
         if (!result.ok) throw new Error(result.problems.join("\n"));
         expect(JSON.parse(result.text).zoteroRelease).toBe("10.0.7");
         expect(result.releaseProblem).toBeUndefined();
-        expect(result.releaseWarnings).toEqual([]);
+        // The release read and the three changelog reads.
         const zotero = requests.filter((r) => r.url.startsWith("https://www.zotero.org/"));
-        expect(zotero.map((r) => r.url).sort()).toEqual([ZOTERO_RELEASE_URL, ...["7", "8", "9"].map(changelogUrl)].sort());
+        expect(zotero).toHaveLength(4);
         for (const request of zotero) expect(request.headers.has("authorization"), request.url).toBe(false);
         // The token was set, so the GitHub reads carry it.
         expect(requests.find((r) => r.url === LABEL)?.headers.get("authorization")).toBe("Bearer planted-token");
@@ -1065,9 +1067,11 @@ describe("buildData", () => {
       quiet = await build(responses());
     });
 
-    test("gives no warning when the newest release on each page is the one LAST_RELEASES holds", () => {
-      expect(quiet.releaseWarnings).toEqual([]);
-    });
+    // A warning leaves the build-level list, which the exit code reads, and the data as they are.
+    const expectSameBuild = (result: Awaited<ReturnType<typeof build>>) => {
+      expect(result.buildLevel).toEqual(quiet.buildLevel);
+      expect(result.text).toBe(quiet.text);
+    };
 
     test.each([
       ["a 500 answer", { status: 500, text: "Internal Server Error" }, "returned HTTP 500"],
@@ -1080,7 +1084,7 @@ describe("buildData", () => {
     ])("names the major and the cause for %s, and writes the same data", async (_, answer, cause) => {
       const result = await build({ ...responses(), [changelogUrl("9")]: answer as Recorded });
       expect(result.releaseWarnings).toEqual([`cannot read the Zotero 9 changelog: GET ${changelogUrl("9")} ${cause}`]);
-      expect(result.text).toBe(quiet.text);
+      expectSameBuild(result);
     });
 
     test("names the major, the page's release, and the list's release when the page names a newer one, and writes the same data", async () => {
@@ -1088,15 +1092,27 @@ describe("buildData", () => {
       expect(result.releaseWarnings).toEqual([
         "the Zotero 9 changelog names 9.0.7, newer than 9.0.6 in LAST_RELEASES in src/site/version.ts",
       ]);
-      expect(result.text).toBe(quiet.text);
+      expectSameBuild(result);
     });
 
-    test("names the current release and the last major when the release is from another major, and writes the release only", async () => {
+    test("passes over a beta heading and takes the release heading after it", async () => {
+      const page = [intro("9"), heading("9.0.7-beta", "November 2, 2026"), heading("9.0.6", "July 7, 2026")].join("\n");
+      const result = await build({ ...responses(), [changelogUrl("9")]: { text: page } });
+      expect(result.releaseWarnings).toEqual([]);
+    });
+
+    test("names the current release, the last major, and both lists when the release is from a newer major, and writes the release only", async () => {
       const result = await build({ ...responses(), [ZOTERO_RELEASE_URL]: { json: { "linux-x86_64": "11.0.0" } } });
-      expect(result.releaseWarnings).toEqual([
-        "Zotero 11.0.0 is the current release, but the last Zotero version in ZOTERO_MAJORS in src/site/version.ts is 10",
-      ]);
-      expect({ ...JSON.parse(result.text), zoteroRelease: "10.0.7" }).toEqual(JSON.parse(quiet.text));
+      expect(result.releaseWarnings).toEqual([NEW_MAJOR_WARNING]);
+      expect(result.buildLevel).toEqual(quiet.buildLevel);
+      const data = JSON.parse(result.text);
+      expect(data.zoteroRelease).toBe("11.0.0");
+      expect({ ...data, zoteroRelease: "10.0.7" }).toEqual(JSON.parse(quiet.text));
+    });
+
+    test("gives no warning when the release is from an older major than the last, as when the list ends ahead", async () => {
+      const result = await build({ ...responses(), [ZOTERO_RELEASE_URL]: { json: { "linux-x86_64": "9.0.6" } } });
+      expect(result.releaseWarnings).toEqual([]);
     });
   });
 });

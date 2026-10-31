@@ -7,7 +7,7 @@ import { withinLimit } from "../upstream/time-limit.ts";
 // object keyed by platform, such as "linux-x86_64" (observed 2026-10-30).
 export const ZOTERO_RELEASE_URL = "https://www.zotero.org/download/client/version?channel=release";
 
-// The longest the read of the current Zotero release may take.
+// The longest the read of the current Zotero release, and each changelog read, may take.
 export const ZOTERO_RELEASE_LIMIT_MS = 30 * 1000;
 
 // A release version such as 10.0.7: numbers joined by dots, so a beta such as 10.0.7-beta
@@ -54,8 +54,10 @@ export function changelogUrl(major: string): string {
 
 // Reads the newest release on the changelog page of Zotero major N: the version in its first
 // heading that starts with "Changes in N.". The page's first paragraph also starts with
-// "Changes in", so the match takes only a heading. The request sends no token. A read that
-// fails gives the cause instead.
+// "Changes in", so the match takes only a heading. A version followed by a letter, a digit,
+// ".", or "-", such as 9.0.7-beta, does not match, so a beta heading is passed over, as the
+// release read passes over a beta. The request sends no token. A read that fails gives the
+// cause instead.
 export async function readChangelogRelease(fetch: Fetch, major: string, ms = ZOTERO_RELEASE_LIMIT_MS): Promise<ReleaseRead> {
   const url = changelogUrl(major);
   try {
@@ -63,7 +65,7 @@ export async function readChangelogRelease(fetch: Fetch, major: string, ms = ZOT
       const response = await fetch(url, { signal });
       if (!response.ok) return { ok: false, message: `GET ${url} returned HTTP ${response.status}` };
       const text = await response.text();
-      const heading = new RegExp(`<h[1-6][^>]*>\\s*Changes in (${major}\\.[0-9]+(?:\\.[0-9]+)*)`).exec(text);
+      const heading = new RegExp(`<h[1-6][^>]*>\\s*Changes in (${major}\\.[0-9]+(?:\\.[0-9]+)*)(?![0-9A-Za-z.-])`).exec(text);
       if (!heading) return { ok: false, message: `GET ${url} returned a page with no "Changes in ${major}." heading` };
       return { ok: true, version: heading[1] };
     });
@@ -73,14 +75,18 @@ export async function readChangelogRelease(fetch: Fetch, major: string, ms = ZOT
 }
 
 // The warnings for the hand-kept lists in src/site/version.ts, which a release of Zotero leaves
-// behind until someone edits them: one when the current release is not from the last major of
-// ZOTERO_MAJORS, then one for each changelog read, in the order of `changelogs`, that failed or
-// that names a newer release than LAST_RELEASES holds for its major.
+// behind until someone edits them: one when the current release is from a newer major than the
+// last of ZOTERO_MAJORS, then one for each changelog read, in the order of `changelogs`, that
+// failed or that names a newer release than LAST_RELEASES holds for its major. A ZOTERO_MAJORS
+// that ends ahead of the current release gets no warning.
 export function releaseListWarnings(zoteroRelease: string | undefined, changelogs: [string, ReleaseRead][]): string[] {
   const warnings: string[] = [];
-  const last = ZOTERO_MAJORS.at(-1);
-  if (zoteroRelease !== undefined && zoteroRelease.split(".")[0] !== last) {
-    warnings.push(`Zotero ${zoteroRelease} is the current release, but the last Zotero version in ZOTERO_MAJORS in src/site/version.ts is ${last}`);
+  const last = ZOTERO_MAJORS.at(-1)!;
+  const major = zoteroRelease?.split(".")[0];
+  if (zoteroRelease !== undefined && Number(major) > Number(last)) {
+    warnings.push(
+      `Zotero ${zoteroRelease} is the current release, but the last Zotero version in ZOTERO_MAJORS in src/site/version.ts is ${last}; add ${major} to ZOTERO_MAJORS and the last release of ${last} to LAST_RELEASES`,
+    );
   }
   for (const [major, read] of changelogs) {
     const listed = LAST_RELEASES[major];

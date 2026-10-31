@@ -1070,19 +1070,20 @@ leaves them behind until someone edits them. So the command also reads the
 changelog page of each version in `LAST_RELEASES`, such as
 <https://www.zotero.org/support/9.0_changelog>, with no token and the same
 limit. It takes the version in the page's first heading that starts with
-"Changes in 9." for Zotero 9. It prints one `::warning::` line for each of
-these cases:
+"Changes in 9." for Zotero 9. It passes over a beta heading such as
+"Changes in 9.0.7-beta". It prints a `::warning::` line in each of these
+cases, one line for each page in the last two:
 
-- the current release is not from the last version in `ZOTERO_MAJORS`,
-  such as `11.0.0` while the list ends at 10,
+- the current release is from a newer version than the last in
+  `ZOTERO_MAJORS`, such as `11.0.0` while the list ends at 10,
 - a changelog page names a newer release than `LAST_RELEASES` holds for
   its version, such as `9.0.7` while the list holds `9.0.6`,
 - a changelog read fails, as the release read above can fail, or the page
   has no such heading.
 
-These lines name what to edit, and the marks stay as they are until
-someone edits the lists. The lines change neither the exit status nor the
-data file.
+The lines for the first two cases name the lists to edit. The marks stay
+as they are until someone edits the lists. The lines change neither the
+exit status nor the data file.
 
 A build-level failure usually comes from the build, not from the plugin.
 A plugin's own download host that is down also gives one. These failures
@@ -1104,7 +1105,8 @@ are build-level:
 
 Every other failure of a record, a 404 included, belongs to the plugin.
 If the Zotero release read failed, the command first prints its line.
-Then it prints one line for each failed record. Next, it prints one line
+Next, it prints the `::warning::` lines for the release lists above. Then
+it prints one line for each failed record. Next, it prints one line
 for each failure name, with the number of records that carry it. Then it
 prints the number of records with a build-level failure. If a record
 carries a build-level failure, the command also prints a `::warning::`
