@@ -2,14 +2,14 @@
      section ownership". A phase skill never rewrites another phase's section. -->
 # M069: Check the data artifact in the site job
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the check decides whether the daily build deploys the data and the site
-- **Branch/PR:** —
+- **Branch/PR:** m069-data-artifact-check
 
 ## Goal
 
@@ -51,7 +51,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 
 ## Tasks
 
-- [ ] T1: Read the artifact client that `actions/upload-artifact@v7` runs: its `overwrite` path and the credential it uses. Find out whether a job with `permissions: {}` can delete and upload again an artifact that another job of the run uploaded. Find out whether the artifact keeps hidden files and empty directories. Also find out whether a start-test job can upload a `github-pages` artifact that stops or changes the deploy. Record each finding in a work-log line. The reason sentence of T4 states only what this read found. If the Pages artifact can be stopped or changed, add a candidate row. This task is a read, and no criterion checks it.
+- [x] T1: Read the artifact client that `actions/upload-artifact@v7` runs: its `overwrite` path and the credential it uses. Find out whether a job with `permissions: {}` can delete and upload again an artifact that another job of the run uploaded. Find out whether the artifact keeps hidden files and empty directories. Also find out whether a start-test job can upload a `github-pages` artifact that stops or changes the deploy. Record each finding in a work-log line. The reason sentence of T4 states only what this read found. If the Pages artifact can be stopped or changed, add a candidate row. This task is a read, and no criterion checks it.
 - [ ] T2: Write `test/data-digest.test.ts` for AC1 and AC2 first. Then write `src/build/digest.ts` (the tree walk and the digest), `src/build/digest-cli.ts`, and the `data-digest` script in `package.json`.
 - [ ] T3: In `build.yml`, add the `data-sha256` output and the digest step to the build job. Add the check step to the site job. Write comments for both. Extend `test/workflows.test.ts`.
 - [ ] T4: Write the README command section, the README section "The daily build", the `build.yml` paragraph of DESIGN, and the CHANGELOG entry.
@@ -70,6 +70,10 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - 2026-10-31: plan gate chose a content digest over downloading `plugins-data` by artifact id, as discover does, because the id rests on GitHub never changing an artifact's bytes under its id, which no local test can show; falsified by a replaced artifact whose tree passes the digest.
 - 2026-10-31: criteria audit (full): 6 findings, all taken. AC1 now fixes the entry order and framing and adds two probes (file versus directory, `a`/`bc` versus `ab`/`c`). AC2 is narrowed to symbolic links and named pipes, each probed. AC4 drops its recording clause. T1 leaves AC5's coverage. T1 also reads whether the artifact keeps hidden files and empty directories. The goal names the three facts the digest covers.
 - 2026-10-31: lessons used: 2026-10-25 (M001), 2026-10-27 (M027), 2026-10-28 (M036), 2026-10-26 (M018), 2026-10-31 (M066, used M068).
+- 2026-10-31: branch m069-data-artifact-check cut from main at d2f7ec1; status in-progress.
+- 2026-10-31: T1 read: upload-artifact v7.0.2 with `overwrite: true` calls `deleteArtifactIfExists`, and `@actions/artifact`'s `deleteArtifactInternal` finds the artifact by name across the whole run with `ACTIONS_RUNTIME_TOKEN` alone (no repo permission), so a job that holds that token can delete `plugins-data` and upload a new one under the same name.
+- 2026-10-31: T1 read: upload-artifact v7 leaves out hidden files (`include-hidden-files` defaults to false) and its zip spec keeps directory entries; `pnpm build` writes no hidden file and no empty directory into `dist/`, so the honest tree uploads whole.
+- 2026-10-31: T1 read: upload-pages-artifact v5 tars with `--dereference` and uploads `github-pages` without `overwrite`, so a `github-pages` artifact that a start-test job uploads first fails the site job's upload and stops the deploy, but cannot become the deployed site; filed parked row "Keep plugin code from stopping deploys".
 
 ## Decisions
 
