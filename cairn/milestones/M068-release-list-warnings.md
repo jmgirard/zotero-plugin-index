@@ -125,6 +125,7 @@ stays a hand edit, which the warning names.
 - 2026-10-31: T4 done: Build data run 41205738969 on the branch at 5e67246; its build job passed and printed no `::warning::` line (272 records, 0 build-level), so the live 7.0, 8.0, and 9.0 changelog reads did not fail and named no release newer than the lists; the start-test jobs were still running and are not changed by this branch.
 - 2026-10-31: claim audit: not owed — internal tier
 - 2026-10-31: implement done; status review.
+- 2026-10-31: step-7 approval: m068-release-list-warnings approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote
