@@ -608,3 +608,20 @@ the site job's faults is narrowed to the faults D-025 lists. The cost is
 that one plugin can stop each daily deploy until a maintainer removes it.
 The parked candidate row "Keep plugin code from stopping deploys" holds
 the follow-up.
+
+### D-042: Discovery also reads the zotero-chinese catalog and GitHub code search, and their topic-less finds get no hold, annotating D-033
+
+2026-10-31, M070 and M071 plan. Topic search finds only repos whose authors
+tag them, so plugins with no topic never reached the index. Discovery also
+reads the repos that the zotero-chinese plugin catalog lists (M070) and
+the repos that five GitHub code searches for Zotero plugin files return
+(M071). The catalog is curated by hand, and code search finds repos that
+no one listed, but GitHub's code index holds only part of all repos, so
+discovery reads both. D-033 holds a repo that an issue proposes with
+neither topic. A catalog or code-search find with neither topic gets no
+such hold: the index states facts and does not judge quality, and anyone
+can add a topic to a repo today. The inclusion bar and D-033's other holds
+apply to these finds as to topic finds. The user chose no hold over a hold
+for each source. This choice is wrong if bot pull requests from these
+sources add repos that are not Zotero plugins, or that a maintainer would
+close.
