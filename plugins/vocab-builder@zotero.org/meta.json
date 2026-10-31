@@ -1,0 +1,8 @@
+{
+  "id": "vocab-builder@zotero.org",
+  "name": "Zotero 生词笔记",
+  "description": "Collect unfamiliar words while reading in Zotero and store them in a dedicated vocabulary note with translations and source links.",
+  "homepage": "https://github.com/Zzq-02/zotero-vocab-builder",
+  "repoUrl": "https://github.com/Zzq-02/zotero-vocab-builder",
+  "updateUrl": "https://github.com/Zzq-02/zotero-vocab-builder/releases/download/release/update.json"
+}
