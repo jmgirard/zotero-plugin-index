@@ -1,0 +1,8 @@
+{
+  "id": "zoteropronounce@codex.dev",
+  "name": "Zotero Pronounce",
+  "description": "Pronounce selected text in the Zotero PDF reader with a local OpenAI-compatible TTS endpoint.",
+  "homepage": "https://github.com/techyangj/Zotero-voice",
+  "repoUrl": "https://github.com/techyangj/Zotero-voice",
+  "updateUrl": "https://raw.githubusercontent.com/techyangj/Zotero-voice/main/updates.json"
+}
