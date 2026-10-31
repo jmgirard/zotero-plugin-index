@@ -591,3 +591,20 @@ dependency on the shape of three HTML pages. A failed changelog read only
 warns, so D-036's rule that these reads never withhold a deploy holds.
 This choice is wrong if a warning sits unread while a stale list keeps
 the marks wrong for a week or more.
+
+### D-041: Plugin code can withhold a deploy by changing the build's artifacts, annotating D-023, D-024, and D-025
+
+2026-10-31, M069 review. Plugin code in a start-test job that reaches the
+run's artifact token can delete an artifact of another job and upload
+another under the same name, as M069's read of the artifact client found.
+The site job checks the start plan (since M059) and the data (since M069)
+against values that the build job gives as job outputs, which no
+start-test job can change. A changed artifact then fails the site job and
+withholds the deploy. So plugin code can stop a deploy but cannot change
+what deploys, which narrows D-023's forgery cost to start results. D-024's
+rule that no start result withholds a deploy holds, since this fault is in
+the build's own artifacts. D-025's sentence that plugin code cannot cause
+the site job's faults is narrowed to the faults D-025 lists. The cost is
+that one plugin can stop each daily deploy until a maintainer removes it.
+The parked candidate row "Keep plugin code from stopping deploys" holds
+the follow-up.

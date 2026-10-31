@@ -68,7 +68,9 @@ jobs:
       - id: plan-sha256
         run: echo "sha256=$(sha256sum start-plan.json | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
       # The SHA-256 of every path, kind, and file under dist/, which the site job checks the
-      # downloaded `plugins-data` against. A failed `pnpm data-digest` fails this step.
+      # downloaded `plugins-data` against. A failed `pnpm data-digest` fails this step. The
+      # upload below leaves out hidden files and empty directories, so a dist/ that holds one
+      # fails the site job's check.
       - id: data-sha256
         run: |
           sha256="$(pnpm --silent data-digest --dir dist)"

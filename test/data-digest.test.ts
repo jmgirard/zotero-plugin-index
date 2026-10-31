@@ -99,7 +99,7 @@ describe("pnpm data-digest", () => {
 
   test.each<[string, (dir: string) => Promise<void> | void, string]>([
     ["a symbolic link to a file", (dir) => symlinkSync(join(dir, "empty"), join(dir, "v1", "link")), "v1/link"],
-    ["a symbolic link to a directory", (dir) => symlinkSync("/", join(dir, "schemas", "root"), "dir"), "schemas/root"],
+    ["a symbolic link to a directory", (dir) => symlinkSync(join(dir, "v1"), join(dir, "schemas", "v1"), "dir"), "schemas/v1"],
     [
       "a named pipe",
       async (dir) => {
@@ -118,6 +118,7 @@ describe("pnpm data-digest", () => {
 
   test.each<[string, string[], RegExp]>([
     ["no --dir", [], new RegExp(`^${USAGE.replaceAll(/[[\]]/g, "\\$&")}\\n$`)],
+    ["an empty --dir", ["--dir", ""], new RegExp(`^${USAGE.replaceAll(/[[\]]/g, "\\$&")}\\n$`)],
     ["an unknown option", ["--dir", "dist", "--out", "x"], /^Unknown option '--out'[^\n]*\nusage: pnpm data-digest /],
     ["a positional argument", ["--dir", "dist", "extra"], /^Unexpected argument 'extra'[^\n]*\nusage: pnpm data-digest /],
     ["an --expect value that is not 64 lowercase hex digits", ["--dir", "dist", "--expect", "A".repeat(64)], /^--expect must be 64 lowercase hex digits\nusage: pnpm data-digest /],

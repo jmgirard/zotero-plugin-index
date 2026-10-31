@@ -17,7 +17,7 @@ async function main(): Promise<number> {
     console.error(`${(error as Error).message}\n${USAGE}`);
     return 1;
   }
-  if (values.dir === undefined) {
+  if (values.dir === undefined || values.dir === "") {
     console.error(USAGE);
     return 1;
   }

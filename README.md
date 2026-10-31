@@ -258,7 +258,9 @@ deploys nothing. "Building the data" below says which failures are
 build-level. If every record carries a failure, whatever its name, the build
 also deploys nothing. The build also deploys nothing in these cases: it
 cannot read the report issues, it cannot write the start plan,
-`pnpm add-start-results` fails, or the site build fails. "The daily build"
+`pnpm add-start-results` fails, or the site build fails. If the data or
+the start plan that the site job downloads fails its check, the build
+deploys nothing too. "The daily build"
 below names the commands. A failed start test does not stop the deploy.
 The data from the last good build then stays in place. "Building the data"
 below describes the file. A breaking change to the file gets a new schema
@@ -1362,9 +1364,9 @@ hand. It has four jobs:
 If `pnpm build`, `pnpm add-start-results`, or `pnpm site` exits with
 status 1, the workflow deploys nothing. If the downloaded data or the
 start plan fails its check, the workflow also deploys nothing. So does an
-exit status
-of 1 from `pnpm carry-start-results`, which it gives only for a usage
-error. The site and data from the last good build then stay published.
+exit status of 1 from `pnpm carry-start-results`, which it gives only for
+a usage error. The site and data from the last good build then stay
+published.
 GitHub stops the build job at 30 minutes, and then the workflow also
 deploys nothing. The repository's
 `github-pages` environment, set in its GitHub settings, lets only runs on the
@@ -1391,11 +1393,13 @@ SHA-256 of a file's bytes. File times and modes do not change the value.
 
 If an entry is not a file or a directory, the command prints no value. A
 symbolic link and a named pipe are such entries. The command then names
-the entry and exits with status 1. If the value equals the `--expect`
+the entry and exits with status 1. If it cannot read an entry, it names
+the folder and exits with status 1. If the value equals the `--expect`
 value, the command exits 0. If the two values differ, it prints both and
 exits with status 1. These arguments give the usage line and status 1: no
-`--dir`, a `--dir` that is not a directory, and an `--expect` value that
-is not 64 lowercase hex digits. Any other argument does the same.
+`--dir`, an empty `--dir`, a `--dir` that is not a directory, and an
+`--expect` value that is not 64 lowercase hex digits. An unknown option
+and a positional argument do the same.
 
 ## Running the tests
 
