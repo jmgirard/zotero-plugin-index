@@ -1,0 +1,8 @@
+{
+  "id": "zotero-github-sync@situkangsayur.github.io",
+  "name": "Zotero GitHub Sync",
+  "description": "Back up your whole Zotero library -- metadata, notes, annotations and PDFs -- to a public or private GitHub repository, with Git LFS for large files.",
+  "homepage": "https://github.com/situkangsayur/zotero-github-plugin",
+  "repoUrl": "https://github.com/situkangsayur/zotero-github-plugin",
+  "updateUrl": "https://raw.githubusercontent.com/situkangsayur/zotero-github-plugin/main/update.json"
+}
