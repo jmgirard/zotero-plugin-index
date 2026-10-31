@@ -1,0 +1,8 @@
+{
+  "id": "zotero-webai@lineex.dev",
+  "name": "Zotero WebAI",
+  "description": "Zotero 9 Web AI reading workspace with embedded DeepSeek Web, Z.ai Web, ChatGPT Web, slash PDF, web search, custom skills, and MCP tooling.",
+  "homepage": "https://github.com/lineex/Zotero-WebAI#readme",
+  "repoUrl": "https://github.com/lineex/Zotero-WebAI",
+  "updateUrl": "https://github.com/lineex/Zotero-WebAI/releases/download/release/update.json"
+}
