@@ -1,0 +1,8 @@
+{
+  "id": "ccfinfo@timetrapzz.site",
+  "name": "Zotero CCF Info",
+  "description": "Zotero Plugin for easily obtaining the ccf rating of a paper, the corresponding conference/journal and the number of citations",
+  "homepage": "https://github.com/TimeTrapzz/zotero-ccf-info#readme",
+  "repoUrl": "https://github.com/TimeTrapzz/zotero-ccf-info",
+  "updateUrl": "https://github.com/TimeTrapzz/zotero-ccf-info/releases/download/release/update.json"
+}
