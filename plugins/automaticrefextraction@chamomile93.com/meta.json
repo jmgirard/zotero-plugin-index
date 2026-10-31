@@ -1,0 +1,8 @@
+{
+  "id": "automaticrefextraction@chamomile93.com",
+  "name": "Automatic Reference Extraction",
+  "description": "Automatically extract and import references from articles added to your Zotero library",
+  "homepage": "https://github.com/chamomile93/ZoteroAutomaticReferenceExtraction#readme",
+  "repoUrl": "https://github.com/chamomile93/ZoteroAutomaticReferenceExtraction",
+  "updateUrl": "https://github.com/chamomile93/ZoteroAutomaticReferenceExtraction/releases/download/release/update.json"
+}
