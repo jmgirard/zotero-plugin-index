@@ -75,8 +75,8 @@
 - [x] T2: Add the GraphQL lookup (batches of 100, names as variables, POST to the API host only) and the join by the looked-up name. Add tests for AC3 and for the join cases of AC1.
 - [x] T3: Change the state rule in `discover()` and the ordering of the joined candidates. Add tests for AC4.
 - [x] T4: Add `source` to `ReadItem`, `PlannedEntry`, `planned()`, and `entrySchema`. Change `body()` in `src/discover/propose.ts` and its closing line. Add the `twoStep` test and the `body()` tests of AC5.
-- [ ] T5: Write the README, DESIGN, and CHANGELOG text of AC6, and wrap it near 76 columns.
-- [ ] T6: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
+- [x] T5: Write the README, DESIGN, and CHANGELOG text of AC6, and wrap it near 76 columns.
+- [x] T6: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
 
 ## Work log
 
@@ -98,6 +98,8 @@
 - 2026-10-31: the state rule also keeps a record of a repo the run found whatever its age, as before, since an old record never causes a skip; two time-limit tests rely on it.
 - 2026-10-31: check discrimination: a planted `planned()` that drops `source` turned the catalog `twoStep` test red; restored from a copy.
 - 2026-10-31: verify: `pnpm test` 1691 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
+- 2026-10-31: T5: README "Finding new plugins" (catalog, lookup, token, failures, state), "Pull requests from the bot" (first sentence, catalog repos get no `issue-no-topic` hold); DESIGN Data sources item 1, architecture bullet, and Known issues line (corrected M070); CHANGELOG entry. The simple-english hook still flags 3 README and 8 CHANGELOG sentences that this milestone does not touch.
+- 2026-10-31: T6: `pnpm test` 1691 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
 
 ## Decisions
 
