@@ -1,0 +1,8 @@
+{
+  "id": "meta-data-repair@zotero-plugin.org",
+  "name": "Zotero Metadata Repair",
+  "description": "Right-click an item to review and repair its metadata against external sources (DOI-first with a guarded fuzzy fallback), with an approve-per-field diff. Includes a report of items missing core fields.",
+  "homepage": "https://github.com/josesiqueira/zotero-meta-data-repair",
+  "repoUrl": "https://github.com/josesiqueira/zotero-meta-data-repair",
+  "updateUrl": "https://github.com/josesiqueira/zotero-meta-data-repair/releases/latest/download/update.json"
+}
