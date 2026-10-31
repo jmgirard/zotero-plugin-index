@@ -1,0 +1,8 @@
+{
+  "id": "codex-zotero-bridge@guoxin-ink.github.io",
+  "name": "Codex Zotero Bridge",
+  "description": "A local, permission-gated bridge that lets Codex inspect and update Zotero.",
+  "homepage": "https://github.com/GuoXin-Ink/codex-zotero-bridge",
+  "repoUrl": "https://github.com/GuoXin-Ink/codex-zotero-bridge",
+  "updateUrl": "https://raw.githubusercontent.com/GuoXin-Ink/codex-zotero-bridge/main/updates.json"
+}
