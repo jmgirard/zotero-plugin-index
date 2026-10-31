@@ -1,0 +1,8 @@
+{
+  "id": "miscite-sync@miscite.review",
+  "name": "Miscite Connector",
+  "description": "Two-way sync between miscite and Zotero",
+  "homepage": "https://github.com/ma-ji/miscite-zotero-connector#readme",
+  "repoUrl": "https://github.com/ma-ji/miscite-zotero-connector",
+  "updateUrl": "https://github.com/ma-ji/miscite-zotero-connector/releases/download/release/update.json"
+}
