@@ -1,0 +1,8 @@
+{
+  "id": "aiocr@zotero-plugin.com",
+  "name": "AI OCR",
+  "description": "AI OCR plugin for Zotero - AI-powered OCR recognition with PaddleOCR and MinerU",
+  "homepage": "https://github.com/4965898/Zotero-AI-OCR#readme",
+  "repoUrl": "https://github.com/4965898/Zotero-AI-OCR",
+  "updateUrl": "https://github.com/4965898/Zotero-AI-OCR/releases/download/release/update.json"
+}
