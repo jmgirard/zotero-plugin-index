@@ -1,0 +1,8 @@
+{
+  "id": "marktero@local",
+  "name": "MarkTero",
+  "description": "One-way automatic Markdown literature note generation for Zotero.",
+  "homepage": "https://github.com/partlyjadedyouth/marktero",
+  "repoUrl": "https://github.com/partlyjadedyouth/marktero",
+  "updateUrl": "https://raw.githubusercontent.com/partlyjadedyouth/marktero/main/updates.json"
+}
