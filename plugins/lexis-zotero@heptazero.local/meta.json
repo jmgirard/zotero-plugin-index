@@ -1,0 +1,7 @@
+{
+  "id": "lexis-zotero@heptazero.local",
+  "name": "Lexis for Zotero",
+  "description": "Use Obsidian Lexis highlights, hover cards, and selection actions in Zotero Reader.",
+  "repoUrl": "https://github.com/Heptazero/obsidian-lexis",
+  "updateUrl": "https://raw.githubusercontent.com/Heptazero/obsidian-lexis/main/zotero-updates.json"
+}
