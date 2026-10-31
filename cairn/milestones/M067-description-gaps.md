@@ -147,6 +147,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - 2026-10-31: claim audit: 81 claims read, 2 corrected — cairn/references/description-ledger.md (the category read is 13 of 22 right and 9 wrong, not 17 of 26, which also corrects the T8 line above and the diff-bug #2 Review line's count), README.md and src/site/description-gaps-cli.ts (the CLI also trims the shown text's ends)
 - 2026-10-31: status set to review after return 1.
 - 2026-10-31: claim audit re-read of the 2 corrected claims by the same reader: all hold; one README line rewrapped.
+- 2026-10-31: step-7 approval: m067-description-gaps approved for merge
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
