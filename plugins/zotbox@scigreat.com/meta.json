@@ -1,0 +1,8 @@
+{
+  "id": "zotbox@scigreat.com",
+  "name": "OneScholar",
+  "description": "Make Zotero Better and Better",
+  "homepage": "https://www.scigreat.com/info/zotbox",
+  "repoUrl": "https://github.com/scigreat/zotbox",
+  "updateUrl": "https://gitee.com/scigreat/zotbox/raw/master/update.json"
+}
