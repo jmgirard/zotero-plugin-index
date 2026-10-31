@@ -1,0 +1,8 @@
+{
+  "id": "synapse@bcs1037.github.io",
+  "name": "Synapse",
+  "description": "Synapse for Zotero 8: Create mdnotes file, templates, and Obsidian integration",
+  "homepage": "https://github.com/BCS1037/synapse",
+  "repoUrl": "https://github.com/BCS1037/synapse",
+  "updateUrl": "https://raw.githubusercontent.com/BCS1037/synapse/main/update.json"
+}
