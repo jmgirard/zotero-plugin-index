@@ -1,0 +1,8 @@
+{
+  "id": "zotero-vocab-review@local",
+  "name": "Zotero 划词同步到 Anki",
+  "description": "Capture Zotero PDF highlights, review vocabulary, and sync notes to Anki.",
+  "homepage": "https://github.com/zrqworkmail-cloud/zotero-vocab-review",
+  "repoUrl": "https://github.com/zrqworkmail-cloud/zotero-vocab-review",
+  "updateUrl": "https://raw.githubusercontent.com/zrqworkmail-cloud/zotero-vocab-review/updates/updates-beta.json"
+}
