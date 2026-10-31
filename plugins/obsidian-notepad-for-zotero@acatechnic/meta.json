@@ -1,0 +1,8 @@
+{
+  "id": "obsidian-notepad-for-zotero@acatechnic",
+  "name": "Obsidian Notepad for Zotero",
+  "description": "Open and edit each item's Obsidian vault markdown note directly in the Zotero item pane, and sync your PDF highlights into it.",
+  "homepage": "https://github.com/acatechnic/obsidian-notepad-for-zotero",
+  "repoUrl": "https://github.com/Acatechnic/obsidian-notepad-for-zotero",
+  "updateUrl": "https://github.com/acatechnic/obsidian-notepad-for-zotero/releases/download/release/update-beta.json"
+}
