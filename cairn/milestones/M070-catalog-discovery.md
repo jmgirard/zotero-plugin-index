@@ -104,6 +104,7 @@
 - 2026-10-31: implement done; status review.
 - 2026-10-31: review stopped before the merge question at the feature PR cap of 1: PR #353 (`add/retorquere-zotero-pmcid-fetcher`, the PMCID Fetcher entry, CI green) is open; no branch pushed, no PR opened.
 - 2026-10-31: PR #353 merged at the user's request; main merged into the branch (5c05855).
+- 2026-10-31: step-7 approval: m070-catalog-discovery approved for merge
 
 ## Decisions
 
