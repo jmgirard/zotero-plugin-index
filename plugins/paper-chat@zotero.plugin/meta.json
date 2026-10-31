@@ -1,0 +1,8 @@
+{
+  "id": "paper-chat@zotero.plugin",
+  "name": "AI Paper Chat",
+  "description": "AI research assistant: chat with papers, translate selections, find literature, and generate notes and slides.",
+  "homepage": "https://github.com/syt2/paper-chat-for-zotero#readme",
+  "repoUrl": "https://github.com/syt2/paper-chat-for-zotero",
+  "updateUrl": "https://github.com/syt2/paper-chat-for-zotero/releases/download/release/update.json"
+}
