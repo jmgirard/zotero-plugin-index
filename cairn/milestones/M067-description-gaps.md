@@ -38,7 +38,7 @@ candidate "Close gaps in the description pick", item (4). The `cjkShare` and Det
 
 A word in these criteria is a run of letters, marks, and digits. Repeats and filler words count.
 
-- [ ] AC1: `shownDescription` in `src/site/description.ts` uses the Latin-script part of a manifest or GitHub
+- [x] AC1: `shownDescription` in `src/site/description.ts` uses the Latin-script part of a manifest or GitHub
       description whose CJK share is 0.5 or more. The rule cuts the text at each ` / ` and after each `。`. The
       Latin-script part is the pieces whose letters are all Latin script and that hold at least three words. Each
       piece is trimmed, and the pieces are joined with one space. When the part exists and does not only repeat the
@@ -48,7 +48,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
       two pieces joined; the list text `期刊分区 / 中科院 / JCR / 影响因子`, which keeps its whole text;
       a piece that only repeats the name, which keeps the whole text; and a text whose CJK share is just below 0.5,
       which is unchanged.
-- [ ] AC2: `pnpm description-gaps <data file>` reads a `plugins.json` that the v1 schema accepts. It replaces each
+- [x] AC2: `pnpm description-gaps <data file>` reads a `plugins.json` that the v1 schema accepts. It replaces each
       record's `overrides` with those of the checkout's `plugins/<id>/index.json`. A record with no checkout entry
       gets no overrides. The command checks each record that has an `upstream` block. It prints one line with the id,
       the case, and the shown text when the shown description is missing, has a CJK share of 0.5 or more, or has
@@ -57,23 +57,23 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
       that the v1 schema refuses. `test/description-gaps.test.ts` covers each case line and each error. It also covers
       a record that a checkout override takes out of the list, a record with no checkout entry, and a CJK text of
       fewer than six words, which prints as CJK.
-- [ ] AC3: DESIGN's Data sources item 3, README's override section, the About page's Overrides section, and the
+- [x] AC3: DESIGN's Data sources item 3, README's override section, the About page's Overrides section, and the
       `overrides` and `reason` prose of `schemas/index.v1.schema.json` each name the short case of D-038. README,
       DESIGN, and the About page's Descriptions section state AC1's rule. README names `pnpm description-gaps`.
       CHANGELOG.md's Unreleased section names AC1's rule and the short case.
-- [ ] AC4: `cairn/references/description-ledger.md` names its data file: the deployed `v1/plugins.json` with
+- [x] AC4: `cairn/references/description-ledger.md` names its data file: the deployed `v1/plugins.json` with
       `generatedAt` 2026-10-31T07:51:22.433Z and SHA-256 `d1c883cc6f945563ba133033491e8f9c21c69a088f527f18574287bff4e77287`,
       on the shelf as `cairn/references/sources/plugins-data-2026-10-31.json`. The ledger lists each line that
       `pnpm description-gaps` prints over that file on the branch, with AC1's rule and before any new override. It
       also lists `assistente-ia@sbhg.pt`, `colecoes-coloridas-zotero@joao-fisio`, and `ufc-zotero-plugin@saviotp`,
       whose shown descriptions the plan's scan found in Portuguese. Each row gives the case and a disposition. The
       disposition is override, unless no upstream file says what the plugin does. Then it is kept with that reason.
-- [ ] AC5: Each plugin that the ledger marks override has a `description` override with no `version` in
+- [x] AC5: Each plugin that the ledger marks override has a `description` override with no `version` in
       `plugins/<id>/index.json`. Its `value` is English text of at least six words. The text is drawn from an upstream
       file, and translated by hand where that file is not in English, as the M055 overrides were. Its `reason` names
       that file. For each upstream description, the reason says which case it is, or that it is in English and not
       shown. `pnpm check` passes.
-- [ ] AC6: Over the ledger's data file, `pnpm description-gaps` on the branch prints only plugins that the ledger
+- [x] AC6: Over the ledger's data file, `pnpm description-gaps` on the branch prints only plugins that the ledger
       marks kept. `pnpm test` and `pnpm check` pass.
 
 ## Coverage
@@ -144,3 +144,13 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 
 ## Review
 <!-- owner: review · exclusive. -->
+
+Pass 1, 2026-10-31, on branch m067-description-gaps at 9a5d42a, main at c6f6954 (not moved since the cut).
+
+- AC1 evidence: `vitest run test/description.test.ts --reporter=verbose` passes the 7 "shows the Latin-script part or the whole text of a …" cases: a piece after ` / ` (manifest), before ` / ` (GitHub), after `。`, two pieces joined, the `期刊分区 / 中科院 / JCR / 影响因子` list (whole text), a name-only piece (whole text), and a text at share 0.474 (unchanged).
+- AC2 evidence: `test/description-gaps.test.ts` passes 12 tests: the missing, cjk, and short lines in order with a failure record skipped; a CJK text of 3 characters printed as cjk; repeats and filler counted; checkout overrides replacing the data file's, including a record with stale data-file overrides and no checkout entry; the data-unreadable, data-not-json, and data-invalid messages; three entry-* messages; and the CLI printing a gap with exit 0 and exiting 1 with data-unreadable.
+- AC3 evidence: joined-copy greps find "fewer than six words" in DESIGN item 3, README's override bullet, the About Overrides section, and both schema prose spots (`overrides` and `reason` descriptions, read by key); "Latin-script part" in README, DESIGN, and the About Descriptions section; `description-gaps` in README's new "Finding description gaps" section; and CHANGELOG's Unreleased entry names both.
+- AC4 evidence: the shelf file's SHA-256 is d1c883cc…77287, and the ledger states it and `generatedAt` 2026-10-31T07:51:22.433Z once each. `findGaps` over that file with `plugins/` from the T2 commit 5020a72 (via `git archive`) gives 28 lines, equal as id:case pairs to the ledger's 28 non-Portuguese rows. The 3 Portuguese ids are rows G29 to G31. Every row has a case and a disposition.
+- AC5 evidence: for all 31 override rows, a script reads `plugins/<id>/index.json` and finds one `description` override with no `version`, a value of 27 to 37 words, and a reason that opens "Condensed from" or "Translated from" a named `.md` file. The claim audit checked each case claim and each quoted upstream text against the shelf file, and 4 corrected reasons passed its re-read. `pnpm check`: 272 entries, 0 problems.
+- AC6 evidence: `pnpm description-gaps` over the shelf file prints "0 plugins with a description gap", and the ledger marks no row kept. `pnpm test`: 27 files passed, 1 skipped; 1619 tests passed, 6 skipped. `pnpm check`: 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed. No principle changed, so no `cairn_impact`. The generic profile's consistency-gate slot names no toolchain checks.
