@@ -1,6 +1,6 @@
 # M070: Find plugins in the zotero-chinese catalog
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -100,6 +100,8 @@
 - 2026-10-31: verify: `pnpm test` 1691 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
 - 2026-10-31: T5: README "Finding new plugins" (catalog, lookup, token, failures, state), "Pull requests from the bot" (first sentence, catalog repos get no `issue-no-topic` hold); DESIGN Data sources item 1, architecture bullet, and Known issues line (corrected M070); CHANGELOG entry. The simple-english hook still flags 3 README and 8 CHANGELOG sentences that this milestone does not touch.
 - 2026-10-31: T6: `pnpm test` 1691 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
+- 2026-10-31: claim audit: 80 claims read, 5 corrected — README.md (hold wording, 30-day state wording, at most 100 per request, failed connection), CHANGELOG.md (hold and state wording), src/discover/discover.ts (`lookUp` warning comment). Not changed: `raw()` checks only the first URL's origin, as `get` does, so after a redirect the token relies on fetch dropping it across origins.
+- 2026-10-31: implement done; status review.
 
 ## Decisions
 

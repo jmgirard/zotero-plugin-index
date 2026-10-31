@@ -409,7 +409,8 @@ interface LookupAnswer {
 // Asks GitHub's GraphQL API for the current name, URL, and pushed_at of each repo named,
 // LOOKUP_BATCH repos to a request. The names go in as variables, so no name changes the
 // query. A repo that GitHub does not have, one with no pushed_at, and each repo of a
-// failed request get a warning and no candidate.
+// failed request get no candidate. A failed request gets one warning for all its repos,
+// and each other such repo one warning.
 async function lookUp(fetch: Fetch, names: string[], source: Source, warnings: string[]): Promise<Candidate[]> {
   const github = githubClient(fetch);
   const unique = [...new Map(names.map((name) => [name.toLowerCase(), name])).values()];

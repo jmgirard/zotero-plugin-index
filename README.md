@@ -572,7 +572,7 @@ a list of plugins that its maintainers add by hand. It reads the list from
 the file `plugins.json` on the catalog's `gh-pages` branch, through the
 GitHub API. Some repositories in the catalog are not in the topic search.
 For each of them, the command asks the GitHub GraphQL API for the current
-name and the time of the last push. One request asks about 100
+name and the time of the last push. One request asks about at most 100
 repositories. This lookup needs the `GITHUB_TOKEN` environment variable.
 The command leaves out each repository that an entry already names. It
 reads the other repositories in the same way as `pnpm add-plugin`, the
@@ -584,8 +584,8 @@ report that names each repository that it wrote, refused, or skipped.
 
 If the read of the catalog fails, the report gets a warning, and the
 command reads the repositories of the topic search. These cause the read to
-fail: an HTTP error answer, a body that is not a JSON list, a body larger
-than 8 MiB, and a read longer than 60 seconds. A catalog item whose `repo` is
+fail: a failed connection, an HTTP error answer, a body that is not a JSON
+list, a body larger than 8 MiB, and a read longer than 60 seconds. A catalog item whose `repo` is
 not an owner/repo name gets a warning, and the command skips it. If a
 lookup request fails, the report gets a warning, and the command reads none
 of the catalog repositories of that request. Without `GITHUB_TOKEN`, each
@@ -611,8 +611,9 @@ HTTP 429 or 5xx answer to the download of the XPI or the `update.json`, after
 any redirects. Nor does it record a 403 answer to a download that requested
 a GitHub release download URL, as "Building the data" defines it. Such a
 repository is read again on the next run. The file keeps the record of a
-repository that a run did not find for 30 days, so a failed catalog read
-loses no record. To use another file, add `--state <file>`.
+refusal for 30 days after the refusal, also when a run does not find the
+repository. So a failed catalog read loses no record that makes a run skip
+a repository. To use another file, add `--state <file>`.
 
 The command gives each repository read 3 minutes, as `pnpm build` does. If a
 read takes longer, the command stops it and refuses the repository with
@@ -692,8 +693,9 @@ reasons, in this order:
 - `update-host`: the host of the manifest's `update_url`, with any port other
   than the default one, is not `github.com` or `raw.githubusercontent.com`.
 - `issue-no-topic`: an issue proposed the repository, and it has neither the
-  topic `zotero-plugin` nor `zotero-addon`. A repository that the catalog
-  names gets no such hold.
+  topic `zotero-plugin` nor `zotero-addon`. A repository that
+  `pnpm discover` finds in the catalog never gets this hold, since no issue
+  proposed it.
 
 A held pull request also gets the label `hold`, and the maintainer merges or
 closes it. If the label request fails, `pnpm propose` names the pull request
