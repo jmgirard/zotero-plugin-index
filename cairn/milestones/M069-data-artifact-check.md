@@ -2,7 +2,7 @@
      section ownership". A phase skill never rewrites another phase's section. -->
 # M069: Check the data artifact in the site job
 
-- **Status:** review
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -80,7 +80,12 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - 2026-10-31: T5: `pnpm test` 1661 passed, 6 skipped; `pnpm check` 272 entries, 0 problems. Branch pushed; `Build data` run 41208668356 started on it.
 - 2026-10-31: claim audit: 46 claims read, 2 corrected — README.md (the command prints one value only without `--expect`), src/build/digest.ts (JSON framing keeps a path from running into the next field, not "no two trees"; a non-UTF-8 name decodes with replacement characters).
 - 2026-10-31: T5: run 41208668356 on the branch succeeded; the site job's step 7 (`pnpm --silent data-digest --dir dist --expect "$DATA_SHA256"`) printed `data digest matches: d3f6a0fd…57cf`; deploy skipped, as on any branch. Status review.
+- 2026-10-31: review return 1: AC2 — `test/data-digest.test.ts` asserts exit status 1 through the command only for a symbolic link to a file; the symbolic link to a directory and the named pipe assert `treeDigest`'s message but no exit status.
+- 2026-10-31: amendment routed: AC3 — both steps run `pnpm --silent data-digest …` (`--silent` keeps pnpm's banner out of the captured value), while the criterion quotes `pnpm data-digest --dir dist` and `pnpm data-digest --dir dist --expect`; the work is right and the quoted command text is wrong.
+- 2026-10-31: status in-progress for review return 1 and the AC3 amendment.
 
 ## Decisions
 
 ## Review
+
+Pass 1 (2026-10-31): AC1's 9 probes pass in `test/data-digest.test.ts`; AC2 fails as written (exit status asserted for 1 of 3 refused kinds); AC3's quoted commands differ from the steps by `--silent`. Returned before any tick.
