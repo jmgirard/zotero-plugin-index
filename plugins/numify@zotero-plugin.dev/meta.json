@@ -1,0 +1,8 @@
+{
+  "id": "numify@zotero-plugin.dev",
+  "name": "Numify",
+  "description": "Auto-number Zotero collections with hierarchical prefixes",
+  "homepage": "https://github.com/Rafael-Silva-Oliveira/numify",
+  "repoUrl": "https://github.com/Rafael-Silva-Oliveira/numify",
+  "updateUrl": "https://github.com/Rafael-Silva-Oliveira/numify/releases/latest/download/update.json"
+}
