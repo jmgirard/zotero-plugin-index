@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ai-notes@example.com",
+  "name": "Zotero AI Notes",
+  "description": "根据用户在 Zotero PDF 阅读过程中的高亮和批注，结合文献原文，自动整理为可靠、自然的 Markdown 笔记和思维导图",
+  "homepage": "https://github.com/STRUGGLE1999/zotero-ai-notes",
+  "repoUrl": "https://github.com/STRUGGLE1999/zotero-ai-notes",
+  "updateUrl": "https://raw.githubusercontent.com/STRUGGLE1999/zotero-ai-notes/main/updates.json"
+}
