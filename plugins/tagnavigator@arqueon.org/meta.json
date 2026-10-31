@@ -1,0 +1,8 @@
+{
+  "id": "tagnavigator@arqueon.org",
+  "name": "Zotero TagNavigator",
+  "description": "Advanced Tag Explorer and Quick-Tagging plugin for Zotero 7/8/9/10",
+  "homepage": "https://github.com/arqueon/zotero-tagnavigator#readme",
+  "repoUrl": "https://github.com/arqueon/zotero-tagnavigator",
+  "updateUrl": "https://github.com/arqueon/zotero-tagnavigator/releases/download/release/update.json"
+}
