@@ -1,0 +1,8 @@
+{
+  "id": "vinculum-zotero@mcburton.net",
+  "name": "Vinculum Zotero",
+  "description": "Generate Zotero links to items or collections",
+  "homepage": "https://github.com/mcburton/vinculum-zotero",
+  "repoUrl": "https://github.com/mcburton/vinculum-zotero",
+  "updateUrl": "https://github.com/mcburton/vinculum-zotero/releases/latest/download/updates.json"
+}
