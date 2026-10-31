@@ -1,0 +1,8 @@
+{
+  "id": "bilingual-reader@local",
+  "name": "Zotero Bilingual Reader",
+  "description": "Local bilingual reading view for PDF and structured articles.",
+  "homepage": "https://github.com/lss3765",
+  "repoUrl": "https://github.com/lss3765/Zotero-Bilingual-Reader",
+  "updateUrl": "https://raw.githubusercontent.com/lss3765/Zotero-Bilingual-Reader-Public/main/update.json"
+}
