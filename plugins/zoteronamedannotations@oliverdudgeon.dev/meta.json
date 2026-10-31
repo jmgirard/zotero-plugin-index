@@ -1,0 +1,7 @@
+{
+  "id": "zoteronamedannotations@oliverdudgeon.dev",
+  "name": "Zotero Named Annotations",
+  "description": "Add custom names to Zotero's annotation colors and surface them in the reader.",
+  "repoUrl": "https://github.com/OliverDudgeon/zotero-named-annotations",
+  "updateUrl": "https://raw.githubusercontent.com/OliverDudgeon/zotero-named-annotations/main/update.json"
+}
