@@ -1,0 +1,8 @@
+{
+  "id": "zotero-local-pdf-manager@zotero.local",
+  "name": "Zotero Local PDF Manager",
+  "description": "Download or remove local PDF copies for Zotero papers",
+  "homepage": "https://github.com/WeiCheng14159/zotero-local-pdf-manager#readme",
+  "repoUrl": "https://github.com/WeiCheng14159/zotero-local-pdf-manager",
+  "updateUrl": "https://github.com/WeiCheng14159/zotero-local-pdf-manager/releases/download/release/update.json"
+}
