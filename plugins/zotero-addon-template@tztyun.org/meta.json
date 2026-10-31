@@ -1,0 +1,8 @@
+{
+  "id": "zotero-addon-template@tztyun.org",
+  "name": "Paper Metadata Update",
+  "description": "Update arxiv paper to latest metadata",
+  "homepage": "https://github.com/wuzirui/paper-meta-update#readme",
+  "repoUrl": "https://github.com/wuzirui/paper-meta-update",
+  "updateUrl": "https://github.com/wuzirui/paper-meta-update/releases/download/release/update.json"
+}
