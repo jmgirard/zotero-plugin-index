@@ -1,0 +1,7 @@
+{
+  "id": "survey-papers-to-zotero-companion@vincent929-cyber.github.io",
+  "name": "Survey Papers to Zotero Companion",
+  "description": "Adds validated local PDF files to existing Zotero items through a localhost-only endpoint.",
+  "repoUrl": "https://github.com/vincent929-cyber/survey-papers-to-zotero",
+  "updateUrl": "https://raw.githubusercontent.com/vincent929-cyber/survey-papers-to-zotero/main/updates.json"
+}
