@@ -1,0 +1,8 @@
+{
+  "id": "zpm@zotero-project-manager",
+  "name": "Zotero Project Manager (ZPM)",
+  "description": "Copy Org, Markdown, and Zotero links, and export collections to managed research workspaces.",
+  "homepage": "https://github.com/sbilmis/zotero-project-manager",
+  "repoUrl": "https://github.com/sbilmis/zotero-project-manager",
+  "updateUrl": "https://raw.githubusercontent.com/sbilmis/zotero-project-manager/main/zotero-plugin/updates.json"
+}
