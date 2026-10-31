@@ -1,0 +1,8 @@
+{
+  "id": "zotero-split-view-reader@fuling.lin.at.outlook.com",
+  "name": "Split-View Reader",
+  "description": "Adds split-view reading for same or different PDFs with optional primary-view action sync",
+  "homepage": "https://github.com/zerolfl/zotero-split-view-reader#readme",
+  "repoUrl": "https://github.com/zerolfl/zotero-split-view-reader",
+  "updateUrl": "https://github.com/zerolfl/zotero-split-view-reader/releases/download/release/update.json"
+}
