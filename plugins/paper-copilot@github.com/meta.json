@@ -1,0 +1,8 @@
+{
+  "id": "paper-copilot@github.com",
+  "name": "Zotero Paper Copilot",
+  "description": "AI Assistant for Research Papers - Moonlight-like plugin for Zotero",
+  "homepage": "https://github.com/ShiWenber/zotero-paper-copilot#readme",
+  "repoUrl": "https://github.com/ShiWenber/zotero-paper-copilot",
+  "updateUrl": "https://github.com/ShiWenber/zotero-paper-copilot/releases/download/release/update.json"
+}
