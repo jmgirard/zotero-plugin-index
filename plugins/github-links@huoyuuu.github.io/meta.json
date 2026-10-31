@@ -1,0 +1,8 @@
+{
+  "id": "github-links@huoyuuu.github.io",
+  "name": "Zotero GitHub Links",
+  "description": "Show GitHub repository links associated with Zotero items in the item details pane.",
+  "homepage": "https://github.com/huoyuuu/zotero-github-links",
+  "repoUrl": "https://github.com/Huoyuuu/zotero-github-links",
+  "updateUrl": "https://github.com/huoyuuu/zotero-github-links/releases/download/release/update.json"
+}
