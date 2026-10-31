@@ -1,0 +1,8 @@
+{
+  "id": "zotero-mcp-plugin@lricher7329.github.io",
+  "name": "Zotero MCP for Claude Code",
+  "description": "Zotero MCP for Claude Code",
+  "homepage": "https://github.com/lricher7329/zotero-mcp-claude-code#readme",
+  "repoUrl": "https://github.com/lricher7329/zotero-mcp-claude-code",
+  "updateUrl": "https://github.com/lricher7329/zotero-mcp-claude-code/releases/latest/download/update.json"
+}
