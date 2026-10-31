@@ -1,0 +1,8 @@
+{
+  "id": "tag-fuzzy-search@local",
+  "name": "Tag Fuzzy Search",
+  "description": "Makes tag autocomplete fuzzy everywhere tags are added — item pane, notes, and PDF annotations — instead of matching only the start of a tag.",
+  "homepage": "https://github.com/ievlevpn/zotero-tag-fuzzy-search",
+  "repoUrl": "https://github.com/ievlevpn/zotero-tag-fuzzy-search",
+  "updateUrl": "https://raw.githubusercontent.com/ievlevpn/zotero-tag-fuzzy-search/master/update.json"
+}
