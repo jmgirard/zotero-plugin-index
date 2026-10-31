@@ -1,0 +1,8 @@
+{
+  "id": "lastread-format@yangc.dev",
+  "name": "Last Read Time Format",
+  "description": "Formats the Last Read Time (最后阅读时间) column as MM-DD HH:mm.",
+  "homepage": "https://github.com/yanchou3/zotero-lastread-format",
+  "repoUrl": "https://github.com/yanchou3/zotero-lastread-format",
+  "updateUrl": "https://raw.githubusercontent.com/yanchou3/zotero-lastread-format/main/update.json"
+}
