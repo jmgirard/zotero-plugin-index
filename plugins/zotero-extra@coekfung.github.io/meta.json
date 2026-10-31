@@ -1,0 +1,8 @@
+{
+  "id": "zotero-extra@coekfung.github.io",
+  "name": "Zotero Extra",
+  "description": "A Zotero plugin project for fetching, processing, and saving useful information into item Extra fields.",
+  "homepage": "https://github.com/coekfung/zotero-extra#readme",
+  "repoUrl": "https://github.com/coekfung/zotero-extra",
+  "updateUrl": "https://github.com/coekfung/zotero-extra/releases/download/release/update.json"
+}
