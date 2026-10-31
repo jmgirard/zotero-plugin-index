@@ -1,0 +1,8 @@
+{
+  "id": "zotassets@yunze.dev",
+  "name": "ZotAssets",
+  "description": "管理 Zotero 附件的资产角色（正文 PDF、补充材料、数据、代码等），自动分类文库，并按模板安全重命名 PDF。兼容 Zotero 7 至 10。",
+  "homepage": "https://github.com/Lyz-623/ZotAssets",
+  "repoUrl": "https://github.com/Lyz-623/ZotAssets",
+  "updateUrl": "https://github.com/Lyz-623/ZotAssets/releases/latest/download/update.json"
+}
