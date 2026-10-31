@@ -1,20 +1,18 @@
 # Roadmap
 
 _The only authority on milestone status. Grouped by status, not ID._
-_Last hygiene check: 2026-10-31 (M070 review: M070 archived; candidate "Find plugins whose repos carry no topic" narrowed to code search; M067 row pruned; 5 lessons marked used M070, 1 captured, 1 evicted by rank; validate green)_
+_Last hygiene check: 2026-10-31 (M071 review: M071 archived; candidate "Find plugins whose repos carry no topic" graduated; new parked "Harden code search against limits"; M068 row pruned; 8 lessons marked used M071, none captured; validate green)_
 
 ## Milestones
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M071 | Find plugins by GitHub code search | review | M070 | normal | milestones/M071-code-search-discovery.md |
+| M071 | Find plugins by GitHub code search | done | M070 | normal | milestones/archive/M071-code-search-discovery.md |
 | M070 | Find plugins in the zotero-chinese catalog | done | — | normal | milestones/archive/M070-catalog-discovery.md |
 | M069 | Check the data artifact in the site job | done | — | normal | milestones/archive/M069-data-artifact-check.md |
-| M068 | Warn when the Zotero release lists fall behind | done | — | normal | milestones/archive/M068-release-list-warnings.md |
 <!-- rows grouped by status, not by ID; keep the 3 most recent done/dropped rows; older ones: milestones/archive/ + git -->
 
 ## Candidates
-- Find plugins whose repos carry no topic: since M070 `pnpm discover` reads the two topics and the zotero-chinese catalog, so a plugin that neither names is still missed; on 2026-10-31 five GitHub code searches for Zotero plugin files returned 776 repos that neither the index nor the catalog had, and a sample of 80 held 36 that passed `pnpm add-plugin`; M071 adds code search; found when retorquere/zotero-pmcid-fetcher (144 stars, no topics) had to be added by hand — added 2026-10-31 — M009, D-033, D-042; narrowed 2026-10-31 by M070 — started M071
 - [low] Close gaps in bot holds and merges: M056 holds a bot pull request for five fixed reasons; also (1) start each candidate in Zotero before the merge job merges it, as the daily start-test does after; (2) `name-match` sees only indexed entries, not those of open bot pull requests or drafted earlier in the same run, and its name key keeps only a-z and 0-9, so a name wholly in another script never matches and a homoglyph passes; (3) hold a repo under 30 days old, which would have held 16 of the first 44 merged bot pull requests against 8 for the chosen rules (M056 plan); (4) put the `hold` label on a pull request whose merge-time check fails, so the daily job stops failing on it (M056 criteria audit); (5) a rate limit or 5xx on `GET /users/<owner>` holds for good as `owner-unread`; (6) `pnpm merge-discover` has no whole-run limit and prints only at the end, so a job cut at 30 minutes loses the summary, as "Bound the whole discover workflow's time" says for discover runs; (7) it checks against its checkout, not the commit the squash lands on (M056 review) — added 2026-10-29 — M056, D-033
 - [low] Check the restored discovery state: the discover read job restores `discovery-state-` by prefix from the default branch's cache in the same job that reads repos anyone can tag, so a job that a crafted repo took over could save a state entry that hides repos from later runs for up to 30 days; check the restored state's shape or keep the state outside the cache (M016 review); since M070 the state also keeps a record of a repo that a run does not find, so a forged entry can hide a catalog repo for the same 30 days (M070 review) — added 2026-10-26 — M009, M016, M070
 - [low] Block more IPv6 ranges in the host check: the M004 host check lets through ::ffff:0:0:0/96 (SIIT), 64:ff9b:1::/48 (local NAT64), 100::/64, 2001::/23 (Teredo included), fec0::/10, 3fff::/20, 5f00::/16, and 192.88.99.0/24; the translated ones reach a private address only on a NAT64 or SIIT network (M004 review) — added 2026-10-25 — M004
