@@ -573,3 +573,21 @@ the case it covers does not arise in this repo or costs almost nothing:
   the plugin page star's `CanvasText` fill, which a source test pins.
 
 Each drop can be reopened by an entry that supersedes this one.
+
+### D-040: The build warns when the Zotero release lists fall behind, and the lists stay hand-kept, annotating D-036
+
+2026-10-31, M068 plan. D-036 keeps the newest release of each earlier
+Zotero major in the hand-kept `LAST_RELEASES`, since the release address
+gives only the current release. A new major or a new patch of an earlier
+major then goes unnoticed until someone edits the lists, and the marks
+read wrong until then. At the question set the user chose a daily read of
+each earlier major's changelog page on zotero.org, with a `::warning::`
+line when the page names a newer release than the list, and a warning
+when the current release's major is not the last of `ZOTERO_MAJORS`. The
+lists stay hand-kept, and the marks change after a hand edit. The user
+rejected writing each earlier major's newest release into the data, which
+would update the marks with no edit but add a data field and a daily
+dependency on the shape of three HTML pages. A failed changelog read only
+warns, so D-036's rule that these reads never withhold a deploy holds.
+This choice is wrong if a warning sits unread while a stale list keeps
+the marks wrong for a week or more.
