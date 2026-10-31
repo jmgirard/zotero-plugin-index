@@ -1,0 +1,8 @@
+{
+  "id": "uts-citation@gracefullight.dev",
+  "name": "UTS APA 7th Citation",
+  "description": "Copy bibliography in UTS APA 7th format to clipboard",
+  "homepage": "https://github.com/gracefullight/pkgs/tree/main/packages/zotero-plugin-uts",
+  "repoUrl": "https://github.com/gracefullight/pkgs",
+  "updateUrl": "https://raw.githubusercontent.com/gracefullight/pkgs/main/packages/zotero-plugin-uts/updates.json"
+}
