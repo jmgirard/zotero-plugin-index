@@ -1,0 +1,8 @@
+{
+  "id": "mineru-html@example.com",
+  "name": "MinerU HTML Parser",
+  "description": "Parse Zotero PDF attachments with the MinerU precise API and attach the generated HTML.",
+  "homepage": "https://github.com/understandlxy/mineru-html-parser-zotero",
+  "repoUrl": "https://github.com/understandlxy/mineru-html-parser-zotero",
+  "updateUrl": "https://github.com/understandlxy/mineru-html-parser-zotero/releases/latest/download/update.json"
+}
