@@ -478,7 +478,7 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
   for (const query of queries) {
     const seen = new Set<string>();
     let pages = 0;
-    const stop = (why: string) => warnings.push(`the code search for ${query} read ${pages} pages and stopped, since ${why}`);
+    const stop = (why: string) => warnings.push(`the code search for ${query} read ${pages} page${pages === 1 ? "" : "s"} and stopped, since ${why}`);
     let next: string | undefined = `${API}/search/code?${new URLSearchParams({ q: query, per_page: "100" })}`;
     while (next) {
       if (!URL.canParse(next) || new URL(next).origin !== API) {

@@ -23,7 +23,7 @@ import {
   type ReadItem,
 } from "../src/discover/discover.ts";
 import { githubClient } from "../src/upstream/reader.ts";
-import { fixtureFetch, loadFixture, type Responses, type SeenRequest } from "./support/fixture-fetch.ts";
+import { fixtureFetch, loadFixture, type Recorded, type Responses, type SeenRequest } from "./support/fixture-fetch.ts";
 import { pluginRepo, searchPage } from "./support/plugin-repo.ts";
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -668,6 +668,118 @@ describe("the code search", () => {
       expect(report.warnings).toEqual([expect.stringMatching(/^the run reads none of 1 code-search repos from example\/coded on, since their lookup failed: .*HTTP 502/)]);
       expect(reads).toEqual(["example/alpha"]);
     });
+  });
+
+  // A clock that moves only when the run sleeps, or when a test sets `at`.
+  function fakeClock() {
+    const clock = { at: 0, now: () => clock.at, sleep: async (ms: number) => void (clock.at += ms) };
+    return clock;
+  }
+  // `count` pages of one query, each with one repo, example/<query>-p<n>, linked by `next`.
+  const paged = (query: string, count: number): Responses =>
+    Object.fromEntries(
+      Array.from({ length: count }, (_, i) => [
+        i === 0 ? codeUrl(query) : `${codeUrl(query)}&page=${i + 1}`,
+        { ...codePage([`example/${query}-p${i + 1}`]), ...(i + 1 < count && { headers: { link: `<${codeUrl(query)}&page=${i + 2}>; rel="next"` } }) },
+      ]),
+    );
+  const codeRequests = (requests: SeenRequest[]) => requests.filter(({ url }) => url.includes("/search/code?"));
+
+  test("sends no more than 10 code search requests in any 60-second window, failed requests included", async () => {
+    const clock = fakeClock();
+    const times: number[] = [];
+    const onRequest = (seen: SeenRequest) => seen.url.includes("/search/code?") && times.push(clock.now());
+    const responses = { ...base(), ...paged("q1", 7), [codeUrl("q2")]: { status: 503, text: "unavailable" }, ...paged("q3", 5) };
+    const { result } = await runResult(responses, { codeSearch: ["q1", "q2", "q3"], clock, onRequest });
+    if (!result.ok) throw new Error(result.message);
+    expect(times).toHaveLength(13);
+    for (let i = 0; i + 10 < times.length; i++) expect(times[i + 10] - times[i]).toBeGreaterThanOrEqual(60_000);
+    const searchWarnings = result.report.warnings.filter((warning) => warning.startsWith("the code search"));
+    expect(searchWarnings).toEqual([expect.stringMatching(/^the code search for q2 read 0 pages and stopped, since its request failed: .*HTTP 503/)]);
+  });
+
+  test("counts the time of the code search toward the run's time limit", async () => {
+    const clock = fakeClock();
+    const responses = { ...base(), ...paged("q1", 11), [GRAPHQL]: found() };
+    const { reads, report } = await run(responses, { codeSearch: ["q1"], clock, runMs: 30_000, startedAt: 0 });
+    expect(reads).toEqual([]);
+    expect(report.warnings).toEqual([
+      "the run looks up no code-search repo after 30000 ms, its time limit, so it does not read 11 of them",
+      "the run reads no repo after 30000 ms, its time limit, so it did not reach 1 repos",
+    ]);
+  });
+
+  test("stops each query not finished 8 minutes after the run starts, with a warning that names it, then reads the candidates", async () => {
+    const clock = fakeClock();
+    // The clock reaches 8 minutes when q1's second page is requested.
+    const onRequest = (seen: SeenRequest) => {
+      if (seen.url === `${codeUrl("q1")}&page=2`) clock.at = 8 * 60 * 1000;
+    };
+    const responses = {
+      ...base(),
+      ...paged("q1", 3),
+      ...searchedCode({ q2: ["example/q2-p1"] }),
+      ...pluginRepo("example/q1-p1", "q1-p1@example.org", { topics: [] }),
+      ...pluginRepo("example/q1-p2", "q1-p2@example.org", { topics: [] }),
+      [GRAPHQL]: found(["example/q1-p1", "2026-10-20T00:00:00Z"], ["example/q1-p2", "2026-10-19T00:00:00Z"]),
+    };
+    const { result, requests } = await runResult(responses, { codeSearch: ["q1", "q2"], clock, startedAt: 0, onRequest });
+    if (!result.ok) throw new Error(result.message);
+    expect(codeRequests(requests).map(({ url }) => url)).toEqual([codeUrl("q1"), `${codeUrl("q1")}&page=2`]);
+    expect(result.report.warnings).toEqual([
+      "the code search for q1 read 2 pages and stopped, since the run sends no code search request 8 minutes after it starts",
+      "the code search for q2 read 0 pages and stopped, since the run sends no code search request 8 minutes after it starts",
+    ]);
+    expect(result.report.read.map((item) => [item.repo, item.source, item.outcome])).toEqual([
+      ["example/q1-p1", "code-search", "written"],
+      ["example/q1-p2", "code-search", "written"],
+      ["example/alpha", "topic", "written"],
+    ]);
+  });
+
+  describe("a failed code search request", () => {
+    // A refusal of a repo that no source names, kept since it is under 30 days old.
+    const kept = { "example/refused": { pushedAt: "2026-10-01T00:00:00Z", failure: "no-release" as const, checkedAt: NOW.toISOString() } };
+    const failing = `${codeUrl("q1")}&page=2`;
+    // q1's first page names example/coded and links a second page; q2 names example/other.
+    const responses = (answer: Recorded): Responses => ({
+      ...base(),
+      ...pluginRepo("example/other", "other@example.org", { topics: [] }),
+      ...pluginRepo("example/listed", "listed@example.org", { topics: [] }),
+      ...listed(["example/listed"]),
+      [codeUrl("q1")]: { ...codePage(["example/coded"]), headers: { link: `<${failing}>; rel="next"` } },
+      [failing]: answer,
+      ...searchedCode({ q2: ["example/other"] }),
+      [`${GRAPHQL} #1`]: found(["example/listed", "2026-10-21T00:00:00Z"]),
+      [`${GRAPHQL} #2`]: found(["example/coded", "2026-10-20T00:00:00Z"], ["example/other", "2026-10-19T00:00:00Z"]),
+    });
+
+    test.each([
+      ["an HTTP 401 answer", { status: 401, json: { message: "Requires authentication" } }, "returned HTTP 401"],
+      ["an HTTP 403 answer", { status: 403, json: { message: "rate limit" } }, "returned HTTP 403"],
+      ["an HTTP 429 answer", { status: 429, json: { message: "slow down" } }, "returned HTTP 429"],
+      ["an HTTP 5xx answer", { status: 502, text: "bad gateway" }, "returned HTTP 502"],
+      ["a fetch that rejects", { error: "connection reset" }, "failed: connection reset"],
+      ["a request that passes its time limit", { stall: "headers" as const }, "failed: The operation was aborted due to timeout"],
+      ["a body that is not JSON", { text: "<html>busy</html>" }, "returned a body that is not JSON"],
+      ["a page with no list of items", { json: { total_count: 1 } }, "returned a body with no list of items"],
+    ])("with %s warns, keeps the query's earlier pages, and reads the other sources", async (_name, answer, message) => {
+      const { reads, report, state } = await run(responses(answer), { codeSearch: ["q1", "q2"], codeSearchMs: 200, catalog: CATALOG, state: kept });
+      expect(report.warnings).toEqual([expect.stringContaining(`the code search for q1 read 1 page and stopped, since `)]);
+      expect(report.warnings[0]).toContain(`GET ${failing} ${message}`);
+      expect(reads).toEqual(["example/listed", "example/coded", "example/other", "example/alpha"]);
+      expect(state).toEqual(kept);
+    });
+  });
+
+  test("warns about an item with no repository.full_name and a query with more than 1,000 results", async () => {
+    const page = { json: { total_count: 1500, items: [{ repository: null }, { repository: { full_name: "listed" } }, { name: "manifest.json" }] } };
+    const { report, reads } = await run({ ...base(), [codeUrl("q1")]: page }, { codeSearch: ["q1"] });
+    expect(report.warnings).toEqual([
+      "the code search for q1 has 1500 results, and the search returns only the first 1000",
+      ...Array.from({ length: 3 }, () => "the code search for q1 returned an item with no repository.full_name, so the run skips it"),
+    ]);
+    expect(reads).toEqual(["example/alpha"]);
   });
 });
 
