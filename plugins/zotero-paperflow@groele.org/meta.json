@@ -1,0 +1,8 @@
+{
+  "id": "zotero-paperflow@groele.org",
+  "name": "Zotero PaperFlow",
+  "description": "Manage manuscripts, submission rounds, and review responses.",
+  "homepage": "https://github.com/groele/Zotero-PaperFlow",
+  "repoUrl": "https://github.com/groele/Zotero-PaperFlow",
+  "updateUrl": "https://raw.githubusercontent.com/groele/Zotero-PaperFlow/main/update.json"
+}
