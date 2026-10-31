@@ -8,9 +8,11 @@
   If `CODE_SEARCH_TOKEN` is set, the code search sends it, and otherwise
   `GITHUB_TOKEN`. `Discover plugins` passes it from a repository secret of
   that name, since the built-in token gets HTTP 429 from code search. The
-  code search sends at most 10 requests in any 60 seconds. It sends none
-  from 8 minutes after the run starts. Its time
-  counts toward the run's 18 minutes. A failed request adds a warning that
+  code search sends at most 10 requests in any 60 seconds. It waits for
+  the time that `retry-after` or `x-ratelimit-reset` names before its next
+  request, and sends a page refused with such a wait once more. It sends
+  none from 8 minutes after the run starts. Its time counts toward the
+  run's 18 minutes. A failed request adds a warning that
   names the query, and the run keeps that query's earlier pages and reads
   the other repositories. A repository that the topic search or the catalog
   also names keeps that source. If the bot found a repository by code

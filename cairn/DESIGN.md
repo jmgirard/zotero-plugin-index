@@ -207,8 +207,11 @@ shows each one separately. A combined verdict is out of scope.
    and `strict_min_version` or `update_url`, and `package.json` files that
    name `zotero-plugin-toolkit`, `zotero-plugin-scaffold`, or
    `zotero-plugin` with `zotero-types` (M071, D-042). The code search sends
-   at most 10 requests in any 60 seconds and none from 8 minutes after the
-   run starts. A failed read of the catalog, a failed code search request,
+   at most 10 requests in any 60 seconds, waits for the time that
+   `retry-after` or `x-ratelimit-reset` names before its next request, and
+   sends a page refused with such a wait once more (M072). It sends none
+   from 8 minutes after the run starts. A failed read of the catalog, a
+   failed code search request,
    or a failed lookup of a repo's current name and last push warns, and the
    run reads the other repos; a failed code search request keeps the
    repos of its query's earlier pages. A dispatched run can set `limit` and
@@ -617,8 +620,12 @@ reused._
   `/search/code` for each query (`githubClient().get`, 60 s a request),
   sending at most `CODE_SEARCH_RATE` (10) requests in any
   `CODE_SEARCH_WINDOW_MS` (60 s), failed ones included, and none from
-  `CODE_SEARCH_CUTOFF_MS` (8 minutes) after `startedAt`. A failed request
-  or a page with no items warns and ends only its query. Items with no
+  `CODE_SEARCH_CUTOFF_MS` (8 minutes) after `startedAt`. An answer that
+  names a wait (`retry-after`, or `x-ratelimit-remaining` 0 with
+  `x-ratelimit-reset`, read by `rateLimitOf` in `src/upstream/reader.ts`)
+  holds every query until 1 second after it ends, on `Clock.wall()`, and a
+  403 or 429 with such a wait sends its page once more (M072). A failed
+  request or a page with no items warns and ends only its query. Items with no
   owner/repo name warn, at most 10 a query, and queries that all finish
   with no item warn once. The names go through the same skip and lookup;
   a name that an earlier source or lookup gave needs none, and a name
