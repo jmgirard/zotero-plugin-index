@@ -1,0 +1,7 @@
+{
+  "id": "highlightdescriptions@paulmrg2",
+  "name": "Highlight color descriptions",
+  "description": "Adds custom description labels to highlight colors in Zotero context menus.",
+  "repoUrl": "https://github.com/paulMrG2/zotero-highlight-descriptions",
+  "updateUrl": "https://raw.githubusercontent.com/paulmrg2/zotero-highlight-descriptions/main/update.json"
+}
