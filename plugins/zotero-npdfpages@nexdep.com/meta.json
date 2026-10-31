@@ -1,0 +1,8 @@
+{
+  "id": "zotero-npdfpages@nexdep.com",
+  "name": "NPDFPages",
+  "description": "Adds a sortable PDF page-count column and PDF page-count advanced-search condition to Zotero.",
+  "homepage": "https://github.com/nexdep/zotero-npdfpages#readme",
+  "repoUrl": "https://github.com/nexdep/zotero-npdfpages",
+  "updateUrl": "https://github.com/nexdep/zotero-npdfpages/releases/download/release/update.json"
+}
