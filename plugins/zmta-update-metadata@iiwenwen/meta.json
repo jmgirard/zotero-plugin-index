@@ -1,0 +1,8 @@
+{
+  "id": "zmta-update-metadata@iiwenwen",
+  "name": "Zotero 元数据更新",
+  "description": "按条目已有 URL 或唯一标识符获取最新元数据，逐项审核后安全更新并留痕",
+  "homepage": "https://github.com/iiwenwen/zotero-update-metadata",
+  "repoUrl": "https://github.com/iiwenwen/zotero-update-metadata",
+  "updateUrl": "https://github.com/iiwenwen/zotero-update-metadata/releases/latest/download/update.json"
+}
