@@ -1,0 +1,7 @@
+{
+  "id": "zotero-card-library@zotero",
+  "name": "Zotero Card Library",
+  "description": "Local card library for Zotero 9",
+  "repoUrl": "https://github.com/Ausanx/zotero-card-library",
+  "updateUrl": "https://github.com/Ausanx/zotero-card-library/releases/download/release/update.json"
+}
