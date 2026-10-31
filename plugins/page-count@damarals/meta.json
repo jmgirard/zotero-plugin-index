@@ -1,0 +1,8 @@
+{
+  "id": "page-count@damarals",
+  "name": "Page Count",
+  "description": "A sortable Page Count column showing each item's real PDF page count.",
+  "homepage": "https://github.com/damarals/zotero-page-count",
+  "repoUrl": "https://github.com/damarals/zotero-page-count",
+  "updateUrl": "https://github.com/damarals/zotero-page-count/releases/download/release/update.json"
+}
