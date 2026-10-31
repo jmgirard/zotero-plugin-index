@@ -105,6 +105,7 @@
 - 2026-10-31: claim audit pass (fresh Opus reader): about 60 claims read, 5 corrected — the item warning now says "no owner/repo repository.full_name" (README too); lookup failure ends only that source's lookups (README, lookUp comment, DESIGN); the cutoff comment no longer says the reads keep most of the time limit; the query comment names a library, build tool, or type package; the pacing wait adds 1 ms against early timers. `pnpm test` 1727 passed, `pnpm check` 0 problems. Checkpoint before the reader's one re-read of the corrections.
 - 2026-10-31: claim audit: 60 claims read, 5 corrected — src/discover/discover.ts, README.md, test/discover.test.ts (and cairn/DESIGN.md); the same reader re-read the 5 corrections once and found each correct.
 - 2026-10-31: implement done; status review.
+- 2026-10-31: step-7 approval: m071-code-search-discovery approved for merge
 
 ## Decisions
 
