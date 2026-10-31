@@ -1,0 +1,8 @@
+{
+  "id": "ai-paper-analysis@fsmeng.com",
+  "name": "AI Paper Analysis",
+  "description": "AI-powered paper analysis plugin for Zotero",
+  "homepage": "https://github.com/zgdd12345/AIPaperAnalysis#readme",
+  "repoUrl": "https://github.com/zgdd12345/AIPaperAnalysis",
+  "updateUrl": "https://github.com/zgdd12345/AIPaperAnalysis/releases/download/release/update.json"
+}
