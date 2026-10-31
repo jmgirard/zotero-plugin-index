@@ -1,0 +1,8 @@
+{
+  "id": "doi-fix@zotero.org",
+  "name": "DOI Fix",
+  "description": "Automatically retrieve and validate DOIs for Zotero items using the Crossref API. Compatible with Zotero 7, 8, 9, and 10.",
+  "homepage": "https://github.com/pandaAIGC/zotero-doi-fix",
+  "repoUrl": "https://github.com/pandaAIGC/zotero-doi-fix",
+  "updateUrl": "https://raw.githubusercontent.com/pandaAIGC/zotero-doi-fix/main/updates.json"
+}
