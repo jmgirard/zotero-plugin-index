@@ -87,6 +87,7 @@
 - 2026-10-31: question set: if the Actions token cannot run code search — stop and ask the user for a personal token. Backfill after the merge — yes, all rounds, never while `Build data` runs.
 - 2026-10-31: criteria audit (full, fresh Opus reader): 10 findings on M071 taken. Join after the lookup, pacing within one run with failed requests counted and the search counted toward `runMs`, a closed failure-probe list, earlier pages kept, the lookup and order rules shared with M070, the closing line, the README section for dispatch inputs, the Known issues line, and the token wiring scoped to the discover step.
 - 2026-10-31: on 2026-10-31 the five queries returned 1,053 repos: 158 of the 273 indexed ones, 76 of the 132 that the catalog alone listed, and PMCID Fetcher. A sample of 80 of the 776 repos that neither the index nor the catalog had held 36 that passed `pnpm add-plugin`.
+- 2026-10-31: M070's catalog backfill ran after its merge: discover runs 41217007751, 41218104935, 41218886852, and 41219300884 (`limit` 100; the last wrote nothing and left 0 unread, 13 `request-failed` reads not recorded) and merge runs 41217663565, 41218591124, and 41219146743 (`wait_hours` 0) wrote 149 entries (147 from the catalog) and merged 132. The index went from 273 to 405 entries (`pnpm check` 0 problems). 35 bot pull requests stay held (name-match 17, update-host 14, new-account 3, new-account and update-host 1), and #103 has no Hold line. M071's backfill starts from this state.
 
 ## Decisions
 
