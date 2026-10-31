@@ -1,0 +1,8 @@
+{
+  "id": "bettersync@swroom.com",
+  "name": "Better Sync",
+  "description": "A better way to sync your file on multiple devices.",
+  "homepage": "https://github.com/raykr/better-sync#readme",
+  "repoUrl": "https://github.com/raykr/better-sync",
+  "updateUrl": "https://raw.githubusercontent.com/RayKr/better-sync/main/update.json"
+}
