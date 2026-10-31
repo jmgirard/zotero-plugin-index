@@ -1,0 +1,8 @@
+{
+  "id": "paper-acquisition-anti-scrape@jyluo1994.github.io",
+  "name": "Paper Acquisition Zotero",
+  "description": "Acquire PDFs for selected Zotero items through a local paper-acquisition service.",
+  "homepage": "https://github.com/jyluo1994/paper-acquisition-zotero",
+  "repoUrl": "https://github.com/jyluo1994/paper-acquisition-zotero",
+  "updateUrl": "https://raw.githubusercontent.com/jyluo1994/paper-acquisition-zotero/main/zotero-plugin/updates.json"
+}
