@@ -606,9 +606,10 @@ fail:
 
 A catalog item whose `repo` is not an owner/repo name gets a warning, and
 the command skips it. The report names at most 10 such items and counts
-the rest. If a lookup request fails, the report gets one warning. The
-command then looks up no more repositories, and it reads none of the
-repositories that it did not look up. Without `GITHUB_TOKEN`, the first lookup request fails, so the
+the rest. The catalog and the code search each have their own lookup. If a
+lookup request fails, the report gets one warning. The command then looks
+up no more repositories of that source. It reads none of the repositories
+that it did not look up. Without `GITHUB_TOKEN`, the first lookup request fails, so the
 command reads no repository that only the catalog or the code search names. A repository that GitHub does not have, or that has no last
 push, also gets a warning, and the command does not read it. A failed topic
 search still ends the run before any read.
@@ -626,7 +627,7 @@ counts as a failed request. These cause a request to fail:
 
 The command sends no code search request from 8 minutes after its start.
 Each query that it did not finish then gets a warning, and the command goes
-on with the repositories that it found. An item with no repository name
+on with the repositories that it found. An item with no owner/repo name
 gets a warning, and the command skips it. A query with more than 1,000
 results also gets a warning, since GitHub returns only the first 1,000. The
 time of the code search counts toward the run's time limit of 18 minutes,

@@ -33,7 +33,7 @@ const ITEM_WARNINGS_MAX = 10;
 const LOOKUP_BATCH = 100;
 
 // The GitHub code searches for Zotero plugin files: a Zotero 7+ manifest, or a package.json
-// that names a Zotero plugin build tool.
+// that names a Zotero plugin library, build tool, or type package.
 export const CODE_SEARCHES = [
   '"applications" "zotero" "strict_min_version" filename:manifest.json',
   '"applications" "zotero" "update_url" filename:manifest.json',
@@ -45,8 +45,9 @@ export const CODE_SEARCHES = [
 // any window of this length, failed requests included.
 export const CODE_SEARCH_RATE = 10;
 export const CODE_SEARCH_WINDOW_MS = 60 * 1000;
-// The time after `startedAt` from which the run sends no code search request, so the
-// reads keep most of the run's time limit.
+// The time after `startedAt` from which the run sends no code search request. A request
+// sent before it can still take CODE_SEARCH_MS, and the lookups come after, so the reads
+// start later than this.
 export const CODE_SEARCH_CUTOFF_MS = 8 * 60 * 1000;
 export const CODE_SEARCH_MS = 60 * 1000;
 
@@ -490,7 +491,8 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
         break;
       }
       seen.add(next);
-      const wait = sent.length < CODE_SEARCH_RATE ? 0 : Math.max(0, sent[sent.length - CODE_SEARCH_RATE] + CODE_SEARCH_WINDOW_MS - clock.now());
+      // One more millisecond, since a timer can fire up to 1 ms early against performance.now().
+      const wait = sent.length < CODE_SEARCH_RATE ? 0 : Math.max(0, sent[sent.length - CODE_SEARCH_RATE] + CODE_SEARCH_WINDOW_MS + 1 - clock.now());
       if (clock.now() + wait - startedAt >= CODE_SEARCH_CUTOFF_MS) {
         stop(`the run sends no code search request ${duration(CODE_SEARCH_CUTOFF_MS)} after it starts`);
         break;
@@ -521,7 +523,7 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
       for (const item of page.items as { repository?: { full_name?: unknown } | null }[]) {
         const name = item?.repository?.full_name;
         if (typeof name === "string" && REPO_NAME.test(name)) names.push(name);
-        else warnings.push(`the code search for ${query} returned an item with no repository.full_name, so the run skips it`);
+        else warnings.push(`the code search for ${query} returned an item with no owner/repo repository.full_name, so the run skips it`);
       }
       next = /<([^>]+)>;\s*rel="next"/.exec(link ?? "")?.[1];
     }
@@ -557,8 +559,9 @@ async function lookUp(fetch: Fetch, names: string[], source: Source, warnings: s
     });
     const declared = batch.map((_, i) => `$o${i}: String!, $n${i}: String!`).join(", ");
     const query = `query(${declared}) { ${fields.join(" ")} }`;
-    // A failed request, such as one with no token or past a rate limit, ends the lookups,
-    // since the next request would most likely fail the same way.
+    // A failed request, such as one with no token or past a rate limit, ends the lookups
+    // of this source, since the next request would most likely fail the same way. Each
+    // source has its own lookups.
     const failed = (why: string) =>
       warnings.push(`the run reads none of ${unique.length - start} ${source} repos from ${batch[0]} on, since their lookup failed: ${why}`);
     let answer: LookupAnswer;

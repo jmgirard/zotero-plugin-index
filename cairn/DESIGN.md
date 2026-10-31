@@ -606,7 +606,8 @@ reused._
   name that an entry or the skip set names is skipped there; each other
   name that no topic search returned is looked up with one GraphQL request
   for each 100 names, the names sent as variables. A failed request ends
-  the lookups, and so does `runMs` (M070). With the `codeSearch` option,
+  that source's lookups, and `runMs` ends all of them (M070; corrected
+  M071). With the `codeSearch` option,
   which `pnpm discover` sets to `CODE_SEARCHES`, it then pages through
   `/search/code` for each query (`githubClient().get`, 60 s a request),
   sending at most `CODE_SEARCH_RATE` (10) requests in any

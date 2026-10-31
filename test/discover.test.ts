@@ -772,12 +772,12 @@ describe("the code search", () => {
     });
   });
 
-  test("warns about an item with no repository.full_name and a query with more than 1,000 results", async () => {
+  test("warns about an item with no owner/repo repository.full_name and a query with more than 1,000 results", async () => {
     const page = { json: { total_count: 1500, items: [{ repository: null }, { repository: { full_name: "listed" } }, { name: "manifest.json" }] } };
     const { report, reads } = await run({ ...base(), [codeUrl("q1")]: page }, { codeSearch: ["q1"] });
     expect(report.warnings).toEqual([
       "the code search for q1 has 1500 results, and the search returns only the first 1000",
-      ...Array.from({ length: 3 }, () => "the code search for q1 returned an item with no repository.full_name, so the run skips it"),
+      ...Array.from({ length: 3 }, () => "the code search for q1 returned an item with no owner/repo repository.full_name, so the run skips it"),
     ]);
     expect(reads).toEqual(["example/alpha"]);
   });

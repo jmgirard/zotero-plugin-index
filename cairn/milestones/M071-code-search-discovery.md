@@ -102,6 +102,7 @@
 - 2026-10-31: T6 stop: the branch dispatch cannot show the token result. The read job's `if` admits only a schedule or the default branch, so a branch dispatch skips it, and the write job has no branch guard of its own. GitHub's REST docs for `GET /search/code` (read this session) say only that it needs authentication and allows 10 requests a minute, and name no token types. Asking the user whether to move the token check to the first run after the merge.
 - 2026-10-31: substantive amendment: at the user's choice at the T6 stop ("After the merge"), the Scope bullet on the token check now has the first `Discover plugins` run on the default branch after the merge show whether the Actions token can run code search, and T6 is the verify slot alone. No acceptance criterion changes.
 - 2026-10-31: T6 done: `pnpm test` 1727 passed, `pnpm check` 0 problems.
+- 2026-10-31: claim audit pass (fresh Opus reader): about 60 claims read, 5 corrected — the item warning now says "no owner/repo repository.full_name" (README too); lookup failure ends only that source's lookups (README, lookUp comment, DESIGN); the cutoff comment no longer says the reads keep most of the time limit; the query comment names a library, build tool, or type package; the pacing wait adds 1 ms against early timers. `pnpm test` 1727 passed, `pnpm check` 0 problems. Checkpoint before the reader's one re-read of the corrections.
 
 ## Decisions
 
