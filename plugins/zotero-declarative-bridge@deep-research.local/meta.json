@@ -1,0 +1,7 @@
+{
+  "id": "zotero-declarative-bridge@deep-research.local",
+  "name": "Zotero Declarative Bridge",
+  "description": "Constrained exact collection resolution and capability-bound local transactions for reviewed Zotero manifests.",
+  "repoUrl": "https://github.com/kl3574/deep-research",
+  "updateUrl": "https://raw.githubusercontent.com/kl3574/deep-research/main/skills/zotero-declarative-bridge/assets/zotero-plugin/updates.json"
+}
