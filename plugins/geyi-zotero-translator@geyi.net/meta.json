@@ -1,0 +1,8 @@
+{
+  "id": "geyi-zotero-translator@geyi.net",
+  "name": "Geyi Translator",
+  "description": "右键条目翻译其中的 PDF：保留原版式或 AI 重排，可输出双语对照，译文作为子附件挂回同一条目。",
+  "homepage": "https://www.geyi.net/download",
+  "repoUrl": "https://github.com/Nayuta-9/zotero-geyi-translator",
+  "updateUrl": "https://www.geyi.net/plugin/update.json"
+}
