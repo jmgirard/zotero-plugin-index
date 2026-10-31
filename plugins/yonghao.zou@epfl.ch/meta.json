@@ -1,0 +1,8 @@
+{
+  "id": "yonghao.zou@epfl.ch",
+  "name": "zotero-sync-to-tablet",
+  "description": "Sync files to tablet",
+  "homepage": "https://github.com/zouyonghao/zotero-sync-to-tablet#readme",
+  "repoUrl": "https://github.com/zouyonghao/zotero-sync-to-tablet",
+  "updateUrl": "https://github.com/zouyonghao/zotero-sync-to-tablet/releases/download/release/update.json"
+}
