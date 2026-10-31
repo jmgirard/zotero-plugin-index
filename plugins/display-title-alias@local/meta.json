@@ -1,0 +1,8 @@
+{
+  "id": "display-title-alias@local",
+  "name": "Zotero 标记标题",
+  "description": "在文献列表中显示个人标记标题；支持从 PDF 自动识别并固定真实标题、同一文件夹内去重。",
+  "homepage": "https://github.com/lss3765",
+  "repoUrl": "https://github.com/lss3765/Zotero-Display-Title-Public",
+  "updateUrl": "https://raw.githubusercontent.com/lss3765/Zotero-Display-Title-Public/main/update.json"
+}
