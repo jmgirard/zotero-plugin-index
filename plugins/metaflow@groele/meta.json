@@ -1,0 +1,8 @@
+{
+  "id": "metaflow@groele",
+  "name": "Zotero MetaFlow",
+  "description": "Validate, normalize, and enrich reference metadata.",
+  "homepage": "https://github.com/groele/Zotero-MetaFlow",
+  "repoUrl": "https://github.com/groele/Zotero-MetaFlow",
+  "updateUrl": "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json"
+}
