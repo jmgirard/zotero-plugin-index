@@ -1,0 +1,8 @@
+{
+  "id": "zodh@fatsource.com",
+  "name": "Zotero ODH",
+  "description": "a odh wrapper for Zotero",
+  "homepage": "https://github.com/1ywan/zotero-odh#readme",
+  "repoUrl": "https://github.com/1ywan/zotero-odh",
+  "updateUrl": "https://github.com/1ywan/zotero-odh/releases/download/release/update.json"
+}
