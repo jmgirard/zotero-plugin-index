@@ -1,0 +1,8 @@
+{
+  "id": "custom-item-fields@hotmail.com",
+  "name": "Zotero Custom Item Fields",
+  "description": "Add custom item fields to Zotero",
+  "homepage": "https://github.com/Dominic-DallOsto/zotero-custom-item-fields",
+  "repoUrl": "https://github.com/Dominic-DallOsto/zotero-custom-item-fields",
+  "updateUrl": "https://github.com/Dominic-DallOsto/zotero-custom-item-fields/releases/download/release/update.json"
+}
