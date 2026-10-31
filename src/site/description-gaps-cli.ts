@@ -1,6 +1,6 @@
 import { join, resolve } from "node:path";
 import process, { argv } from "node:process";
-import { findGaps } from "./description-gaps.ts";
+import { findGaps, gapLine } from "./description-gaps.ts";
 
 const USAGE = "usage: pnpm description-gaps <data file>";
 
@@ -22,11 +22,7 @@ async function main(): Promise<number> {
     console.error(result.message);
     return 1;
   }
-  // The shown text loses whitespace at its ends, and each other run of whitespace, tabs and
-  // line breaks included, prints as one space, so each gap stays one line of tab-separated fields.
-  for (const { id, gap, shown } of result.gaps) {
-    console.log([id, gap, ...(shown === undefined ? [] : [shown.trim().replace(/\s+/g, " ")])].join("\t"));
-  }
+  for (const gap of result.gaps) console.log(gapLine(gap));
   console.log(`description gaps: ${result.gaps.length}`);
   return 0;
 }

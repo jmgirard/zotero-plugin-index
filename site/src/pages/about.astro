@@ -117,8 +117,8 @@ const offered = new Set(categoryOptions(plugins).map(({ value }) => value));
       A description override that applies to the version the index read comes first. Without one, the site takes the
       Latin-script part of each description of which half or more is Chinese, Japanese, or Korean. It cuts the text at
       each <code>/</code> with a space on each side and after each <code>。</code>. It keeps the pieces whose letters
-      are all Latin and that hold at least three words, and it joins them with one space. If that part does not only
-      repeat the plugin's name, the site uses it in place of the whole text. A piece in another language that uses
+      are all Latin and that hold at least three words, and it joins them with one space. If that part exists and does
+      not only repeat the plugin's name, the site uses it in place of the whole text. A piece in another language that uses
       Latin letters, such as Portuguese, shows as it is.
     </p>
     <p>

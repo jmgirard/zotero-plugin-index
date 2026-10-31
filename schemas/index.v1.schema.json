@@ -30,7 +30,7 @@
         },
         "properties": {
           "field": {
-            "description": "The upstream fact this override corrects.",
+            "description": "The upstream fact this override corrects or, for an English description, fills in or replaces.",
             "enum": ["name", "description", "homepage", "strict_min_version", "strict_max_version", "languages"]
           },
           "version": {

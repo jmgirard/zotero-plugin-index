@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import type { PluginRecord } from "../src/build/build.ts";
-import { findGaps } from "../src/site/description-gaps.ts";
+import { findGaps, gapLine } from "../src/site/description-gaps.ts";
 
 const CLI = join(import.meta.dirname, "..", "src", "site", "description-gaps-cli.ts");
 
@@ -115,6 +115,16 @@ describe("findGaps", () => {
     mkdirSync(join(dir, "plugins", "a@example.org", "index.json"), { recursive: true });
     const result = await findGaps(writeData([record("a@example.org", "Notes", LONG)]), join(dir, "plugins"));
     expect(!result.ok && result.message).toMatch(/^entry-unreadable: .*index\.json: EISDIR/);
+  });
+});
+
+describe("gapLine", () => {
+  test.each<[string, string | undefined, string]>([
+    ["text with whitespace at its ends", " Custom\trename\n pdf \n", "a@example.org\tshort\tCustom rename pdf"],
+    ["text of only whitespace, such as a blank override", " \t", "a@example.org\tshort"],
+    ["missing text", undefined, "a@example.org\tshort"],
+  ])("prints a %s as one line", (_name, shown, line) => {
+    expect(gapLine({ id: "a@example.org", gap: "short", shown })).toBe(line);
   });
 });
 

@@ -445,8 +445,10 @@ only registry fields. Its `id` must equal the directory name.
   or Korean, by the share that the site counts. A `description` override
   can also replace an English description of fewer than six words, where a
   word is a run of letters, marks, and digits. This case reads the
-  description that the site shows without the override. Each item has
-  these fields:
+  description that the site shows without the override. The site's
+  categories read the shown description, so a `description` override can
+  change them. After you write one, check the plugin's categories. Each
+  item has these fields:
   - `field`: the fact to correct or fill in. The value is one of `name`,
     `description`, `homepage`, `strict_min_version`, `strict_max_version`,
     or `languages`.
@@ -461,10 +463,9 @@ only registry fields. Its `id` must equal the directory name.
   - `reason`: why the upstream value is wrong. For English description
     text, the reason names the upstream file or section the text came
     from. It also says which case above each upstream description is, or
-    that it is in English and not shown. The
-    reason must hold a
-    character other than whitespace, as JavaScript's `\s` defines it, and
-    Unicode format characters, such as U+200B.
+    that it is in English and not shown. The reason must hold a character
+    other than whitespace, as JavaScript's `\s` defines it, and Unicode
+    format characters, such as U+200B.
 
 Two overrides must not have the same `field` and `version`.
 

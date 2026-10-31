@@ -35,6 +35,14 @@ export function gapOf(record: PluginRecord): GapCase | undefined {
   return undefined;
 }
 
+// One printed line: the id, the case, and the shown text, with a tab between them. The shown
+// text loses whitespace at its ends, and each other run of whitespace, tabs and line breaks
+// included, becomes one space, so the line stays one line. A text left empty is left out.
+export function gapLine({ id, gap, shown }: Gap): string {
+  const text = shown?.trim().replace(/\s+/g, " ");
+  return [id, gap, ...(text ? [text] : [])].join("\t");
+}
+
 // Reads the data file at dataPath and gives each record the overrides of root/<id>/index.json,
 // or none when that file does not exist, then lists the records with an upstream block that
 // have a gap. A data file that cannot be read, is not JSON, or fails the v1 schema, and an
