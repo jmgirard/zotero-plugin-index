@@ -1,0 +1,8 @@
+{
+  "id": "zotero-siyuan@example.com",
+  "name": "Zotero to SiYuan",
+  "description": "Send a Zotero PDF reader annotation and its comment to your SiYuan daily note.",
+  "homepage": "https://github.com/loonghfut/zotero-siyuan",
+  "repoUrl": "https://github.com/loonghfut/zotero-siyuan",
+  "updateUrl": "https://github.com/loonghfut/zotero-siyuan/releases/latest/download/update.json"
+}
