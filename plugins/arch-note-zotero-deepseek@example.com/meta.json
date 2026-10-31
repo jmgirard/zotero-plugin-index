@@ -1,0 +1,8 @@
+{
+  "id": "arch-note-zotero-deepseek@example.com",
+  "name": "Arch Note Zotero",
+  "description": "Generate detailed paper reading guide notes in Zotero using DeepSeek or Poixe APIs.",
+  "homepage": "https://github.com/fanyc22/arch-note",
+  "repoUrl": "https://github.com/fanyc22/arch-note",
+  "updateUrl": "https://raw.githubusercontent.com/fanyc22/arch-note/main/updates.json"
+}
