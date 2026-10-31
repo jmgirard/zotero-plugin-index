@@ -1,0 +1,7 @@
+{
+  "id": "pdf2zh-connector@aarongig.com",
+  "name": "pdf2zh-desktop Connector",
+  "description": "Enables pdf2zh-desktop app to add translated PDFs as Zotero attachments + right-click translate menu. (Not the original pdf2zh)",
+  "repoUrl": "https://github.com/AaronGIG/pdf2zh-desktop",
+  "updateUrl": "https://raw.githubusercontent.com/AaronGIG/pdf2zh-desktop/main/updates.json"
+}
