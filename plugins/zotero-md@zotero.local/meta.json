@@ -1,0 +1,8 @@
+{
+  "id": "zotero-md@zotero.local",
+  "name": "Zotero MD",
+  "description": "Automatically convert paper PDFs to Markdown after download",
+  "homepage": "https://github.com/WeiCheng14159/zotero-md#readme",
+  "repoUrl": "https://github.com/WeiCheng14159/zotero-md",
+  "updateUrl": "https://github.com/WeiCheng14159/zotero-md/releases/download/release/update.json"
+}
