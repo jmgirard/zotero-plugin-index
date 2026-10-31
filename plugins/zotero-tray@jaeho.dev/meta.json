@@ -1,0 +1,8 @@
+{
+  "id": "zotero-tray@jaeho.dev",
+  "name": "Zotero Tray",
+  "description": "Close Zotero to a tray icon instead of quitting (Linux)",
+  "homepage": "https://github.com/jaehho/zotero-tray",
+  "repoUrl": "https://github.com/jaehho/zotero-tray",
+  "updateUrl": "https://github.com/jaehho/zotero-tray/releases/latest/download/updates.json"
+}
