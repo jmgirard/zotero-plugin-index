@@ -1,0 +1,8 @@
+{
+  "id": "memory@jsg.local",
+  "name": "Memory",
+  "description": "Comment cards beside Zotero PDF pages, kept in sync with annotation notes",
+  "homepage": "https://github.com/JiangShuguo/zotero-memory",
+  "repoUrl": "https://github.com/JiangShuguo/zotero-memory",
+  "updateUrl": "https://raw.githubusercontent.com/JiangShuguo/zotero-memory/main/memory/updates.json"
+}
