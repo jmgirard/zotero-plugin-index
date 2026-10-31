@@ -30,12 +30,14 @@
 - Add `code-search` to the handoff's `source` and to the body text.
 - Add a `budget` input for `Discover plugins` runs started by hand.
 - README, DESIGN, and CHANGELOG text.
-- On the branch, dispatch the `Discover plugins` read job once. Its report
-  shows whether the Actions token can run code search. The write job runs
-  only on the default branch, so this opens no pull request. If the token
-  cannot run code search, stop and ask the user for a read-only personal
-  token as a repository secret (question set). Its wiring is then a gated
-  amendment. The token goes only to the `pnpm discover` step.
+- After the merge, the first `Discover plugins` run on the default branch
+  shows whether the Actions token can run code search: its report has
+  code-search items, or a warning with HTTP 401 or 403 for each query. A
+  dispatch on the branch skips the read job, whose guard admits only a
+  schedule or the default branch. If the token cannot run code search,
+  stop and ask the user for a read-only personal token as a repository
+  secret. Its wiring is then a gated amendment. The token goes only to the
+  `pnpm discover` step.
 - After the merge, backfill the code-search finds in the rounds of M070's
   backfill. Use the `budget` input. Record each run id and the counts.
 
@@ -75,7 +77,7 @@
 - [x] T3: Add `code-search` to `entrySchema` and to `body()`. Add the `twoStep` test of AC5.
 - [x] T4: Add the `budget` input to `.github/workflows/discover.yml` as `${BUDGET:+--budget "$BUDGET"}`. Add the test of AC6, anchored on the run line.
 - [x] T5: Write the README, DESIGN, and CHANGELOG text of AC7, and wrap it near 76 columns.
-- [ ] T6: Run the verify slot. Push the branch, then dispatch `Discover plugins` with `--ref` set to the branch. Read the report for code-search items, a 401, or a 403. If the token cannot run code search, stop for the user.
+- [x] T6: Run the verify slot. The token check moves to the first run after the merge (Scope).
 
 ## Work log
 
@@ -98,6 +100,8 @@
 - 2026-10-31: T4 done: `budget` dispatch input (number, default 100) reaches the read job's run line as `${BUDGET:+--budget "$BUDGET"}`; the test anchors on the run line and its indented env lines, and went red with `inputs.budget || 100` planted. `pnpm test` 1727 passed, `pnpm check` 0 problems.
 - 2026-10-31: T5 done: README "Finding new plugins" (queries, token, join, pacing, failures, cutoff), "Pull requests from the bot" (`limit` and `budget` inputs, body sentence, hold), DESIGN item 1, Architecture, and Known issues, CHANGELOG entry. "Code search needs `GITHUB_TOKEN`" rests on an unauthenticated `/search/code` request that answered HTTP 401 this session. The simple-english lint hook flags older README and CHANGELOG lines (269, 918, 1403; 200 and later), none of them M071's, left as they are. `pnpm test` 1727 passed, `pnpm check` 0 problems.
 - 2026-10-31: T6 stop: the branch dispatch cannot show the token result. The read job's `if` admits only a schedule or the default branch, so a branch dispatch skips it, and the write job has no branch guard of its own. GitHub's REST docs for `GET /search/code` (read this session) say only that it needs authentication and allows 10 requests a minute, and name no token types. Asking the user whether to move the token check to the first run after the merge.
+- 2026-10-31: substantive amendment: at the user's choice at the T6 stop ("After the merge"), the Scope bullet on the token check now has the first `Discover plugins` run on the default branch after the merge show whether the Actions token can run code search, and T6 is the verify slot alone. No acceptance criterion changes.
+- 2026-10-31: T6 done: `pnpm test` 1727 passed, `pnpm check` 0 problems.
 
 ## Decisions
 
