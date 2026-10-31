@@ -1,0 +1,7 @@
+{
+  "id": "ZotFileRecovery@jlegewie.com",
+  "name": "ZotFileRecovery",
+  "description": "Recover tablet files from Zotfile in Zotero 7",
+  "repoUrl": "https://github.com/jlegewie/ZotFile-Recovery",
+  "updateUrl": "https://raw.githubusercontent.com/jlegewie/ZotFile-Recovery/main/updates.json"
+}
