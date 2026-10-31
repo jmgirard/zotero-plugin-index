@@ -1,0 +1,8 @@
+{
+  "id": "pinakes@srmateos.github.io",
+  "name": "Pinakes",
+  "description": "Shows the reference list of the paper you are reading and imports cited works into Zotero.",
+  "homepage": "https://github.com/srmateos/zotero-pinakes#readme",
+  "repoUrl": "https://github.com/SrMateos/zotero-pinakes",
+  "updateUrl": "https://github.com/srmateos/zotero-pinakes/releases/download/release/update.json"
+}
