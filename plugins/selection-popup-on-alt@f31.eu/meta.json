@@ -1,0 +1,8 @@
+{
+  "id": "selection-popup-on-alt@f31.eu",
+  "name": "Selection Popup on Alt",
+  "description": "Hides the reader's text-selection popup. Hold Alt while selecting text to show it for that selection.",
+  "homepage": "https://github.com/fuchsi3010/zotero-selection-popup-on-alt",
+  "repoUrl": "https://github.com/fuchsi3010/zotero-selection-popup-on-alt",
+  "updateUrl": "https://github.com/fuchsi3010/zotero-selection-popup-on-alt/releases/latest/download/update.json"
+}
