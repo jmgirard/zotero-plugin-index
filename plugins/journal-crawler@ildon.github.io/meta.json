@@ -1,0 +1,8 @@
+{
+  "id": "journal-crawler@ildon.github.io",
+  "name": "Journal Crawler",
+  "description": "Downloads the articles of a list of open access journals (PDF and metadata) into the Zotero library, incrementally.",
+  "homepage": "https://github.com/ilDon/zotero-crawler",
+  "repoUrl": "https://github.com/ilDon/zotero-crawler",
+  "updateUrl": "https://github.com/ilDon/zotero-crawler/releases/latest/download/updates.json"
+}
