@@ -106,7 +106,7 @@ describe("build.yml", () => {
     const job = jobText(build, "build");
     expect(job).toMatch(/^ {4}outputs:\n {6}plan-sha256: \$\{\{ steps\.plan-sha256\.outputs\.sha256 \}\}$/m);
     const hash = job.indexOf('      - id: plan-sha256\n        run: echo "sha256=$(sha256sum start-plan.json | cut -d \' \' -f 1)" >> "$GITHUB_OUTPUT"\n');
-    expect(hash).toBeGreaterThan(job.indexOf("carry-start-results"));
+    expect(hash).toBeGreaterThan(job.indexOf("          pnpm carry-start-results --plan "));
     expect(job.search(/^ {10}name: start-plan$/m)).toBeGreaterThan(hash);
     const site = jobText(build, "site");
     const download = site.search(/^ {10}name: start-plan$/m);
@@ -126,7 +126,7 @@ describe("build.yml", () => {
       '      - id: data-sha256\n        run: |\n          sha256="$(pnpm --silent data-digest --dir dist)"\n' +
         '          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"\n',
     );
-    expect(digest).toBeGreaterThan(job.indexOf("carry-start-results"));
+    expect(digest).toBeGreaterThan(job.indexOf("          pnpm carry-start-results --plan "));
     expect(job.search(/^ {10}name: plugins-data$/m)).toBeGreaterThan(digest);
     const site = jobText(build, "site");
     const download = site.search(/^ {10}name: plugins-data$/m);

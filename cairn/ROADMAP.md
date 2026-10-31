@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-31 (M068 review: M068 archived; candidate "Keep the
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M069 | Check the data artifact in the site job | in-progress | — | normal | milestones/M069-data-artifact-check.md |
+| M069 | Check the data artifact in the site job | review | — | normal | milestones/M069-data-artifact-check.md |
 | M068 | Warn when the Zotero release lists fall behind | done | — | normal | milestones/archive/M068-release-list-warnings.md |
 | M067 | Fill the description gaps | done | — | normal | milestones/archive/M067-description-gaps.md |
 | M066 | Filter plugins by category | done | — | normal | milestones/archive/M066-plugin-categories.md |

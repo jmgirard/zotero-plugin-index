@@ -2,7 +2,7 @@
      section ownership". A phase skill never rewrites another phase's section. -->
 # M069: Check the data artifact in the site job
 
-- **Status:** in-progress
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
@@ -35,7 +35,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 
 - [ ] AC1: `pnpm data-digest --dir <dir>` prints one line of 64 lowercase hex digits. The value is a SHA-256 over the entries under `<dir>`, sorted by their relative paths in byte order. Each entry adds three facts in a framed form: its path relative to `<dir>`, its kind (file or directory), and the bytes of each file. `test/data-digest.test.ts` shows the same value for a copy of a fixture tree at another path with other file times. It shows a different value after each of eight changes. Three changes are one changed byte, an added file, and a removed file. Three more are a renamed file with the same bytes, a file moved into another directory, and an added empty directory. The last two are an empty file replaced by an empty directory of the same name, and file `a` holding `bc` replaced by file `ab` holding `c`.
 - [ ] AC2: If the tree holds a symbolic link (to a file or to a directory) or a named pipe, the command prints no digest and exits 1. Its message names the path of that entry in quotes. If the `--expect <sha256>` value matches, the command exits 0. If the value does not match, it exits 1 with a message that names both values. The command exits 1 with its usage line for no `--dir`, an unknown option, or a positional argument. It does the same for an `--expect` value that is not 64 lowercase hex digits and for a `--dir` that is not a directory. `test/data-digest.test.ts` runs each case and asserts its exit status and message.
-- [ ] AC3: In `build.yml`, the build job gives the job output `data-sha256` from a `pnpm data-digest --dir dist` step. That step runs after `pnpm carry-start-results` and before the `plugins-data` upload. The site job runs `pnpm data-digest --dir dist --expect` with that output, after the `plugins-data` download and before `pnpm add-start-results`. The check step has no `if:` key and no `continue-on-error` key. `test/workflows.test.ts` asserts the output line, both steps, their order, and that the check step has neither key.
+- [ ] AC3: In `build.yml`, the build job gives the job output `data-sha256` from a `pnpm --silent data-digest --dir dist` step. That step runs after `pnpm carry-start-results` and before the `plugins-data` upload. The site job runs `pnpm --silent data-digest --dir dist --expect` with that output, after the `plugins-data` download and before `pnpm add-start-results`. The check step has no `if:` key and no `continue-on-error` key. `test/workflows.test.ts` asserts the output line, both steps, their order, and that the check step has neither key.
 - [ ] AC4: A `Build data` run on the milestone branch, started by hand, has a site job whose data check step succeeded.
 - [ ] AC5: README documents `pnpm data-digest`: its options, what it prints, and its exit statuses. The README section "The daily build" says that the site job checks the downloaded data against the value from the build job. It also says that a mismatch deploys nothing. The `build.yml` paragraph of DESIGN says the same. `CHANGELOG.md` has one new entry under `## Unreleased`. The entry says this: if the data that the site job downloads differs from the data that the build job wrote, the daily build deploys nothing.
 - [ ] AC6: `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check` pass.
@@ -44,7 +44,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 
 - AC1 → T2
 - AC2 → T2, T6
-- AC3 → T3
+- AC3 → T3, T7
 - AC4 → T5
 - AC5 → T4
 - AC6 → T5
@@ -57,6 +57,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - [x] T4: Write the README command section, the README section "The daily build", the `build.yml` paragraph of DESIGN, and the CHANGELOG entry.
 - [x] T5: Run `pnpm test` and `pnpm check`. Push the branch and run `gh workflow run build.yml --ref <branch>`. Record the run id and the result of the data check step of the site job.
 - [x] T6: Review return 1: run each refused entry kind of AC2 through the command in `test/data-digest.test.ts`, asserting exit status 1, empty stdout, and the message.
+- [x] T7: Re-audit finding: make the carry-order checks in `test/workflows.test.ts` search the `pnpm carry-start-results --plan` run line, not the first mention of the command.
 
 ## Work log
 
@@ -85,6 +86,10 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - 2026-10-31: amendment routed: AC3 — both steps run `pnpm --silent data-digest …` (`--silent` keeps pnpm's banner out of the captured value), while the criterion quotes `pnpm data-digest --dir dist` and `pnpm data-digest --dir dist --expect`; the work is right and the quoted command text is wrong.
 - 2026-10-31: status in-progress for review return 1 and the AC3 amendment.
 - 2026-10-31: T6 added (minor amendment) and done: the three refusal cases now run through the command; 21 tests pass; a planted `return 0` on a refused tree failed all three.
+- 2026-10-31: re-audit: AC3 (full) — wording cleared on questions 2 to 6; question 1 found that the test's `indexOf("carry-start-results")` matched a timeout comment above every step, so the carry order went unchecked; fixed in the test, wording kept.
+- 2026-10-31: amendment return: AC3 — "the build job gives the job output `data-sha256` from a `pnpm --silent data-digest --dir dist` step ... The site job runs `pnpm --silent data-digest --dir dist --expect` with that output"
+- 2026-10-31: T7 added (minor amendment) and done: both carry-order checks in `test/workflows.test.ts` (the data digest's and the start plan's) now search the `pnpm carry-start-results --plan` run line; a digest step planted before `pnpm build` failed the data test; 57 pass.
+- 2026-10-31: verify after return 1: `pnpm test` 1660 passed, 6 skipped; `pnpm check` 272 entries, 0 problems. Status review.
 
 ## Decisions
 
