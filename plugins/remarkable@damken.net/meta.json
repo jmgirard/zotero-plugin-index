@@ -1,0 +1,7 @@
+{
+  "id": "remarkable@damken.net",
+  "name": "reMarkable Integration for Zotero for Zotero",
+  "description": "reMarkable Integration for Zotero",
+  "repoUrl": "https://github.com/fdamken/zotero-remarkable",
+  "updateUrl": "https://github.com/fdamken/zotero-remarkable/releases/download/release/updates.json"
+}
