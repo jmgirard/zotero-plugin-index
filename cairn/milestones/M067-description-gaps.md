@@ -61,7 +61,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
       `overrides` and `reason` prose of `schemas/index.v1.schema.json` each name the short case of D-038. README,
       DESIGN, and the About page's Descriptions section state AC1's rule. README names `pnpm description-gaps`.
       CHANGELOG.md's Unreleased section names AC1's rule and the short case.
-- [ ] AC4: `cairn/references/description-ledger.md` names its data file: the deployed `v1/plugins.json` with
+- [x] AC4: `cairn/references/description-ledger.md` names its data file: the deployed `v1/plugins.json` with
       `generatedAt` 2026-10-31T07:51:22.433Z and SHA-256 `d1c883cc6f945563ba133033491e8f9c21c69a088f527f18574287bff4e77287`,
       on the shelf as `cairn/references/sources/plugins-data-2026-10-31.json`. The ledger lists each line that
       `pnpm description-gaps` prints over that file on the branch, with AC1's rule and before any new override. It
@@ -191,3 +191,14 @@ Pass 1, 2026-10-31, on branch m067-description-gaps at 9a5d42a, main at c6f6954 
 - ripple #2: same finding as prior-review #1 — fix now with it
 - ripple #3: `schemas/plugins.v1.schema.json:195` says an override "fills in" an English description, which leaves out the short case's replacement — fix now
 - AC4 unticked: diff-bug #13 shows it failing as written.
+
+Pass 2, 2026-10-31, on branch m067-description-gaps at 161c423, main at c6f6954 (not moved).
+
+- AC1 evidence: `test/description.test.ts` passes, now 9 Latin-script cases, adding a text at exactly 0.5 (part shown) and a piece that mixes CJK and Latin words (left out); planted `<=` at 0.5 and a removed Latin filter each failed their case at T8.
+- AC2 evidence: `test/description-gaps.test.ts` passes 13 tests, adding the CLI line format (no trailing tab for missing, whitespace as one space, "description gaps: 2") and a run from another directory that reads the checkout's pdfrename override ("description gaps: 0").
+- AC3 evidence: the pass-1 greps still hold, and README, About, and DESIGN now state the override first, then the Latin-script part, then the drop and the pick (claim audit after T8: 81 claims, 2 corrected, re-read holds).
+- AC4 evidence: `findGaps` over the shelf file (SHA-256 d1c883cc…77287) with `plugins/` from 5020a72 gives 28 lines; each id, case, and shown text equals its ledger row G1 to G28, with "(none)" for missing; G29 to G31 equal their records' manifest text; 0 mismatches.
+- AC5 evidence: unchanged since pass 1 (the T8 commits touch no `plugins/` file); `pnpm check`: 272 entries, 0 problems.
+- AC6 evidence: `pnpm description-gaps` over the shelf file prints "description gaps: 0", and no ledger row is kept; `pnpm test`: 1622 passed, 6 skipped; `pnpm check`: 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed.
+- spawned: diff-bug, blame-history, prior-review, ripple
