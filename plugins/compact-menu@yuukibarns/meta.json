@@ -1,0 +1,7 @@
+{
+  "id": "compact-menu@yuukibarns",
+  "name": "Compact Menu",
+  "description": "Hide Zotero's menu row and access native menus from a hamburger button beside the tabs.",
+  "repoUrl": "https://github.com/yuukibarns/zotero-compact-menu",
+  "updateUrl": "https://raw.githubusercontent.com/yuukibarns/zotero-compact-menu/main/updates.json"
+}
