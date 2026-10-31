@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ai@local",
+  "name": "Zotero AI Newton",
+  "description": "AI workspace for Zotero with Bohrium-style local chat",
+  "homepage": "https://github.com/newtontech/Zotero-AI-Newton#readme",
+  "repoUrl": "https://github.com/newtontech/Zotero-AI-Newton",
+  "updateUrl": "https://raw.githubusercontent.com/newtontech/Zotero-AI-Newton/main/release/update-beta.json"
+}
