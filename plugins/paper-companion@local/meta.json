@@ -1,0 +1,7 @@
+{
+  "id": "paper-companion@local",
+  "name": "Paper Companion · 论文伴读",
+  "description": "在 Zotero 中连续阅读问答、划词翻译、记录 Markdown 笔记、整理重点和复习生词。",
+  "repoUrl": "https://github.com/forguse/zotero-paper-companion",
+  "updateUrl": "https://github.com/forguse/zotero-paper-companion/releases/latest/download/updates.json"
+}
