@@ -1,0 +1,7 @@
+{
+  "id": "zotero-notebooklm@migueldelm",
+  "name": "Zotbook",
+  "description": "Connect Zotero collections to Google NotebookLM — convert collections to notebooks, add documents, and chat with your research.",
+  "repoUrl": "https://github.com/MiguelDLM/zotero-notebookLM",
+  "updateUrl": "https://raw.githubusercontent.com/MiguelDLM/zotero-notebookLM/main/updates.json"
+}
