@@ -1,0 +1,7 @@
+{
+  "id": "pdf-exporter@ilker.local",
+  "name": "PDF Exporter",
+  "description": "Copy the PDFs of selected items into a folder you choose, named after the reference.",
+  "repoUrl": "https://github.com/ilker-golcuk/zotero-plugins",
+  "updateUrl": "https://raw.githubusercontent.com/ilker-golcuk/zotero-plugins/main/update.json"
+}
