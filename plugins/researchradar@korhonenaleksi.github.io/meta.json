@@ -1,0 +1,8 @@
+{
+  "id": "researchradar@korhonenaleksi.github.io",
+  "name": "Zotero Research Radar",
+  "description": "Surfaces newly published research from your journals, ranked and explained, inside Zotero",
+  "homepage": "https://github.com/KorhonenAleksi/zotero-research-radar#readme",
+  "repoUrl": "https://github.com/KorhonenAleksi/zotero-research-radar",
+  "updateUrl": "https://github.com/KorhonenAleksi/zotero-research-radar/releases/download/release/update.json"
+}
