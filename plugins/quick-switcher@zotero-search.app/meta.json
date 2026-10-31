@@ -1,0 +1,8 @@
+{
+  "id": "quick-switcher@zotero-search.app",
+  "name": "Quick Switcher",
+  "description": "Obsidian-style quick switcher for Zotero. Press Cmd+O from any tab to search your library and jump straight to a paper.",
+  "homepage": "https://github.com/gshaikovski/zotero-quick-switcher",
+  "repoUrl": "https://github.com/gshaikovski/zotero-quick-switcher",
+  "updateUrl": "https://raw.githubusercontent.com/gshaikovski/zotero-quick-switcher/main/updates.json"
+}
