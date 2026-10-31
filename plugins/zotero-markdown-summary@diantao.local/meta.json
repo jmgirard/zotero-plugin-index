@@ -1,0 +1,7 @@
+{
+  "id": "zotero-markdown-summary@diantao.local",
+  "name": "Literature Review with LLM",
+  "description": "Create Markdown summaries as linked attachments for Zotero items.",
+  "repoUrl": "https://github.com/KaguraTart/literature-review-with-LLM",
+  "updateUrl": "https://github.com/KaguraTart/literature-review-with-LLM/releases/latest/download/update.json"
+}
