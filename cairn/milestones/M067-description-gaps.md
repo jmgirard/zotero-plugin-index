@@ -146,6 +146,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - 2026-10-31: T8 done: the ledger gains a Shown text column (AC4) and a Category changes section; 9 category excludes in `src/site/categories.ts` leave 7 plugins with 17 new assignments the read marked right; the CLI reads `plugins/` from its own folder, prints whitespace as one space, prints no trailing tab for `missing`, and ends "description gaps: N"; README, About, and DESIGN state override first, then the Latin-script part, then the drop and the pick; README says a short other-language text lists as `short`; both schema prose fixes; CHANGELOG and README within 80 columns; tests: exactly-0.5, mixed-piece, CLI from another directory, CLI line format, redundant `ok` check dropped, About test lines for the new rules. Planted defects (`<=` at 0.5, no Latin filter, cwd root) each failed their test. pnpm test (1622 passed, 6 skipped) and pnpm check pass.
 - 2026-10-31: claim audit: 81 claims read, 2 corrected — cairn/references/description-ledger.md (the category read is 13 of 22 right and 9 wrong, not 17 of 26, which also corrects the T8 line above and the diff-bug #2 Review line's count), README.md and src/site/description-gaps-cli.ts (the CLI also trims the shown text's ends)
 - 2026-10-31: status set to review after return 1.
+- 2026-10-31: claim audit re-read of the 2 corrected claims by the same reader: all hold; one README line rewrapped.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
