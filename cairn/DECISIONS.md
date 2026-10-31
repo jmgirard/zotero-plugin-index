@@ -512,3 +512,32 @@ missing and that authors do not choose them. The site build computes them,
 and the published data carries none, so they add nothing to the data's
 contract (D-006). This choice is wrong if a hand read finds more than 1 in 10
 assignments wrong after tuning, or if data users ask for the categories.
+
+### D-038: A description override can replace a short English description, and the site shows the Latin-script part of a mixed text, extending D-030, D-031, and D-032
+
+2026-10-31, M067 plan. After the backfill of 2026-10-29, many shown
+descriptions were again missing, mostly Chinese, in Portuguese, or English
+but too short to say what the plugin does. The user rejected writing every
+description by hand. That would replace author text that works, hide later
+author edits, and need work on each new plugin. At the question set the
+user chose two changes.
+
+First, a `description` override can also give English text for a plugin
+whose description, as the site shows it without the override, is in
+English and has fewer than six words. A word is a run of letters, marks,
+and digits. Every such plugin gets an override. The plan rejected a hand
+read that keeps the clear short texts, and the user chose this. Such an
+override has no `version`, as D-031 states, so it hides a longer text that
+the author writes later until someone removes the override.
+
+Second, for a manifest or GitHub description whose CJK share is 0.5 or
+more, the site shows its Latin-script part. That part is the pieces, cut at
+` / ` and after `。`, whose letters are all Latin script and that hold at
+least three words. The user chose this over an override for each such
+plugin, since new ones arrive often and an override hides author edits. A
+Latin-script piece in another language, such as Portuguese, shows as it
+is. A text whose CJK share is below 0.5 gets no override by these rules.
+
+This choice is wrong if the Latin-script part shows a fragment that does
+not describe the plugin, or if the short overrides keep hiding better
+author text. The rest of D-030, D-031, and D-032 stands.
