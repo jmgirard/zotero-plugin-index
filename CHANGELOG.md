@@ -456,6 +456,14 @@
   have one. If you validate against a saved copy of
   `schemas/plugins.v1.schema.json`, fetch the schema again, since it
   rejects fields that it does not define.
+- When half or more of a manifest or GitHub description is Chinese,
+  Japanese, or Korean and the description has a Latin-script part, the
+  site now shows that part. That part is the pieces between ` / ` and after `。`
+  whose letters are all Latin and that hold at least three words. The README gives the whole rule. A
+  `description` override can now also replace an English description of
+  fewer than six words. `pnpm description-gaps <data file>` lists the
+  plugins whose description is missing, half or more Chinese, Japanese, or
+  Korean, or under six words, after the checkout's overrides.
 - The bot now merges its own pull requests. Each new bot pull request body
   has a Hold line, which names the entry's hold reasons or says
   `Hold: none`. The README lists the five reasons. A held pull request gets

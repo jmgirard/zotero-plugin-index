@@ -151,6 +151,11 @@ holds the same text (M063).
 A manifest `__MSG_` name or description takes its message from
 `_locales/en/`, `en_US/`, or `en_GB/` before the default locale (M055).
 The data also carries the GitHub repo's About text as `repoDescription`.
+A manifest or GitHub description with a CJK share of 0.5 or more first
+gives way to its Latin-script part, when that part is left and does not
+only repeat the name: the pieces cut at ` / ` and after `。` whose letters
+are all Latin and that hold at least three words, joined with one space
+(M067, D-038).
 The site drops a manifest or GitHub description that is blank or only
 repeats the plugin's name (M015). It shows the manifest one when it is left
 and its CJK share is below 0.5, else the GitHub one when it is left and the
@@ -239,9 +244,10 @@ shows each one separately. A combined verdict is out of scope.
    `description` override can also give English text for a plugin with no
    English description upstream: the manifest and GitHub texts are each
    missing, not in English, only repeat the name, or have a CJK share of
-   0.5 or more. Its
-   reason names its upstream source and which case each text is (D-030,
-   D-031, D-032).
+   0.5 or more. It can also replace an English description that the site
+   shows without the override and that has fewer than six words (D-038).
+   Its reason names its upstream source and which case each text is
+   (D-030, D-031, D-032, D-038).
 4. User reports. Two issue forms take a "works" or a "broken" report with
    the plugin id, the plugin version, and the Zotero version. A bot checks
    each report, comments, and closes the issue (M020), and a daily sweep
@@ -383,6 +389,10 @@ exception is a report that is abuse.
   or `<dir>`, from the data file there. `src/site/version.ts` holds the version and range functions
   that the templates use, `majorSupport` and `ZOTERO_MAJORS` among them, and
   `src/site/description.ts` holds `shownDescription` and `cjkShare`.
+  `pnpm description-gaps <data file>` (`src/site/description-gaps.ts`)
+  lists the records whose shown description, with the checkout's overrides,
+  is missing, has a CJK share of 0.5 or more, or has fewer than six words
+  (M067).
   `src/site/categories.ts` holds `CATEGORIES`, `categories`, and
   `categoryOptions` (M066).
   `src/site/languages.ts` holds the applied languages, their names, and the

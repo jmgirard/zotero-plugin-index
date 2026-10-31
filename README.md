@@ -89,6 +89,19 @@ manifest description, or no description. A `description` override that
 applies to the plugin version that the index read replaces both. The name
 check does not apply to an override.
 
+The site first looks at each description of which half or more is
+Chinese, Japanese, or Korean, by that share. It takes the Latin-script
+part of such a description before it drops or compares the descriptions.
+It cuts the text at each ` / ` and after each `。`. A word is a run of
+letters, marks, and digits. The site keeps the pieces whose letters are
+all Latin and that hold at least three words. It joins those pieces with
+one space. If that part is left and does not
+only repeat the name, the site uses it in place of the whole text.
+Otherwise the site uses the whole text. For example,
+"点击关闭按钮只最小化窗口。Minimize Zotero instead of quitting." becomes
+its English sentence. A Latin-script piece in another language, such as Portuguese,
+shows as it is.
+
 The home page has a search box. It shows only the plugins whose name or
 description holds the text you type. The search ignores letter case and the
 spaces before and after the text, but not accents. The page keeps the text
@@ -429,7 +442,11 @@ only registry fields. Its `id` must equal the directory name.
   English locale files, and the About text of the GitHub repository. A
   description that is not in English or only repeats the name counts as
   none. So does a description of which half or more is Chinese, Japanese,
-  or Korean, by the share that the site counts. Each item has these fields:
+  or Korean, by the share that the site counts. A `description` override
+  can also replace an English description of fewer than six words, where a
+  word is a run of letters, marks, and digits. This case reads the
+  description that the site shows without the override. Each item has
+  these fields:
   - `field`: the fact to correct or fill in. The value is one of `name`,
     `description`, `homepage`, `strict_min_version`, `strict_max_version`,
     or `languages`.
@@ -443,7 +460,8 @@ only registry fields. Its `id` must equal the directory name.
     `mul`, in any letter case, is not allowed.
   - `reason`: why the upstream value is wrong. For English description
     text, the reason names the upstream file or section the text came
-    from. It also says which case above each upstream description is. The
+    from. It also says which case above each upstream description is, or
+    that it is in English and not shown. The
     reason must hold a
     character other than whitespace, as JavaScript's `\s` defines it, and
     Unicode format characters, such as U+200B.
@@ -1247,6 +1265,37 @@ To read the data from another directory and write the pages there, add
 `--out <dir>`. The command then reads `<dir>/v1/plugins.json`. If it cannot
 read or parse the data file, or the file has no `plugins` list, it writes no
 page and exits with status 1.
+
+## Finding description gaps
+
+To list the plugins whose description needs a `description` override, run
+the command on a data file, for example the published one:
+
+```bash
+pnpm description-gaps dist/v1/plugins.json
+```
+
+The command gives each record the overrides of the checkout's
+`plugins/<id>/index.json`. If that file does not exist, the record gets no
+overrides. So the command shows the gaps that the overrides you wrote
+leave, with no new build. It checks each record with an `upstream` block.
+It prints one line for each record in one of these cases:
+
+- `missing`: the site shows no description.
+- `cjk`: half or more of the shown description is Chinese, Japanese, or
+  Korean.
+- `short`: the shown description has fewer than six words.
+
+The line holds the plugin id, the case, and the shown text, with a tab
+between them. It names the first of these cases that applies, in that
+order. The last line gives the count, and the command exits with status 0.
+
+The command prints a message, lists nothing, and exits with status 1 in
+these cases: it cannot read the data file, the file is not JSON, or the v1
+schema refuses it. It does the same for an `index.json` that it cannot
+read, that is not JSON, or that its schema refuses. The command does not find a
+description in another language written in Latin script, such as
+Portuguese. Find those by reading the list of descriptions.
 
 ## The daily build
 
