@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-31 (M070 review: M070 archived; candidate "Find plu
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M071 | Find plugins by GitHub code search | in-progress | M070 | normal | milestones/M071-code-search-discovery.md |
+| M071 | Find plugins by GitHub code search | review | M070 | normal | milestones/M071-code-search-discovery.md |
 | M070 | Find plugins in the zotero-chinese catalog | done | — | normal | milestones/archive/M070-catalog-discovery.md |
 | M069 | Check the data artifact in the site job | done | — | normal | milestones/archive/M069-data-artifact-check.md |
 | M068 | Warn when the Zotero release lists fall behind | done | — | normal | milestones/archive/M068-release-list-warnings.md |
