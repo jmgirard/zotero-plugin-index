@@ -1,0 +1,8 @@
+{
+  "id": "wmu-journal-tags@wmu.local",
+  "name": "WMU 期刊分类标签",
+  "description": "展示温州医科大学科技类共识期刊目录（T系列、Q系列）分类标签的 Zotero 插件",
+  "homepage": "https://github.com/virchow-zhang/wmu-journal-tags#readme",
+  "repoUrl": "https://github.com/virchow-zhang/wmu-journal-tags",
+  "updateUrl": "https://github.com/virchow-zhang/wmu-journal-tags/releases/download/release/update.json"
+}
