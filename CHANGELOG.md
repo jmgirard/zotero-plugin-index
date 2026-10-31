@@ -525,3 +525,11 @@
 - The "Menus and settings in" menu draws its own down arrow in the text
   color, inside the box, in place of the browser's arrow. With forced
   colors on, the browser draws its own arrow.
+- The home page has a "Category" menu that filters the table to one of the
+  index's 13 categories, such as AI assistants or Translation and
+  dictionaries. It lists the categories that at least one plugin has, and it
+  keeps the choice in `?category=`. Each plugin page links its categories
+  to the filtered home page, and the About page lists the categories. The
+  index assigns them from words in a plugin's name and descriptions. It
+  adds or removes some by hand, so a category can be wrong or missing. The
+  data file does not carry them.

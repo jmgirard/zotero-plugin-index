@@ -4,6 +4,7 @@ import { majorSupport, ZOTERO_MAJORS } from "../../../src/site/version.ts";
 import Icon from "../components/Icon.astro";
 import Base from "../layouts/Base.astro";
 import {
+  categoryOptions,
   displayName,
   homeOrder,
   languageName,
@@ -12,6 +13,7 @@ import {
   majorStart,
   monthYear,
   pluginHref,
+  rowCategoriesAttribute,
   rowLanguagesAttribute,
   rowMajorsAttribute,
   safeHref,
@@ -53,6 +55,13 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
       <label for="search" class="visually-hidden">Search plugins</label>
       <Icon name="search" />
       <input type="search" id="search" data-search placeholder="Search plugins" autocomplete="off" />
+    </p>
+    <p class="category-filter" hidden>
+      <label for="category">Category</label>{" "}
+      <select id="category" data-category-filter autocomplete="off">
+        <option value="">All categories</option>
+        {categoryOptions(plugins).map(({ value, text }) => <option value={value}>{text}</option>)}
+      </select>
     </p>
     <p class="language-filter" hidden>
       <label for="language">Menus and settings in</label>{" "}
@@ -123,7 +132,12 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
               ...(rest.length > 0 ? [{ text: `+${rest.length}`, title: rest.map(languageName).join(", "), more: true }] : []),
             ];
             return (
-              <tr data-plugin={record.id} data-languages={rowLanguagesAttribute(record)} data-zotero={rowMajorsAttribute(record, zoteroRelease)}>
+              <tr
+                data-plugin={record.id}
+                data-languages={rowLanguagesAttribute(record)}
+                data-zotero={rowMajorsAttribute(record, zoteroRelease)}
+                data-categories={rowCategoriesAttribute(record)}
+              >
                 <th scope="row" class="name">
                   <a href={pluginHref(record.id)} data-name>{name}</a>
                   {upstream?.archived === true && <span class="badge" data-archived>Archived</span>}
@@ -224,9 +238,10 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
     rowShows,
   } from "../../../src/site/home-filter.ts";
 
-  // The search box, the menu, the buttons, the count, and the pager are hidden in the HTML,
+  // The search box, the menus, the buttons, the count, and the pager are hidden in the HTML,
   // so a page without JavaScript shows every row and no control.
   const search = document.querySelector<HTMLInputElement>("input[data-search]");
+  const categorySelect = document.querySelector<HTMLSelectElement>("select[data-category-filter]");
   const select = document.querySelector<HTMLSelectElement>("select[data-language-filter]");
   const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-version-filter] button")];
   const status = document.querySelector<HTMLElement>("[data-filter-status]");
@@ -234,7 +249,8 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
   const pageStatus = document.querySelector<HTMLElement>("[data-page-status]");
   const steps = [...document.querySelectorAll<HTMLButtonElement>("[data-pager] button")];
   const table = document.querySelector<HTMLElement>(".table-card");
-  if (search && select && buttons.length > 0) {
+  if (search && categorySelect && select && buttons.length > 0) {
+    const slugs = [...categorySelect.options].map((option) => option.value);
     const languages = [...select.options].map((option) => option.value);
     // The "Any" button has no value attribute, so its value is "".
     const majors = buttons.map((button) => button.value);
@@ -244,13 +260,15 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
       row,
       languages: row.dataset.languages ?? "",
       zotero: row.dataset.zotero ?? "",
+      categories: row.dataset.categories ?? "",
       name: row.querySelector("[data-name]")?.textContent ?? "",
       description: row.querySelector("[data-description]")?.textContent ?? "",
     }));
     const language = () => ({ value: select.value, options: languages });
     const zotero = () => ({ value: major, options: majors });
-    // The rows the search box, the menu, and the buttons pass, on every page.
-    const passed = () => rows.filter((entry) => rowShows(entry, language(), zotero(), search.value));
+    const category = () => ({ value: categorySelect.value, options: slugs });
+    // The rows the search box, the menus, and the buttons pass, on every page.
+    const passed = () => rows.filter((entry) => rowShows(entry, language(), zotero(), search.value, category()));
     const show = () => {
       for (const button of buttons) button.setAttribute("aria-pressed", String(button.value === major));
       const shown = passed();
@@ -259,7 +277,7 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
       for (const entry of rows) entry.row.hidden = true;
       shown.forEach((entry, i) => (entry.row.hidden = !onPage(i, page)));
       if (status) {
-        const filtering = search.value.trim() !== "" || filterOn(language()) || filterOn(zotero());
+        const filtering = search.value.trim() !== "" || filterOn(language()) || filterOn(zotero()) || filterOn(category());
         status.textContent = filterStatus(shown.length, rows.length, filtering);
       }
       if (pager) pager.hidden = shown.length <= PAGE_SIZE;
@@ -270,13 +288,11 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
         step.setAttribute("aria-disabled", String(page === end));
       }
     };
-    const address = () =>
-      filterHref(
-        filterHref(filterHref(filterHref(location.href, "q", search.value.trim()), "language", select.value), "zotero", major),
-        "page",
-        page > 1 ? String(page) : "",
-      );
-    // Reads the parameters into the search box, the menu, the buttons, and the page, on load
+    const address = () => {
+      const filtered = filterHref(filterHref(location.href, "q", search.value.trim()), "category", categorySelect.value);
+      return filterHref(filterHref(filterHref(filtered, "language", select.value), "zotero", major), "page", page > 1 ? String(page) : "");
+    };
+    // Reads the parameters into the search box, the menus, the buttons, and the page, on load
     // and when Back or Forward changes the address in the same page. A parameter that names
     // no option, or no page after 1, leaves the address.
     // Typing writes the address once the visitor stops for half a second, so a burst of keys
@@ -292,6 +308,7 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
       clearTimeout(pending);
       const params = new URL(location.href).searchParams;
       search.value = params.get("q") ?? "";
+      categorySelect.value = chosenValue(params.get("category"), slugs);
       select.value = chosenValue(params.get("language"), languages);
       major = chosenValue(params.get("zotero"), majors);
       page = chosenPage(params.get("page"), pageCount(passed().length));
@@ -313,6 +330,7 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
       clearTimeout(pending);
       pending = setTimeout(write, 500);
     });
+    categorySelect.addEventListener("change", update);
     select.addEventListener("change", update);
     for (const button of buttons) {
       button.addEventListener("click", () => {
@@ -333,6 +351,7 @@ const prePaint = `if ("noModule" in HTMLScriptElement.prototype) {
       });
     }
     search.closest("[hidden]")?.removeAttribute("hidden");
+    categorySelect.closest("[hidden]")?.removeAttribute("hidden");
     select.closest("[hidden]")?.removeAttribute("hidden");
     buttons[0]!.closest("[hidden]")?.removeAttribute("hidden");
     status?.removeAttribute("hidden");

@@ -29,6 +29,7 @@ const filteredPage2 = (...each: string[]) => {
 };
 const EN = '[data-languages~="en"]';
 const Z7 = '[data-zotero~="7"]';
+const AI = '[data-categories~="ai"]';
 
 export const PRE_PAINT_CASES: [search: string, style: string][] = [
   ["", BARE],
@@ -65,6 +66,11 @@ export const PRE_PAINT_CASES: [search: string, style: string][] = [
   ["?language=e%6E", filtered(EN)],
   ["?zotero=99", filtered('[data-zotero~="99"]')],
   ["?zotero=7&zotero=8", filtered(Z7)],
+  ["?category=ai", filtered(AI)],
+  ["?category=ai&language=en", filtered(EN, AI)],
+  ["?zotero=7&category=ai", filtered(Z7, AI)],
+  ["?category=ai&page=2", filteredPage2(AI)],
+  ['?category=a"b', ALL],
   ["?language=", BARE],
   ["?zotero=", BARE],
   ['?language=a"b', ALL],

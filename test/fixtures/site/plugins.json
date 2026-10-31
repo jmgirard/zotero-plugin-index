@@ -170,7 +170,7 @@
       "upstream": {
         "id": "locale-plugin@example.org",
         "name": "Locale Plugin",
-        "description": "Translates item fields.",
+        "description": "Translates item fields in a single-page reading mode.",
         "version": "4.2.0",
         "strictMinVersion": "7.0",
         "strictMaxVersion": "9.*",

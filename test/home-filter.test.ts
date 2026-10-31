@@ -15,6 +15,7 @@ import { PRE_PAINT_CASES } from "./support/pre-paint.ts";
 
 const LANGUAGES = ["", "de", "en", "zh"];
 const MAJORS = ["", "7", "8", "9", "10"];
+const SLUGS = ["", "ai", "notes", "translation"];
 
 describe("passes", () => {
   test.each([
@@ -41,16 +42,24 @@ describe("passes", () => {
 });
 
 describe("rowShows", () => {
-  const row = { languages: "en zh", zotero: "8 9", name: "Better Notes", description: "Edits PDF annotations." };
+  const row = { languages: "en zh", zotero: "8 9", categories: "ai notes", name: "Better Notes", description: "Edits PDF annotations." };
   const ANY = { value: "", options: LANGUAGES };
   const ANY_MAJOR = { value: "", options: MAJORS };
+  const ANY_CATEGORY = { value: "", options: SLUGS };
 
   test.each([
     ["both filters pass", "zh", "9", true],
     ["only the language passes", "zh", "7", false],
     ["only the version passes", "de", "8", false],
   ])("%s", (_, language, zotero, shows) => {
-    expect(rowShows(row, { value: language, options: LANGUAGES }, { value: zotero, options: MAJORS }, "")).toBe(shows);
+    expect(rowShows(row, { value: language, options: LANGUAGES }, { value: zotero, options: MAJORS }, "", ANY_CATEGORY)).toBe(shows);
+  });
+
+  test.each([
+    ["a category the row has", "notes", true],
+    ["a category the row lacks", "translation", false],
+  ])("category: %s", (_, category, shows) => {
+    expect(rowShows(row, ANY, ANY_MAJOR, "", { value: category, options: SLUGS })).toBe(shows);
   });
 
   test.each([
@@ -63,11 +72,11 @@ describe("rowShows", () => {
     ["text in neither", "zotfile", false],
     ["text that spans the name and the description", "notes edits", false],
   ])("search: %s", (_, query, shows) => {
-    expect(rowShows(row, ANY, ANY_MAJOR, query)).toBe(shows);
+    expect(rowShows(row, ANY, ANY_MAJOR, query, ANY_CATEGORY)).toBe(shows);
   });
 
   test("search: a matching query still hides a row that the version buttons hide", () => {
-    expect(rowShows(row, ANY, { value: "7", options: MAJORS }, "notes")).toBe(false);
+    expect(rowShows(row, ANY, { value: "7", options: MAJORS }, "notes", ANY_CATEGORY)).toBe(false);
   });
 });
 

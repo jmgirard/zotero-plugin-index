@@ -231,7 +231,8 @@ const { generatedAt } = loadData();
       }
       /* The edges of the controls take --faint, which the color test holds at 3:1 on --surface. */
       .search input,
-      [data-language-filter] {
+      [data-language-filter],
+      [data-category-filter] {
         height: 2rem;
         border: 1px solid var(--faint);
         border-radius: var(--radius-m);
@@ -244,9 +245,10 @@ const { generatedAt } = loadData();
         width: 100%;
         padding: 0 var(--space-5) 0 var(--space-16);
       }
-      /* The page draws the menu's arrow in place of the browser's: two triangles in currentColor
+      /* The page draws each menu's arrow in place of the browser's: two triangles in currentColor
          make one down arrow, inset from the right edge by the left padding. */
-      [data-language-filter] {
+      [data-language-filter],
+      [data-category-filter] {
         max-width: 100%;
         padding: 0 var(--space-14) 0 var(--space-4);
         appearance: none;
@@ -257,14 +259,16 @@ const { generatedAt } = loadData();
         background-size: var(--space-3) var(--space-3);
         background-repeat: no-repeat;
       }
-      /* Forced colors drop gradients, so the menu keeps the browser's own arrow there. */
+      /* Forced colors drop gradients, so each menu keeps the browser's own arrow there. */
       @media (forced-colors: active) {
-        [data-language-filter] {
+        [data-language-filter],
+        [data-category-filter] {
           padding-right: var(--space-4);
           appearance: auto;
         }
       }
       .language-filter,
+      .category-filter,
       .version-filter {
         display: flex;
         flex-wrap: wrap;
@@ -276,6 +280,7 @@ const { generatedAt } = loadData();
       /* The script removes hidden from each control, so a page without JavaScript shows none. */
       .search[hidden],
       .language-filter[hidden],
+      .category-filter[hidden],
       .version-filter[hidden],
       .filter-status[hidden],
       .pager[hidden] {
@@ -309,6 +314,7 @@ const { generatedAt } = loadData();
       }
       .search input:focus-visible,
       [data-language-filter]:focus-visible,
+      [data-category-filter]:focus-visible,
       [data-version-filter] button:focus-visible {
         outline: 2px solid var(--link);
         outline-offset: 2px;
@@ -644,6 +650,11 @@ const { generatedAt } = loadData();
       .page-head .description {
         max-width: 68ch;
         margin: var(--space-3) 0 0;
+        color: var(--muted);
+      }
+      .page-head .categories {
+        margin: var(--space-3) 0 0;
+        font-size: var(--text-s);
         color: var(--muted);
       }
       .actions {

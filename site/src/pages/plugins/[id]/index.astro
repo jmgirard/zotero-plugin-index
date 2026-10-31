@@ -4,6 +4,8 @@ import Icon from "../../../components/Icon.astro";
 import Base from "../../../layouts/Base.astro";
 import {
   BASE,
+  CATEGORIES,
+  categories,
   compatMajors,
   day,
   declaredRange,
@@ -39,6 +41,8 @@ const repoHref = safeHref(repoUrl);
 const github = githubRepo(repoUrl);
 const xpiHref = upstream?.xpiUrl === undefined ? undefined : safeHref(upstream.xpiUrl);
 const description = shownDescription(record);
+const slugs = categories(record);
+const recordCategories = CATEGORIES.filter((category) => slugs.includes(category.slug));
 const { min, max } = declaredRange(record);
 ---
 
@@ -76,6 +80,19 @@ const { min, max } = declaredRange(record);
       )
     }
     {description && <p class="description" data-description>{description}</p>}
+    {
+      recordCategories.length > 0 && (
+        <p class="categories" data-categories>
+          <a href={`${BASE}about/#categories`} data-categories-about>Index categories</a>:{" "}
+          {recordCategories.map((category, i) => (
+            <>
+              {i > 0 && ", "}
+              <a href={`${BASE}?category=${category.slug}`} data-category={category.slug}>{category.name}</a>
+            </>
+          ))}
+        </p>
+      )
+    }
     <div class="actions" data-links>
       {
         upstream && xpiHref && (

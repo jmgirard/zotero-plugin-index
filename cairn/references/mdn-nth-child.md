@@ -15,7 +15,7 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-child. Browser compat data
 version 8.1.7.
 
 **Role.** Settles which browsers apply the rules that use `:nth-child(An+B of S)` in the home page's pre-paint
-style. When a language or Zotero filter is on, `prePaintStyle` writes such rules.
+style. When a language, Zotero, or category filter is on, `prePaintStyle` writes such rules (category since M066).
 
 ## Extracted values
 

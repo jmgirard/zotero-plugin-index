@@ -62,7 +62,7 @@ goes back to page 1 (M058). Without JavaScript every row shows. A classic
 script before the table runs before the rows parse. In a browser that runs
 module scripts, it adds a style that `prePaintStyle` writes from the
 address. The style hides the rows outside the asked page of the rows that
-`?language=` and `?zotero=` pass. So in a browser that reads
+`?language=`, `?zotero=`, and `?category=` pass (M066). So in a browser that reads
 `:nth-child(… of S)`, no row that the script hides paints while the page
 loads (see Known issues). A value that the script drops, or a page past the
 last one, also hides rows that the script then shows. For an address with
@@ -76,10 +76,18 @@ languages with the most plugins first, and languages with the same number
 of plugins in code-unit order of their English names (M035). The home
 page's "Declares Zotero" buttons, "Any" and one per major of
 `ZOTERO_MAJORS`, filter the table to the plugins whose mark for the pressed
-major is all or part, one major at a time, together with the menu; the
+major is all or part, one major at a time, together with the language menu; the
 same script runs them and keeps the choice in `?zotero=` (D-019, M037).
 A search box filters the table to the rows whose name or description holds
-the query, both lowercased, and keeps it in `?q=` (M053). The same script
+the query, both lowercased, and keeps it in `?q=` (M053). A "Category" menu
+after it filters the table to one category and keeps it in `?category=`
+(M066). Its options are the categories that at least one row has, as "Name
+(N)", most rows first and ties in `CATEGORIES` order. A category is the
+index's own grouping, not a checkable fact (D-037): `categories` in
+`src/site/categories.ts` assigns each of the 13 categories whose pattern
+matches the display name, the shown description, or the manifest or GitHub
+description, plus each whose `include` list holds the id, less each whose
+`exclude` list holds it. The data file carries no categories. The same script
 writes a plugin count beside the filters: the total, how many plugins the
 filters pass on every page while a filter is on, or that none match (M044,
 M053, M058). Typing writes `?q=`
@@ -96,7 +104,10 @@ and the repo name to the repository (M061, M065). It adds the
 star icon filled with `--star` and the number, in an `aria-hidden` span
 whose `title` gives the count and its words (`starsText`); a
 `.visually-hidden` span after it gives the same words to screen readers,
-as M054 does for the declared marks (M064). The links are: the
+as M054 does for the declared marks (M064). After the description, a page
+whose record has a category shows "Index categories", a link to the About
+page's Categories section, and each category's name as a link to the home
+page filtered by it, in `CATEGORIES` order (M066). The links are: the
 `.xpi` file (`upstream.xpiUrl`, only when it passes `safeHref`, in the
 same plain button style as the others, D-029), the source, and the
 releases; a repo URL that fails `safeHref` shows as plain text. A
@@ -114,7 +125,8 @@ fact (M024, M033), with each override beside the upstream value it
 corrects under an h3 (M007, M015, M054). The About page
 (`site/src/pages/about.astro`) holds the method notes: the declared range
 and its marks, the start test, which reports count, and how overrides and
-the Used column work (M054). The home table marks an archived plugin with
+the Used column work (M054), and the categories, each with its `about`
+text (M066). The home table marks an archived plugin with
 "Archived" after its name (M053), and the data carries the same `archived`
 fact (M013). Each page says that the index does not vet the plugins it
 lists.
@@ -371,12 +383,15 @@ exception is a report that is abuse.
   or `<dir>`, from the data file there. `src/site/version.ts` holds the version and range functions
   that the templates use, `majorSupport` and `ZOTERO_MAJORS` among them, and
   `src/site/description.ts` holds `shownDescription` and `cjkShare`.
+  `src/site/categories.ts` holds `CATEGORIES`, `categories`, and
+  `categoryOptions` (M066).
   `src/site/languages.ts` holds the applied languages, their names, and the
   menu options. `src/site/home-filter.ts` holds `passes`, `rowShows`,
   `chosenValue`, `filterHref`, `filterOn`, `filterStatus`, `PAGE_SIZE`,
   `pageCount`, `onPage`, and `chosenPage`, which the home page's script
-  imports for the search box, the language menu, the version buttons, the
-  count, and the pager (renamed from `language-filter.ts`, M037; pages M058).
+  imports for the search box, the category and language menus, the version
+  buttons, the count, and the pager (renamed from `language-filter.ts`, M037;
+  pages M058; categories M066).
   It also holds `prePaintStyle`, whose source text the home page's classic
   script carries, so it calls and reads nothing outside its body except
   built-ins (M060);
@@ -851,7 +866,7 @@ reused._
   deployed data stays until the entry's re-test day, or longer if that
   day's build deploys nothing, and plugin code can forge it again on that
   day (D-035).
-- If a language or Zotero filter is on, a browser that cannot read the
+- If a language, Zotero, or category filter is on (category since M066), a browser that cannot read the
   `of <selector>` form of `:nth-child()` paints every row that the filter
   passes, on every page, until the home page's script runs. Chrome and Edge
   before 111, Firefox before 113, and Opera before 97 cannot read it; Safari

@@ -1,5 +1,5 @@
 // The home page's filters: the search box, the language menu, the Zotero version buttons,
-// the plugin count beside them, and the pages below the table. The page's module script
+// the category menu, the plugin count beside them, and the pages below the table. The page's module script
 // imports it, so it has no imports. The page's classic script carries the source text of
 // prePaintStyle.
 
@@ -15,18 +15,19 @@ export function filterOn(filter: Filter): boolean {
   return filter.value !== "" && filter.options.includes(filter.value);
 }
 
-// Whether a filter passes a row. list is the row's data-languages or data-zotero, its values
-// joined by spaces. A filter that is not on passes every row.
+// Whether a filter passes a row. list is the row's data-languages, data-zotero, or
+// data-categories, its values joined by spaces. A filter that is not on passes every row.
 export function passes(list: string, filter: Filter): boolean {
   if (!filterOn(filter)) return true;
   return list.split(" ").includes(filter.value);
 }
 
-// One row of the home table: its data-languages and data-zotero values, and the plugin's
-// name and description as the row shows them ("" for no description).
+// One row of the home table: its data-languages, data-zotero, and data-categories values,
+// and the plugin's name and description as the row shows them ("" for no description).
 export interface HomeRow {
   languages: string;
   zotero: string;
+  categories: string;
   name: string;
   description: string;
 }
@@ -39,9 +40,9 @@ function matches(row: HomeRow, query: string): boolean {
 }
 
 // Whether the filters pass a row, so that it shows on its page: when the search box, the
-// language menu, and the version buttons all pass it.
-export function rowShows(row: HomeRow, language: Filter, zotero: Filter, query: string): boolean {
-  return matches(row, query) && passes(row.languages, language) && passes(row.zotero, zotero);
+// language menu, the version buttons, and the category menu all pass it.
+export function rowShows(row: HomeRow, language: Filter, zotero: Filter, query: string, category: Filter): boolean {
+  return matches(row, query) && passes(row.languages, language) && passes(row.zotero, zotero) && passes(row.categories, category);
 }
 
 // The chosen value for an address parameter: the parameter when an option has it, else ""
@@ -83,13 +84,13 @@ export function chosenPage(asked: string | null, pages: number): number {
 // The CSS that hides at least the rows the page's script will hide for an address, so that a
 // row the script hides does not paint before the script runs. A value that the script drops,
 // or a page past the last one, can also hide rows that the script then shows. That holds
-// while the menu and the buttons offer each value that a row carries, since the script pages
+// while the menus and the buttons offer each value that a row carries, since the script pages
 // over the rows its chosen values pass and this CSS over the rows the asked values pass;
-// languageOptions and ZOTERO_MAJORS do so today. search is the
+// languageOptions, ZOTERO_MAJORS, and categoryOptions do so today. search is the
 // address's query string, read as the script reads it, and size is the page size. A non-blank
-// q, a language or zotero value that is not letters, digits, and hyphens, or a page of more
-// than 6 digits hides every row. Otherwise the CSS shows the asked page of the rows that the
-// language and zotero values pass. Each value gets its own :not() rule with one attribute
+// q, a language, zotero, or category value that is not letters, digits, and hyphens, or a page
+// of more than 6 digits hides every row. Otherwise the CSS shows the asked page of the rows
+// that the language, zotero, and category values pass. Each value gets its own :not() rule with one attribute
 // selector, and each rule that uses :nth-child(… of S) stands alone, so a browser that cannot
 // read that form drops only those rules. The home page builds a classic script from this
 // function's source text, so it calls and reads nothing from outside its body except
@@ -102,6 +103,7 @@ export function prePaintStyle(search: string, size: number): string {
   for (const [name, attribute] of [
     ["language", "data-languages"],
     ["zotero", "data-zotero"],
+    ["category", "data-categories"],
   ]) {
     const value = params.get(name!) ?? "";
     if (value === "") continue;
@@ -126,7 +128,8 @@ export function prePaintStyle(search: string, size: number): string {
 // value is "". An address that already says so comes back unchanged. Otherwise the query is
 // written again, so the other parameters keep their values but not always their spelling,
 // such as %20 for +. The page writes the search box to q, the language menu to language,
-// the version buttons to zotero, and the page number after 1 to page.
+// the version buttons to zotero, the category menu to category, and the page number after 1
+// to page.
 export function filterHref(href: string, name: string, value: string): string {
   const url = new URL(href);
   if (value ? url.searchParams.get(name) === value : !url.searchParams.has(name)) return href;

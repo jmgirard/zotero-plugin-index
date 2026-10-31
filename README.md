@@ -94,6 +94,21 @@ description holds the text you type. The search ignores letter case and the
 spaces before and after the text, but not accents. The page keeps the text
 in the `q` query parameter of its address, such as `?q=pdf`.
 
+The home page has a "Category" menu. It lists each category that at least
+one plugin has, with the number of those plugins in parentheses after its
+name. The categories with the most plugins come first, and categories with
+the same number of plugins come in the order of the About page's list. If
+you pick a category, the table shows only the plugins in it. "All
+categories" passes every plugin. The page keeps your choice in the
+`category` query parameter of its address, such as `?category=translation`.
+If the parameter names no category in the menu, the page passes every
+plugin and removes the parameter. Each plugin page links each of its
+categories to the home page filtered by it. The categories are the index's
+own grouping, not a fact that a plugin's author declares. The index
+assigns them from words in a plugin's name and descriptions. It also adds
+or removes some by hand. So a category can be wrong or missing. The About
+page lists them.
+
 The home page has a "Menus and settings in" menu. It lists each language on
 at least one plugin's languages list, after overrides, with the number of
 those plugins, such as "Chinese (2)". The languages with the most plugins
@@ -115,8 +130,8 @@ your choice in the `zotero` query parameter of its address, such as
 `?zotero=8`. If the parameter names no button, the page acts as if "Any" is
 pressed and removes the parameter.
 
-The search box, the menu, and the buttons work together: the table shows
-the plugins that pass all three. A count beside them reads "M plugins",
+The search box, the two menus, and the buttons work together: the table
+shows the plugins that pass all four. A count beside them reads "M plugins",
 where M is the number of plugins in the index. While a filter is on, it
 reads "N of M plugins", where N is the number that the filters pass. The
 count covers the plugins on every page. If the filters pass no plugin, the
@@ -131,11 +146,11 @@ Previous does nothing, and on the last page Next does nothing. The page
 keeps the page number in the `page` query parameter of its address, such as
 `?page=2`, and leaves it out for page 1. If the parameter names no page that
 the filtered plugins fill, the page shows page 1 and removes the parameter.
-A change to the search box, the menu, or the buttons shows page 1 at once.
+A change to the search box, a menu, or the buttons shows page 1 at once.
 For the search box, the address takes the new text and drops `page` once
 typing stops for half a second.
 
-A script runs the search box, the menu, the buttons, the count, and the
+A script runs the search box, the menus, the buttons, the count, and the
 pager. Without JavaScript, the home page shows none of them and lists every
 plugin.
 
@@ -154,7 +169,9 @@ ends with a gold star icon and the count, such as "★ 8,400". A tooltip
 gives the count with its label, such as "8,400 GitHub Stars", or
 "1 GitHub Star" for a count of 1. Screen readers skip the icon and the
 number and read hidden text with the same words. For any other address,
-the page has no repository line. Then come up to
+the page has no repository line. If the plugin has categories, a line
+after the description lists them after the words "Index categories". Each
+category links to the home page filtered by it. Then come up to
 three links, each with an icon and text: "Download <version> (.xpi)" to the `.xpi`
 file that the index read, "Source" to the repository, and "Releases" to
 the repository's releases page. If the download address does not start
