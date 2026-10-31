@@ -1,0 +1,8 @@
+{
+  "id": "rtf-odf-scan-for-zotero@mystery-lab.com",
+  "name": "ODF Scan for Zotero",
+  "description": "Adds convertible citation marker support to Zotero.",
+  "homepage": "https://github.com/Juris-M/zotero-odf-scan-plugin",
+  "repoUrl": "https://github.com/Juris-M/zotero-odf-scan-plugin",
+  "updateUrl": "https://juris-m.github.io/zotero-odf-scan-plugin/updates.json"
+}
