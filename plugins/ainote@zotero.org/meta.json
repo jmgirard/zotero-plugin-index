@@ -1,0 +1,8 @@
+{
+  "id": "ainote@zotero.org",
+  "name": "ainote",
+  "description": "AI-powered note generation for Zotero items",
+  "homepage": "https://github.com/BlueBlueKitty/zotero-ainote#readme",
+  "repoUrl": "https://github.com/BlueBlueKitty/zotero-ainote",
+  "updateUrl": "https://raw.githubusercontent.com/BlueBlueKitty/zotero-ainote/main/update.json"
+}
