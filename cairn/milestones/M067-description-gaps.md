@@ -202,3 +202,27 @@ Pass 2, 2026-10-31, on branch m067-description-gaps at 161c423, main at c6f6954 
 - AC6 evidence: `pnpm description-gaps` over the shelf file prints "description gaps: 0", and no ledger row is kept; `pnpm test`: 1622 passed, 6 skipped; `pnpm check`: 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- Pass-1 fix-now items: the pass-2 reviewers confirm each fixed in c3e0e8c (T8) and 30356de; diff-bug (c)'s dropped check was the separate `ok` expect, as logged.
+- diff-bug #1: the "another directory" CLI test depends on the checkout's pdfrename override — reject, planned change: only a real checkout entry shows the script-relative root, and the test's comment names the dependency, so removing that override fails it loudly
+- diff-bug #2: pass 1 compressed the "Close small gaps on the site pages" row and dropped facts from items (3) to (6) — fix now, fixed 2e4680e
+- diff-bug #3: the M064 done row is gone while M067 is at review — reject, false: hygiene adds M067's done row, which makes 3 again
+- diff-bug #4: README and DESIGN say nothing about an override changing categories, and 9 of 22 new assignments were wrong — fix now (README override bullet now says to check the categories), fixed 2e4680e
+- diff-bug #5: zoterogpt's new "notes" category comes from notes as an input — reject, false by the category ledger's rule: the plugin works on notes, which the notes category covers
+- diff-bug #6: a whitespace-only override value prints a line with a trailing tab — fix now (`gapLine` leaves out an empty text), fixed 2e4680e
+- diff-bug #7: the CLI's trim had no test — fix now (`gapLine` cases for edge whitespace, a blank text, and a missing text), fixed 2e4680e
+- diff-bug #8: the About sentence leaves out "exists" — fix now, fixed 2e4680e
+- diff-bug #9: one About line is 122 columns — fix now with #8, fixed 2e4680e
+- diff-bug #10: run with plain `node` inside an outer pnpm process, the CLI resolves a relative data path against a stale INIT_CWD — reject, edge: that is outside the documented `pnpm description-gaps` use, its effect is a data-unreadable error, and the other CLIs share the pattern
+- diff-bug #11: the new About test lines assert exact prose — reject, planned change: the rule asks for a test of each documented claim the change adds, and the file pins About text this way
+- blame-history #1: category-ledger.md does not know the 9 new excludes — fix now (an Open questions line points to the description ledger), fixed 2e4680e
+- blame-history #2: the CLI's last line changed — reject, planned change (pass-1 diff-bug #12)
+- blame-history #3: the dropped `ok` check lost no coverage — noted, no change
+- blame-history #4: same as diff-bug #1 — reject with it
+- prior-review #1: same as blame-history #1 — fix now with it, fixed 2e4680e
+- prior-review #2: README's `reason` bullet was still ragged — fix now, fixed 2e4680e
+- prior-review #3: the `!result.ok &&` guards remain — reject, false: that expression is the exact match itself, and the separate `ok` expect was dropped
+- ripple #1: same as diff-bug #3 — reject with it
+- ripple #2: the plugin page says the index "corrects or fills in" facts — fix now ("corrects, fills in, or replaces"), fixed 2e4680e
+- ripple #3: the M055 CHANGELOG entry gives the old pick order — reject, false: it records the M055 change, and the new entry after it states the new order
+- ripple #4: the index schema's `field` prose says only "corrects" — fix now, fixed 2e4680e
+- Pass-2 verify after the fixes: `pnpm test` 1625 passed, 6 skipped; `pnpm check` 0 problems; `pnpm description-gaps` over the shelf file "description gaps: 0"; `cairn_validate.py` all checks passed; ROADMAP 59 lines, 23,895 bytes.
