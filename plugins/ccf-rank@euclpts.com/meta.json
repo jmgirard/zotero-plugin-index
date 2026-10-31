@@ -1,0 +1,8 @@
+{
+  "id": "ccf-rank@euclpts.com",
+  "name": "CCF Rank",
+  "description": "用于显示 CCF 排名与被引次数的 Zotero 插件",
+  "homepage": "https://github.com/GroundbreakerLhy/CCF-Rank#readme",
+  "repoUrl": "https://github.com/GroundbreakerLhy/CCF-Rank",
+  "updateUrl": "https://github.com/GroundbreakerLhy/CCF-Rank/releases/download/release/update.json"
+}
