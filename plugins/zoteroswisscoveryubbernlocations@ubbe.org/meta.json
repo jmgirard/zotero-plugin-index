@@ -1,0 +1,8 @@
+{
+  "id": "zoteroswisscoveryubbernlocations@ubbe.org",
+  "name": "Swisscovery UB Bern Locations",
+  "description": "Zotero/Jurism-Plugin zur Bestandsabfrage im Swisscovery UB Bern",
+  "homepage": "https://github.com/ub-unibe-ch/zotero-swissbib-bb-locations",
+  "repoUrl": "https://github.com/ub-unibe-ch/zotero-swissbib-bb-locations",
+  "updateUrl": "https://github.com/ub-unibe-ch/zotero-swissbib-bb-locations/releases/download/release/update.json"
+}
