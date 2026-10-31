@@ -1,0 +1,8 @@
+{
+  "id": "hover-translate-eudic@zotero-plugins.dev",
+  "name": "Hover Translate Eudic",
+  "description": "Hover Translate Eudic：鼠标悬停单词即翻译，复用 Translate for Zotero 引擎，支持欧路词典、墨墨背单词、扇贝单词与本地生词表同步。",
+  "homepage": "https://github.com/SHANGKAIJIE/zotero-hover-translate-eudic#readme",
+  "repoUrl": "https://github.com/SHANGKAIJIE/zotero-hover-translate-eudic",
+  "updateUrl": "https://github.com/SHANGKAIJIE/zotero-hover-translate-eudic/releases/download/release/update.json"
+}
