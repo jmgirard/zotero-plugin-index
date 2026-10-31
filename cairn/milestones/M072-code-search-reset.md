@@ -78,6 +78,7 @@ A code search request that GitHub's rate limit refuses with a named wait is sent
 - 2026-10-31: T3 done: README "Finding new plugins", DESIGN item 1 and the discovery Architecture item, and the unreleased CHANGELOG code-search entry name the wait and the one retry. `pnpm test` 1744 passed, `pnpm check` 0 problems.
 - 2026-10-31: claim audit: 31 claims read, 6 corrected — CHANGELOG.md, src/discover/discover.ts, test/discover.test.ts; the same reader re-read them once and found five correct and the `searchCode` header comment ambiguous, which took its suggested wording; a 200 answer whose body fails loses its headers, left as is (the reader comment names only parsed bodies and HTTP errors).
 - 2026-10-31: implement done; status review. `pnpm test` 1744 passed, `pnpm check` 669 entries, 0 problems.
+- 2026-10-31: step-7 approval: m072-code-search-reset approved for merge
 
 ## Decisions
 
