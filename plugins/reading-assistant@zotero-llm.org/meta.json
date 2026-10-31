@@ -1,0 +1,7 @@
+{
+  "id": "reading-assistant@zotero-llm.org",
+  "name": "Zotero Reading Assistant",
+  "description": "AI-powered reading assistant sidebar for Zotero",
+  "repoUrl": "https://github.com/yiyabo/zotero-reading-assistant",
+  "updateUrl": "https://github.com/yiyabo/zotero-reading-assistant/releases/latest/download/update.json"
+}
