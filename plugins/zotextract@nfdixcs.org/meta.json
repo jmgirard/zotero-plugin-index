@@ -1,0 +1,7 @@
+{
+  "id": "zotextract@nfdixcs.org",
+  "name": "ZotExtract",
+  "description": "LLM-based information extraction from PDFs in Zotero. Developed within the NFDIxCS project.",
+  "repoUrl": "https://github.com/SamyAteia/ZotExtract",
+  "updateUrl": "https://raw.githubusercontent.com/SamyAteia/ZotExtract/main/update.json"
+}
