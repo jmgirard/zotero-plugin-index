@@ -1,0 +1,7 @@
+{
+  "id": "zotero-math-patch@local",
+  "name": "Zotero Math Patch",
+  "description": "Repairs pasted math in Zotero notes with local rules or a user-configured AI service.",
+  "repoUrl": "https://github.com/DragonGong/zotero-math-patch",
+  "updateUrl": "https://raw.githubusercontent.com/DragonGong/zotero-math-patch/main/updates.json"
+}
