@@ -1,0 +1,8 @@
+{
+  "id": "dualtitle@dual-title.zotero",
+  "name": "Dual Title",
+  "description": "Dual Title for Zotero — Display translated titles as a second row in the item list",
+  "homepage": "https://github.com/SHANGKAIJIE/zotero-dual-title#readme",
+  "repoUrl": "https://github.com/SHANGKAIJIE/zotero-dual-title",
+  "updateUrl": "https://github.com/SHANGKAIJIE/zotero-dual-title/releases/download/release/update.json"
+}
