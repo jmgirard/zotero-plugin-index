@@ -1,0 +1,8 @@
+{
+  "id": "zoteropreview@carter-tod.com",
+  "name": "ZoteroPreview",
+  "description": "Citation preview pane for Zotero.",
+  "homepage": "https://github.com/dcartertod/zotero-plugins",
+  "repoUrl": "https://github.com/groele/ZoteroPreview",
+  "updateUrl": "https://raw.githubusercontent.com/dcartertod/zotero-plugins/main/ZoteroPreview7/zoteropreview7-updates.json"
+}
