@@ -1,0 +1,7 @@
+{
+  "id": "property-columns@zotero-plugin.local",
+  "name": "Property Columns",
+  "description": "Adds custom columns to Zotero item list based on property: tags",
+  "repoUrl": "https://github.com/raideno/zotero-better-tags",
+  "updateUrl": "https://raw.githubusercontent.com/raideno/zotero-better-tags/main/updates.json"
+}
