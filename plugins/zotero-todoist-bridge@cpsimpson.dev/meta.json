@@ -1,0 +1,8 @@
+{
+  "id": "zotero-todoist-bridge@cpsimpson.dev",
+  "name": "Zotero Todoist Bridge",
+  "description": "Send selected Zotero papers to Todoist with configurable quick-add templates.",
+  "homepage": "https://github.com/cpsimpson/zotero-todoist-bridge",
+  "repoUrl": "https://github.com/cpsimpson/zotero-todoist-bridge",
+  "updateUrl": "https://github.com/cpsimpson/zotero-todoist-bridge/releases/latest/download/updates.json"
+}
