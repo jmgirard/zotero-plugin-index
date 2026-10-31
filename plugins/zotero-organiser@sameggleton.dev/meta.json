@@ -1,0 +1,7 @@
+{
+  "id": "zotero-organiser@sameggleton.dev",
+  "name": "Zotero Organiser",
+  "description": "Conservative, taxonomy-based automatic tag organiser for Zotero 10+",
+  "repoUrl": "https://github.com/sameggleton/zotero-organiser",
+  "updateUrl": "https://raw.githubusercontent.com/sameggleton/zotero-organiser/main/plugin/updates.json"
+}
