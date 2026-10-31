@@ -116,3 +116,19 @@
 - AC7 evidence: `npx -y pnpm@12.15.0 test` (type check, then Vitest): 28 files passed, 1 skipped; 1691 tests passed, 6 skipped. `npx -y pnpm@12.15.0 check`: 272 entries, 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed; the `generic` profile names no toolchain checks; no principle changed, so no `cairn_impact` run.
 - spawned: diff-bug, blame-history, prior-review, ripple
+- ripple #1: DESIGN Function Families "Discovery" bullet named only the topic search — fix now
+- ripple #2: the candidate row "Find plugins whose repos carry no topic" still says discover "searches only" the topics — fix now at step 9 hygiene, which narrows the row to the code-search remainder
+- ripple #3: CHANGELOG "A bot finds new plugins" bullet names only the topic search — reject (false): that bullet records the change that added discovery, and the new top bullet records this one
+- ripple #4: DESIGN "A failed search ends the run" now reads as covering the catalog — fix now
+- ripple #5: DESIGN Data sources item 1's first sentence names only the topics — reject (false): the sentences the diff adds right after it name the catalog
+- ripple #6: DESIGN `holds.ts` line omits `SOURCES` — fix now
+- ripple #7: a forged state entry can now hide a repo that a run does not find — follow-up: absorbed into "Check the restored discovery state" (low, unchanged rung: the same job-takeover premise)
+- prior-review #1: the GraphQL lookups run before any check of `runMs`, against M030's goal of saving state before the job's limit — fix now (a time check before each lookup request, with a test)
+- prior-review #2: `raw` follows redirects and checks only the first host, unlike M002's per-hop check — follow-up: new row "Check each redirect of GitHub API reads" (parked, promote when a GitHub API answer redirects off api.github.com; `get` has the same pattern and no answer has redirected)
+- prior-review #3: the catalog stall test used 50 ms, where M030 and M050 settled on 1000 ms — fix now
+- blame-history #1: the state rule reverses M008's "only for repos that the search found" — reject (planned change): AC4 and Scope In call for it
+- blame-history #2: `raw` keeps the token across redirects, unlike `send` — follow-up: same row as prior-review #2
+- blame-history #3: the closing line reworded from "from its topic" — reject (planned change): AC5 calls for it
+- blame-history #4: a local `pnpm discover` without `--handoff` skips no closed bot pull request, and the catalog widens that set — follow-up: new row "Skip closed bot pull requests in local discover runs" (parked, promote when a maintainer drafts such a repo by hand; pre-existing since M008)
+- blame-history #5: catalog names that an entry already names are looked up every run, and a failing lookup of one warns daily — fix now (filtered before the lookup and reported `in-index`; the AC4 in-index test now also asserts no lookup)
+- blame-history #6: `DiscoveryFailure =Failure` lost its space in the branch — fix now

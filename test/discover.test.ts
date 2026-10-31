@@ -346,7 +346,7 @@ describe("the catalog", () => {
   test.each([
     ["an HTTP 5xx answer", { status: 503, text: "unavailable" }, {}],
     ["a fetch that rejects", { error: "connection reset" }, {}],
-    ["a fetch that passes its time limit", { stall: "headers" as const }, { catalogMs: 50 }],
+    ["a fetch that passes its time limit", { stall: "headers" as const }, { catalogMs: 1000 }],
     ["a body over its size limit", { text: `[${'{"repo":"example/listed"},'.repeat(10)}{}]` }, { catalogMaxBytes: 100 }],
     ["a body that is not JSON", { text: "<html>busy</html>" }, {}],
     ["a JSON body that is not a list", { json: { plugins: [] } }, {}],
@@ -418,6 +418,25 @@ describe("the catalog", () => {
     expect(lookups(requests).map(({ body }) => Object.keys(JSON.parse(body!).variables).length)).toEqual([200, 2]);
   });
 
+  test("starts no lookup request once the run limit has passed, and warns", async () => {
+    // The run's clock passes the run limit when the first lookup request is sent.
+    let elapsed = 0;
+    const clock = vi.spyOn(performance, "now").mockImplementation(() => elapsed);
+    try {
+      const names = Array.from({ length: 101 }, (_, i) => `example/n${i}`);
+      const onRequest = (seen: SeenRequest) => {
+        if (seen.method === "POST") elapsed = 1000;
+      };
+      const responses = { ...base(), ...listed(names), [GRAPHQL]: found() };
+      const { result, requests } = await runResult(responses, { ...withCatalog, runMs: 1000, startedAt: 0, onRequest });
+      if (!result.ok) throw new Error(result.message);
+      expect(lookups(requests)).toHaveLength(1);
+      expect(result.report.warnings).toContainEqual("the run looks up no catalog repo after 1000 ms, its time limit, so it does not read 1 of them");
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
   describe("a catalog-only repo", () => {
     const refusedListed = pluginRepo("example/listed", "listed@example.org", { noRelease: true, topics: [] });
     const responses = (pushedAt = "2026-10-20T00:00:00Z") => ({
@@ -432,13 +451,15 @@ describe("the catalog", () => {
       expect(reads).toEqual(["example/listed", "example/alpha"]);
     });
 
-    test("is skipped as in-index when an entry names it", async () => {
+    test("is skipped as in-index, with no lookup, when an entry names it", async () => {
       const root = tempDir();
       mkdirSync(join(root, "listed@example.org"));
       writeFileSync(join(root, "listed@example.org/meta.json"), JSON.stringify({ repoUrl: "https://github.com/Example/Listed" }));
-      const { reads, report } = await run(responses(), { ...withCatalog, root });
-      expect(reads).not.toContain("example/listed");
-      expect(report.skipped).toContainEqual({ repo: "example/listed", reason: "in-index" });
+      const { result, requests } = await runResult(responses(), { ...withCatalog, root });
+      if (!result.ok) throw new Error(result.message);
+      expect(requests.map(({ url }) => url)).not.toContain("https://api.github.com/repos/example/listed");
+      expect(lookups(requests)).toEqual([]);
+      expect(result.report.skipped).toContainEqual({ repo: "example/listed", reason: "in-index" });
     });
 
     test("is skipped as in-skip-set when the skip set names it", async () => {

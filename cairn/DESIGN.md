@@ -321,8 +321,9 @@ exception is a report that is abuse.
   <dir>]` writes a new entry from the reader's facts. Added M002.
 - Discovery (`src/discover/`): `pnpm discover [--out <dir> | --handoff
   <dir>] [--state <file>] [--limit <n>] [--budget <n>]` searches the
-  `zotero-plugin` and `zotero-addon` topics, reads each repo that no entry
-  names, and writes the entries of up to `limit` repos (5 by default) that
+  `zotero-plugin` and `zotero-addon` topics, adds the repos of the
+  zotero-chinese catalog (M070), reads each repo that no entry names, and
+  writes the entries of up to `limit` repos (5 by default) that
   pass the inclusion bar. It prints a JSON report of what it wrote, refused,
   and skipped. Added M008. With `--handoff <dir>`, it also skips the repos of
   the bot pull requests and writes the entries and a `plan.json` into a
@@ -609,8 +610,9 @@ reused._
   nor a refusal caused by an HTTP 429 or 5xx answer from a download host,
   or by a 403 to a download that requested a GitHub release URL, which the
   reader marks build-level (M026, M045).
-  A failed search ends the run before any read and leaves the state file as
-  it was. The report names, for each entry written, its version and declared
+  A failed topic search ends the run before any read and leaves the state
+  file as it was; a failed catalog read or lookup only warns (corrected
+  M070). The report names, for each entry written, its version and declared
   range (M008).
 - Each bot workflow that reads plugin repos splits the work into a read job
   and a write job (M011); `add-plugin-issue.yml` adds a `pick` job before
@@ -718,8 +720,8 @@ reused._
   `pull-requests: read`, sets `cache-mode: none`, and checks out the default
   branch, so it runs no code from the pull request. `test/workflows.test.ts`
   checks these facts (M022).
-- `src/discover/holds.ts` (M056) holds `TOPICS`, `HOLD_REASONS`, and
-  `holdReasons`. `draftEntry` reads `GET /users/<owner>` and the repo's
+- `src/discover/holds.ts` (M056) holds `TOPICS`, `SOURCES` (M070),
+  `HOLD_REASONS`, and `holdReasons`. `draftEntry` reads `GET /users/<owner>` and the repo's
   `topics`, which `readUpstream` returns beside `facts` and the build does not
   publish, and fills each planned entry's `holds`, which the handoff schema
   requires. `body()` in `propose.ts` writes `Hold: none` or the reasons with a

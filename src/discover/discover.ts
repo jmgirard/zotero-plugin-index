@@ -28,7 +28,7 @@ const REPO_NAME = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 // The most repos that one GraphQL lookup request names.
 const LOOKUP_BATCH = 100;
 
-export type DiscoveryFailure =Failure | Extract<WriteResult, { ok: false }>["failure"] | "not-proposable" | "unexpected-error";
+export type DiscoveryFailure = Failure | Extract<WriteResult, { ok: false }>["failure"] | "not-proposable" | "unexpected-error";
 
 // Failures that say nothing about the repo, such as a rate limit, are not recorded, so
 // the next run reads the repo again. Nor is a failure the reader marks build-level, such
@@ -135,18 +135,27 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
     if (error instanceof ReadFailure) return { ok: false, message: error.message };
     throw error;
   }
-  if (options.catalog !== undefined) {
-    const { catalog, catalogMs = CATALOG_MS, catalogMaxBytes = CATALOG_MAX_BYTES } = options;
-    // A name that a topic search returned needs no lookup.
-    const known = new Set(candidates.map(({ repo }) => repo));
-    const names = (await readCatalog(fetch, catalog, catalogMaxBytes, catalogMs, warnings)).filter((name) => !known.has(name.toLowerCase()));
-    candidates = joinCandidates(candidates, await lookUp(fetch, names, "catalog", warnings));
-  }
   let index: Awaited<ReturnType<typeof indexed>>;
   try {
     index = await indexed(root);
   } catch (error) {
     return { ok: false, message: `cannot read ${root}: ${(error as Error).message}` };
+  }
+  const skipped: SkippedItem[] = [];
+  if (options.catalog !== undefined) {
+    const { catalog, catalogMs = CATALOG_MS, catalogMaxBytes = CATALOG_MAX_BYTES } = options;
+    // A name that a topic search returned needs no lookup, nor does one that an entry
+    // names, which the run skips.
+    const known = new Set(candidates.map(({ repo }) => repo));
+    const names: string[] = [];
+    for (const name of await readCatalog(fetch, catalog, catalogMaxBytes, catalogMs, warnings)) {
+      const repo = name.toLowerCase();
+      if (known.has(repo)) continue;
+      known.add(repo);
+      if (index.repos.has(repo)) skipped.push({ repo, reason: "in-index" });
+      else names.push(name);
+    }
+    candidates = joinCandidates(candidates, await lookUp(fetch, names, "catalog", warnings, { runMs, startedAt }));
   }
   const state: DiscoveryState = {};
   const found = new Set(candidates.map(({ repo }) => repo));
@@ -154,7 +163,7 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
     const age = now.getTime() - Date.parse(record?.checkedAt);
     if (!index.repos.has(repo) && (found.has(repo) || (age >= 0 && age < RECHECK_MS))) state[repo] = record;
   }
-  const report: Report = { read: [], skipped: [], unread: 0, warnings };
+  const report: Report = { read: [], skipped, unread: 0, warnings };
   let written = 0;
 
   for (const [at, { repo, repoUrl, pushedAt, source }] of candidates.entries()) {
@@ -411,11 +420,16 @@ interface LookupAnswer {
 // query. A repo that GitHub does not have, one with no pushed_at, and each repo of a
 // failed request get no candidate. A failed request gets one warning for all its repos,
 // and each other such repo one warning.
-async function lookUp(fetch: Fetch, names: string[], source: Source, warnings: string[]): Promise<Candidate[]> {
+async function lookUp(fetch: Fetch, names: string[], source: Source, warnings: string[], limit: { runMs: number; startedAt: number }): Promise<Candidate[]> {
   const github = githubClient(fetch);
   const unique = [...new Map(names.map((name) => [name.toLowerCase(), name])).values()];
   const found: Candidate[] = [];
   for (let start = 0; start < unique.length; start += LOOKUP_BATCH) {
+    // The run's time limit also ends the lookups, so the run still saves its state in time.
+    if (performance.now() - limit.startedAt >= limit.runMs) {
+      warnings.push(`the run looks up no ${source} repo after ${duration(limit.runMs)}, its time limit, so it does not read ${unique.length - start} of them`);
+      break;
+    }
     const batch = unique.slice(start, start + LOOKUP_BATCH);
     const variables: Record<string, string> = {};
     const fields = batch.map((name, i) => {
