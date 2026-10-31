@@ -1,0 +1,7 @@
+{
+  "id": "zotchat@blume",
+  "name": "ZotChat",
+  "description": "Select a passage in the reader, get an explanation in a continuing chat.",
+  "repoUrl": "https://github.com/arjansiddhpura/ZotChat",
+  "updateUrl": "https://raw.githubusercontent.com/arjansiddhpura/ZotChat/main/update.json"
+}
