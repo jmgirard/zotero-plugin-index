@@ -1,13 +1,13 @@
 # M066: Filter plugins by category
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the public site's home page, plugin pages, and About page
-- **Branch/PR:** —
+- **Branch/PR:** m066-plugin-categories
 
 ## Goal
 
@@ -116,7 +116,7 @@ deployed data.
 
 ## Tasks
 
-- [ ] T1: Write `src/site/categories.ts` with `CATEGORIES` and `categories`,
+- [x] T1: Write `src/site/categories.ts` with `CATEGORIES` and `categories`,
       reading the texts through `displayName`, `shownDescription`, and the
       upstream fields, and `test/categories.test.ts`.
 - [ ] T2: Download the deployed data (lessons M035), tune the patterns and
@@ -158,6 +158,9 @@ deployed data.
 - 2026-10-31: question set: who reads the accuracy ledger — the agent reads it, and the user spot-checks it at the merge question.
 - 2026-10-31: the plan foresees no dependency change and no outward action beyond the milestone pull request.
 - 2026-10-31: ROADMAP hit its line and byte caps with the new rows, so the plan merged "Fail issue runs with no plugins folder" and "Count linked folders at the push base" into "Read plugins folders alike in both steps" and compressed "Test the home page script in a browser" (59 lines, 23,919 bytes).
+- 2026-10-31: implement started on branch m066-plugin-categories, cut from main at f16d449.
+- 2026-10-31: T1 done: `src/site/categories.ts` holds `CATEGORIES` (slug, name, an `about` phrase for the About page, pattern, include, exclude) and `categories`; the texts are read through `appliedValue` and `shownDescription`, since `displayName` lives in `site/src/data.ts`, which `src/site/` does not import; `test/categories.test.ts` has 25 tests; planting a dropped GitHub text and an ignored exclude list each failed its one test; `pnpm test` (1572 passed) and `pnpm check` clean.
+- 2026-10-31: implementation choice: the translation pattern leaves out "translators" (Zotero's import translators, as Tara's text says) but keeps "Translator", so a plugin named "Paper Translator" still matches.
 
 ## Decisions
 

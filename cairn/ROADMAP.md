@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-31 (M065 done: 1 row corrected, M062 row pruned, 7 
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M066 | Filter plugins by category | planned | — | normal | milestones/M066-plugin-categories.md |
+| M066 | Filter plugins by category | in-progress | — | normal | milestones/M066-plugin-categories.md |
 | M065 | Drop the repeated owner from the repo line | done | — | normal | milestones/archive/M065-repo-line-owner.md |
 | M064 | Show the star count with a star icon | done | — | normal | milestones/archive/M064-star-icon.md |
 | M063 | Fix the language menu arrow and release dates | done | — | normal | milestones/archive/M063-menu-arrow-release-month.md |
