@@ -1,0 +1,8 @@
+{
+  "id": "zotero-mcp-tags@opencode.local",
+  "name": "Zotero MCP Tags",
+  "description": "A Zotero 7 plugin that exposes a lightweight MCP server for batch tagging items, designed to work alongside zotero-mcp.",
+  "homepage": "https://github.com/QDryougi/zotero-mcp-tags#readme",
+  "repoUrl": "https://github.com/QDryougi/zotero-mcp-tags",
+  "updateUrl": "https://github.com/QDryougi/zotero-mcp-tags/releases/download/release/update.json"
+}
