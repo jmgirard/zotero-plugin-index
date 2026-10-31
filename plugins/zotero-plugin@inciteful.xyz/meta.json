@@ -1,0 +1,8 @@
+{
+  "id": "zotero-plugin@inciteful.xyz",
+  "name": "Inciteful Zotero Plugin",
+  "description": "Inciteful Plugin for Zotero",
+  "homepage": "https://github.com/inciteful-xyz/inciteful-zotero-plugin#readme",
+  "repoUrl": "https://github.com/inciteful-xyz/inciteful-zotero-plugin",
+  "updateUrl": "https://github.com/inciteful-xyz/inciteful-zotero-plugin/releases/download/release/update.json"
+}
