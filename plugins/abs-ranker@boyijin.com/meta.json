@@ -1,0 +1,7 @@
+{
+  "id": "abs-ranker@boyijin.com",
+  "name": "Zotero ABS Ranker",
+  "description": "Automatically update journal rankings (ABS, FT50, UTD24) by matching publication titles.",
+  "repoUrl": "https://github.com/boyi0/Zotero-ABS-Ranker",
+  "updateUrl": "https://raw.githubusercontent.com/boyi0/Zotero-ABS-Ranker/main/update.json"
+}
