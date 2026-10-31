@@ -1,0 +1,8 @@
+{
+  "id": "SKR@zotero.org",
+  "name": "Zotero-SKR",
+  "description": "This is a tool used to generate a review based on the relevant literature provided by users.",
+  "homepage": "https://github.com/WilliamsLiang/zotero-skr",
+  "repoUrl": "https://github.com/WilliamsLiang/zotero-skr",
+  "updateUrl": "https://raw.githubusercontent.com/WilliamsLiang/zotero-skr/master/updates.json"
+}
