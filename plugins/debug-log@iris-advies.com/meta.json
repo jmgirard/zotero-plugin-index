@@ -1,0 +1,7 @@
+{
+  "id": "debug-log@iris-advies.com",
+  "name": "Debug Log for Zotero",
+  "description": "Debug Log for Zotero",
+  "repoUrl": "https://github.com/retorquere/zotero-debug-log",
+  "updateUrl": "https://github.com/retorquere/zotero-debug-log/releases/download/release/updates.json"
+}
