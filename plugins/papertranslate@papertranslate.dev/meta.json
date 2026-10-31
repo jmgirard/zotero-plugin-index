@@ -1,0 +1,7 @@
+{
+  "id": "papertranslate@papertranslate.dev",
+  "name": "PaperTranslate",
+  "description": "MinerU 解析 + 大模型翻译：在 Zotero Reader 中为 PDF 提供重排译文面板。",
+  "repoUrl": "https://github.com/Last-diary/PaperTranslate-Zotero-Plugin",
+  "updateUrl": "https://github.com/Last-diary/PaperTranslate-Zotero-Plugin/releases/latest/download/updates.json"
+}
