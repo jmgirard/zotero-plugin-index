@@ -90,7 +90,7 @@ describe("pnpm propose refuses a handoff it cannot trust, with no request and no
     ["a plan that names an issue number", () => issueEntry({ issue: 3 }), issue, /does not match the handoff schema/],
     ["an entry with no holds list", () => discover([{ ...ALPHA, holds: undefined as unknown as string[] }]), {}, /does not match the handoff schema/],
     ["an entry whose holds name a sixth reason", () => discover([{ ...ALPHA, holds: ["name-match", "too-new"] }]), {}, /does not match the handoff schema/],
-    ["an entry whose source is not topic or catalog", () => discover([{ ...ALPHA, source: "code" } as Entry]), {}, /does not match the handoff schema/],
+    ["an entry whose source is not topic, catalog, or code-search", () => discover([{ ...ALPHA, source: "code" } as Entry]), {}, /does not match the handoff schema/],
     ["an issue entry whose holds name a sixth reason", () => issueEntry({ entry: { ...ALPHA, holds: ["spam"] } }), issue, /does not match the handoff schema/],
     ["a failure name with a backtick", () => handoff({ kind: "issue", outcome: "refused", failure: "x`@someone", message: "m" }, []), issue, /does not match the handoff schema/],
     ["a failed outcome's failure name with a backtick", () => handoff({ kind: "issue", outcome: "failed", failure: "x`@someone", message: "m" }, []), issue, /does not match the handoff schema/],

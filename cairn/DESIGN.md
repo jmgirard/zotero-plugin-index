@@ -350,7 +350,8 @@ exception is a report that is abuse.
   `entry-exists` or `write-failed` (M028), and a branch-name check in
   `pnpm propose` that cannot run (M038). Each repo read stops at 3
   minutes as a build-level `request-failed`, not recorded, and `pnpm
-  discover` starts no read after 18 minutes from the command's start,
+  discover` starts no lookup request and no read after 18 minutes from the
+  command's start (lookups corrected M071),
   counting the rest in `unread` with a warning. The `git check-ref-format`
   check stops at 30 seconds and throws; in `pnpm propose` each other git
   process stops at 2 minutes and `pnpm check` at 5 minutes, failing only
@@ -604,7 +605,8 @@ reused._
   `CATALOG_URL`, it also reads the zotero-chinese catalog's `plugins.json`
   through the contents API (`githubClient().raw`, 60 s, 8 MiB). A catalog
   name that an entry or the skip set names is skipped there; each other
-  name that no topic search returned is looked up with one GraphQL request
+  name that no earlier source returned and no earlier lookup gave
+  (corrected M071) is looked up with one GraphQL request
   for each 100 names, the names sent as variables. A failed request ends
   that source's lookups, and `runMs` ends all of them (M070; corrected
   M071). With the `codeSearch` option,
@@ -613,9 +615,11 @@ reused._
   sending at most `CODE_SEARCH_RATE` (10) requests in any
   `CODE_SEARCH_WINDOW_MS` (60 s), failed ones included, and none from
   `CODE_SEARCH_CUTOFF_MS` (8 minutes) after `startedAt`. A failed request
-  or a page with no items warns and ends only its query. The names go
-  through the same skip and lookup; a name that an earlier source or
-  lookup gave needs none. One injected `Clock` drives the pacing and every
+  or a page with no items warns and ends only its query. Items with no
+  owner/repo name warn, at most 10 a query, and queries that all finish
+  with no item warn once. The names go through the same skip and lookup;
+  a name that an earlier source or lookup gave needs none, and a name
+  whose lookup failed stays open to a later source's lookup. One injected `Clock` drives the pacing and every
   `runMs` check, so the search time counts toward `runMs` (M071). It joins
   the result lists by the lowercase owner/repo that the search or the
   lookup gives, a topic find before a catalog find before a code-search
@@ -699,7 +703,8 @@ reused._
   one of them adds, and the write step skips such an entry. `githubClient` gains `post`, which fails on a redirect, and
   M010 adds `patch` and M056 `put`, which share that code.
   `.github/workflows/discover.yml` runs it daily and on dispatch on the
-  default branch only, with a `limit` input, in the `discover` concurrency
+  default branch only, with `limit` and `budget` inputs (`budget` M071), in
+  the `discover` concurrency
   group. Its write job holds `contents: write` and `pull-requests: write`.
   The read job restores the state file from the newest cache by prefix and
   saves it under a key with the run id, after a failed run too. Pull requests opened with the built-in token start no CI run, so

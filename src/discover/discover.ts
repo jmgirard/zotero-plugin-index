@@ -23,7 +23,8 @@ export const RUN_LIMIT_MS = 18 * 60 * 1000;
 export const CATALOG_URL = `${API}/repos/zotero-chinese/zotero-plugins/contents/plugins.json?ref=gh-pages`;
 export const CATALOG_MAX_BYTES = 8 * 1024 * 1024;
 export const CATALOG_MS = 60 * 1000;
-// A repo name that GitHub allows. A catalog item whose `repo` does not match is skipped.
+// A repo name that GitHub allows. A catalog item whose `repo`, or a code search item whose
+// `repository.full_name`, does not match is skipped.
 const REPO_NAME = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 // A state key: a lowercase owner/repo. A record under any other key is dropped.
 const STATE_KEY = /^[a-z0-9_.-]+\/[a-z0-9_.-]+$/;
@@ -127,7 +128,7 @@ export interface DiscoverOptions {
   budget: number;
   now?: Date;
   // The longest one repo read may take, and the time after `startedAt` from which the run
-  // starts no read. `startedAt` is a performance.now() time. Its default, 0, is when the
+  // starts no read. `startedAt` is a `clock` time, performance.now() by default. Its default, 0, is when the
   // process started.
   readMs?: number;
   runMs?: number;
@@ -183,7 +184,8 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
   }
   const skipped: SkippedItem[] = [];
   // A name that an earlier source returned, or that a lookup gave, needs no lookup, nor
-  // does one that an entry or the skip set names, which the run skips.
+  // does one that an entry or the skip set names, which the run skips. A name whose lookup
+  // failed stays unknown, so a later source can look it up.
   const known = new Set(candidates.map(({ repo }) => repo));
   const add = async (names: string[], source: Source) => {
     const unknown: string[] = [];
@@ -195,7 +197,8 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
       else if (skip.has(repo)) skipped.push({ repo, reason: "in-skip-set" });
       else unknown.push(name);
     }
-    const found = await lookUp(fetch, unknown, source, warnings, { runMs, startedAt, clock });
+    const { found, notLookedUp } = await lookUp(fetch, unknown, source, warnings, { runMs, startedAt, clock });
+    for (const name of notLookedUp) known.delete(name.toLowerCase());
     for (const { repo } of found) known.add(repo);
     candidates = joinCandidates(candidates, found);
   };
@@ -470,16 +473,23 @@ async function readCatalog(fetch: Fetch, url: string, max: number, ms: number, w
 // waits until the last CODE_SEARCH_WINDOW_MS holds fewer than CODE_SEARCH_RATE of them. A
 // failed request, or a page with no list of items, warns and stops its query, and the run
 // keeps the names of its earlier pages and goes on to the next query. So does a request that
-// could not be sent before CODE_SEARCH_CUTOFF_MS after `startedAt`.
+// could not be sent before CODE_SEARCH_CUTOFF_MS after `startedAt`. Queries that all finish
+// with no item warn once, since a token that cannot see the code index can get empty pages.
 async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings: string[], time: { startedAt: number; clock: Clock }): Promise<string[]> {
   const github = githubClient(fetch);
   const { startedAt, clock } = time;
   const names: string[] = [];
   const sent: number[] = [];
+  let items = 0;
+  let stopped = false;
   for (const query of queries) {
     const seen = new Set<string>();
     let pages = 0;
-    const stop = (why: string) => warnings.push(`the code search for ${query} read ${pages} page${pages === 1 ? "" : "s"} and stopped, since ${why}`);
+    let unnamed = 0;
+    const stop = (why: string) => {
+      stopped = true;
+      warnings.push(`the code search for ${query} read ${pages} page${pages === 1 ? "" : "s"} and stopped, since ${why}`);
+    };
     let next: string | undefined = `${API}/search/code?${new URLSearchParams({ q: query, per_page: "100" })}`;
     while (next) {
       if (!URL.canParse(next) || new URL(next).origin !== API) {
@@ -521,12 +531,21 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
         warnings.push(`the code search for ${query} has ${page.total_count} results, and the search returns only the first ${SEARCH_MAX}`);
       }
       for (const item of page.items as { repository?: { full_name?: unknown } | null }[]) {
+        items++;
         const name = item?.repository?.full_name;
         if (typeof name === "string" && REPO_NAME.test(name)) names.push(name);
-        else warnings.push(`the code search for ${query} returned an item with no owner/repo repository.full_name, so the run skips it`);
+        else if (++unnamed <= ITEM_WARNINGS_MAX) {
+          warnings.push(`the code search for ${query} returned an item with no owner/repo repository.full_name, so the run skips it`);
+        }
       }
       next = /<([^>]+)>;\s*rel="next"/.exec(link ?? "")?.[1];
     }
+    if (unnamed > ITEM_WARNINGS_MAX) {
+      warnings.push(`the code search for ${query} returned ${unnamed - ITEM_WARNINGS_MAX} more items with no owner/repo repository.full_name, so the run skips them`);
+    }
+  }
+  if (queries.length > 0 && !stopped && items === 0) {
+    warnings.push("the code searches returned no items, so the token may not reach GitHub's code index");
   }
   return names;
 }
@@ -540,8 +559,15 @@ interface LookupAnswer {
 // LOOKUP_BATCH repos to a request. The names go in as variables, so no name changes the
 // query. A repo that GitHub does not have, one with no pushed_at, and each repo of a
 // failed request get no candidate. A failed request gets one warning for all its repos,
-// and each other such repo one warning.
-async function lookUp(fetch: Fetch, names: string[], source: Source, warnings: string[], limit: { runMs: number; startedAt: number; clock: Clock }): Promise<Candidate[]> {
+// and each other such repo one warning. `notLookedUp` names the repos of a failed request
+// and of the requests after it.
+async function lookUp(
+  fetch: Fetch,
+  names: string[],
+  source: Source,
+  warnings: string[],
+  limit: { runMs: number; startedAt: number; clock: Clock },
+): Promise<{ found: Candidate[]; notLookedUp: string[] }> {
   const github = githubClient(fetch);
   const unique = [...new Map(names.map((name) => [name.toLowerCase(), name])).values()];
   const found: Candidate[] = [];
@@ -549,7 +575,7 @@ async function lookUp(fetch: Fetch, names: string[], source: Source, warnings: s
     // The run's time limit also ends the lookups, so the run still saves its state in time.
     if (limit.clock.now() - limit.startedAt >= limit.runMs) {
       warnings.push(`the run looks up no ${source} repo after ${duration(limit.runMs)}, its time limit, so it does not read ${unique.length - start} of them`);
-      break;
+      return { found, notLookedUp: unique.slice(start) };
     }
     const batch = unique.slice(start, start + LOOKUP_BATCH);
     const variables: Record<string, string> = {};
@@ -570,13 +596,13 @@ async function lookUp(fetch: Fetch, names: string[], source: Source, warnings: s
     } catch (error) {
       if (!(error instanceof ReadFailure)) throw error;
       failed(error.message);
-      break;
+      return { found, notLookedUp: unique.slice(start) };
     }
     const errors = Array.isArray(answer?.errors) ? answer.errors : [];
     const data = answer?.data;
     if (typeof data !== "object" || data === null) {
       failed(`the answer has no data${errors.length ? `: ${errors.map((error) => String(error?.message)).join("; ")}` : ""}`);
-      break;
+      return { found, notLookedUp: unique.slice(start) };
     }
     for (const [i, name] of batch.entries()) {
       const repo = data[`r${i}`];
@@ -599,7 +625,7 @@ async function lookUp(fetch: Fetch, names: string[], source: Source, warnings: s
       found.push({ repo: nameWithOwner.toLowerCase(), repoUrl: url, pushedAt, source });
     }
   }
-  return found;
+  return { found, notLookedUp: [] };
 }
 
 // The plugin ids of the entries under root by their lowercase owner/repo names, the

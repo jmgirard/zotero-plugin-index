@@ -628,8 +628,11 @@ counts as a failed request. These cause a request to fail:
 The command sends no code search request from 8 minutes after its start.
 Each query that it did not finish then gets a warning, and the command goes
 on with the repositories that it found. An item with no owner/repo name
-gets a warning, and the command skips it. A query with more than 1,000
-results also gets a warning, since GitHub returns only the first 1,000. The
+gets a warning, and the command skips it. The report names at most 10 such
+items for each query and counts the rest. A query with more than 1,000
+results also gets a warning, since GitHub returns only the first 1,000. If
+every query ends with no item and no failure, the report gets one warning.
+A token that cannot see GitHub's code index can get such empty pages. The
 time of the code search counts toward the run's time limit of 18 minutes,
 which the paragraphs below describe.
 
@@ -660,7 +663,8 @@ read takes longer, the command stops it and refuses the repository with
 run reads the repository again. The check of the branch name with git stops
 after 30 seconds. If it takes longer, the command refuses the repository with
 `unexpected-error`, which the state file also does not record. The command
-starts no repository read after 18 minutes from its start. The `unread` field
+starts no lookup request and no repository read after 18 minutes from its
+start. The `unread` field
 of the report counts each repository that it did not reach. The report also
 gets a warning that names the time limit. The command still writes its state
 file and, with `--handoff`, its handoff. These limits leave time for the
@@ -827,7 +831,10 @@ rounds of these two steps:
 
 GitHub does not promise the order of runs that wait in the group, so start
 the merge only after the discover run ends. Repeat both steps while a
-discover run reports unread repos. Held pull requests stay open for you.
+discover run reports unread repos. Held pull requests stay open for you. A
+run reads at most `budget` repositories, 100 by default, within its time
+limit of 18 minutes. The code search takes part of that time, so a larger
+`budget` can end at the time limit instead.
 
 Before it merges, the command reads the two files at the head commit of the
 pull request. It copies the checkout's `plugins/` folder, adds the new entry,

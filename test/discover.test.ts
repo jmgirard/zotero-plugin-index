@@ -92,7 +92,8 @@ interface RunOptions {
 
 async function runResult(responses: Responses, options: RunOptions = {}) {
   const { root = tempDir(), outDir = tempDir(), state = {}, skip = new Set<string>(), limit = 50, budget = 100, now = NOW } = options;
-  const { readMs, runMs, startedAt, refCheckMs, catalog, catalogMs, catalogMaxBytes, codeSearch, codeSearchMs, clock } = options;
+  // The run starts now unless a test sets `startedAt`, so a long-lived test worker does not pass the run's limits.
+  const { readMs, runMs, startedAt = performance.now(), refCheckMs, catalog, catalogMs, catalogMaxBytes, codeSearch, codeSearchMs, clock } = options;
   const { fetch, requests } = fixtureFetch(responses, options.onRequest);
   const limits = { readMs, runMs, startedAt, refCheckMs, catalog, catalogMs, catalogMaxBytes, codeSearch, codeSearchMs, clock };
   const result = await discover({ root, outDir, fetch, lookup: publicLookup, state, skip, limit, budget, now, ...limits });
@@ -606,7 +607,6 @@ describe("the code search", () => {
     ],
     ["a topic search returns it and code search names it in other letter case", [], ["Example/ALPHA"], [], "topic", 0],
     ["a topic search returns the name the code search lookup gives", [], ["example/old-alpha"], [found(["example/alpha", "2026-10-01T00:00:00Z"])], "topic", 1],
-    ["two queries name it in other letter case", [], ["example/coded", "Example/Coded"], [found(["example/coded", "2026-10-20T00:00:00Z"])], "code-search", 1],
   ])("reads a repo once, with the source of the first source in the order, when %s", async (_name, catalogNames, codeNames, answers, source, lookupCount) => {
     const responses: Responses = { ...base(), ...listed(catalogNames), ...searchedCode({ q1: codeNames.slice(0, 1), q2: codeNames.slice(1) }) };
     for (const [i, answer] of answers.entries()) responses[`${GRAPHQL} #${i + 1}`] = answer;
@@ -761,6 +761,7 @@ describe("the code search", () => {
       ["an HTTP 5xx answer", { status: 502, text: "bad gateway" }, "returned HTTP 502"],
       ["a fetch that rejects", { error: "connection reset" }, "failed: connection reset"],
       ["a request that passes its time limit", { stall: "headers" as const }, "failed: The operation was aborted due to timeout"],
+      ["a body that passes its time limit", { stall: "body" as const }, "failed while reading the body: The operation was aborted due to timeout"],
       ["a body that is not JSON", { text: "<html>busy</html>" }, "returned a body that is not JSON"],
       ["a page with no list of items", { json: { total_count: 1 } }, "returned a body with no list of items"],
     ])("with %s warns, keeps the query's earlier pages, and reads the other sources", async (_name, answer, message) => {
@@ -772,14 +773,61 @@ describe("the code search", () => {
     });
   });
 
-  test("warns about an item with no owner/repo repository.full_name and a query with more than 1,000 results", async () => {
-    const page = { json: { total_count: 1500, items: [{ repository: null }, { repository: { full_name: "listed" } }, { name: "manifest.json" }] } };
+  test("warns about a query with more than 1,000 results and names at most 10 items with no owner/repo repository.full_name", async () => {
+    const unusable = [{ repository: null }, { repository: { full_name: "listed" } }, { name: "manifest.json" }];
+    const page = { json: { total_count: 1500, items: Array.from({ length: 12 }, (_, i) => unusable[i % 3]) } };
     const { report, reads } = await run({ ...base(), [codeUrl("q1")]: page }, { codeSearch: ["q1"] });
     expect(report.warnings).toEqual([
       "the code search for q1 has 1500 results, and the search returns only the first 1000",
-      ...Array.from({ length: 3 }, () => "the code search for q1 returned an item with no owner/repo repository.full_name, so the run skips it"),
+      ...Array.from({ length: 10 }, () => "the code search for q1 returned an item with no owner/repo repository.full_name, so the run skips it"),
+      "the code search for q1 returned 2 more items with no owner/repo repository.full_name, so the run skips them",
     ]);
     expect(reads).toEqual(["example/alpha"]);
+  });
+
+  test("warns once when every query finishes with no item, and stays silent when one query has an item", async () => {
+    const empty = await run({ ...base(), ...searchedCode({ q1: [], q2: [] }) }, withCode);
+    expect(empty.report.warnings).toEqual(["the code searches returned no items, so the token may not reach GitHub's code index"]);
+    const one = await run({ ...base(), ...searchedCode({ q1: [], q2: ["example/coded"] }), [GRAPHQL]: found(["example/coded", "2026-10-20T00:00:00Z"]) }, withCode);
+    expect(one.report.warnings).toEqual([]);
+  });
+
+  test.each([
+    ["a next page on another host", '<https://example.org/page2>; rel="next"', "its next page https://example.org/page2 is not on https://api.github.com"],
+    ["a next page read before", `<${codeUrl("q1")}>; rel="next"`, `its next page ${codeUrl("q1")} was read before`],
+  ])("stops a query at %s, keeps its first page, and runs the next query", async (_name, link, why) => {
+    const responses = {
+      ...base(),
+      ...pluginRepo("example/other", "other@example.org", { topics: [] }),
+      [codeUrl("q1")]: { ...codePage(["example/coded"]), headers: { link } },
+      ...searchedCode({ q2: ["example/other"] }),
+      [GRAPHQL]: found(["example/coded", "2026-10-20T00:00:00Z"], ["example/other", "2026-10-19T00:00:00Z"]),
+    };
+    const { reads, report } = await run(responses, withCode);
+    expect(report.warnings).toEqual([`the code search for q1 read 1 page and stopped, since ${why}`]);
+    expect(reads).toEqual(["example/coded", "example/other", "example/alpha"]);
+  });
+
+  test("warns about a page with incomplete results", async () => {
+    const page = { json: { ...codePage(["example/coded"]).json, incomplete_results: true } };
+    const { report } = await run({ ...base(), [codeUrl("q1")]: page, [GRAPHQL]: found(["example/coded", "2026-10-20T00:00:00Z"]) }, { codeSearch: ["q1"] });
+    expect(report.warnings).toEqual(["the code search for q1 returned incomplete results on page 1, so the run may miss some repos"]);
+  });
+
+  test("looks up through code search a name whose catalog lookup failed", async () => {
+    const responses = {
+      ...base(),
+      ...listed(["example/coded"]),
+      ...searchedCode({ q1: ["example/coded"], q2: [] }),
+      [`${GRAPHQL} #1`]: { status: 502, text: "bad gateway" },
+      [`${GRAPHQL} #2`]: found(["example/coded", "2026-10-20T00:00:00Z"]),
+    };
+    const { result, requests } = await runResult(responses, { ...withCode, catalog: CATALOG });
+    if (!result.ok) throw new Error(result.message);
+    expect(lookups(requests)).toHaveLength(2);
+    expect(JSON.parse(lookups(requests)[1].body!).variables).toEqual({ o0: "example", n0: "coded" });
+    expect(result.report.warnings).toEqual([expect.stringMatching(/^the run reads none of 1 catalog repos from example\/coded on, since their lookup failed: .*HTTP 502/)]);
+    expect(result.report.read).toContainEqual(expect.objectContaining({ repo: "example/coded", source: "code-search", outcome: "written" }));
   });
 });
 
