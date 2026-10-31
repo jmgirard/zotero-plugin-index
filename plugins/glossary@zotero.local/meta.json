@@ -1,0 +1,7 @@
+{
+  "id": "glossary@zotero.local",
+  "name": "Zotero Glossary",
+  "description": "Select a term while reading to look it up via an LLM (DeepSeek by default), and build your own bilingual glossary of technical terms (EN/CN).",
+  "repoUrl": "https://github.com/ChaoPlayer/zotero-glossary",
+  "updateUrl": "https://raw.githubusercontent.com/ChaoPlayer/zotero-glossary/main/update.json"
+}
