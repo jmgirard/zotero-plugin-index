@@ -1,0 +1,8 @@
+{
+  "id": "cite-non-english@boan-anbo.com",
+  "name": "CNE (Cite Non-English)",
+  "description": "CNE (Cite Non-English) - Manage non-English citation metadata with parallel titles, romanization, and translation support for Zotero. Supports CJK (Chinese, Japanese, Korean) and other non-English sources",
+  "homepage": "https://github.com/boan-anbo/cite-non-english#readme",
+  "repoUrl": "https://github.com/boan-anbo/cite-non-english",
+  "updateUrl": "https://github.com/boan-anbo/cite-non-english/releases/download/release/update.json"
+}
