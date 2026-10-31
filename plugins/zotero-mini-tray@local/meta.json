@@ -1,0 +1,7 @@
+{
+  "id": "zotero-mini-tray@local",
+  "name": "Zotero Mini Tray",
+  "description": "Close the main window to the Windows notification area. Restore or quit from the tray menu.",
+  "repoUrl": "https://github.com/zhuzihan728/zotero-minimise-tray",
+  "updateUrl": "https://raw.githubusercontent.com/zhuzihan728/zotero-minimise-tray/main/updates.json"
+}
