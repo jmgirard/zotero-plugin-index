@@ -576,16 +576,21 @@ name and the time of the last push. One request asks about at most 100
 repositories. This lookup needs the `GITHUB_TOKEN` environment variable.
 The command leaves out each repository that an entry already names. It
 reads the other repositories in the same way as `pnpm add-plugin`, the
-newest pushed first. It writes the entries of at most 5 repositories that pass the
-inclusion bar under `plugins/`, and it reads at most 100 repositories. To
+newest pushed first. It writes the entries of at most 5 repositories that
+pass the inclusion bar under `plugins/`, and it reads at most 100
+repositories. To
 change these numbers, add `--limit <n>` or `--budget <n>`. To write the
 entries in another directory, add `--out <dir>`. The command prints a JSON
 report that names each repository that it wrote, refused, or skipped.
 
 If the read of the catalog fails, the report gets a warning, and the
 command reads the repositories of the topic search. These cause the read to
-fail: a failed connection, an HTTP error answer, a body that is not a JSON
-list, a body larger than 8 MiB, and a read longer than 60 seconds. A catalog item whose `repo` is
+fail:
+
+- a failed connection or an HTTP error answer
+- a body that is not a JSON list, or a body larger than 8 MiB
+- a read longer than 60 seconds
+ A catalog item whose `repo` is
 not an owner/repo name gets a warning, and the command skips it. If a
 lookup request fails, the report gets a warning, and the command reads none
 of the catalog repositories of that request. Without `GITHUB_TOKEN`, each
@@ -610,10 +615,10 @@ error, such as a rate limit, or a failed request. It also does not record an
 HTTP 429 or 5xx answer to the download of the XPI or the `update.json`, after
 any redirects. Nor does it record a 403 answer to a download that requested
 a GitHub release download URL, as "Building the data" defines it. Such a
-repository is read again on the next run. The file keeps the record of a
-refusal for 30 days after the refusal, also when a run does not find the
-repository. So a failed catalog read loses no record that makes a run skip
-a repository. To use another file, add `--state <file>`.
+repository is read again on the next run. If a run does not find a refused
+repository, the file still keeps its record until 30 days after the
+refusal. So a failed catalog read loses no record that makes a run skip a
+repository. To use another file, add `--state <file>`.
 
 The command gives each repository read 3 minutes, as `pnpm build` does. If a
 read takes longer, the command stops it and refuses the repository with
