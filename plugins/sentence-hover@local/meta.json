@@ -1,0 +1,8 @@
+{
+  "id": "sentence-hover@local",
+  "name": "句译随行 Sentence Hover",
+  "description": "悬停翻译 PDF 英文整句，并联动高亮中文对应词语。",
+  "homepage": "https://github.com/Nova-Meteor/zotero-sentence-hover",
+  "repoUrl": "https://github.com/Nova-Meteor/zotero-sentence-hover",
+  "updateUrl": "https://raw.githubusercontent.com/Nova-Meteor/zotero-sentence-hover/main/updates.json"
+}
