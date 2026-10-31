@@ -1,0 +1,8 @@
+{
+  "id": "codex-sidebar@zotero.local",
+  "name": "Codex for Zotero",
+  "description": "Discuss papers with Codex in Zotero and continue your conversations across Codex apps.",
+  "homepage": "https://github.com/RTLiang/zotero-codex",
+  "repoUrl": "https://github.com/anka-afk/PaperBridge",
+  "updateUrl": "https://raw.githubusercontent.com/RTLiang/zotero-codex/main/updates.json"
+}
