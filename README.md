@@ -1384,10 +1384,10 @@ To print the value that the data check compares, run:
 pnpm data-digest --dir <dir> [--expect <sha256>]
 ```
 
-Without `--expect`, the command prints one SHA-256 value. It hashes one JSON line for each
-entry under `--dir`, sorted by path. A line holds the entry's kind (file
-or directory), its path relative to `--dir`, and the SHA-256 of a file's
-bytes. File times and modes do not change the value.
+Without `--expect`, the command prints one SHA-256 value. It hashes one
+JSON line for each entry under `--dir`, sorted by path. A line holds the
+entry's kind (file or directory), its path relative to `--dir`, and the
+SHA-256 of a file's bytes. File times and modes do not change the value.
 
 If an entry is not a file or a directory, the command prints no value. A
 symbolic link and a named pipe are such entries. The command then names
