@@ -1,0 +1,8 @@
+{
+  "id": "nzbridge@notebooklm-bridge.dev",
+  "name": "NZBridge",
+  "description": "NZBridge — Bidirectional sync between Zotero and Google NotebookLM",
+  "homepage": "https://github.com/Rafael-Silva-Oliveira/NZBridge",
+  "repoUrl": "https://github.com/Rafael-Silva-Oliveira/NZBridge",
+  "updateUrl": "https://github.com/Rafael-Silva-Oliveira/NZBridge/releases/latest/download/update.json"
+}
