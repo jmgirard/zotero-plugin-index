@@ -1,0 +1,8 @@
+{
+  "id": "zotero-metadata-updater@kdmsnr.local",
+  "name": "Metadata Updater",
+  "description": "Zotero 9 plugin for updating selected item metadata from DOI",
+  "homepage": "https://github.com/kdmsnr/zotero-metadata-updater#readme",
+  "repoUrl": "https://github.com/kdmsnr/zotero-metadata-updater",
+  "updateUrl": "https://github.com/kdmsnr/zotero-metadata-updater/releases/download/release/update.json"
+}
