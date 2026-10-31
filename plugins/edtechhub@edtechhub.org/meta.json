@@ -1,0 +1,7 @@
+{
+  "id": "edtechhub@edtechhub.org",
+  "name": "EdTechHub for Zotero",
+  "description": "EdTech hub companion plugin for Zotero",
+  "repoUrl": "https://github.com/edtechhub/zotero-edtechhub",
+  "updateUrl": "https://github.com/edtechhub/zotero-edtechhub/releases/download/release/updates.json"
+}
