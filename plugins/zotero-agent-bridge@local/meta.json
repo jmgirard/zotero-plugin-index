@@ -1,0 +1,7 @@
+{
+  "id": "zotero-agent-bridge@local",
+  "name": "Zotero Pi Assistant",
+  "description": "Built-in Pi literature assistant for Zotero with managed private Bridge.",
+  "repoUrl": "https://github.com/Mengzeovo/zotero-agent-bridge",
+  "updateUrl": "https://raw.githubusercontent.com/Mengzeovo/zotero-agent-bridge/master/updates.json"
+}
