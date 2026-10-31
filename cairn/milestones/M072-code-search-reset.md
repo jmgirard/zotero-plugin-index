@@ -90,3 +90,33 @@ A code search request that GitHub's rate limit refuses with a named wait is sent
 - AC4: "counts a retry toward the limit of 10 code search requests in any 60 seconds": the first 10 requests go out at clock 0, the tenth (page 10) gets a 403 with `retry-after: 1`, and its retry (the 11th request) is sent at 60,001 ms or later; 13 requests, and no 10-request span under 60,000 ms. Pass.
 - AC5: README "Finding new plugins" (lines 620-627) names `retry-after` and `x-ratelimit-remaining: 0` with `x-ratelimit-reset`, the hold until 1 second after the wait, and the one retry of a 403 or 429 page; DESIGN item 1 (210-212) and the discovery Architecture item (622-627) say the same; CHANGELOG's first Unreleased entry (11-17) says the same. Verify clean (base line). Pass.
 - Consistency gate: `cairn_validate.py` passed every check; no DESIGN principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: a retried 403 or 429 that then succeeds leaves no trace in the report, so the post-merge run cannot record it — fix now: a warning "the code search for <q> got HTTP <status> on page <n>, so it sends that page once more…", fixed 44b2718
+- diff-bug #2: a reset already past on the runner's clock (clock ahead of GitHub's) sends the retry at once — fix now: the reset moves forward by how far the runner is ahead of the answer's `date`, and a past reset waits from now, with two tests, fixed 44b2718
+- diff-bug #3: the hold wait has no extra millisecond against early timers, unlike the pacing — fix now, fixed 44b2718
+- diff-bug #4: `retry-after` as an HTTP date names no wait — reject (planned change: AC1 defines a whole number of seconds)
+- diff-bug #5: a secondary-limit 403 with no `retry-after` and `remaining` above 0 gets no retry — follow-up: item (5) of "Harden code search against limits"
+- diff-bug #6: every `ReadFailure` now has `status` and `rateLimit` as own properties, undefined — reject (style: no strict-equality or serialization use of it)
+- diff-bug #7: a 200's `retry-after` end is measured after the body read — noted (it errs long)
+- diff-bug #8: a 401 or 502 naming a wait moves the shared hold, untested and undocumented — fix now: a test that the next query waits and a DESIGN sentence, fixed 44b2718
+- diff-bug #9: README "Finding new plugins" has lines past 76 columns — fix now: rewrapped, fixed 44b2718
+- diff-bug (a): no value changes across the awaits; clock readings are consistent — noted
+- diff-bug (c) #1: AC4's test repeats `times[10] >= 60_000` inside its loop — reject (planned change: AC4 names that check)
+- diff-bug (c) #2: the 401 and 502 cases, and the two fail-again cases, share paths — reject (planned change: AC2 names each)
+- blame-history #1: the hold depends on the runner's clock against GitHub's reset — fix now: same as diff-bug #2, fixed 44b2718
+- blame-history #2: a hold from any answer is wider than the retry, untested — fix now: same as diff-bug #8, fixed 44b2718
+- blame-history #3: a 200 with `remaining: 0` now holds the next request — reject (planned change: AC1)
+- blame-history #4: a far reset keeps the search waiting to the cutoff — reject (planned change: AC3 bounds it)
+- blame-history #5: long lines in the `searchCode` header and the `ReadFailure` constructor — reject (style)
+- prior-review #1: a redirected answer's headers can hold every query — follow-up: noted in "Check each redirect of GitHub API reads"
+- prior-review #2: one long reset sleeps the search to the cutoff — reject (planned change: AC3)
+- prior-review #3: fake-clock tests without `startedAt` mix two time origins — fix now: `runResult` starts the run at the test clock's `now()`, fixed 44b2718
+- prior-review #4: a later change could skip the off-origin check on a retry — reject (false: no current defect; a retry reuses a checked URL)
+- ripple #1: ROADMAP item (1) of "Harden code search against limits" still reads as open — reject (planned change: step 9 narrows the row)
+- ripple #2: the `searchCode` header's first sentence says a failed request stops its query — reject (false: the next sentence of the same comment states the retry)
+- ripple #3: DESIGN item 1 says a failed code search request warns, with no retry qualifier — fix now, fixed 44b2718
+- ripple #4: README's list of request failures has no retry note — reject (false: the retry is stated just above the list)
+- ripple #5: the `Clock` comment says it is in performance.now() time — fix now, fixed 44b2718
+- ripple #6: the `clock` option comment omits Date.now() — fix now, fixed 44b2718
+- ripple (added lines): DESIGN item 1 said any `x-ratelimit-reset` and any refusal — fix now: `x-ratelimit-remaining` 0 and a 403 or 429, fixed 44b2718
+- After the fixes: `pnpm test` 1747 passed, `pnpm check` 0 problems; the skew and past-reset tests went red with each fix planted out.
