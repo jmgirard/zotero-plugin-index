@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { type WriteResult, writeEntry } from "../add-plugin/add-plugin.ts";
 import { listEntries } from "../check/check.ts";
 import type { Lookup } from "../upstream/host-guard.ts";
-import { type Failure, type Fetch, githubClient, ReadFailure, readUpstream } from "../upstream/reader.ts";
+import { type Failure, type Fetch, githubClient, type RateLimit, ReadFailure, readUpstream } from "../upstream/reader.ts";
 import { duration, READ_LIMIT_MS, withinLimit } from "../upstream/time-limit.ts";
 import { plannedProblem } from "./handoff.ts";
 import { type HoldReason, holdReasons, type IndexedName, ownerCreatedAt, type Source, TOPICS } from "./holds.ts";
@@ -52,12 +52,16 @@ export const CODE_SEARCH_WINDOW_MS = 60 * 1000;
 export const CODE_SEARCH_CUTOFF_MS = 8 * 60 * 1000;
 export const CODE_SEARCH_MS = 60 * 1000;
 
-// The clock of the run's time limits and the code search pacing, in performance.now() time.
+// The clock of the run's time limits and the code search pacing: `now` is performance.now()
+// time.
+// `wall` is epoch milliseconds, for the times that GitHub's rate-limit headers name; `sleep`
+// moves it as it moves `now`.
 export interface Clock {
   now(): number;
+  wall(): number;
   sleep(ms: number): Promise<void>;
 }
-const realClock: Clock = { now: () => performance.now(), sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)) };
+const realClock: Clock = { now: () => performance.now(), wall: () => Date.now(), sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)) };
 
 // How a lookup warning names the source of a repo.
 const SOURCE_TEXT: Record<Source, string> = { topic: "a topic search", catalog: "the catalog", "code-search": "a code search" };
@@ -144,7 +148,7 @@ export interface DiscoverOptions {
   // Each request stops at `codeSearchMs`.
   codeSearch?: string[];
   codeSearchMs?: number;
-  // performance.now() and setTimeout when unset.
+  // performance.now(), Date.now(), and setTimeout when unset.
   clock?: Clock;
 }
 
@@ -473,7 +477,8 @@ async function readCatalog(fetch: Fetch, url: string, max: number, ms: number, w
 // waits until the last CODE_SEARCH_WINDOW_MS holds fewer than CODE_SEARCH_RATE of them. A
 // failed request, or a page with no list of items, warns and stops its query, and the run
 // keeps the names of its earlier pages and goes on to the next query. So does a request that
-// could not be sent before CODE_SEARCH_CUTOFF_MS after `startedAt`. Queries that all finish
+// could not be sent before CODE_SEARCH_CUTOFF_MS after `startedAt`. A page refused with HTTP
+// 403 or 429 and a named wait is sent once more, and warns only if it fails again. Queries that all finish
 // with no item warn once, since a token that cannot see the code index can get empty pages.
 // The requests carry CODE_SEARCH_TOKEN when it is set, else GITHUB_TOKEN: the GitHub Actions
 // token got HTTP 429 on every code search request (discover run 41224882790, 2026-10-31).
@@ -484,6 +489,23 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
   const sent: number[] = [];
   let items = 0;
   let stopped = false;
+  // The wall time before which no query sends a request: 1 second after the latest end of
+  // any wait an answer named. GitHub's window ends at the second its reset names, which
+  // can be later than 60 seconds after the window's first request.
+  let holdUntil = 0;
+  // A reset is in GitHub's time. When the runner's clock is ahead of the answer's `date`, the
+  // reset is moved forward by that much, and a reset already past still waits from now.
+  const hold = (rateLimit: RateLimit | undefined) => {
+    const now = clock.wall();
+    const ahead = rateLimit?.dateMs === undefined ? 0 : Math.max(0, now - rateLimit.dateMs);
+    const ends = [
+      ...(rateLimit?.remaining === 0 && rateLimit.resetMs !== undefined ? [Math.max(now, rateLimit.resetMs + ahead)] : []),
+      ...(rateLimit?.retryAfterMs !== undefined ? [now + rateLimit.retryAfterMs] : []),
+    ];
+    if (ends.length === 0) return false;
+    holdUntil = Math.max(holdUntil, Math.max(...ends) + 1000);
+    return true;
+  };
   for (const query of queries) {
     const seen = new Set<string>();
     let pages = 0;
@@ -493,18 +515,23 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
       warnings.push(`the code search for ${query} read ${pages} page${pages === 1 ? "" : "s"} and stopped, since ${why}`);
     };
     let next: string | undefined = `${API}/search/code?${new URLSearchParams({ q: query, per_page: "100" })}`;
+    // Whether this request sends again a page that a 403 or 429 with a named wait refused.
+    let retry = false;
     while (next) {
-      if (!URL.canParse(next) || new URL(next).origin !== API) {
-        stop(`its next page ${next} is not on ${API}`);
-        break;
+      if (!retry) {
+        if (!URL.canParse(next) || new URL(next).origin !== API) {
+          stop(`its next page ${next} is not on ${API}`);
+          break;
+        }
+        if (seen.has(next)) {
+          stop(`its next page ${next} was read before`);
+          break;
+        }
+        seen.add(next);
       }
-      if (seen.has(next)) {
-        stop(`its next page ${next} was read before`);
-        break;
-      }
-      seen.add(next);
       // One more millisecond, since a timer can fire up to 1 ms early against performance.now().
-      const wait = sent.length < CODE_SEARCH_RATE ? 0 : Math.max(0, sent[sent.length - CODE_SEARCH_RATE] + CODE_SEARCH_WINDOW_MS + 1 - clock.now());
+      const paced = sent.length < CODE_SEARCH_RATE ? 0 : sent[sent.length - CODE_SEARCH_RATE] + CODE_SEARCH_WINDOW_MS + 1 - clock.now();
+      const wait = Math.max(0, paced, holdUntil > 0 ? holdUntil + 1 - clock.wall() : 0);
       if (clock.now() + wait - startedAt >= CODE_SEARCH_CUTOFF_MS) {
         stop(`the run sends no code search request ${duration(CODE_SEARCH_CUTOFF_MS)} after it starts`);
         break;
@@ -513,13 +540,22 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
       sent.push(clock.now());
       let body: unknown;
       let link: string | null;
+      let rateLimit: RateLimit;
       try {
-        ({ body, link } = await github.get(next, ms));
+        ({ body, link, rateLimit } = await github.get(next, ms));
       } catch (error) {
         if (!(error instanceof ReadFailure)) throw error;
+        const named = hold(error.rateLimit);
+        if (named && !retry && (error.status === 403 || error.status === 429)) {
+          warnings.push(`the code search for ${query} got HTTP ${error.status} on page ${pages + 1}, so it sends that page once more after the wait the answer names`);
+          retry = true;
+          continue;
+        }
         stop(`its request failed: ${error.message}`);
         break;
       }
+      retry = false;
+      hold(rateLimit);
       const page = body as { total_count?: unknown; incomplete_results?: unknown; items?: unknown } | null;
       if (typeof page !== "object" || page === null || !Array.isArray(page.items)) {
         stop(`GET ${next} returned a body with no list of items`);

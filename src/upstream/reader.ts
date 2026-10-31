@@ -93,13 +93,48 @@ export const UPDATE_JSON_MAX_BYTES = 1024 * 1024;
 // over it is skipped.
 export const UNZIPPED_MAX_BYTES = 1024 * 1024;
 
+// The rate-limit headers of a GitHub API answer: `x-ratelimit-remaining`, `x-ratelimit-reset`
+// as epoch milliseconds, and `retry-after` as milliseconds. A header that is missing or not a
+// non-negative whole number is left out. `dateMs` is the answer's `date` header, GitHub's
+// clock when it answered, when it parses.
+export interface RateLimit {
+  remaining?: number;
+  resetMs?: number;
+  retryAfterMs?: number;
+  dateMs?: number;
+}
+
+export function rateLimitOf(headers: Headers): RateLimit {
+  const whole = (name: string) => {
+    const value = headers.get(name)?.trim();
+    return value !== undefined && /^\d+$/.test(value) ? Number(value) : undefined;
+  };
+  const remaining = whole("x-ratelimit-remaining");
+  const reset = whole("x-ratelimit-reset");
+  const retryAfter = whole("retry-after");
+  const date = Date.parse(headers.get("date") ?? "");
+  return {
+    ...(remaining !== undefined && { remaining }),
+    ...(reset !== undefined && { resetMs: reset * 1000 }),
+    ...(retryAfter !== undefined && { retryAfterMs: retryAfter * 1000 }),
+    ...(!Number.isNaN(date) && { dateMs: date }),
+  };
+}
+
 export class ReadFailure extends Error {
   readonly failure: Failure;
   readonly buildLevel: boolean;
-  constructor(failure: Failure, message: string, buildLevel = false) {
+  // Set by `githubClient().get` for an HTTP error answer.
+  readonly status?: number;
+  readonly rateLimit?: RateLimit;
+  constructor(failure: Failure, message: string, buildLevel = false, answer?: { status: number; rateLimit: RateLimit }) {
     super(message);
     this.failure = failure;
     this.buildLevel = buildLevel;
+    if (answer) {
+      this.status = answer.status;
+      this.rateLimit = answer.rateLimit;
+    }
   }
 }
 
@@ -373,16 +408,21 @@ export function githubClient(fetch: Fetch, token = process.env.GITHUB_TOKEN) {
   if (token) headers.authorization = `Bearer ${token}`;
 
   // The token goes only to the API host, so a URL on another origin is refused. The
-  // request, the body included, stops at `ms`.
-  async function get(url: string, ms = FETCH_TIMEOUT_MS): Promise<{ body: unknown; link: string | null }> {
+  // request, the body included, stops at `ms`. The answer's rate-limit headers come back
+  // with the body, or on the ReadFailure of an HTTP error answer.
+  async function get(url: string, ms = FETCH_TIMEOUT_MS): Promise<{ body: unknown; link: string | null; rateLimit: RateLimit }> {
     if (!URL.canParse(url) || new URL(url).origin !== API) fail("request-failed", `${url} is not on ${API}`);
     const response = await request(fetch, url, { headers }, ms);
+    const rateLimit = rateLimitOf(response.headers);
     if (!response.ok) {
-      fail("github-http-error", `GET ${url} returned HTTP ${response.status}`, buildLevelStatus(response.status, "github-api"));
+      throw new ReadFailure("github-http-error", `GET ${url} returned HTTP ${response.status}`, buildLevelStatus(response.status, "github-api"), {
+        status: response.status,
+        rateLimit,
+      });
     }
     const text = await readText(response, url);
     try {
-      return { body: JSON.parse(text), link: response.headers.get("link") };
+      return { body: JSON.parse(text), link: response.headers.get("link"), rateLimit };
     } catch (error) {
       // No plugin shapes an API body, so a body that is not JSON, such as an HTML error
       // page, comes from GitHub or a host between.
