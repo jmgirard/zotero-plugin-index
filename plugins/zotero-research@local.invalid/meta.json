@@ -1,0 +1,7 @@
+{
+  "id": "zotero-research@local.invalid",
+  "name": "Zotero AI 科研阅读助手",
+  "description": "Zotero 10 科研阅读侧栏、网页 AI 对话与页码证据。",
+  "repoUrl": "https://github.com/daxiaxiong88/zotero-research",
+  "updateUrl": "https://raw.githubusercontent.com/daxiaxiong88/zotero-research/main/updates.json"
+}
