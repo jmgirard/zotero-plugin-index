@@ -23,9 +23,9 @@ export interface Recorded {
   unexpected?: string;
 }
 
-// Keyed by URL for GET requests. A request with another method is answered from
-// `<METHOD> <url> #<n>` for its nth request with that method and URL, else from
-// `<METHOD> <url>`.
+// Keyed by URL for GET requests, or by `<url> #<n>` for the nth GET of that URL. A request
+// with another method is answered from `<METHOD> <url> #<n>` for its nth request with that
+// method and URL, else from `<METHOD> <url>`.
 export type Responses = Record<string, Recorded>;
 
 export interface Fixture {
@@ -60,7 +60,8 @@ export function fixtureFetch(responses: Responses, onRequest?: (seen: SeenReques
     requests.push(seen);
     onRequest?.(seen);
     const nth = requests.filter((request) => request.method === method && request.url === url).length;
-    const recorded = method === "GET" ? responses[url] : (responses[`${method} ${url} #${nth}`] ?? responses[`${method} ${url}`]);
+    const recorded =
+      method === "GET" ? (responses[`${url} #${nth}`] ?? responses[url]) : (responses[`${method} ${url} #${nth}`] ?? responses[`${method} ${url}`]);
     if (!recorded) return new Response(`no recorded response for ${url}`, { status: 404 });
     if (recorded.error) throw new TypeError(recorded.error);
     if (recorded.stall === "headers") await aborted(init?.signal);

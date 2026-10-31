@@ -53,11 +53,14 @@ export const CODE_SEARCH_CUTOFF_MS = 8 * 60 * 1000;
 export const CODE_SEARCH_MS = 60 * 1000;
 
 // The clock of the run's time limits and the code search pacing, in performance.now() time.
+// `wall` is epoch milliseconds, for the times that GitHub's rate-limit headers name; `sleep`
+// moves it as it moves `now`.
 export interface Clock {
   now(): number;
+  wall(): number;
   sleep(ms: number): Promise<void>;
 }
-const realClock: Clock = { now: () => performance.now(), sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)) };
+const realClock: Clock = { now: () => performance.now(), wall: () => Date.now(), sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)) };
 
 // How a lookup warning names the source of a repo.
 const SOURCE_TEXT: Record<Source, string> = { topic: "a topic search", catalog: "the catalog", "code-search": "a code search" };

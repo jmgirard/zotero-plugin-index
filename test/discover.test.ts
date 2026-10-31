@@ -34,6 +34,8 @@ const searchUrl = (topic: string) =>
   `https://api.github.com/search/repositories?q=topic%3A${topic}&sort=updated&order=desc&per_page=100`;
 const NOW = new Date("2026-10-25T12:00:00Z");
 const DAY = 24 * 60 * 60 * 1000;
+// The fake clock's epoch time when its run starts, on a whole second, as rate-limit resets are.
+const WALL_START = Date.parse("2026-10-31T18:00:00Z");
 const publicLookup = async () => ["140.82.112.3"];
 
 const temps: string[] = [];
@@ -672,7 +674,7 @@ describe("the code search", () => {
 
   // A clock that moves only when the run sleeps, or when a test sets `at`.
   function fakeClock() {
-    const clock = { at: 0, now: () => clock.at, sleep: async (ms: number) => void (clock.at += ms) };
+    const clock = { at: 0, now: () => clock.at, wall: () => WALL_START + clock.at, sleep: async (ms: number) => void (clock.at += ms) };
     return clock;
   }
   // `count` pages of one query, each with one repo, example/<query>-p<n>, linked by `next`.

@@ -1,13 +1,13 @@
 # M072: Wait for GitHub's code search reset
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** high
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the index's plugin list and the discover report change
-- **Branch/PR:** —
+- **Branch/PR:** m072-code-search-reset
 
 ## Goal
 
@@ -55,7 +55,7 @@ A code search request that GitHub's rate limit refuses with a named wait is sent
 
 ## Tasks
 
-- [ ] T1: In `src/upstream/reader.ts`, return each answer's rate-limit values from `githubClient().get` and carry them on its `ReadFailure`. Add `wall()` to `Clock` and the tests' fake clock. Let `fixtureFetch` answer the nth GET of one URL from `<url> #<n>`.
+- [x] T1: In `src/upstream/reader.ts`, return each answer's rate-limit values from `githubClient().get` and carry them on its `ReadFailure`. Add `wall()` to `Clock` and the tests' fake clock. Let `fixtureFetch` answer the nth GET of one URL from `<url> #<n>`.
 - [ ] T2: In `searchCode`, keep one hold time for all queries and retry a refused page once. The read-before check of a next page must let that retry through. Add the tests of AC1 to AC4.
 - [ ] T3: Write the README, DESIGN, and CHANGELOG text of AC5, wrapped near 76 columns, and run the verify slot.
 
@@ -70,6 +70,9 @@ A code search request that GitHub's rate limit refuses with a named wait is sent
 - 2026-10-31: plan gate chose waiting for the time the rate-limit headers name over even spacing of one request every 6.5 s, because GitHub's window ends at the reset it names and an even spacing still depends on where that window starts; falsified by a code search 403 or 429 whose wait the run honored.
 - 2026-10-31: criteria audit (full, fresh Opus reader): 15 findings; 12 taken (a wait holds every query, headers from every answer, `wall()` moving with `sleep`, varied header, status, page, and query, odd `retry-after` values, the failed-retry warning, the pacing test placing the retry where it can break the limit, AC5's wording), 3 answered (the post-merge run stays in Scope, as it cannot be shown before the merge; no criterion binds an instrument; proportionality fine), and the read-before check of a retried page put in T2.
 - 2026-10-31: question set: retries — once per page. Scope — waits only, no query rotation. After the merge, one `Discover plugins` run (limit 100, budget 300) and a merge run if it writes entries — yes.
+- 2026-10-31: implement started; branch m072-code-search-reset cut from main at c68c78c.
+- 2026-10-31: choice: `rateLimitOf` in `src/upstream/reader.ts` reads the three headers as non-negative whole numbers (others left out); `get` returns them as `rateLimit`, and an HTTP error answer's `ReadFailure` carries `status` and `rateLimit`. The tests' fake clock starts `wall()` at 2026-10-31T18:00:00Z.
+- 2026-10-31: T1 done: rate-limit values, `Clock.wall()`, and `fixtureFetch`'s `<url> #<n>` GET key; tested through T2. `pnpm test` 1733 passed, `pnpm check` 669 entries, 0 problems.
 
 ## Decisions
 
