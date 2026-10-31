@@ -1,0 +1,8 @@
+{
+  "id": "zotero-neo@zotero-neo",
+  "name": "Zotero Neo",
+  "description": "A Neovim-inspired, keyboard-first interaction layer for navigating, reading, annotating, and managing research in Zotero.",
+  "homepage": "https://github.com/zhongyangchuwu/Zotero-Neo",
+  "repoUrl": "https://github.com/zhongyangchuwu/Zotero-Neo",
+  "updateUrl": "https://raw.githubusercontent.com/zhongyangchuwu/Zotero-Neo/main/updates.json"
+}
