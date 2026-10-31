@@ -1,0 +1,8 @@
+{
+  "id": "doi2pdf@carhojohn.com",
+  "name": "doi2pdf",
+  "description": "More features for Zotero Local API",
+  "homepage": "https://github.com/CarhoJohn/doi2pdf#readme",
+  "repoUrl": "https://github.com/CarhoJohn/doi2pdf",
+  "updateUrl": "https://github.com/CarhoJohn/doi2pdf/releases/download/release/update.json"
+}
