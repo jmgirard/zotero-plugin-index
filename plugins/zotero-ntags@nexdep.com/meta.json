@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ntags@nexdep.com",
+  "name": "NTags",
+  "description": "Adds a sortable tag-count column to Zotero 10.",
+  "homepage": "https://github.com/nexdep/zotero-ntags#readme",
+  "repoUrl": "https://github.com/nexdep/zotero-ntags",
+  "updateUrl": "https://github.com/nexdep/zotero-ntags/releases/download/release/update.json"
+}
