@@ -1,0 +1,8 @@
+{
+  "id": "fullscreen@dev.null",
+  "name": "Zotero Fullscreen",
+  "description": "Adds Ctrl+Cmd+F to toggle native fullscreen on the Zotero main window.",
+  "homepage": "https://github.com/rapharomero/zotero-fullscreen",
+  "repoUrl": "https://github.com/rapharomero/zotero-fullscreen",
+  "updateUrl": "https://github.com/rapharomero/zotero-fullscreen/releases/latest/download/update.json"
+}
