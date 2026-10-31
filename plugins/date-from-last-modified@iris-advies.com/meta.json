@@ -1,0 +1,7 @@
+{
+  "id": "date-from-last-modified@iris-advies.com",
+  "name": "Get date from URL last-modified for Zotero",
+  "description": "Get date from URL last-modified",
+  "repoUrl": "https://github.com/retorquere/zotero-date-from-last-modified",
+  "updateUrl": "https://github.com/retorquere/zotero-date-from-last-modified/releases/download/release/updates.json"
+}
