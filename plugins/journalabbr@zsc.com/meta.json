@@ -1,0 +1,8 @@
+{
+  "id": "journalabbr@zsc.com",
+  "name": "zotero-journalabbr",
+  "description": "The plug-in updates journal abbreviations and adds or removes abbr tags!",
+  "homepage": "https://github.com/zoushucai/zotero-journalabbr#readme",
+  "repoUrl": "https://github.com/zoushucai/zotero-journalabbr",
+  "updateUrl": "https://github.com/zoushucai/zotero-journalabbr/releases/download/release/update.json"
+}
