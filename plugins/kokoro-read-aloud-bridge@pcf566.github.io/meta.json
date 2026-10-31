@@ -1,0 +1,8 @@
+{
+  "id": "kokoro-read-aloud-bridge@pcf566.github.io",
+  "name": "Kokoro Read Aloud Bridge",
+  "description": "Routes kokoro-* Zotero Read Aloud voices to a loopback Kokoro server.",
+  "homepage": "https://github.com/pcf566/zotero-kokoro-read-aloud-bridge",
+  "repoUrl": "https://github.com/pcf566/zotero-kokoro-read-aloud-bridge",
+  "updateUrl": "https://raw.githubusercontent.com/pcf566/zotero-kokoro-read-aloud-bridge/main/updates.json"
+}
