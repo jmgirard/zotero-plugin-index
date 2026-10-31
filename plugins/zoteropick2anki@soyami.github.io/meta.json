@@ -1,0 +1,8 @@
+{
+  "id": "zoteropick2anki@soyami.github.io",
+  "name": "Pick2anki",
+  "description": "Zotero 划词词典插件：PDF/EPub 阅读器里选中英文单词 → 5 个在线词典源聚合释义 → 一键通过 AnkiConnect 写入 Anki 生词卡",
+  "homepage": "https://github.com/soyami/zotero-pick2anki",
+  "repoUrl": "https://github.com/soyami/zotero-pick2anki",
+  "updateUrl": "https://github.com/soyami/zotero-pick2anki/releases/download/release/update.json"
+}
