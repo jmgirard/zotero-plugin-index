@@ -1,0 +1,8 @@
+{
+  "id": "zotero-mcp-plugin@autoagent.my",
+  "name": "Zotero MCP Plugin",
+  "description": "Zotero MCP Plugin",
+  "homepage": "https://github.com/cookjohn/zotero-mcp#readme",
+  "repoUrl": "https://github.com/cookjohn/zotero-mcp",
+  "updateUrl": "https://github.com/cookjohn/zotero-mcp/releases/latest/download/update.json"
+}
