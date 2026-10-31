@@ -1,0 +1,7 @@
+{
+  "id": "clavicularius@mcburton.net",
+  "name": "Zotero Clavicularius",
+  "description": "Generates and manages citation keys (clavis citationum) for Zotero items",
+  "repoUrl": "https://github.com/mcburton/zotero-clavicularius",
+  "updateUrl": "https://github.com/mcburton/zotero-clavicularius/releases/latest/download/updates.json"
+}
