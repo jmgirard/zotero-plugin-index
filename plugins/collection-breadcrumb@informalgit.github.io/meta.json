@@ -1,0 +1,8 @@
+{
+  "id": "collection-breadcrumb@informalgit.github.io",
+  "name": "Zotero 分类导航栏",
+  "description": "在左侧收藏夹栏顶部显示当前分类的完整层级路径，每一段可点击跳转；悬停任意分类可查看完整路径。",
+  "homepage": "https://github.com/informalgit/zotero-collection-nav",
+  "repoUrl": "https://github.com/informalgit/zotero-collection-nav",
+  "updateUrl": "https://raw.githubusercontent.com/informalgit/zotero-collection-nav/main/update.json"
+}
