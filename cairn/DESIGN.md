@@ -921,7 +921,11 @@ reused._
   entries and merged 264, and the index went from 405 to 669 entries
   (`pnpm check` 0 problems); the last discover run left 0 unread, and 59
   bot pull requests stayed open. Each run got HTTP 403 on two or three code
-  search requests, so the `update_url` manifest query read no page.
+  search requests, so the `update_url` manifest query read no page. Since
+  M072 the code search waits for the reset an answer names and retries a
+  refused page once; the confirmation run 41234283459 after it read all
+  five queries with no warning, wrote 2 entries, and merge run 41234777412
+  merged both (corrected M072).
 - The host check looks up a download host before the request, and fetch
   looks it up again when it connects. A DNS server that answers differently
   the second time (DNS rebinding) can still reach a private address. The
