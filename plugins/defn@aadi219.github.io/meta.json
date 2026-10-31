@@ -1,0 +1,8 @@
+{
+  "id": "defn@aadi219.github.io",
+  "name": "Defn",
+  "description": "Mark definitions in PDFs and link every other occurrence of the term to them.",
+  "homepage": "https://github.com/aadi219/defn",
+  "repoUrl": "https://github.com/aadi219/defn",
+  "updateUrl": "https://github.com/aadi219/defn/releases/latest/download/updates.json"
+}
