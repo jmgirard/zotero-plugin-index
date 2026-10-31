@@ -1,0 +1,8 @@
+{
+  "id": "metadata-translator@local",
+  "name": "Metadata Translator",
+  "description": "Generate English metadata for Chinese journal papers and write them into Zotero Extra",
+  "homepage": "https://github.com/Dirreke/zotero-metadata-translator#readme",
+  "repoUrl": "https://github.com/Dirreke/zotero-metadata-translator",
+  "updateUrl": "https://github.com/Dirreke/zotero-metadata-translator/releases/download/release/update.json"
+}
