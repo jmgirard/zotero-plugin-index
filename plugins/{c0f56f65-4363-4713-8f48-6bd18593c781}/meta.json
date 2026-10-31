@@ -1,0 +1,7 @@
+{
+  "id": "{c0f56f65-4363-4713-8f48-6bd18593c781}",
+  "name": "Zotero ChatGPT Web",
+  "description": "Discuss the current paper with the official ChatGPT website in Zotero Reader.",
+  "repoUrl": "https://github.com/kianmax0/zotero-chatgpt-web",
+  "updateUrl": "https://raw.githubusercontent.com/kianmax0/zotero-chatgpt-web/main/updates.json"
+}
