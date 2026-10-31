@@ -1,0 +1,7 @@
+{
+  "id": "tomasdanis26@gmail.com",
+  "name": "Semantic Zotero",
+  "description": "Shows the references of a paper from Semantic Scholar and adds them to Zotero with one click.",
+  "repoUrl": "https://github.com/AgiNetz/semantic-zotero",
+  "updateUrl": "https://raw.githubusercontent.com/AgiNetz/semantic-zotero/main/updates.json"
+}
