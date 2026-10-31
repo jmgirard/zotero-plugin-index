@@ -1,0 +1,8 @@
+{
+  "id": "zotero-management-bridge@example.org",
+  "name": "Zotero Management Bridge",
+  "description": "Local Zotero management bridge for automation agents and scripts.",
+  "homepage": "https://github.com/by1907047/zotero-management-bridge",
+  "repoUrl": "https://github.com/by1907047/zotero-management-bridge",
+  "updateUrl": "https://raw.githubusercontent.com/by1907047/zotero-management-bridge/main/updates.json"
+}
