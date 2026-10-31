@@ -1,0 +1,7 @@
+{
+  "id": "memorive-companion@memorive",
+  "name": "Memorive Companion",
+  "description": "将选中的文献与批注连接到 Memo，检索证据并回写研究结果。",
+  "repoUrl": "https://github.com/KuchinashiYume/Memorive",
+  "updateUrl": "https://raw.githubusercontent.com/KuchinashiYume/Memorive/main/memorive_desktop/integrations/zotero/memorive-companion/updates.json"
+}
