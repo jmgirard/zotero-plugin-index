@@ -1,0 +1,8 @@
+{
+  "id": "zoteroScholar@my.com",
+  "name": "Zotero Scholar",
+  "description": "Zotero Scholar",
+  "homepage": "https://github.com/windingwind/zotero-addon-template#readme",
+  "repoUrl": "https://github.com/liunuozhi/zotero-scholar",
+  "updateUrl": "https://raw.githubusercontent.com/liunuozhi/zotero-scholar/main/update.json"
+}
