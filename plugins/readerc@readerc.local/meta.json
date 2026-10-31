@@ -1,0 +1,7 @@
+{
+  "id": "readerc@readerc.local",
+  "name": "ReaderC · 英文阅读伴侣",
+  "description": "英文 PDF 生词悬浮中文释义，Delete 标记熟词，支持上下文选义。",
+  "repoUrl": "https://github.com/HopeLeeee/readerc",
+  "updateUrl": "https://github.com/HopeLeeee/readerc/releases/download/release/update.json"
+}
