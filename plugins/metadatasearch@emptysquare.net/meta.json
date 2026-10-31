@@ -1,0 +1,8 @@
+{
+  "id": "metadatasearch@emptysquare.net",
+  "name": "Metadata Search",
+  "description": "Update Zotero items with metadata from bibliographic databases like CrossRef.org and DBLP.org",
+  "homepage": "https://github.com/ajdavis/zotero-metadata-search-plugin#readme",
+  "repoUrl": "https://github.com/ajdavis/zotero-metadata-search-plugin",
+  "updateUrl": "https://github.com/ajdavis/zotero-metadata-search-plugin/releases/download/release/update.json"
+}
