@@ -1,0 +1,8 @@
+{
+  "id": "zotmd@celery.dev",
+  "name": "ZotMD",
+  "description": "OCR PDFs (and other documents) with MinerU and store the result as a Markdown child attachment.",
+  "homepage": "https://github.com/ouyangfeng2022/ZotMD#readme",
+  "repoUrl": "https://github.com/ouyangfeng2022/ZotMD",
+  "updateUrl": "https://github.com/ouyangfeng2022/ZotMD/releases/download/release/update.json"
+}
