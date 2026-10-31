@@ -1,0 +1,8 @@
+{
+  "id": "zotero-figure-extract@achuan",
+  "name": "Zotero Figure Extract",
+  "description": "使用百度 PaddleOCR-VL 1.6 识别图、表和公式，支持独立开关。",
+  "homepage": "https://github.com/Achuan-2/zotero-figure-extract",
+  "repoUrl": "https://github.com/Achuan-2/zotero-figure-extract",
+  "updateUrl": "https://github.com/Achuan-2/zotero-figure-extract/releases/latest/download/update.json"
+}
