@@ -1,0 +1,7 @@
+{
+  "id": "metarefresh@zhibo.ark0",
+  "name": "Zotero Metadata Refresh",
+  "description": "Batch-refresh Zotero item metadata from CrossRef, OpenAlex, Semantic Scholar and DBLP, with a preview-confirm flow, field whitelist, preprint upgrade and old-value backup to Extra.",
+  "repoUrl": "https://github.com/ZhiboRao/zotero-meta-refresh",
+  "updateUrl": "https://github.com/ZhiboRao/zotero-meta-refresh/releases/download/release/update.json"
+}
