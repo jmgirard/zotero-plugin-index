@@ -1,0 +1,8 @@
+{
+  "id": "uttermux-zotero@anaxonda.local",
+  "name": "UtterMux for Zotero",
+  "description": "Use UtterMux voices with Zotero Read Aloud prefetch and highlighting.",
+  "homepage": "https://github.com/anaxonda/uttermux-zotero",
+  "repoUrl": "https://github.com/anaxonda/uttermux-zotero",
+  "updateUrl": "https://github.com/anaxonda/uttermux-zotero/releases/latest/download/updates.json"
+}
