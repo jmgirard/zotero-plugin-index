@@ -1,0 +1,7 @@
+{
+  "id": "zotero-pmcid-fetcher@iris-advies.com",
+  "name": "PMCID fetcher for Zotero",
+  "description": "PMCID fetcher",
+  "repoUrl": "https://github.com/retorquere/zotero-pmcid-fetcher",
+  "updateUrl": "https://github.com/retorquere/zotero-pmcid-fetcher/releases/download/release/updates.json"
+}
