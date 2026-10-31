@@ -1,0 +1,8 @@
+{
+  "id": "synesis-export@synesis-lang.org",
+  "name": "Synesis Export",
+  "description": "Export PDF annotations to Synesis format for qualitative research",
+  "homepage": "https://github.com/synesis-lang/zotero-synesis-export",
+  "repoUrl": "https://github.com/synesis-lang/zotero-synesis-export",
+  "updateUrl": "https://raw.githubusercontent.com/synesis-lang/zotero-synesis-export/main/update.json"
+}
