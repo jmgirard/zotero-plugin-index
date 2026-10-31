@@ -1,0 +1,8 @@
+{
+  "id": "fixcaps@korhonenaleksi.github.io",
+  "name": "Zotero Fix Caps",
+  "description": "Right-click fix for ALL-CAPS and sentence-case titles and ALL-CAPS author names in Zotero",
+  "homepage": "https://github.com/KorhonenAleksi/zotero-fix-caps#readme",
+  "repoUrl": "https://github.com/KorhonenAleksi/zotero-fix-caps",
+  "updateUrl": "https://github.com/KorhonenAleksi/zotero-fix-caps/releases/download/release/update.json"
+}
