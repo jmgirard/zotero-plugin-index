@@ -432,7 +432,7 @@ describe("the plugin page", () => {
       `<h1>${escaped(displayName(record))}${archived}</h1>` +
         (github
           ? `<p class="repo-line" data-repo-line>By <a href="https://github.com/${escaped(github.owner)}" data-repo-owner>${escaped(github.owner)}</a>` +
-            `<span aria-hidden="true">·</span><a href="${escaped(repoUrl)}" data-repo-name>${escaped(`${github.owner}/${github.repo}`)}</a>${stars}</p>`
+            `<span aria-hidden="true">·</span><a href="${escaped(repoUrl)}" data-repo-name>${escaped(github.repo)}</a>${stars}</p>`
           : "") +
         (description ? `<p class="description" data-description>${escaped(description)}</p>` : ""),
     );
@@ -450,11 +450,11 @@ describe("the plugin page", () => {
   });
 
   test.each<[string, string, string, string, string, string | undefined]>([
-    ["first-plugin@example.org", "https://github.com/example", "https://github.com/example/first-plugin", "example/first-plugin", "By example · example/first-plugin · 1,234", "1,234 GitHub Stars"],
-    ["old-plugin@example.org", "https://github.com/example", "https://github.com/example/old-plugin", "example/old-plugin", "By example · example/old-plugin · 1", "1 GitHub Star"],
-    ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "https://github.com/example", "https://github.com/example/guid-plugin", "example/guid-plugin", "By example · example/guid-plugin · 0", "0 GitHub Stars"],
-    ["no-range-plugin@example.org", "https://github.com/example", "https://github.com/example/no-range-plugin", "example/no-range-plugin", "By example · example/no-range-plugin", undefined],
-    ["broken-plugin@example.org", "https://github.com/example", "https://github.com/example/broken-plugin", "example/broken-plugin", "By example · example/broken-plugin", undefined],
+    ["first-plugin@example.org", "https://github.com/example", "https://github.com/example/first-plugin", "first-plugin", "By example · first-plugin · 1,234", "1,234 GitHub Stars"],
+    ["old-plugin@example.org", "https://github.com/example", "https://github.com/example/old-plugin", "old-plugin", "By example · old-plugin · 1", "1 GitHub Star"],
+    ["{c2a6e4c8-1b7d-4f3a-9e2b-5d8f0a1c3e7b}", "https://github.com/example", "https://github.com/example/guid-plugin", "guid-plugin", "By example · guid-plugin · 0", "0 GitHub Stars"],
+    ["no-range-plugin@example.org", "https://github.com/example", "https://github.com/example/no-range-plugin", "no-range-plugin", "By example · no-range-plugin", undefined],
+    ["broken-plugin@example.org", "https://github.com/example", "https://github.com/example/broken-plugin", "broken-plugin", "By example · broken-plugin", undefined],
   ])("shows the owner, the repo, and any stars of %s under the name", (id, ownerHref, repoHref, repoText, visible, words) => {
     const line = /<p class="repo-line" data-repo-line>(.*?)<\/p>/s.exec(page(id))?.[1];
     const text = (html: string) => unescaped(html.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim();
