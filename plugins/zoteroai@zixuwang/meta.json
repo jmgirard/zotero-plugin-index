@@ -1,0 +1,8 @@
+{
+  "id": "zoteroai@zixuwang",
+  "name": "Zotero AI",
+  "description": "AI assistant for Zotero: context-aware chat, full-text analysis, cross-document research, and quick actions",
+  "homepage": "https://github.com/Verandathu/Zotero-AI#readme",
+  "repoUrl": "https://github.com/Verandathu/Zotero-AI",
+  "updateUrl": "https://github.com/Verandathu/Zotero-AI/releases/download/release/update-beta.json"
+}
