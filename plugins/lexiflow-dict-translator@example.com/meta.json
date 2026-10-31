@@ -1,0 +1,7 @@
+{
+  "id": "lexiflow-dict-translator@example.com",
+  "name": "LexiFlow 词典翻译",
+  "description": "A Zotero 9+ PDF translation plugin with multiple local MDX/MDD dictionaries and an OpenAI-compatible fallback.",
+  "repoUrl": "https://github.com/edwardlewis35/zotero-translate",
+  "updateUrl": "https://github.com/edwardlewis35/zotero-translate/releases/latest/download/update.json"
+}
