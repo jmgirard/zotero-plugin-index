@@ -1,0 +1,8 @@
+{
+  "id": "dailypaper@yansh",
+  "name": "Daily Paper Digest",
+  "description": "Auto-analyze papers in Zotero using DeepSeek",
+  "homepage": "https://github.com/YanSH258/zotero-dailypaper#readme",
+  "repoUrl": "https://github.com/YanSH258/zotero-dailypaper",
+  "updateUrl": "https://github.com/YanSH258/zotero-dailypaper/releases/download/release/update.json"
+}
