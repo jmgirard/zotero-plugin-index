@@ -1,0 +1,8 @@
+{
+  "id": "zotero-metadata-assistant@smorello.org",
+  "name": "Zotero Metadata Assistant",
+  "description": "A CUNY AI Lab tool for reviewing scholarly metadata and importing bibliographies",
+  "homepage": "https://github.com/CUNY-AI-Lab/zotero-autofill#readme",
+  "repoUrl": "https://github.com/CUNY-AI-Lab/zotero-autofill",
+  "updateUrl": "https://github.com/CUNY-AI-Lab/zotero-autofill/releases/download/release/update.json"
+}
