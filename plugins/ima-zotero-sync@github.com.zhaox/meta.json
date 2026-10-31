@@ -1,0 +1,8 @@
+{
+  "id": "ima-zotero-sync@github.com.zhaox",
+  "name": "IMA Zotero 同步",
+  "description": "将 Zotero 文献附件同步到 IMA 知识库，并避免重复上传。",
+  "homepage": "https://github.com/CrazyHalfDay/ima-zotero-sync",
+  "repoUrl": "https://github.com/CrazyHalfDay/ima-zotero-sync",
+  "updateUrl": "https://github.com/CrazyHalfDay/ima-zotero-sync/releases/latest/download/update.json"
+}
