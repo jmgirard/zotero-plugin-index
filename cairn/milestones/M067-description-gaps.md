@@ -100,7 +100,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - [x] T2: Tests first in `test/description-gaps.test.ts`, then the command in `src/site/` with a
       `description-gaps` script in `package.json`. Reuse `shownDescription`, `cjkShare`, and the checker's entry and
       schema reads in `src/check/`.
-- [ ] T3: Run `pnpm description-gaps` over the shelf copy. Write `cairn/references/description-ledger.md` from the
+- [x] T3: Run `pnpm description-gaps` over the shelf copy. Write `cairn/references/description-ledger.md` from the
       synthesis template, with an `INDEX.md` line, and read each listed plugin's README to set its disposition.
 - [x] T4: Overrides for the missing, CJK, and Portuguese rows, in the reason form of the M055 overrides.
 - [x] T5: Overrides for the short rows. Zotgit and ZotMoov share one text, and each gets its own override.
@@ -134,6 +134,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - 2026-10-31: delegation: two Opus subagents read the READMEs of the 31 ledger rows (28 gap lines plus 3 Portuguese) and drafted value, source, and reason for each; all 31 override, none kept. Checked here: each quoted upstream text against the shelf copy, each case, and each value's word count (27 to 37). Reworded 3 values (zoterotag's "Automates your workflow", two semicolon joins).
 - 2026-10-31: T4 done: 14 `description` overrides with no `version` (1 missing, 10 cjk, 3 Portuguese), each file byte-equal to the checked draft.
 - 2026-10-31: T5 done: 17 short-case overrides, each byte-equal to the checked draft; zotgit and zotmoov each have their own text. `pnpm description-gaps` over the shelf copy now prints 0 gaps, and pnpm check passes. T3's ledger comes next, written from the T2 run and these dispositions.
+- 2026-10-31: T3 done after T4 and T5 (a minor reorder): `cairn/references/description-ledger.md` and its INDEX line, 31 rows (28 from the T2 run, 3 Portuguese from the plan's scan), all override.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
