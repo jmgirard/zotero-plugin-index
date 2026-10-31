@@ -1,0 +1,8 @@
+{
+  "id": "zostats@arrancurran.github.io",
+  "name": "ZoStats",
+  "description": "Shows citation statistics and citing articles for the selected Zotero item.",
+  "homepage": "https://github.com/arrancurran/ZoStats",
+  "repoUrl": "https://github.com/arrancurran/ZoStats",
+  "updateUrl": "https://raw.githubusercontent.com/arrancurran/ZoStats/main/updates.json"
+}
