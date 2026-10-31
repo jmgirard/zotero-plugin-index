@@ -1,0 +1,8 @@
+{
+  "id": "zotero-proxy-gui@royenheart",
+  "name": "Zotero Proxy GUI",
+  "description": "Visual proxy management for Zotero 7 with multi-config presets and one-click switching",
+  "homepage": "https://github.com/royenheart/zotero-proxy-gui",
+  "repoUrl": "https://github.com/royenheart/zotero-proxy-gui",
+  "updateUrl": "https://raw.githubusercontent.com/royenheart/zotero-proxy-gui/main/update.json"
+}
