@@ -1,0 +1,8 @@
+{
+  "id": "citation-map@alessmor",
+  "name": "Zotero Citation Map",
+  "description": "Citation and reference metrics with an interactive citation-network graph for Zotero 9.",
+  "homepage": "https://github.com/AlessMor/zotero-citation-map#readme",
+  "repoUrl": "https://github.com/AlessMor/zotero-citation-map",
+  "updateUrl": "https://github.com/AlessMor/zotero-citation-map/releases/download/release/update.json"
+}
