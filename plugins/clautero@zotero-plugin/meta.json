@@ -1,0 +1,8 @@
+{
+  "id": "clautero@zotero-plugin",
+  "name": "Clautero",
+  "description": "Embed Claude Code as a sidebar AI research assistant in Zotero",
+  "homepage": "https://github.com/waterwoods-ai/clautero",
+  "repoUrl": "https://github.com/waterwoods-ai/clautero",
+  "updateUrl": "https://raw.githubusercontent.com/waterwoods-ai/clautero/main/update.json"
+}
