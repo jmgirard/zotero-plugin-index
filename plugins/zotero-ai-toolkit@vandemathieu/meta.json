@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ai-toolkit@vandemathieu",
+  "name": "Zotero AI Toolkit",
+  "description": "A growing toolkit of AI features for Zotero: summarize papers, categorize highlights, find further reading, suggest folders, chat with a paper using Claude or GPT, and grade journals (FT50 / ABDC A / impact factor) and show citation counts in library columns.",
+  "homepage": "https://github.com/vdcmathieu/zotero-ai-toolkit",
+  "repoUrl": "https://github.com/vdcmathieu/zotero-ai-toolkit",
+  "updateUrl": "https://raw.githubusercontent.com/vdcmathieu/zotero-ai-toolkit/main/updates.json"
+}
