@@ -1,0 +1,7 @@
+{
+  "id": "rebootero@chen7447.github.io",
+  "name": "Rebootero",
+  "description": "在 Zotero「文件」菜单底部的「退出」下方添加「重启 Zotero」按钮，点击后关闭并重新启动 Zotero。",
+  "repoUrl": "https://github.com/chen7447/Rebootero",
+  "updateUrl": "https://github.com/chen7447/Rebootero/releases/latest/download/updates.json"
+}
