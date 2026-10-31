@@ -1,0 +1,8 @@
+{
+  "id": "filetrans@euclpts.com",
+  "name": "FT AI版全文对照翻译",
+  "description": "在 Zotero 中一键发起 FT AI 版全文对照翻译，并将所选结果导入原条目。",
+  "homepage": "https://github.com/garlicwu/filetrans_ai#readme",
+  "repoUrl": "https://github.com/garlicwu/filetrans_ai",
+  "updateUrl": "https://github.com/garlicwu/filetrans_ai/releases/download/release/update.json"
+}
