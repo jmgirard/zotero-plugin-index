@@ -1,0 +1,8 @@
+{
+  "id": "citation-cards@shamus-li.github.io",
+  "name": "Citation Cards",
+  "description": "Click an in-text citation in the PDF reader to see the cited paper's title, abstract and links.",
+  "homepage": "https://github.com/shamus-li/zotero-citation-cards",
+  "repoUrl": "https://github.com/shamus-li/zotero-citation-cards",
+  "updateUrl": "https://github.com/shamus-li/zotero-citation-cards/releases/latest/download/updates.json"
+}
