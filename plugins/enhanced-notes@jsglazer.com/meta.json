@@ -1,0 +1,8 @@
+{
+  "id": "enhanced-notes@jsglazer.com",
+  "name": "Enhanced Notes",
+  "description": "A Zotero plugin to expand the capability of notes and sync notes to other locations. This is an independently maintained fork of windingwind's excellent zotero-better-notes plugin, reusing substantial portions of its codebase.",
+  "homepage": "https://github.com/jsglazer/enhanced-notes",
+  "repoUrl": "https://github.com/jsglazer/enhanced-notes",
+  "updateUrl": "https://github.com/jsglazer/enhanced-notes/releases/download/release/update.json"
+}
