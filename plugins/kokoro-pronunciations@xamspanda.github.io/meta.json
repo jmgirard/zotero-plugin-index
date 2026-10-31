@@ -1,0 +1,7 @@
+{
+  "id": "kokoro-pronunciations@xamspanda.github.io",
+  "name": "Kokoro for Zotero Read Aloud",
+  "description": "Manage custom pronunciation rules for a local or self-hosted Kokoro TTS server used with Zotero Read Aloud.",
+  "repoUrl": "https://github.com/xamspanda/zotero-kokoro-tts",
+  "updateUrl": "https://raw.githubusercontent.com/xamspanda/zotero-kokoro-tts/main/updates.json"
+}
