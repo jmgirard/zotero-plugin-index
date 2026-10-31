@@ -1,0 +1,8 @@
+{
+  "id": "ztransplit@zotero.org",
+  "name": "Z-Transplit",
+  "description": "Zotero 10 plugin: text translation and layout-preserving PDF translation with split-screen reading.",
+  "homepage": "https://github.com/Liozhang/z-transplit#readme",
+  "repoUrl": "https://github.com/Liozhang/z-transplit",
+  "updateUrl": "https://github.com/Liozhang/z-transplit/releases/download/release/update.json"
+}
