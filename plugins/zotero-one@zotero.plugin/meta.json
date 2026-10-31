@@ -1,0 +1,8 @@
+{
+  "id": "zotero-one@zotero.plugin",
+  "name": "Zotero One",
+  "description": "Zotero One - Enhanced productivity plugin with item numbering and quick preview features",
+  "homepage": "https://github.com/Cai-aa/Zotero-One#readme",
+  "repoUrl": "https://github.com/Cai-aa/Zotero-One",
+  "updateUrl": "https://github.com/Cai-aa/Zotero-One/releases/download/release/update.json"
+}
