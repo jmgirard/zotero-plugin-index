@@ -1,0 +1,7 @@
+{
+  "id": "find-duplicates@example.com",
+  "name": "Find Duplicate Items",
+  "description": "Finds duplicate parent items by PDF content and title similarity, tags them for cleanup",
+  "repoUrl": "https://github.com/ajdavis/zotero-duplicates-plugin",
+  "updateUrl": "https://raw.githubusercontent.com/ajdavis/zotero-duplicates-plugin/main/update.json"
+}
