@@ -1,0 +1,8 @@
+{
+  "id": "jadense-in-zotero@jadense.cn",
+  "name": "Jadense in Zotero",
+  "description": "Zotero research workspace with local AI chat, PDF figure interpretation, literature analysis, structured annotations, reader translation, and Zotero-to-Jadense upload.",
+  "homepage": "https://jadense.cn",
+  "repoUrl": "https://github.com/jadense-ai/jadense-in-zotero",
+  "updateUrl": "https://jadense.cn/plugins/zotero/jadense-in-zotero/updates.json"
+}
