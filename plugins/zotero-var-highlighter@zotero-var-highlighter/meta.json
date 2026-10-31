@@ -1,0 +1,8 @@
+{
+  "id": "zotero-var-highlighter@zotero-var-highlighter",
+  "name": "Zotero Var Highlighter",
+  "description": "A Zotero plugin to highlight variables and trace their definitions in PDF reader.",
+  "homepage": "https://github.com/taotaozsky2025-beep/zotero-var-highlighter#readme",
+  "repoUrl": "https://github.com/taotaozsky2025-beep/zotero-var-highlighter",
+  "updateUrl": "https://github.com/taotaozsky2025-beep/zotero-var-highlighter/releases/download/release/update.json"
+}
