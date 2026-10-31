@@ -1,0 +1,8 @@
+{
+  "id": "localacademictts@example.com",
+  "name": "Local Academic TTS",
+  "description": "Play local academic TTS audio from Zotero.",
+  "homepage": "https://github.com/linjiangxian110/zotero-local-academic-tts",
+  "repoUrl": "https://github.com/linjiangxian110/zotero-local-academic-tts",
+  "updateUrl": "https://raw.githubusercontent.com/linjiangxian110/zotero-local-academic-tts/main/updates.json"
+}
