@@ -1,0 +1,8 @@
+{
+  "id": "authorbrowser@junting.li",
+  "name": "Zotero Author Browser",
+  "description": "Zotero Author Browser pannel",
+  "homepage": "https://github.com/StevenGLee/zotero-author-browser",
+  "repoUrl": "https://github.com/StevenGLee/zotero-author-browser",
+  "updateUrl": "https://github.com/StevenGLee/zotero-author-browser/releases/download/release/update.json"
+}
