@@ -1,0 +1,8 @@
+{
+  "id": "readai@hu-berlin.de",
+  "name": "Zotero Read Ai",
+  "description": "Zotero ReadAi",
+  "homepage": "https://github.com/Drezil/zotero-read-ai#readme",
+  "repoUrl": "https://github.com/Drezil/zotero-read-ai",
+  "updateUrl": "https://github.com/Drezil/zotero-read-ai/releases/download/release/update.json"
+}
