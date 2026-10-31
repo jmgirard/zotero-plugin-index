@@ -1,0 +1,8 @@
+{
+  "id": "conference-abbreviations@zihanwu.local",
+  "name": "Conference Abbreviations / 会议简称",
+  "description": "Show conference abbreviations in Journal Abbr and match the CCF 2026 catalog in Green Frog’s existing CCF column.",
+  "homepage": "https://github.com/wzh4464/zotero-conference-abbreviations",
+  "repoUrl": "https://github.com/wzh4464/zotero-conference-abbreviations",
+  "updateUrl": "https://github.com/wzh4464/zotero-conference-abbreviations/releases/latest/download/updates.json"
+}
