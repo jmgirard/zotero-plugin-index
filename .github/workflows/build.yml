@@ -25,10 +25,11 @@ jobs:
     # carry-start-results` reads for at most 60 seconds, which leaves time for
     # the other steps before this limit.
     timeout-minutes: 30
-    # The site job checks the start plan it downloads against this SHA-256. Plugin code in a
-    # start-test job can upload artifacts, but it cannot change this job's outputs.
+    # The site job checks the start plan and the data it downloads against these values. Plugin
+    # code in a start-test job can upload artifacts, but it cannot change this job's outputs.
     outputs:
       plan-sha256: ${{ steps.plan-sha256.outputs.sha256 }}
+      data-sha256: ${{ steps.data-sha256.outputs.sha256 }}
     # `pnpm build` reads the closed report issues to count the reports.
     permissions:
       contents: read
@@ -66,6 +67,14 @@ jobs:
           --previous https://jmgirard.github.io/zotero-plugin-index/v1/plugins.json
       - id: plan-sha256
         run: echo "sha256=$(sha256sum start-plan.json | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+      # The SHA-256 of every path, kind, and file under dist/, which the site job checks the
+      # downloaded `plugins-data` against. A failed `pnpm data-digest` fails this step. The
+      # upload below leaves out hidden files and empty directories, so a dist/ that holds one
+      # fails the site job's check.
+      - id: data-sha256
+        run: |
+          sha256="$(pnpm --silent data-digest --dir dist)"
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
       # Kept after a failed build too, so the failures can be read. Skipped when no data
       # file exists, for example after a failed `pnpm check`. The site job builds the
       # pages from it.
@@ -182,6 +191,12 @@ jobs:
         with:
           name: plugins-data
           path: dist
+      # Plugin code in a start-test job that reaches the run's artifact token can delete
+      # `plugins-data` and upload another under the same name. So a tree that is not the one the
+      # build job uploaded fails this step, and nothing is deployed.
+      - env:
+          DATA_SHA256: ${{ needs.build.outputs.data-sha256 }}
+        run: pnpm --silent data-digest --dir dist --expect "$DATA_SHA256"
       - uses: actions/download-artifact@v8
         with:
           name: start-plan
