@@ -1,0 +1,8 @@
+{
+  "id": "highlight-notes@local.zotero",
+  "name": "pdf2notelink",
+  "description": "点击 PDF 高亮，在原生侧栏打开引用它的 Zotero 笔记。",
+  "homepage": "https://github.com/Cabdoge/pdf2notelink",
+  "repoUrl": "https://github.com/Cabdoge/pdf2notelink",
+  "updateUrl": "https://github.com/Cabdoge/pdf2notelink/releases/latest/download/updates.json"
+}
