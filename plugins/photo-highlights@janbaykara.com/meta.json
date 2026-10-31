@@ -1,0 +1,8 @@
+{
+  "id": "photo-highlights@janbaykara.com",
+  "name": "Zotero Photo Highlights",
+  "description": "Turn photos of physical pages into Zotero highlights",
+  "homepage": "https://github.com/janbaykara/zotero-photo-highlights",
+  "repoUrl": "https://github.com/janbaykara/zotero-photo-highlights",
+  "updateUrl": "https://github.com/janbaykara/zotero-photo-highlights/releases/download/release/update.json"
+}
