@@ -1,0 +1,8 @@
+{
+  "id": "zotero-mark-reader@jin-taiyu.github.io",
+  "name": "Zotero Mark Reader",
+  "description": "使用 MinerU 解析 PDF，并在 Zotero 阅读器中交互式选择 Markdown 段落。",
+  "homepage": "https://github.com/jin-taiyu/zotero-mark-reader",
+  "repoUrl": "https://github.com/jin-taiyu/zotero-mark-reader",
+  "updateUrl": "https://raw.githubusercontent.com/jin-taiyu/zotero-mark-reader/main/updates.json"
+}
