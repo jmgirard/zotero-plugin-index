@@ -1,0 +1,8 @@
+{
+  "id": "bluebook-signals-for-zotero@mystery-lab.com",
+  "name": "Bluebook Signals",
+  "description": "A menu activated with Ctrl+S in the prefix field of Zotero word processor plugins",
+  "homepage": "https://github.com/danepps/zotero",
+  "repoUrl": "https://github.com/danepps/zotero",
+  "updateUrl": "https://danepps.github.io/zotero/update.json"
+}
