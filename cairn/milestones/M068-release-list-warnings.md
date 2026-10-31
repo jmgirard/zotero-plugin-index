@@ -168,3 +168,37 @@ outcome below.
 
 Consistency gate: `cairn_validate.py` exit 0, all checks passed; no principle changed, so no `cairn_impact` run; the
 generic profile's consistency-gate slot names no toolchain checks.
+
+spawned: diff-bug, blame-history, prior-review, ripple
+
+- diff-bug #1: the AC3 outcomes on the 9.0 page compare only the data text in-process, so a change that made a failed
+  changelog read build-level would pass them — fix now (assert `buildLevel` equal to the quiet build's).
+- diff-bug #2: the new-major warning names only `ZOTERO_MAJORS`, though the edit also needs the last release of the
+  old major in `LAST_RELEASES`, while README says the lines name what to edit — fix now.
+- diff-bug #3: the new-major check fires when `ZOTERO_MAJORS` is ahead of the release (`!==`, not newer), so adding
+  "11" early warns daily; CHANGELOG's "does not mark yet" does not match the code — fix now (warn only when the
+  release's major is newer than the last).
+- diff-bug #4: the `TimeLimits` comment says `releaseMs` bounds only the release read — fix now.
+- diff-bug #5: the in-process 11.0.0 test overwrites `zoteroRelease` before comparing, so it does not check that
+  11.0.0 was written — fix now.
+- diff-bug #6: the quiet-path no-warning check appears in-process twice and in the spawned test, and the token test
+  repeats the URL list — fix now (drop the in-process repeats; keep a non-empty count for the token check).
+- diff-bug #7: the new tests pin the current list values, so the hand edit a warning asks for breaks them — reject,
+  planned change: AC2 names the 9.0.6 and 9.0.7 pages, and existing tests pin the same lists ("ZOTERO_MAJORS lists
+  Zotero 7 to 10", the About page list); the source note's "Traces to" gains `NEWER_9_PAGE` with the other fixes.
+- diff-bug #8: prose says one line per case where the code gives one per page, DESIGN says `releaseListWarnings`
+  gives `::warning::` lines, and the `BuildResult` comment leaves out failed reads — fix now.
+- diff-bug #9: `../site/version.ts` is imported out of path order in `src/build/build.ts` — reject, style.
+- diff-bug #10: the heading match takes any `9.x` text, so "Changes in 9.1.0 beta" reads as 9.1.0 — fix now, with
+  blame-history #2.
+- blame-history #1: the `build.yml` time-budget comment names only the release read in the 30 s window — fix now.
+- blame-history #2: "Changes in 9.0.7-beta" would read as 9.0.7, though M062 kept betas out of the release read —
+  fix now (a version followed by a letter, digit, `.`, or `-` does not match, so the next heading counts).
+- prior-review #1: the test file lists majors 7, 8, and 9 by hand in three places — reject, planned change, as for
+  diff-bug #7 (the M061 lesson records the same cost in `test/site.test.ts`).
+- ripple #1: README says that after a failed release read the command "first prints its line. Then it prints one
+  line for each failed record", which leaves out the list warnings printed between — fix now.
+- ripple #2: DESIGN's "the build reads one fact that is not about a plugin" leaves out the changelog reads — fix now.
+- ripple #3: the `TimeLimits` comment — fix now, with diff-bug #4.
+- ripple #4: the `ZOTERO_RELEASE_LIMIT_MS` comment names only the release read — fix now.
+- ripple #5: the `build.yml` time-budget comment — fix now, with blame-history #1.
