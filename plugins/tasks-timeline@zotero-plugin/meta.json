@@ -1,0 +1,8 @@
+{
+  "id": "tasks-timeline@zotero-plugin",
+  "name": "Tasks Timeline",
+  "description": "Tasks Timeline for Zotero: plan reading and research tasks on a timeline",
+  "homepage": "https://github.com/Leonezz/tasks-timeline-zotero#readme",
+  "repoUrl": "https://github.com/Leonezz/tasks-timeline-zotero",
+  "updateUrl": "https://github.com/Leonezz/tasks-timeline-zotero/releases/download/release/update.json"
+}
