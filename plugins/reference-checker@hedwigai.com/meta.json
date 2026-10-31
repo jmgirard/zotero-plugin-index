@@ -1,0 +1,8 @@
+{
+  "id": "reference-checker@hedwigai.com",
+  "name": "hedwigai Reference Checker",
+  "description": "Check the items you select, or a whole collection, against Crossref: found, found with a different year or authors, or not found, and retracted papers flagged.",
+  "homepage": "https://www.hedwigai.com/reference-checker",
+  "repoUrl": "https://github.com/un-seen/hedwigai-zotero",
+  "updateUrl": "https://raw.githubusercontent.com/un-seen/hedwigai-zotero/main/updates.json"
+}
