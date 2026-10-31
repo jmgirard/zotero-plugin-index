@@ -1,0 +1,8 @@
+{
+  "id": "westlaw-us@mkant18.github.io",
+  "name": "Westlaw Advantage US",
+  "description": "Westlaw US case metadata translator and local Bluebook citation style (beta).",
+  "homepage": "https://github.com/mkant18/zotero_law",
+  "repoUrl": "https://github.com/mkant18/zotero_law",
+  "updateUrl": "https://github.com/mkant18/zotero_law/releases/download/beta/updates.json"
+}
