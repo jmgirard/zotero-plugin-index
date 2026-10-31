@@ -1,0 +1,8 @@
+{
+  "id": "author-harvester@migueldelm",
+  "name": "Author Harvester",
+  "description": "Importa la bibliografía completa de un autor desde OpenAlex, deduplicando contra la biblioteca existente.",
+  "homepage": "https://github.com/MiguelDLM/author-harvester",
+  "repoUrl": "https://github.com/MiguelDLM/author-harvester",
+  "updateUrl": "https://raw.githubusercontent.com/MiguelDLM/author-harvester/main/update.json"
+}
