@@ -138,7 +138,7 @@ deployed data.
       `test/support/pre-paint.ts`.
 - [x] T6: Add the plugin page's category list and the About page's
       categories section; site tests.
-- [ ] T7: Update DESIGN.md (Contract boundary, Site build family), README
+- [x] T7: Update DESIGN.md (Contract boundary, Site build family), README
       where it lists the filters, and CHANGELOG's Unreleased section; check
       the home, a plugin, and the About page in the browser pane at 1280 and
       375 px on the deployed data (lessons M015, M048, M054); `pnpm test` and
@@ -165,6 +165,7 @@ deployed data.
 - 2026-10-31: T3, T4, T5 done in one checkpoint, since the menu, the script, and `prePaintStyle` share the harness changes: `categoryOptions` in `categories.ts`, `rowCategoriesAttribute` in `data.ts`, a hidden "Category" menu after the search box, `rowShows` takes the category filter as its fifth argument, and `prePaintStyle` reads `category`; the site fixture's locale-plugin description now also names a single-page reading mode, so the fixture gives counts of 2 and 1, a three-way tie at 1, and categories with no row; planting a count that ignores the category, an address that drops it, and a `prePaintStyle` without it failed 1, 3, and 8 tests; `pnpm test` (1608 passed) and `pnpm check` clean.
 - 2026-10-31: implementation choices: the menu sits after the search box, since it is the broadest filter; the address writes `category` after `q` and before `language`; the script needs the category menu as it needs the language menu, and the harness's menu-missing cases cover both.
 - 2026-10-31: T6 done: a plugin page with categories shows "Index categories" (a link to `about/#categories`) and each category's name as a link to `?category=<slug>`, after the description; the About page's "Categories" section, before "What the index does not do", says where categories come from and lists each one with its `about` text; the page-head test now checks every fixture page's line against `categories(record)`; planting a name sort failed 2 tests; `pnpm test` (1610 passed) and `pnpm check` clean.
+- 2026-10-31: T7 done: DESIGN.md (Contract boundary: the menu, D-037's grouping, the plugin page line, the About list; Site build family: `categories.ts`), README (a "Category" menu paragraph, and the filters now four), and a CHANGELOG Unreleased entry; browser pane on the site built from the deployed data (port 4339, `.claude/launch.json` entry `m066-look`, excluded from git): `?category=translation` showed 38 of 272 with the menu restored and the pre-paint style gone, the menu listed 13 categories, Translate for Zotero's page linked its two categories, the About section listed all 13, and no page scrolled sideways at 375 or 1280 px; at 375 px the "Category" label wraps above its menu; `pnpm test` (1610 passed), `pnpm check`, and `cairn_validate` clean.
 - 2026-10-31: the simple-english hook flags the ledger's `— observed` stamps and `Pagination: —.`; they stay, since the synthesis-note template and the references check read them.
 
 ## Decisions
