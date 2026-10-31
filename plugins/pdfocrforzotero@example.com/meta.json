@@ -1,0 +1,8 @@
+{
+  "id": "pdfocrforzotero@example.com",
+  "name": "RapidOCR for Zotero",
+  "description": "开装即用：在 Zotero 内用 RapidOCR 把扫描 PDF 做成可搜索、可选择的 PDF。无需 Python / Tesseract。",
+  "homepage": "https://github.com/chen7447/rapidocr-for-zotero",
+  "repoUrl": "https://github.com/chen7447/rapidocr-for-zotero",
+  "updateUrl": "https://raw.githubusercontent.com/chen7447/rapidocr-for-zotero/main/update.json"
+}
