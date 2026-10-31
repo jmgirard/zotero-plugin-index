@@ -1,0 +1,8 @@
+{
+  "id": "vertical-toolbar@dylan.ac",
+  "name": "Vertical Toolbar",
+  "description": "Reorients the toolbar of Zotero's reader",
+  "homepage": "https://github.com/dawaltconley/zotero-vertical-toolbar#readme",
+  "repoUrl": "https://github.com/dawaltconley/zotero-vertical-toolbar",
+  "updateUrl": "https://github.com/dawaltconley/zotero-vertical-toolbar/releases/download/release/update.json"
+}
