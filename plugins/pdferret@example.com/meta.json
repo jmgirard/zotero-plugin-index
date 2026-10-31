@@ -1,0 +1,8 @@
+{
+  "id": "pdferret@example.com",
+  "name": "PDFerret for Zotero",
+  "description": "Download papers and books by DOI from various providers",
+  "homepage": "https://github.com/urschrei/pdferret",
+  "repoUrl": "https://github.com/urschrei/pdferret",
+  "updateUrl": "https://github.com/urschrei/pdferret/releases/download/release/updates.json"
+}
