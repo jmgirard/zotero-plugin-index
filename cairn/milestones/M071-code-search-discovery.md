@@ -72,7 +72,7 @@
 
 - [x] T1: In `src/discover/discover.ts`, add the five queries and send their names through M070's lookup and join. Add tests for AC1 and AC4.
 - [x] T2: Add the pacing (an injected clock), the 8-minute search cutoff, and the failure handling. Add tests for AC2 and AC3.
-- [ ] T3: Add `code-search` to `entrySchema` and to `body()`. Add the `twoStep` test of AC5.
+- [x] T3: Add `code-search` to `entrySchema` and to `body()`. Add the `twoStep` test of AC5.
 - [ ] T4: Add the `budget` input to `.github/workflows/discover.yml` as `${BUDGET:+--budget "$BUDGET"}`. Add the test of AC6, anchored on the run line.
 - [ ] T5: Write the README, DESIGN, and CHANGELOG text of AC7, and wrap it near 76 columns.
 - [ ] T6: Run the verify slot. Push the branch, then dispatch `Discover plugins` with `--ref` set to the branch. Read the report for code-search items, a 401, or a 403. If the token cannot run code search, stop for the user.
@@ -94,6 +94,7 @@
 - 2026-10-31: choice: a failed code search request warns and ends only its own query; the next query still runs. A name that a lookup gave is also known, so a later source's same name gets no second lookup.
 - 2026-10-31: T1 done: five queries, lookup and join, tests for AC1 and AC4 (join order shown red with two planted defects). The commit also carries T2's pacing, cutoff, and failure code and the `code-search` value in `SOURCES`, which the `Source` type needs; T2 and T3 add their tests. `pnpm test` 1713 passed, `pnpm check` 0 problems.
 - 2026-10-31: T2 done: tests for AC2 (window of 13 requests with one failed, search time counted toward `runMs`, the 8-minute cutoff) and AC3 (the eight failure kinds, an item with no `repository.full_name`, `total_count` over 1,000). The window test went red with the rate planted at 11 and with failed requests left uncounted. A stop warning now says "1 page", not "1 pages". `pnpm test` 1725 passed, `pnpm check` 0 problems.
+- 2026-10-31: T3 done: `body()` says "found <url> by GitHub code search for Zotero plugin files"; `entrySchema` takes `code-search` through `SOURCES` (T1). The `twoStep` test of AC5 went red ("does not match the handoff schema") with `code-search` planted out of the schema enum. `pnpm test` 1726 passed, `pnpm check` 0 problems.
 
 ## Decisions
 
