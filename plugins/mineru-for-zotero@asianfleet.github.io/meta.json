@@ -1,0 +1,8 @@
+{
+  "id": "mineru-for-zotero@asianfleet.github.io",
+  "name": "MinerU for Zotero",
+  "description": "Parse PDFs with MinerU, show MinerU layout boxes on PDFs, and copy structured content from Zotero Reader",
+  "homepage": "https://github.com/Asianfleet/mineru-for-zotero#readme",
+  "repoUrl": "https://github.com/Asianfleet/mineru-for-zotero",
+  "updateUrl": "https://github.com/Asianfleet/mineru-for-zotero/releases/download/release/update.json"
+}
