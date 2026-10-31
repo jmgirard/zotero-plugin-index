@@ -1,0 +1,8 @@
+{
+  "id": "texlate@hjfy.top",
+  "name": "TeXlate",
+  "description": "Zotero plugin for TeXlate — translate arXiv papers to Chinese via a texlate server",
+  "homepage": "https://github.com/WncFht/texlate",
+  "repoUrl": "https://github.com/WncFht/texlate",
+  "updateUrl": "https://github.com/WncFht/texlate/releases/download/release/update.json"
+}
