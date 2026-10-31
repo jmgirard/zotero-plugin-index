@@ -1,0 +1,8 @@
+{
+  "id": "zest@zotero-zest.app",
+  "name": "Zest",
+  "description": "Zest — columns, tags, reading records, view groups, graph and vertical tabs for Zotero",
+  "homepage": "https://github.com/yimmy23/zotero-zest#readme",
+  "repoUrl": "https://github.com/yimmy23/zotero-zest",
+  "updateUrl": "https://github.com/yimmy23/zotero-zest/releases/download/release/update.json"
+}
