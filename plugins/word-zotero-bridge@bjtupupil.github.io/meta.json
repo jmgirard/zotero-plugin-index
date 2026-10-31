@@ -1,0 +1,8 @@
+{
+  "id": "word-zotero-bridge@bjtupupil.github.io",
+  "name": "Word Zotero Bridge",
+  "description": "Local, fail-closed batch bridge for inserting native Zotero citations into verified Word document copies.",
+  "homepage": "https://github.com/BJTUpupil/word-zotero-bridge",
+  "repoUrl": "https://github.com/BJTUpupil/word-zotero-bridge",
+  "updateUrl": "https://raw.githubusercontent.com/BJTUpupil/word-zotero-bridge/main/updates.json"
+}
