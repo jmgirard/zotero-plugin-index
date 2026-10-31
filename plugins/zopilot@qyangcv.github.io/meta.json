@@ -1,0 +1,8 @@
+{
+  "id": "zopilot@qyangcv.github.io",
+  "name": "Zopilot",
+  "description": "Bring AI into Zotero, as your research copilot.",
+  "homepage": "https://github.com/qyangcv/zopilot#readme",
+  "repoUrl": "https://github.com/qyangcv/zopilot",
+  "updateUrl": "https://github.com/qyangcv/zopilot/releases/download/release/update.json"
+}
