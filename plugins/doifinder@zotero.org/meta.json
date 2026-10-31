@@ -1,0 +1,8 @@
+{
+  "id": "doifinder@zotero.org",
+  "name": "DOI and Abstract Finder",
+  "description": "A Zotero plugin to find and add missing DOI numbers and abstracts to references",
+  "homepage": "https://github.com/dnnunn/zotero-doi-finder#readme",
+  "repoUrl": "https://github.com/dnnunn/zotero-doi-finder",
+  "updateUrl": "https://raw.githubusercontent.com/dnnunn/zotero-doi-finder/main/update.json"
+}
