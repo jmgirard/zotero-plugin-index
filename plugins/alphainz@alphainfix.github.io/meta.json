@@ -1,0 +1,8 @@
+{
+  "id": "alphainz@alphainfix.github.io",
+  "name": "AlphainZ",
+  "description": "AlphainZ — a local-brain research agent in Zotero: your own models, your own retrieval, no credits.",
+  "homepage": "https://github.com/Alphainfix/AlphainZ",
+  "repoUrl": "https://github.com/Alphainfix/AlphainZ",
+  "updateUrl": "https://github.com/Alphainfix/AlphainZ/releases/download/release/update.json"
+}
