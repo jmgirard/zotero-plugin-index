@@ -1,0 +1,8 @@
+{
+  "id": "fanyipaiban@fanyipaiban.com",
+  "name": "FanyiPaiban PDF Translator",
+  "description": "Translate complete PDFs in Zotero while preserving the original document layout.",
+  "homepage": "https://github.com/garlicwu/fanyipaiban-zotero",
+  "repoUrl": "https://github.com/garlicwu/fanyipaiban-zotero",
+  "updateUrl": "https://github.com/garlicwu/fanyipaiban-zotero/releases/download/release/update.json"
+}
