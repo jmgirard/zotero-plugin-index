@@ -4,14 +4,14 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M068: Warn when the Zotero release lists fall behind
 
-- **Status:** planned   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
 - **Principles touched:** —   <!-- owner: plan · create/amend-via-gate; comma-separated IPn/GPn ids this milestone touches, or — -->
 - **Resolves:** —   <!-- owner: plan · create/amend-via-gate; comma-separated GitHub issues the scope absorbs, each `#N closes` (the PR closes it at merge) or `#N partial` (the remainder gets a candidate row), or — ; skill conduct only — no validate check parses it -->
 - **Surface tier:** internal — the warnings go only to the maintainer's build log, and the data and site do not change
-- **Branch/PR:** —   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
+- **Branch/PR:** m068-release-list-warnings   <!-- owner: implement (branch) / review (PR URL) · create; a companion checkout the milestone also works in is one further entry per checkout, `companion: <abs-path> <branch>` (implement), its PR URL appended by review — /milestone-review merges companions first, in listed order -->
 
 ## Goal
 <!-- owner: plan · create; a wrong goal returns to plan, never edited in place -->
@@ -77,13 +77,13 @@ stays a hand edit, which the warning names.
      cites; an insertion, removal, or reorder renumbers the labels and the
      Coverage lines together. -->
 
-- [ ] T1: Tests first. In `test/build.test.ts`, add changelog answers to `responses()` (near line 48) that keep
+- [x] T1: Tests first. In `test/build.test.ts`, add changelog answers to `responses()` (near line 48) that keep
       the first two `<h2 id=…>Changes in …` headings of each page in `cairn/references/sources/`, so every
       existing build test reads them quietly. Add `loggedBuild` cases for AC1, AC2, and each AC3 outcome, each
       comparing exit code and data with the non-warning build. Cut the read by time as the M030 lesson says. In
       `test/version.test.ts`, add the AC4 test, and plant each of its three defects in a copy of
       `src/site/version.ts` (the M010 lesson) to see it fail.
-- [ ] T2: In `src/build/zotero-release.ts`, add a changelog read that takes the first "Changes in N." release
+- [x] T2: In `src/build/zotero-release.ts`, add a changelog read that takes the first "Changes in N." release
       of the page, awaiting the body before the parse (the M062 lesson). In `src/build/build.ts` (near line
       219), run the changelog reads at the same time as the release read, so all of them end within the one
       limit, and return the warnings. In `src/build/cli.ts`, print each as one `::warning::` line before the
@@ -117,6 +117,10 @@ stays a hand edit, which the warning names.
 - 2026-10-31: criteria audit (reduced): 8 findings, all taken: AC1 and AC2 state behavior on named answers, not the test file; AC2 names all three pages; AC3's failure cases narrowed to the 9.0 page and its baseline defined, apart from `zoteroRelease` in AC1's case; AC4's plant step moved to T1; the live-run criterion moved to T4 and replaced by AC2's saved-markup case.
 - 2026-10-31: changelog: one Unreleased entry, since `CHANGELOG.md` records `pnpm build` behavior.
 - 2026-10-31: lessons used: 2026-10-25 (M001), 2026-10-26 (M010), 2026-10-27 (M030), 2026-10-28 (M036), 2026-10-30 (M062), 2026-10-31 (M066, merge deploys nothing).
+- 2026-10-31: implement started; branch m068-release-list-warnings cut from main at 876ab62.
+- 2026-10-31: T1 done: changelog fixtures built from the saved heading markup in `responses()`; two spawned `pnpm build` cases (quiet pages; 11.0.0 + a 9.0.7 page + a 500 on 8.0 together) and in-process cases for each AC3 outcome, the newer page, and 11.0.0; the AC4 test in `test/version.test.ts` failed on each of the three planted list defects (8 missing, key 6, key 10) and passed restored.
+- 2026-10-31: T2 done: `changelogUrl`, `readChangelogRelease`, `releaseListWarnings`, and the shared `ReleaseRead` type in `src/build/zotero-release.ts`; `buildData` runs the reads with `Promise.all` under `releaseMs` and returns `releaseWarnings`; the CLI prints each as `::warning::`. Planting no CLI print and no newer-release compare each turned one new test red. `pnpm test` 1637 passed.
+- 2026-10-31: implementation choice: the time-cut case uses a real 1000 ms limit, as the release cases do, not the M030 `performance.now` spy, since `withinLimit` cuts by a timer and the release tests already use that form.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote

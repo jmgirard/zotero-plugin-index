@@ -7,7 +7,7 @@ _Last hygiene check: 2026-10-31 (triage: routed to Known issues Let old v1 schem
 
 | ID | Title | Status | Depends on | Priority | File/Archive |
 |---|---|---|---|---|---|
-| M068 | Warn when the Zotero release lists fall behind | planned | — | normal | milestones/M068-release-list-warnings.md |
+| M068 | Warn when the Zotero release lists fall behind | in-progress | — | normal | milestones/M068-release-list-warnings.md |
 | M067 | Fill the description gaps | done | — | normal | milestones/archive/M067-description-gaps.md |
 | M066 | Filter plugins by category | done | — | normal | milestones/archive/M066-plugin-categories.md |
 | M065 | Drop the repeated owner from the repo line | done | — | normal | milestones/archive/M065-repo-line-owner.md |
