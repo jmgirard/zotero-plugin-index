@@ -1,0 +1,8 @@
+{
+  "id": "zotero2eagle@euclpts.com",
+  "name": "Zotero2Eagle",
+  "description": "Export Zotero image annotations to Eagle with backlinks and metadata",
+  "homepage": "https://github.com/LuckYang1/zotero2eagle#readme",
+  "repoUrl": "https://github.com/LuckYang1/zotero2eagle",
+  "updateUrl": "https://github.com/LuckYang1/zotero2eagle/releases/download/release/update.json"
+}
