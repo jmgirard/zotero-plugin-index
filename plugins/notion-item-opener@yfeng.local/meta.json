@@ -1,0 +1,8 @@
+{
+  "id": "notion-item-opener@yfeng.local",
+  "name": "Notion Item Opener",
+  "description": "Opens Zotero items from trusted Notion links by native Item Key.",
+  "homepage": "https://github.com/yfengup/notion-item-opener-for-zotero",
+  "repoUrl": "https://github.com/yfengup/notion-item-opener-for-zotero",
+  "updateUrl": "https://raw.githubusercontent.com/yfengup/notion-item-opener-for-zotero/main/updates.json"
+}
