@@ -1,0 +1,8 @@
+{
+  "id": "lumina@lumina.dev",
+  "name": "Lumina",
+  "description": "AI Paper Assistant - Chat with your papers using LLMs",
+  "homepage": "https://github.com/Flemington8/Lumina",
+  "repoUrl": "https://github.com/Flemington8/Lumina",
+  "updateUrl": "https://github.com/Flemington8/Lumina/releases/download/release/update.json"
+}
