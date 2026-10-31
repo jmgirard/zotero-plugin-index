@@ -1,0 +1,8 @@
+{
+  "id": "wordtranslator@example.com",
+  "name": "单词翻译",
+  "description": "专业英文单词划词翻译，生成 [单词--译文] 单词卡片，支持多 API 配置与自定义提示词。",
+  "homepage": "https://github.com/chen7447/word-translator-zotero",
+  "repoUrl": "https://github.com/chen7447/word-translator-zotero",
+  "updateUrl": "https://cdn.jsdelivr.net/gh/chen7447/word-translator-zotero@main/update.json"
+}
