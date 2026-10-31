@@ -1,0 +1,8 @@
+{
+  "id": "doi-column@anfang886.github.io",
+  "name": "DOI Column",
+  "description": "Adds a DOI column to the Zotero items list, so DOIs can be scanned and compared without opening each item.",
+  "homepage": "https://github.com/anfang886/zotero-doi-column",
+  "repoUrl": "https://github.com/anfang886/zotero-doi-column",
+  "updateUrl": "https://anfang886.github.io/zotero-doi-column/update.json"
+}
