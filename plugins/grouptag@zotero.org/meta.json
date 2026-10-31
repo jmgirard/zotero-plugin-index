@@ -1,0 +1,7 @@
+{
+  "id": "grouptag@zotero.org",
+  "name": "Zotero GroupTag",
+  "description": "Chrome style visual grouping for opened Zotero PDF reader tabs.",
+  "repoUrl": "https://github.com/Ares960826/zotero-grouptag",
+  "updateUrl": "https://github.com/Ares960826/zotero-grouptag/releases/download/release/update.json"
+}
