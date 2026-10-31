@@ -1,0 +1,8 @@
+{
+  "id": "categorialtags@panhaoyu.com",
+  "name": "Zotero Categorial Tags",
+  "description": "Manage tags better by categorizing the tags.",
+  "homepage": "https://github.com/panhaoyu/zotero-categorial-tags#readme",
+  "repoUrl": "https://github.com/panhaoyu/zotero-categorial-tags",
+  "updateUrl": "https://github.com/panhaoyu/zotero-categorial-tags/releases/download/release/update.json"
+}
