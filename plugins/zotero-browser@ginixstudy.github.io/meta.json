@@ -1,0 +1,8 @@
+{
+  "id": "zotero-browser@ginixstudy.github.io",
+  "name": "Zotero Browser",
+  "description": "A lightweight embedded web browser for Zotero's Item Pane.",
+  "homepage": "https://github.com/GinixStudy/zotero-browser",
+  "repoUrl": "https://github.com/GinixStudy/zotero-browser",
+  "updateUrl": "https://raw.githubusercontent.com/GinixStudy/zotero-browser/main/updates.json"
+}
