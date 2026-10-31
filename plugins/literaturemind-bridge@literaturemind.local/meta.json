@@ -1,0 +1,8 @@
+{
+  "id": "literaturemind-bridge@literaturemind.local",
+  "name": "LiteratureMind Bridge",
+  "description": "Send Zotero papers and PDF excerpts to LiteratureMind.",
+  "homepage": "https://github.com/Chengyue-Lu/literature-mind",
+  "repoUrl": "https://github.com/Chengyue-Lu/literature-mind",
+  "updateUrl": "https://raw.githubusercontent.com/Chengyue-Lu/literature-mind/main/zotero-plugin/updates.json"
+}
