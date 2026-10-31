@@ -38,24 +38,24 @@ stays a hand edit, which the warning names.
      insertion, removal, or reorder renumbers the labels and the Coverage
      lines together. -->
 
-- [ ] AC1: On a release answer of 11.0.0, `pnpm build` prints one `::warning::` line that names 11.0.0 and 10,
+- [x] AC1: On a release answer of 11.0.0, `pnpm build` prints one `::warning::` line that names 11.0.0 and 10,
       the last entry of `ZOTERO_MAJORS` in `src/site/version.ts`; on a release answer of 10.0.7 it prints no
       such line.
-- [ ] AC2: `pnpm build` reads `https://www.zotero.org/support/7.0_changelog`, `8.0_changelog`, and
+- [x] AC2: `pnpm build` reads `https://www.zotero.org/support/7.0_changelog`, `8.0_changelog`, and
       `9.0_changelog`, one for each key of `LAST_RELEASES`, with no token, and cuts each read at
       `ZOTERO_RELEASE_LIMIT_MS`. On pages that hold the heading markup of those pages as saved on 2026-10-30
       (first headings 7.0.32, 8.0.5, and 9.0.6), it prints no changelog `::warning::` line; on a 9.0 page whose
       first heading is 9.0.7, it prints one `::warning::` line naming 9, 9.0.7, and 9.0.6.
-- [ ] AC3: Each of these 9.0 changelog read outcomes prints one `::warning::` line naming 9 and the cause: a
+- [x] AC3: Each of these 9.0 changelog read outcomes prints one `::warning::` line naming 9 and the cause: a
       non-2xx answer, a request that throws, a body read that fails, a read cut by the time limit, and a page
       with no "Changes in 9." heading. In each of these cases, and in the warning cases of AC1 and AC2, the
       exit code and the written `v1/plugins.json` equal those of a build whose only change is the non-warning
       answer (release 10.0.7, a 9.0 page headed 9.0.6), apart from `generatedAt`, and in AC1's case apart from
       `zoteroRelease`.
-- [ ] AC4: `pnpm test` fails when a major in `ZOTERO_MAJORS` other than the last has no `LAST_RELEASES` entry,
+- [x] AC4: `pnpm test` fails when a major in `ZOTERO_MAJORS` other than the last has no `LAST_RELEASES` entry,
       when `LAST_RELEASES` has a key not in `ZOTERO_MAJORS`, or when it has a key equal to the last entry of
       `ZOTERO_MAJORS`.
-- [ ] AC5: README's "Building the data" section and the Unreleased section of `CHANGELOG.md` state which
+- [x] AC5: README's "Building the data" section and the Unreleased section of `CHANGELOG.md` state which
       changelog pages the build reads, the warnings of AC1 to AC3, and that those warnings change neither the
       exit code nor the data.
 
@@ -138,3 +138,33 @@ stays a hand edit, which the warning names.
      results, review findings + triage. EXEMPT from the 150-line cap (M55),
      as are the work log (D-046) and the decisions section (D-074); evidence
      never scrambles plan-owned content. -->
+
+Review pass 1, 2026-10-31, on fe71058 (main not moved since the cut). `pnpm test`: 1637 passed, 6 skipped; the 21
+M068-named tests in `test/build.test.ts` and `test/version.test.ts` pass in a verbose run. Direct CLI runs: a scratch
+script ran `pnpm build` with the fixture preload over the whole saved 7.0, 8.0, and 9.0 pages, once quiet and once per
+outcome below.
+
+- AC1: release 11.0.0 printed exactly `::warning::Zotero 11.0.0 is the current release, but the last Zotero version in
+  ZOTERO_MAJORS in src/site/version.ts is 10` (direct run and the spawned test); release 10.0.7 printed no `::warning::`
+  line (direct run and the spawned quiet test).
+- AC2: the spawned quiet test's request log lists exactly the 7.0, 8.0, and 9.0 changelog URLs under
+  `zotero.org/support/`; the in-process token test (with `GITHUB_TOKEN` set) shows no `authorization` header on any
+  zotero.org request; `buildData` passes `releaseMs`, default `ZOTERO_RELEASE_LIMIT_MS`, to each read, and a stalled 9.0
+  page in the direct run was cut at 30000 ms. The test's heading fixtures equal the six saved `<h2>` lines byte for byte
+  (diff), and the whole saved pages and the excerpts both gave no changelog warning; a 9.0 page headed 9.0.7 printed
+  exactly `::warning::the Zotero 9 changelog names 9.0.7, newer than 9.0.6 in LAST_RELEASES in src/site/version.ts`.
+- AC3: direct CLI runs printed one `::warning::cannot read the Zotero 9 changelog: GET …9.0_changelog <cause>` line each
+  for HTTP 500, a thrown request, a failed body read, a headers stall (30000 ms limit), and a page with no "Changes in
+  9." heading (the saved 8.0 page); the body-stall cut is shown in-process at a 1000 ms limit with the same one-entry
+  warning. In every one of these, the 9.0.7 page, and release 11.0.0, the exit code was 0 as in the quiet run, and
+  `v1/plugins.json` without `generatedAt` and `zoteroRelease` equaled the quiet run's; `zoteroRelease` read 11.0.0 only
+  in the 11.0.0 run. The in-process tests also show identical data text at a fixed `now`.
+- AC4: the version test passed on the real lists and failed on each plant in `src/site/version.ts`, restored from a
+  copy after each: "8" removed, a key "6" added, a key "10" added.
+- AC5: README "Building the data" names the changelog page of each `LAST_RELEASES` version with the 9.0 URL, the three
+  warning cases (new major, newer page release, failed read or no heading), and "The lines change neither the exit
+  status nor the data file"; the `CHANGELOG.md` Unreleased entry names the pages, the three cases, and the same
+  no-change sentence.
+
+Consistency gate: `cairn_validate.py` exit 0, all checks passed; no principle changed, so no `cairn_impact` run; the
+generic profile's consistency-gate slot names no toolchain checks.
