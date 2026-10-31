@@ -1,0 +1,8 @@
+{
+  "id": "cs-venues@local.tools",
+  "name": "CS Venue Abbreviations",
+  "description": "离线识别 CS 会议和期刊，自动补全缩写，兼容 Linter 的会议缩写字段。",
+  "homepage": "https://github.com/lzy248/zotero-cs-venues",
+  "repoUrl": "https://github.com/lzy248/zotero-cs-venues",
+  "updateUrl": "https://github.com/lzy248/zotero-cs-venues/releases/latest/download/updates.json"
+}
