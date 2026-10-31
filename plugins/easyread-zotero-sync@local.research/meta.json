@@ -1,0 +1,7 @@
+{
+  "id": "easyread-zotero-sync@local.research",
+  "name": "EasyRead Sync",
+  "description": "将 EasyRead 已完成的全文译文同步为 Zotero 内可离线阅读的 HTML 附件。",
+  "repoUrl": "https://github.com/Ttungx/easyread-zotero-sync",
+  "updateUrl": "https://raw.githubusercontent.com/Ttungx/easyread-zotero-sync/main/updates.json"
+}
