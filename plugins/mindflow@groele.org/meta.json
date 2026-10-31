@@ -1,0 +1,8 @@
+{
+  "id": "mindflow@groele.org",
+  "name": "Zotero MindFlow",
+  "description": "Organize papers, annotations, and ideas into editable maps.",
+  "homepage": "https://github.com/groele/Zotero-MindFlow",
+  "repoUrl": "https://github.com/groele/Zotero-MindFlow",
+  "updateUrl": "https://raw.githubusercontent.com/groele/Zotero-MindFlow/main/zotero/update.json"
+}
