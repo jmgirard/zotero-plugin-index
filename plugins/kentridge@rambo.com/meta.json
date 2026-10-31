@@ -1,0 +1,8 @@
+{
+  "id": "kentridge@rambo.com",
+  "name": "zotero-kentridge",
+  "description": "A plugin for fetching paper metadata in Zotero.",
+  "homepage": "https://github.com/brant-ruan/zotero-kentridge#readme",
+  "repoUrl": "https://github.com/brant-ruan/zotero-kentridge",
+  "updateUrl": "https://github.com/brant-ruan/zotero-kentridge/releases/download/release/update.json"
+}
