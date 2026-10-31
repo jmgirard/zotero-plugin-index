@@ -77,6 +77,8 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - 2026-10-31: T2: `src/build/digest.ts` hashes one JSON line per entry, `[kind, path, file SHA-256 or null]`, sorted by UTF-8 path bytes; `readdir` dirents refuse links and pipes without following them; the CLI prints `data digest matches: <sha>` on a match. `test/data-digest.test.ts` 22 tests pass. Plants: unframed `path + bytes` failed the two framing probes; dropping `kind` failed none, since a directory's null SHA-256 already tells it from a file.
 - 2026-10-31: T3: build job output `data-sha256` from `pnpm --silent data-digest --dir dist` (`--silent` drops pnpm's script banner from the captured line, as `add-plugin-issue.yml` does), after the plan hash and before the uploads; site check step right after the `plugins-data` download. `test/workflows.test.ts` 57 pass; a planted `continue-on-error: true` and a planted `if:` each failed the new test.
 - 2026-10-31: T4: README "The daily build" (items 1 and 3, the deploy-nothing paragraph, and a `pnpm data-digest` section after it), DESIGN's `build.yml` paragraph, and one CHANGELOG entry; the replacement sentence states T1's read; no added line passes 80 columns.
+- 2026-10-31: T5: `pnpm test` 1661 passed, 6 skipped; `pnpm check` 272 entries, 0 problems. Branch pushed; `Build data` run 41208668356 started on it.
+- 2026-10-31: claim audit: 46 claims read, 2 corrected — README.md (the command prints one value only without `--expect`), src/build/digest.ts (JSON framing keeps a path from running into the next field, not "no two trees"; a non-UTF-8 name decodes with replacement characters).
 
 ## Decisions
 

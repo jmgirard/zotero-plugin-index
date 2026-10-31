@@ -26,8 +26,8 @@ async function walk(dir: string, prefix: string, entries: Entry[]): Promise<stri
 }
 
 // The SHA-256 of the tree under dir: of one JSON line per entry, [kind, path, file SHA-256 or
-// null], sorted by path in UTF-8 byte order. JSON quotes each path, so no two trees give the
-// same lines. File times and modes do not count.
+// null], sorted by path in UTF-8 byte order. JSON quotes each path, so no path can run into
+// the next field. File times and modes do not count.
 export async function treeDigest(dir: string): Promise<DigestResult> {
   const entries: Entry[] = [];
   let refused: string | null;
