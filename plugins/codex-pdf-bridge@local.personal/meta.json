@@ -1,0 +1,7 @@
+{
+  "id": "codex-pdf-bridge@local.personal",
+  "name": "文献桥 · PaperBridge",
+  "description": "连接 Zotero、Codex 与 Obsidian：论文精读、原生标注与文献笔记。",
+  "repoUrl": "https://github.com/Antonalia/PaperBridge",
+  "updateUrl": "https://github.com/Antonalia/PaperBridge/releases/latest/download/updates.json"
+}
