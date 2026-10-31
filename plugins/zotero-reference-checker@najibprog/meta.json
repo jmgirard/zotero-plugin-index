@@ -1,0 +1,8 @@
+{
+  "id": "zotero-reference-checker@najibprog",
+  "name": "Reference Checker",
+  "description": "Lists the references of the open article, shows which ones are already in your Zotero library, and opens their PDF in one click.",
+  "homepage": "https://github.com/najibprog/zotero-reference-checker",
+  "repoUrl": "https://github.com/najibprog/zotero-reference-checker",
+  "updateUrl": "https://github.com/najibprog/zotero-reference-checker/releases/download/release/updates.json"
+}
