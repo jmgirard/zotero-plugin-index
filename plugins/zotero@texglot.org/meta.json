@@ -1,0 +1,8 @@
+{
+  "id": "zotero@texglot.org",
+  "name": "TeXGlot for Zotero",
+  "description": "Send Zotero papers to a local TeXGlot service and keep translated PDFs as child attachments.",
+  "homepage": "https://github.com/Mengqi-Lei/texglot",
+  "repoUrl": "https://github.com/Mengqi-Lei/texglot",
+  "updateUrl": "https://github.com/Mengqi-Lei/texglot/releases/latest/download/texglot-zotero-update.json"
+}
