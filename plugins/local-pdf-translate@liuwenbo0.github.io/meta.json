@@ -1,0 +1,8 @@
+{
+  "id": "local-pdf-translate@liuwenbo0.github.io",
+  "name": "Local PDF Translate",
+  "description": "Translate Zotero PDFs locally with your own OpenAI-compatible API, and attach mono and dual PDFs.",
+  "homepage": "https://github.com/liuwenbo0/zotero-local-translate",
+  "repoUrl": "https://github.com/liuwenbo0/zotero-local-translate",
+  "updateUrl": "https://github.com/liuwenbo0/zotero-local-translate/releases/latest/download/updates.json"
+}
