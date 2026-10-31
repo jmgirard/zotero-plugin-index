@@ -88,7 +88,7 @@ stays a hand edit, which the warning names.
       219), run the changelog reads at the same time as the release read, so all of them end within the one
       limit, and return the warnings. In `src/build/cli.ts`, print each as one `::warning::` line before the
       writes, beside the release warning, and leave the exit code and data as they are.
-- [ ] T3: Docs: README "Building the data", the `CHANGELOG.md` Unreleased entry, DESIGN's Architecture line for
+- [x] T3: Docs: README "Building the data", the `CHANGELOG.md` Unreleased entry, DESIGN's Architecture line for
       the build, the `LAST_RELEASES` comment in `src/site/version.ts`, and the "Traces to" list of
       `cairn/references/zotero-changelogs.md`. Wrap prose near 76 columns (the M036 lesson).
 - [ ] T4: Run the `verify` slot. Dispatch Build data on the milestone branch with
@@ -121,6 +121,7 @@ stays a hand edit, which the warning names.
 - 2026-10-31: T1 done: changelog fixtures built from the saved heading markup in `responses()`; two spawned `pnpm build` cases (quiet pages; 11.0.0 + a 9.0.7 page + a 500 on 8.0 together) and in-process cases for each AC3 outcome, the newer page, and 11.0.0; the AC4 test in `test/version.test.ts` failed on each of the three planted list defects (8 missing, key 6, key 10) and passed restored.
 - 2026-10-31: T2 done: `changelogUrl`, `readChangelogRelease`, `releaseListWarnings`, and the shared `ReleaseRead` type in `src/build/zotero-release.ts`; `buildData` runs the reads with `Promise.all` under `releaseMs` and returns `releaseWarnings`; the CLI prints each as `::warning::`. Planting no CLI print and no newer-release compare each turned one new test red. `pnpm test` 1637 passed.
 - 2026-10-31: implementation choice: the time-cut case uses a real 1000 ms limit, as the release cases do, not the M030 `performance.now` spy, since `withinLimit` cuts by a timer and the release tests already use that form.
+- 2026-10-31: T3 done: README "Building the data" (time-limit sentence and a new paragraph with the three warning cases), one CHANGELOG Unreleased entry, DESIGN's build line, the `LAST_RELEASES` comment, and the source note's "Traces to"; no added line over 80 columns. The simple-english hook flagged only lines older than this branch in README, CHANGELOG, and the source note, which stay as they are. `pnpm test` 1637 passed; `pnpm check` 0 problems.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local; promote

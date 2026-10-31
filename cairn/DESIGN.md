@@ -378,13 +378,18 @@ exception is a report that is abuse.
   zotero.org with no token and a 30 s limit, and the build writes it as the
   top-level `zoteroRelease`; a failed read leaves the field out, prints one
   `::warning::` line, and does not change the exit code (M062, D-036). It
-  writes no record, so it is not build-level. The command exits
-  once stdout and stderr have flushed, so a host lookup that a limit cut
-  cannot hold it open. Added M003;
+  writes no record, so it is not build-level. In the same limit and at the
+  same time, `readChangelogRelease` reads the changelog page of each
+  `LAST_RELEASES` major, and `releaseListWarnings` gives one `::warning::`
+  line for a current release outside the last major of `ZOTERO_MAJORS`, for
+  a page naming a newer release than the list, and for a failed page read;
+  they change neither the exit code nor the data (M068, D-040). The
+  command exits once stdout and stderr have flushed, so a host lookup that
+  a limit cut cannot hold it open. Added M003;
   schemas and exit rule M006; build-level rule and summary M017; every-record
   rule M018; reports M021; time limits M029; label read and `closed_by`
   check M041; report read limit and exit M050; read order by day M051;
-  Zotero release read M062.
+  Zotero release read M062; release list warnings M068.
 - Site build (`src/site/`, `site/`): `pnpm site [--out <dir>]` writes the
   home page, the About page (M054), and one page per record into `dist/`,
   or `<dir>`, from the data file there. `src/site/version.ts` holds the version and range functions

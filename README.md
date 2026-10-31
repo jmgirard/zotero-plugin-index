@@ -1040,10 +1040,11 @@ number is odd, it reads them in reverse id order. So the entries that get
 file lists its records in id order on every day. A plugin with either
 failure shows no facts until a later build reads it. The read of the
 `report` label and the report issues, which comes before the plugin reads,
-also counts toward the 18 minutes. The read of the Zotero release below
-comes after the plugin reads and takes at most 30 seconds. These limits
-leave time for the other steps of the daily build, whose job GitHub stops
-at 30 minutes.
+also counts toward the 18 minutes. The reads of the Zotero release and of
+the Zotero changelog pages below come after the plugin reads. They run at
+the same time and take at most 30 seconds in all. These limits leave time
+for the other steps of the daily build, whose job GitHub stops at 30
+minutes.
 
 After the plugin reads, the command reads
 <https://www.zotero.org/download/client/version?channel=release> with no
@@ -1061,6 +1062,27 @@ starts with `::warning::cannot read the Zotero release:` and names the
 cause. GitHub Actions shows this line as a warning on the run. This read
 does not change the exit status. It writes no record, so it is not a
 build-level failure or a failure of a plugin.
+
+The site keeps two hand-kept lists in `src/site/version.ts`:
+`ZOTERO_MAJORS`, the Zotero versions that get a mark, and `LAST_RELEASES`,
+the newest release of each version before the last. A Zotero release
+leaves them behind until someone edits them. So the command also reads the
+changelog page of each version in `LAST_RELEASES`, such as
+<https://www.zotero.org/support/9.0_changelog>, with no token and the same
+limit. It takes the version in the page's first heading that starts with
+"Changes in 9." for Zotero 9. It prints one `::warning::` line for each of
+these cases:
+
+- the current release is not from the last version in `ZOTERO_MAJORS`,
+  such as `11.0.0` while the list ends at 10,
+- a changelog page names a newer release than `LAST_RELEASES` holds for
+  its version, such as `9.0.7` while the list holds `9.0.6`,
+- a changelog read fails, as the release read above can fail, or the page
+  has no such heading.
+
+These lines name what to edit, and the marks stay as they are until
+someone edits the lists. The lines change neither the exit status nor the
+data file.
 
 A build-level failure usually comes from the build, not from the plugin.
 A plugin's own download host that is down also gives one. These failures
