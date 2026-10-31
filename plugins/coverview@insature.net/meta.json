@@ -1,0 +1,8 @@
+{
+  "id": "coverview@insature.net",
+  "name": "Cover View for Zotero",
+  "description": "View covers of books and documents directly in Zotero.",
+  "homepage": "https://github.com/paulluis-roehl/zotero-cover-view#readme",
+  "repoUrl": "https://github.com/paulluis-roehl/zotero-cover-view",
+  "updateUrl": "https://github.com/paulluis-roehl/zotero-cover-view/releases/download/release/update.json"
+}
