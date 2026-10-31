@@ -74,7 +74,7 @@
 - [x] T2: Add the pacing (an injected clock), the 8-minute search cutoff, and the failure handling. Add tests for AC2 and AC3.
 - [x] T3: Add `code-search` to `entrySchema` and to `body()`. Add the `twoStep` test of AC5.
 - [x] T4: Add the `budget` input to `.github/workflows/discover.yml` as `${BUDGET:+--budget "$BUDGET"}`. Add the test of AC6, anchored on the run line.
-- [ ] T5: Write the README, DESIGN, and CHANGELOG text of AC7, and wrap it near 76 columns.
+- [x] T5: Write the README, DESIGN, and CHANGELOG text of AC7, and wrap it near 76 columns.
 - [ ] T6: Run the verify slot. Push the branch, then dispatch `Discover plugins` with `--ref` set to the branch. Read the report for code-search items, a 401, or a 403. If the token cannot run code search, stop for the user.
 
 ## Work log
@@ -96,6 +96,7 @@
 - 2026-10-31: T2 done: tests for AC2 (window of 13 requests with one failed, search time counted toward `runMs`, the 8-minute cutoff) and AC3 (the eight failure kinds, an item with no `repository.full_name`, `total_count` over 1,000). The window test went red with the rate planted at 11 and with failed requests left uncounted. A stop warning now says "1 page", not "1 pages". `pnpm test` 1725 passed, `pnpm check` 0 problems.
 - 2026-10-31: T3 done: `body()` says "found <url> by GitHub code search for Zotero plugin files"; `entrySchema` takes `code-search` through `SOURCES` (T1). The `twoStep` test of AC5 went red ("does not match the handoff schema") with `code-search` planted out of the schema enum. `pnpm test` 1726 passed, `pnpm check` 0 problems.
 - 2026-10-31: T4 done: `budget` dispatch input (number, default 100) reaches the read job's run line as `${BUDGET:+--budget "$BUDGET"}`; the test anchors on the run line and its indented env lines, and went red with `inputs.budget || 100` planted. `pnpm test` 1727 passed, `pnpm check` 0 problems.
+- 2026-10-31: T5 done: README "Finding new plugins" (queries, token, join, pacing, failures, cutoff), "Pull requests from the bot" (`limit` and `budget` inputs, body sentence, hold), DESIGN item 1, Architecture, and Known issues, CHANGELOG entry. "Code search needs `GITHUB_TOKEN`" rests on an unauthenticated `/search/code` request that answered HTTP 401 this session. The simple-english lint hook flags older README and CHANGELOG lines (269, 918, 1403; 200 and later), none of them M071's, left as they are. `pnpm test` 1727 passed, `pnpm check` 0 problems.
 
 ## Decisions
 
