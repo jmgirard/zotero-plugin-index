@@ -151,11 +151,12 @@ holds the same text (M063).
 A manifest `__MSG_` name or description takes its message from
 `_locales/en/`, `en_US/`, or `en_GB/` before the default locale (M055).
 The data also carries the GitHub repo's About text as `repoDescription`.
-A manifest or GitHub description with a CJK share of 0.5 or more first
-gives way to its Latin-script part, when that part is left and does not
-only repeat the name: the pieces cut at ` / ` and after `。` whose letters
-are all Latin and that hold at least three words, joined with one space
-(M067, D-038).
+A `description` override that applies comes before every step below.
+Without one, a manifest or GitHub description with a CJK share of 0.5 or
+more first gives way to its Latin-script part, when that part exists and
+does not only repeat the name: the pieces cut at ` / ` and after `。` whose
+letters are all Latin and that hold at least three words, joined with one
+space (M067, D-038).
 The site drops a manifest or GitHub description that is blank or only
 repeats the plugin's name (M015). It shows the manifest one when it is left
 and its CJK share is below 0.5, else the GitHub one when it is left and the

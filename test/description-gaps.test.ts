@@ -99,7 +99,6 @@ describe("findGaps", () => {
     const path = join(dir, "plugins.json");
     write(path);
     const result = await findGaps(path, join(dir, "plugins"));
-    expect(result.ok).toBe(false);
     expect(!result.ok && result.message).toMatch(message);
   });
 
@@ -122,10 +121,20 @@ describe("findGaps", () => {
 describe("pnpm description-gaps", () => {
   const run = promisify(execFile);
 
-  test("prints each gap and exits 0", async () => {
-    const data = writeData([record("short@example.org", "Notes", "Custom rename pdf")]);
+  test("prints each gap on one line and exits 0", async () => {
+    const data = writeData([
+      record("blank@example.org", "Blank", undefined),
+      record("short@example.org", "Notes", "Custom\trename\n pdf"),
+    ]);
     const { stdout } = await run(process.execPath, [CLI, data], { cwd: dir, env: { PATH: process.env.PATH } });
-    expect(stdout).toBe("short@example.org\tshort\tCustom rename pdf\n1 plugins with a description gap\n");
+    expect(stdout).toBe("blank@example.org\tmissing\nshort@example.org\tshort\tCustom rename pdf\ndescription gaps: 2\n");
+  });
+
+  test("reads the checkout's entries from another directory", async () => {
+    // pdfrename@theigrams.com has a description override in the checkout's plugins/.
+    const data = writeData([record("pdfrename@theigrams.com", "PDF Rename", "Custom rename pdf")]);
+    const { stdout } = await run(process.execPath, [CLI, data], { cwd: dir, env: { PATH: process.env.PATH } });
+    expect(stdout).toBe("description gaps: 0\n");
   });
 
   test("exits 1 with the cause for a file it cannot read", async () => {

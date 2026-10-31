@@ -747,10 +747,14 @@ describe("the About page", () => {
     for (const line of [
       "the index reads the plugin's English locale file first, if it has one.",
       "A description override that applies to the version the index read comes first.",
-      "Without one, if less than half of the manifest description is Chinese, Japanese, or Korean, the site shows it.",
+      "Without one, the site takes the Latin-script part of each description of which half or more is Chinese, Japanese, or Korean.",
+      "It keeps the pieces whose letters are all Latin and that hold at least three words, and it joins them with one space.",
+      "The site then drops a description that is missing, blank, or only repeats the plugin's name.",
+      "Last, if less than half of the manifest description is Chinese, Japanese, or Korean, the site shows it.",
       "the manifest description was dropped, or the GitHub description has less of that text.",
       "A description override can also give English text for a plugin with no English description upstream.",
       "That covers a description that is not in English, that only repeats the name, or that is half or more Chinese, Japanese, or Korean.",
+      "It can also replace an English description of fewer than six words.",
     ]) {
       expect(text).toContain(line);
     }

@@ -460,11 +460,12 @@
   Japanese, or Korean and the description has a Latin-script part, the
   site now shows that part. The site cuts the text at each ` / ` and after
   each `。`. The part is the pieces whose letters are all Latin and that
-  hold at least three words, unless they only repeat the name. The README gives the whole rule. A
-  `description` override can now also replace an English description of
-  fewer than six words. `pnpm description-gaps <data file>` lists the
-  plugins whose description is missing, half or more Chinese, Japanese, or
-  Korean, or under six words, after the checkout's overrides.
+  hold at least three words, unless they only repeat the name. The README
+  gives the whole rule. A `description` override can now also replace an
+  English description of fewer than six words. `pnpm description-gaps
+  <data file>` lists the plugins with a description gap, after the
+  checkout's overrides. A gap is a description that is missing, half or
+  more Chinese, Japanese, or Korean, or under six words.
 - The bot now merges its own pull requests. Each new bot pull request body
   has a Hold line, which names the entry's hold reasons or says
   `Hold: none`. The README lists the five reasons. A held pull request gets

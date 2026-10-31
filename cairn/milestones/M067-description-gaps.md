@@ -81,10 +81,10 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
      task(s) satisfying it, by positional number (AC/Task counted
      top-to-bottom). Review reads to fence evidence — tracking-rules "AC fencing". -->
 
-- AC1 → T1
-- AC2 → T2
-- AC3 → T6
-- AC4 → T3
+- AC1 → T1, T8
+- AC2 → T2, T8
+- AC3 → T6, T8
+- AC4 → T3, T8
 - AC5 → T4, T5
 - AC6 → T7
 
@@ -108,6 +108,9 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
       CHANGELOG. Find split phrases with a joined copy, and keep added lines within 80 columns.
 - [x] T7: Run `pnpm description-gaps` over the shelf copy again and check its output against the ledger's kept
       rows. Then run `pnpm test` and `pnpm check`.
+- [x] T8: Review return 1: add each line's shown text to the ledger rows (AC4), and fix the pass-1 fix-now findings
+      in the Review section: the CLI's plugins root and line format, the 9 wrong category assignments, the docs
+      order and wording, the line widths, and the three test changes.
 
 ## Work log
 <!-- owner: any skill · append-only; one line per entry; absolute dates. -->
@@ -139,6 +142,8 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - 2026-10-31: claim audit: 150 claims read, 5 corrected — plugins/register02@cn.nutstore.net/index.json, plugins/zoterogpt@polygon.org/index.json, plugins/zoterotag@euclpts.com/index.json (plus bionicReader, same note), test/description.test.ts, CHANGELOG.md
 - 2026-10-31: claim audit re-read of the corrected claims by the same reader: all hold. pnpm test and pnpm check pass. Status set to review.
 - 2026-10-31: review return 1: AC4 — the ledger rows give no shown text, so the ledger does not list each line `pnpm description-gaps` prints (diff-bug #13). The same return carries the pass-1 fix-now findings listed in the Review section: the CLI's plugins root, the 9 wrong category assignments, the docs order and wording, the line widths, the CLI line format, and three test changes.
+- 2026-10-31: T8 added for review return 1 (minor amendment; Coverage AC1 to AC4 gain T8).
+- 2026-10-31: T8 done: the ledger gains a Shown text column (AC4) and a Category changes section; 9 category excludes in `src/site/categories.ts` leave 7 plugins with 17 new assignments the read marked right; the CLI reads `plugins/` from its own folder, prints whitespace as one space, prints no trailing tab for `missing`, and ends "description gaps: N"; README, About, and DESIGN state override first, then the Latin-script part, then the drop and the pick; README says a short other-language text lists as `short`; both schema prose fixes; CHANGELOG and README within 80 columns; tests: exactly-0.5, mixed-piece, CLI from another directory, CLI line format, redundant `ok` check dropped, About test lines for the new rules. Planted defects (`<=` at 0.5, no Latin filter, cwd root) each failed their test. pnpm test (1622 passed, 6 skipped) and pnpm check pass.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

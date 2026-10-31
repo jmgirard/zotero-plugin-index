@@ -70,37 +70,37 @@ The index first tries the English folders `_locales/en/`, `_locales/en_US/`,
 and `_locales/en_GB/`, in that order. If none of them holds a message that
 is not blank, the index reads the message of the manifest's default locale.
 
-The site drops a description that is missing, blank, or only repeats the
-plugin's name. The site checks for a repeated name this way. It takes the
+A `description` override that applies to the plugin version that the index
+read comes first. The site shows it, and none of the steps below apply to
+it. With no such override, the site works through these steps.
+
+The site first takes the Latin-script part of each description of which
+half or more is Chinese, Japanese, or Korean, by the share described
+below. It cuts the text at each ` / ` and after each `。`. A word is a run
+of letters, marks, and digits. The site keeps the pieces whose letters are
+all Latin and that hold at least three words, and it joins them with one
+space. If that part exists and does not only repeat the name, the site
+uses it in place of the whole text. Otherwise it uses the whole text. For
+example, "点击关闭按钮只最小化窗口。Minimize Zotero instead of
+quitting." becomes its English sentence. A Latin-script piece in another
+language, such as Portuguese, shows as it is.
+
+The site then drops a description that is missing, blank, or only repeats
+the plugin's name. The site checks for a repeated name this way. It takes the
 words of the description and of the name. It leaves out "zotero", "plugin",
 "addon", "add", "on", "extension", "for", "a", "an", and "the". If every word
 of the description that is left is also a word of the name, the description
 only repeats the name. For example, "Zotero Plugin for OCR" only repeats the
 name "Zotero OCR".
 
-The site then compares the share of Chinese, Japanese, and Korean text in
+Last, the site compares the share of Chinese, Japanese, and Korean text in
 the descriptions that are left. It counts each Han, Hiragana, Katakana, or
 Hangul character as one unit and each run of other letters as one unit. If
 less than half of the manifest description is such text, the site shows
 the manifest description. If not, the site shows the GitHub description in
 two cases: the site dropped the manifest description, or the GitHub
 description has a lower share. In all other cases the site shows the
-manifest description, or no description. A `description` override that
-applies to the plugin version that the index read replaces both. The name
-check does not apply to an override.
-
-The site first looks at each description of which half or more is
-Chinese, Japanese, or Korean, by that share. It takes the Latin-script
-part of such a description before it drops or compares the descriptions.
-It cuts the text at each ` / ` and after each `。`. A word is a run of
-letters, marks, and digits. The site keeps the pieces whose letters are
-all Latin and that hold at least three words. It joins those pieces with
-one space. If that part is left and does not
-only repeat the name, the site uses it in place of the whole text.
-Otherwise the site uses the whole text. For example,
-"点击关闭按钮只最小化窗口。Minimize Zotero instead of quitting." becomes
-its English sentence. A Latin-script piece in another language, such as Portuguese,
-shows as it is.
+manifest description, or no description.
 
 The home page has a search box. It shows only the plugins whose name or
 description holds the text you type. The search ignores letter case and the
@@ -1275,8 +1275,9 @@ the command on a data file, for example the published one:
 pnpm description-gaps dist/v1/plugins.json
 ```
 
-The command gives each record the overrides of the checkout's
-`plugins/<id>/index.json`. If that file does not exist, the record gets no
+The command gives each record the overrides of
+`plugins/<id>/index.json` in the checkout that holds the command, from any
+directory you run it in. If that file does not exist, the record gets no
 overrides. So the command shows the gaps that the overrides you wrote
 leave, with no new build. It checks each record with an `upstream` block.
 It prints one line for each record in one of these cases:
@@ -1287,15 +1288,21 @@ It prints one line for each record in one of these cases:
 - `short`: the shown description has fewer than six words.
 
 The line holds the plugin id, the case, and the shown text, with a tab
-between them. It names the first of these cases that applies, in that
-order. The last line gives the count, and the command exits with status 0.
+between them. A `missing` line has no shown text. The command prints each
+run of whitespace in the shown text as one space, so each gap stays on one
+line. The line names the first of these cases that applies, in that order.
+The last line gives the count, as `description gaps: <count>`, and the
+command exits with status 0.
 
 The command prints a message, lists nothing, and exits with status 1 in
 these cases: it cannot read the data file, the file is not JSON, or the v1
 schema refuses it. It does the same for an `index.json` that it cannot
-read, that is not JSON, or that its schema refuses. The command does not find a
-description in another language written in Latin script, such as
-Portuguese. Find those by reading the list of descriptions.
+read, that is not JSON, or that its schema refuses.
+
+The command does not tell English from another language written in Latin
+script, such as Portuguese. If such a description has fewer than six
+words, the command lists it as `short`. Find the others by reading the list
+of descriptions.
 
 ## The daily build
 

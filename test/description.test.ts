@@ -90,6 +90,8 @@ describe("shownDescription", () => {
     ["list of short pieces", "期刊分区 / 中科院 / JCR / 影响因子", undefined, "期刊分区 / 中科院 / JCR / 影响因子"],
     ["piece that only repeats the name", "在文献旁边记录笔记 / Zotero Notes plugin", undefined, "在文献旁边记录笔记 / Zotero Notes plugin"],
     ["text just below half CJK", BELOW_HALF, undefined, BELOW_HALF],
+    ["text at exactly half CJK", "记录论文笔记 / Takes notes on each paper you", undefined, "Takes notes on each paper you"],
+    ["piece that mixes CJK and Latin words", "为文献添加结构化标签 / 支持 PDF export to Word 格式 / Adds tags to items", undefined, "Adds tags to items"],
   ])("shows the Latin-script part or the whole text of a %s", (_name, manifest, github, shown) => {
     expect(shownDescription(withGitHub(record("Notes", manifest), github))).toBe(shown);
   });
