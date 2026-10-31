@@ -1,0 +1,8 @@
+{
+  "id": "zotfetch@nikhilweee.me",
+  "name": "Zotfetch",
+  "description": "Fetch missing attachments",
+  "homepage": "https://github.com/nikhilweee/zotfetch",
+  "repoUrl": "https://github.com/nikhilweee/zotfetch",
+  "updateUrl": "https://raw.githubusercontent.com/nikhilweee/zotfetch/main/updates.json"
+}
