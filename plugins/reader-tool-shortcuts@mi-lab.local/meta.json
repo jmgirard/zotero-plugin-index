@@ -1,0 +1,7 @@
+{
+  "id": "reader-tool-shortcuts@mi-lab.local",
+  "name": "Reader Tool Shortcuts",
+  "description": "Configurable shortcuts for Zotero Reader note, text, and area annotation tools.",
+  "repoUrl": "https://github.com/stem-sw/zotero-reader-tool-shortcuts",
+  "updateUrl": "https://raw.githubusercontent.com/stem-sw/zotero-reader-tool-shortcuts/main/update.json"
+}
