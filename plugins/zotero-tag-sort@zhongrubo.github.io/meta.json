@@ -1,0 +1,8 @@
+{
+  "id": "zotero-tag-sort@zhongrubo.github.io",
+  "name": "Zotero Tag Sort",
+  "description": "Adds sorting options (by added time, name, or length) and a clean, framed, table-like layout to the Zotero tag selector, while keeping all native filtering behavior.",
+  "homepage": "https://github.com/zhongrubo/zotero-tag-sort",
+  "repoUrl": "https://github.com/zhongrubo/zotero-tag-sort",
+  "updateUrl": "https://github.com/zhongrubo/zotero-tag-sort/releases/latest/download/update.json"
+}
