@@ -119,6 +119,29 @@ describe("build.yml", () => {
     expect(site.indexOf("pnpm add-start-results")).toBeGreaterThan(check);
   });
 
+  test("checks the downloaded data in the site job against the digest that the build job gives after the carry", () => {
+    const job = jobText(build, "build");
+    expect(job).toMatch(/^ {6}data-sha256: \$\{\{ steps\.data-sha256\.outputs\.sha256 \}\}$/m);
+    const digest = job.indexOf(
+      '      - id: data-sha256\n        run: |\n          sha256="$(pnpm --silent data-digest --dir dist)"\n' +
+        '          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"\n',
+    );
+    expect(digest).toBeGreaterThan(job.indexOf("carry-start-results"));
+    expect(job.search(/^ {10}name: plugins-data$/m)).toBeGreaterThan(digest);
+    const site = jobText(build, "site");
+    const download = site.search(/^ {10}name: plugins-data$/m);
+    const step =
+      "      - env:\n          DATA_SHA256: ${{ needs.build.outputs.data-sha256 }}\n" +
+      '        run: pnpm --silent data-digest --dir dist --expect "$DATA_SHA256"\n';
+    const check = site.indexOf(step);
+    expect(download).toBeGreaterThan(-1);
+    expect(check).toBeGreaterThan(download);
+    expect(site.indexOf("pnpm add-start-results")).toBeGreaterThan(check);
+    // The next line starts another step, so the check step has no `if:` or
+    // `continue-on-error:` key.
+    expect(site.slice(check + step.length)).toMatch(/^ {6}(?:#|- )/);
+  });
+
   test("runs the site job after a build that succeeded, whatever the start tests did, and deploys only after the site job", () => {
     const site = jobText(build, "site");
     expect(site).toMatch(/^ {4}needs: \[build, start-test\]$/m);
