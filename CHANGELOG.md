@@ -458,8 +458,9 @@
   rejects fields that it does not define.
 - When half or more of a manifest or GitHub description is Chinese,
   Japanese, or Korean and the description has a Latin-script part, the
-  site now shows that part. That part is the pieces between ` / ` and after `。`
-  whose letters are all Latin and that hold at least three words. The README gives the whole rule. A
+  site now shows that part. The site cuts the text at each ` / ` and after
+  each `。`. The part is the pieces whose letters are all Latin and that
+  hold at least three words, unless they only repeat the name. The README gives the whole rule. A
   `description` override can now also replace an English description of
   fewer than six words. `pnpm description-gaps <data file>` lists the
   plugins whose description is missing, half or more Chinese, Japanese, or

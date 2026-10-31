@@ -4,7 +4,7 @@
      cairn_validate's <150 over the plan-owned body. -->
 # M067: Fill the description gaps
 
-- **Status:** in-progress   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
+- **Status:** review   <!-- owner: transitioning skill · mirror-update; cairn/ROADMAP.md is the authority -->
 - **Priority:** normal   <!-- owner: plan · create/amend-via-gate; high | normal | low -->
 - **Depends on:** —   <!-- owner: plan · create/amend-via-gate; M<xx>, M<yy> or — -->
 - **Driving RR:** —   <!-- owner: plan · create/amend-via-gate; RR<NN> whose Binding criteria bind this milestone's ACs (binding-criteria check), or — -->
@@ -136,6 +136,8 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - 2026-10-31: T5 done: 17 short-case overrides, each byte-equal to the checked draft; zotgit and zotmoov each have their own text. `pnpm description-gaps` over the shelf copy now prints 0 gaps, and pnpm check passes. T3's ledger comes next, written from the T2 run and these dispositions.
 - 2026-10-31: T3 done after T4 and T5 (a minor reorder): `cairn/references/description-ledger.md` and its INDEX line, 31 rows (28 from the T2 run, 3 Portuguese from the plan's scan), all override.
 - 2026-10-31: T7 done: `pnpm description-gaps` over the shelf copy prints "0 plugins with a description gap", matching the ledger's 0 kept rows; pnpm test (1619 passed, 6 skipped) and pnpm check (272 entries, 0 problems) pass.
+- 2026-10-31: claim audit: 150 claims read, 5 corrected — plugins/register02@cn.nutstore.net/index.json, plugins/zoterogpt@polygon.org/index.json, plugins/zoterotag@euclpts.com/index.json (plus bionicReader, same note), test/description.test.ts, CHANGELOG.md
+- 2026-10-31: claim audit re-read of the corrected claims by the same reader: all hold. pnpm test and pnpm check pass. Status set to review.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

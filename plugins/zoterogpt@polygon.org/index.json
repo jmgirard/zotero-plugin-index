@@ -4,7 +4,7 @@
     {
       "field": "description",
       "value": "AI reading and writing assistant: questions, summaries, translation, and explanations from a PDF's full text, selected text, or notes, with a floating quick-ask window, command tags, custom prompts, and configurable models.",
-      "reason": "Translated from the opening paragraph and main feature list of README.md, which is in Chinese. The manifest description, \"Awesome GPT for Zotero\", and the GitHub About text, \"GPT Meet Zotero.\", are both in English and have fewer than six words."
+      "reason": "Translated from the opening paragraph and main feature list of README.md, which is in Chinese. The manifest description, \"Awesome GPT for Zotero\", only repeats the name, and the GitHub About text, \"GPT Meet Zotero.\", is in English and has fewer than six words."
     }
   ]
 }

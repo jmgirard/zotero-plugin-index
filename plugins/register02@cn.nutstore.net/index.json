@@ -4,7 +4,7 @@
     {
       "field": "description",
       "value": "Connects Zotero file sync to Nutstore: one-click login to a Nutstore account sets up WebDAV sync, and an enhanced WebDAV mode works through the Nutstore desktop client on Windows.",
-      "reason": "Condensed from the \"What can it do?\" and User Manual sections of README.md. The manifest description, \"Nutstore plugin for Zotero.\", and the GitHub About text, \"Nutstore sso plugin for Zotero\", are in English and have fewer than six words."
+      "reason": "Condensed from the \"What can it do?\" and User Manual sections of README.md. The manifest description, \"Nutstore plugin for Zotero.\", only repeats the name, and the GitHub About text, \"Nutstore sso plugin for Zotero\", is in English and has fewer than six words."
     }
   ]
 }
