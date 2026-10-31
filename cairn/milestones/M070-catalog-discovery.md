@@ -102,6 +102,7 @@
 - 2026-10-31: T6: `pnpm test` 1691 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
 - 2026-10-31: claim audit: 80 claims read, 5 corrected — README.md (hold wording, 30-day state wording, at most 100 per request, failed connection), CHANGELOG.md (hold and state wording), src/discover/discover.ts (`lookUp` warning comment). Not changed: `raw()` checks only the first URL's origin, as `get` does, so after a redirect the token relies on fetch dropping it across origins.
 - 2026-10-31: implement done; status review.
+- 2026-10-31: review stopped before the merge question at the feature PR cap of 1: PR #353 (`add/retorquere-zotero-pmcid-fetcher`, the PMCID Fetcher entry, CI green) is open; no branch pushed, no PR opened.
 
 ## Decisions
 
