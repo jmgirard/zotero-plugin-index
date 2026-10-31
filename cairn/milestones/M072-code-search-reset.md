@@ -56,7 +56,7 @@ A code search request that GitHub's rate limit refuses with a named wait is sent
 ## Tasks
 
 - [x] T1: In `src/upstream/reader.ts`, return each answer's rate-limit values from `githubClient().get` and carry them on its `ReadFailure`. Add `wall()` to `Clock` and the tests' fake clock. Let `fixtureFetch` answer the nth GET of one URL from `<url> #<n>`.
-- [ ] T2: In `searchCode`, keep one hold time for all queries and retry a refused page once. The read-before check of a next page must let that retry through. Add the tests of AC1 to AC4.
+- [x] T2: In `searchCode`, keep one hold time for all queries and retry a refused page once. The read-before check of a next page must let that retry through. Add the tests of AC1 to AC4.
 - [ ] T3: Write the README, DESIGN, and CHANGELOG text of AC5, wrapped near 76 columns, and run the verify slot.
 
 ## Work log
@@ -73,6 +73,8 @@ A code search request that GitHub's rate limit refuses with a named wait is sent
 - 2026-10-31: implement started; branch m072-code-search-reset cut from main at c68c78c.
 - 2026-10-31: choice: `rateLimitOf` in `src/upstream/reader.ts` reads the three headers as non-negative whole numbers (others left out); `get` returns them as `rateLimit`, and an HTTP error answer's `ReadFailure` carries `status` and `rateLimit`. The tests' fake clock starts `wall()` at 2026-10-31T18:00:00Z.
 - 2026-10-31: T1 done: rate-limit values, `Clock.wall()`, and `fixtureFetch`'s `<url> #<n>` GET key; tested through T2. `pnpm test` 1733 passed, `pnpm check` 669 entries, 0 problems.
+- 2026-10-31: choice: a named wait from any answer, a failed one included, moves the one hold time; only a 403 or 429 with a named wait retries, and a retry skips the next-page checks, which its page already passed.
+- 2026-10-31: T2 done: hold and retry in `searchCode`, 11 tests in "a rate-limit wait" (8 failed before the code, the 3 no-retry cases passed before and after). Plants turned them red: no extra second (4 failed), a retry for any status (2), `retry-after` ignored (5). `pnpm test` 1744 passed, `pnpm check` 0 problems.
 
 ## Decisions
 

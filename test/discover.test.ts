@@ -739,6 +739,154 @@ describe("the code search", () => {
     ]);
   });
 
+  describe("a rate-limit wait", () => {
+    const pageUrl = (query: string, n: number) => (n === 1 ? codeUrl(query) : `${codeUrl(query)}&page=${n}`);
+    // A reset `seconds` after the fake clock's start, in GitHub's epoch seconds.
+    const resetIn = (seconds: number) => String(WALL_START / 1000 + seconds);
+    // Page n of `count` pages of one query, with its next link, plus extra headers.
+    const page = (query: string, n: number, count: number, headers: Record<string, string> = {}) => ({
+      ...codePage([`example/${query}-p${n}`]),
+      headers: { ...(n < count && { link: `<${pageUrl(query, n + 1)}>; rel="next"` }), ...headers },
+    });
+    // The wall time of each code search request, by URL.
+    function timed(clock: ReturnType<typeof fakeClock>) {
+      const sent: { url: string; wall: number }[] = [];
+      return { sent, onRequest: (seen: SeenRequest) => seen.url.includes("/search/code?") && sent.push({ url: seen.url, wall: clock.wall() }) };
+    }
+    // The names that the code search lookup asked about.
+    const looked = (requests: SeenRequest[]) => lookups(requests).flatMap(({ body }) => {
+      const { variables } = JSON.parse(body!);
+      return Object.keys(variables).filter((key) => key.startsWith("o")).map((key) => `${variables[key]}/${variables[`n${key.slice(1)}`]}`);
+    });
+    const searchWarnings = (warnings: string[]) => warnings.filter((warning) => warning.startsWith("the code search"));
+
+    test("holds the next request until the reset that x-ratelimit-remaining 0 names, plus 1 second", async () => {
+      const clock = fakeClock();
+      const { sent, onRequest } = timed(clock);
+      const responses = {
+        ...base(),
+        ...Object.fromEntries([1, 2, 3, 4].map((n) => [pageUrl("q1", n), page("q1", n, 4, n === 3 ? { "x-ratelimit-remaining": "0", "x-ratelimit-reset": resetIn(30) } : {})])),
+        [GRAPHQL]: found(),
+      };
+      await runResult(responses, { codeSearch: ["q1"], clock, onRequest });
+      expect(sent.map(({ wall }) => wall - WALL_START)).toEqual([0, 0, 0, 31_000]);
+    });
+
+    test.each<[string, Record<string, string>, number]>([
+      ["x-ratelimit-remaining 0", { "x-ratelimit-remaining": "0", "x-ratelimit-reset": resetIn(20) }, 21_000],
+      ["both headers, the later end counting", { "x-ratelimit-remaining": "0", "x-ratelimit-reset": resetIn(10), "retry-after": "40" }, 41_000],
+    ])("holds the next query's first request after %s on the last page of a query", async (_name, headers, wait) => {
+      const clock = fakeClock();
+      const { sent, onRequest } = timed(clock);
+      const responses = { ...base(), [pageUrl("q1", 1)]: page("q1", 1, 2), [pageUrl("q1", 2)]: page("q1", 2, 2, headers), ...searchedCode({ q2: [] }), [GRAPHQL]: found() };
+      await runResult(responses, { codeSearch: ["q1", "q2"], clock, onRequest });
+      expect(sent.map(({ url, wall }) => [url, wall - WALL_START])).toEqual([
+        [pageUrl("q1", 1), 0],
+        [pageUrl("q1", 2), 0],
+        [codeUrl("q2"), wait],
+      ]);
+    });
+
+    test("sends a page refused with a named wait once more, and reads it and the query's later pages", async () => {
+      const clock = fakeClock();
+      const { sent, onRequest } = timed(clock);
+      const responses: Responses = {
+        ...base(),
+        [pageUrl("q1", 1)]: page("q1", 1, 3),
+        [`${pageUrl("q1", 2)} #1`]: { status: 403, json: { message: "rate limit" }, headers: { "retry-after": "5" } },
+        [`${pageUrl("q1", 2)} #2`]: page("q1", 2, 3),
+        [pageUrl("q1", 3)]: page("q1", 3, 3),
+        [`${pageUrl("q2", 1)} #1`]: { status: 429, json: { message: "slow down" }, headers: { "x-ratelimit-remaining": "0", "x-ratelimit-reset": resetIn(70) } },
+        [`${pageUrl("q2", 1)} #2`]: page("q2", 1, 2),
+        [pageUrl("q2", 2)]: page("q2", 2, 2),
+        [GRAPHQL]: found(),
+      };
+      const { result, requests } = await runResult(responses, { codeSearch: ["q1", "q2"], clock, onRequest });
+      if (!result.ok) throw new Error(result.message);
+      expect(sent.map(({ url, wall }) => [url, wall - WALL_START])).toEqual([
+        [pageUrl("q1", 1), 0],
+        [pageUrl("q1", 2), 0],
+        [pageUrl("q1", 2), 6_000],
+        [pageUrl("q1", 3), 6_000],
+        [pageUrl("q2", 1), 6_000],
+        [pageUrl("q2", 1), 71_000],
+        [pageUrl("q2", 2), 71_000],
+      ]);
+      expect(looked(requests).sort()).toEqual(["example/q1-p1", "example/q1-p2", "example/q1-p3", "example/q2-p1", "example/q2-p2"]);
+      expect(searchWarnings(result.report.warnings)).toEqual([]);
+    });
+
+    test.each<[string, Recorded, string]>([
+      ["a 502", { status: 502, text: "bad gateway" }, "returned HTTP 502"],
+      ["a second 403 with a named wait", { status: 403, json: { message: "rate limit" }, headers: { "retry-after": "1" } }, "returned HTTP 403"],
+    ])("stops a query whose page fails again, with %s, and keeps its earlier pages", async (_name, again, message) => {
+      const responses = {
+        ...base(),
+        [pageUrl("q1", 1)]: page("q1", 1, 2),
+        [`${pageUrl("q1", 2)} #1`]: { status: 403, json: { message: "rate limit" }, headers: { "retry-after": "1" } },
+        [`${pageUrl("q1", 2)} #2`]: again,
+        [GRAPHQL]: found(),
+      };
+      const { result, requests } = await runResult(responses, { codeSearch: ["q1"], clock: fakeClock() });
+      if (!result.ok) throw new Error(result.message);
+      expect(codeRequests(requests).map(({ url }) => url)).toEqual([pageUrl("q1", 1), pageUrl("q1", 2), pageUrl("q1", 2)]);
+      expect(searchWarnings(result.report.warnings)).toEqual([`the code search for q1 read 1 page and stopped, since its request failed: GET ${pageUrl("q1", 2)} ${message}`]);
+      expect(looked(requests)).toEqual(["example/q1-p1"]);
+    });
+
+    test.each<[string, Recorded, string]>([
+      ["a 403 with retry-after abc", { status: 403, json: { message: "rate limit" }, headers: { "retry-after": "abc" } }, "403"],
+      ["a 401 with retry-after 1", { status: 401, json: { message: "Requires authentication" }, headers: { "retry-after": "1" } }, "401"],
+      ["a 502 with retry-after 1", { status: 502, text: "bad gateway", headers: { "retry-after": "1" } }, "502"],
+    ])("sends a page answered with %s only once", async (_name, answer, status) => {
+      const responses = { ...base(), [pageUrl("q1", 1)]: answer, [`${pageUrl("q1", 1)} #2`]: page("q1", 1, 1) };
+      const { result, requests } = await runResult(responses, { codeSearch: ["q1"], clock: fakeClock() });
+      if (!result.ok) throw new Error(result.message);
+      expect(codeRequests(requests)).toHaveLength(1);
+      expect(searchWarnings(result.report.warnings)).toEqual([`the code search for q1 read 0 pages and stopped, since its request failed: GET ${pageUrl("q1", 1)} returned HTTP ${status}`]);
+    });
+
+    test("sends no request for a wait that would end 8 minutes or more after the run starts, then reads the candidates", async () => {
+      const clock = fakeClock();
+      const responses = {
+        ...base(),
+        [pageUrl("q1", 1)]: page("q1", 1, 2, { "x-ratelimit-remaining": "0", "x-ratelimit-reset": resetIn(600) }),
+        ...searchedCode({ q2: ["example/q2-p1"] }),
+        ...pluginRepo("example/q1-p1", "q1-p1@example.org", { topics: [] }),
+        [GRAPHQL]: found(["example/q1-p1", "2026-10-20T00:00:00Z"]),
+      };
+      const { result, requests } = await runResult(responses, { codeSearch: ["q1", "q2"], clock, startedAt: 0 });
+      if (!result.ok) throw new Error(result.message);
+      expect(codeRequests(requests).map(({ url }) => url)).toEqual([pageUrl("q1", 1)]);
+      expect(searchWarnings(result.report.warnings)).toEqual([
+        "the code search for q1 read 1 page and stopped, since the run sends no code search request 8 minutes after it starts",
+        "the code search for q2 read 0 pages and stopped, since the run sends no code search request 8 minutes after it starts",
+      ]);
+      expect(result.report.read.map((item) => [item.repo, item.outcome])).toEqual([
+        ["example/q1-p1", "written"],
+        ["example/alpha", "written"],
+      ]);
+    });
+
+    test("counts a retry toward the limit of 10 code search requests in any 60 seconds", async () => {
+      const clock = fakeClock();
+      const times: number[] = [];
+      const onRequest = (seen: SeenRequest) => seen.url.includes("/search/code?") && times.push(clock.now());
+      const pages = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [pageUrl("q1", i + 1), page("q1", i + 1, 12)]));
+      const responses = {
+        ...base(),
+        ...pages,
+        [`${pageUrl("q1", 10)} #1`]: { status: 403, json: { message: "rate limit" }, headers: { "retry-after": "1" } },
+        [`${pageUrl("q1", 10)} #2`]: pages[pageUrl("q1", 10)],
+        [GRAPHQL]: found(),
+      };
+      await runResult(responses, { codeSearch: ["q1"], clock, onRequest });
+      expect(times).toHaveLength(13);
+      expect(times[10]).toBeGreaterThanOrEqual(60_000);
+      for (let i = 0; i + 10 < times.length; i++) expect(times[i + 10] - times[i]).toBeGreaterThanOrEqual(60_000);
+    });
+  });
+
   describe("a failed code search request", () => {
     // A refusal of a repo that no source names, kept since it is under 30 days old.
     const kept = { "example/refused": { pushedAt: "2026-10-01T00:00:00Z", failure: "no-release" as const, checkedAt: NOW.toISOString() } };

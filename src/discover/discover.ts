@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { type WriteResult, writeEntry } from "../add-plugin/add-plugin.ts";
 import { listEntries } from "../check/check.ts";
 import type { Lookup } from "../upstream/host-guard.ts";
-import { type Failure, type Fetch, githubClient, ReadFailure, readUpstream } from "../upstream/reader.ts";
+import { type Failure, type Fetch, githubClient, type RateLimit, ReadFailure, readUpstream } from "../upstream/reader.ts";
 import { duration, READ_LIMIT_MS, withinLimit } from "../upstream/time-limit.ts";
 import { plannedProblem } from "./handoff.ts";
 import { type HoldReason, holdReasons, type IndexedName, ownerCreatedAt, type Source, TOPICS } from "./holds.ts";
@@ -487,6 +487,19 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
   const sent: number[] = [];
   let items = 0;
   let stopped = false;
+  // The wall time before which no query sends a request: 1 second after the end of the
+  // latest wait an answer named. GitHub's window ends at the second its reset names, which
+  // can be later than 60 seconds after the window's first request.
+  let holdUntil = 0;
+  const hold = (rateLimit: RateLimit | undefined) => {
+    const ends = [
+      ...(rateLimit?.remaining === 0 && rateLimit.resetMs !== undefined ? [rateLimit.resetMs] : []),
+      ...(rateLimit?.retryAfterMs !== undefined ? [clock.wall() + rateLimit.retryAfterMs] : []),
+    ];
+    if (ends.length === 0) return false;
+    holdUntil = Math.max(holdUntil, Math.max(...ends) + 1000);
+    return true;
+  };
   for (const query of queries) {
     const seen = new Set<string>();
     let pages = 0;
@@ -496,18 +509,23 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
       warnings.push(`the code search for ${query} read ${pages} page${pages === 1 ? "" : "s"} and stopped, since ${why}`);
     };
     let next: string | undefined = `${API}/search/code?${new URLSearchParams({ q: query, per_page: "100" })}`;
+    // Whether this request sends again a page that a 403 or 429 with a named wait refused.
+    let retry = false;
     while (next) {
-      if (!URL.canParse(next) || new URL(next).origin !== API) {
-        stop(`its next page ${next} is not on ${API}`);
-        break;
+      if (!retry) {
+        if (!URL.canParse(next) || new URL(next).origin !== API) {
+          stop(`its next page ${next} is not on ${API}`);
+          break;
+        }
+        if (seen.has(next)) {
+          stop(`its next page ${next} was read before`);
+          break;
+        }
+        seen.add(next);
       }
-      if (seen.has(next)) {
-        stop(`its next page ${next} was read before`);
-        break;
-      }
-      seen.add(next);
       // One more millisecond, since a timer can fire up to 1 ms early against performance.now().
-      const wait = sent.length < CODE_SEARCH_RATE ? 0 : Math.max(0, sent[sent.length - CODE_SEARCH_RATE] + CODE_SEARCH_WINDOW_MS + 1 - clock.now());
+      const paced = sent.length < CODE_SEARCH_RATE ? 0 : sent[sent.length - CODE_SEARCH_RATE] + CODE_SEARCH_WINDOW_MS + 1 - clock.now();
+      const wait = Math.max(0, paced, holdUntil - clock.wall());
       if (clock.now() + wait - startedAt >= CODE_SEARCH_CUTOFF_MS) {
         stop(`the run sends no code search request ${duration(CODE_SEARCH_CUTOFF_MS)} after it starts`);
         break;
@@ -516,13 +534,21 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
       sent.push(clock.now());
       let body: unknown;
       let link: string | null;
+      let rateLimit: RateLimit;
       try {
-        ({ body, link } = await github.get(next, ms));
+        ({ body, link, rateLimit } = await github.get(next, ms));
       } catch (error) {
         if (!(error instanceof ReadFailure)) throw error;
+        const named = hold(error.rateLimit);
+        if (named && !retry && (error.status === 403 || error.status === 429)) {
+          retry = true;
+          continue;
+        }
         stop(`its request failed: ${error.message}`);
         break;
       }
+      retry = false;
+      hold(rateLimit);
       const page = body as { total_count?: unknown; incomplete_results?: unknown; items?: unknown } | null;
       if (typeof page !== "object" || page === null || !Array.isArray(page.items)) {
         stop(`GET ${next} returned a body with no list of items`);
