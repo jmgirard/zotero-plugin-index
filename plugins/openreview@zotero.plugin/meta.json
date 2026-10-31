@@ -1,0 +1,8 @@
+{
+  "id": "openreview@zotero.plugin",
+  "name": "OpenReview Fetcher",
+  "description": "A Zotero plugin to extract OpenReview comments and reviews for academic papers",
+  "homepage": "https://github.com/JPWang-OvO/OpenReview-Comments-Fetcher#readme",
+  "repoUrl": "https://github.com/JPWang-OvO/OpenReview-Fetcher",
+  "updateUrl": "https://github.com/JPWang-OvO/OpenReview-Comments-Fetcher/releases/download/release/update.json"
+}
