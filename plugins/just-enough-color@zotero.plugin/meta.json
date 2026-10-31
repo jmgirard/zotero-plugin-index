@@ -1,0 +1,8 @@
+{
+  "id": "just-enough-color@zotero.plugin",
+  "name": "Just Enough Color",
+  "description": "Just Enough Color: arbitrary-color highlights and underlines in the Zotero reader",
+  "homepage": "https://github.com/MCXCC303/just-enough-color",
+  "repoUrl": "https://github.com/MCXCC303/just-enough-color",
+  "updateUrl": "https://github.com/MCXCC303/just-enough-color/releases/download/release/update.json"
+}
