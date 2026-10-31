@@ -94,8 +94,9 @@ export interface DiscoverReadOptions {
   limit: number;
   budget: number;
   now?: Date;
-  // The catalog to read, as for discover.
+  // The catalog to read and the code searches to run, as for discover.
   catalog?: string;
+  codeSearch?: string[];
   // The index repo as owner/repo.
   indexRepo: string;
 }

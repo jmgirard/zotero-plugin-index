@@ -13,7 +13,15 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
-import { CATALOG_URL, type DiscoveryState, discover, draftEntry, type ReadItem } from "../src/discover/discover.ts";
+import {
+  CATALOG_URL,
+  CODE_SEARCHES,
+  type Clock,
+  type DiscoveryState,
+  discover,
+  draftEntry,
+  type ReadItem,
+} from "../src/discover/discover.ts";
 import { githubClient } from "../src/upstream/reader.ts";
 import { fixtureFetch, loadFixture, type Responses, type SeenRequest } from "./support/fixture-fetch.ts";
 import { pluginRepo, searchPage } from "./support/plugin-repo.ts";
@@ -76,14 +84,17 @@ interface RunOptions {
   catalog?: string;
   catalogMs?: number;
   catalogMaxBytes?: number;
+  codeSearch?: string[];
+  codeSearchMs?: number;
+  clock?: Clock;
   onRequest?: (seen: SeenRequest) => void;
 }
 
 async function runResult(responses: Responses, options: RunOptions = {}) {
   const { root = tempDir(), outDir = tempDir(), state = {}, skip = new Set<string>(), limit = 50, budget = 100, now = NOW } = options;
-  const { readMs, runMs, startedAt, refCheckMs, catalog, catalogMs, catalogMaxBytes } = options;
+  const { readMs, runMs, startedAt, refCheckMs, catalog, catalogMs, catalogMaxBytes, codeSearch, codeSearchMs, clock } = options;
   const { fetch, requests } = fixtureFetch(responses, options.onRequest);
-  const limits = { readMs, runMs, startedAt, refCheckMs, catalog, catalogMs, catalogMaxBytes };
+  const limits = { readMs, runMs, startedAt, refCheckMs, catalog, catalogMs, catalogMaxBytes, codeSearch, codeSearchMs, clock };
   const result = await discover({ root, outDir, fetch, lookup: publicLookup, state, skip, limit, budget, now, ...limits });
   return { result, requests };
 }
@@ -287,20 +298,22 @@ describe("the discovery state", () => {
   });
 });
 
+const CATALOG = "https://api.github.com/repos/example/catalog/contents/plugins.json?ref=gh-pages";
+const GRAPHQL = "POST https://api.github.com/graphql";
+const listed = (repos: unknown[]): Responses => ({ [CATALOG]: { json: repos.map((repo) => (typeof repo === "string" ? { repo } : repo)) } });
+// The GraphQL answer for the repos of one lookup request, in the order it names them:
+// a [nameWithOwner, pushedAt] pair, or null for a repo GitHub does not have.
+const found = (...repos: ([string, string | null] | null)[]) => ({
+  json: {
+    data: Object.fromEntries(
+      repos.map((repo, i) => [`r${i}`, repo && { nameWithOwner: repo[0], url: `https://github.com/${repo[0]}`, pushedAt: repo[1] }]),
+    ),
+    errors: repos.flatMap((repo, i) => (repo ? [] : [{ type: "NOT_FOUND", path: [`r${i}`], message: `Could not resolve r${i}` }])),
+  },
+});
+const lookups = (requests: SeenRequest[]) => requests.filter(({ method, url }) => method === "POST" && url.endsWith("/graphql"));
+
 describe("the catalog", () => {
-  const CATALOG = "https://api.github.com/repos/example/catalog/contents/plugins.json?ref=gh-pages";
-  const GRAPHQL = "POST https://api.github.com/graphql";
-  const listed = (repos: unknown[]): Responses => ({ [CATALOG]: { json: repos.map((repo) => (typeof repo === "string" ? { repo } : repo)) } });
-  // The GraphQL answer for the repos of one lookup request, in the order it names them:
-  // a [nameWithOwner, pushedAt] pair, or null for a repo GitHub does not have.
-  const found = (...repos: ([string, string | null] | null)[]) => ({
-    json: {
-      data: Object.fromEntries(
-        repos.map((repo, i) => [`r${i}`, repo && { nameWithOwner: repo[0], url: `https://github.com/${repo[0]}`, pushedAt: repo[1] }]),
-      ),
-      errors: repos.flatMap((repo, i) => (repo ? [] : [{ type: "NOT_FOUND", path: [`r${i}`], message: `Could not resolve r${i}` }])),
-    },
-  });
   // example/alpha carries a topic; example/listed carries none and is pushed later.
   const base = (): Responses => ({
     ...searched([["example/alpha", "2026-10-01T00:00:00Z"]]),
@@ -308,7 +321,6 @@ describe("the catalog", () => {
     ...pluginRepo("example/listed", "listed@example.org", { topics: [] }),
   });
   const withCatalog = { catalog: CATALOG };
-  const lookups = (requests: SeenRequest[]) => requests.filter(({ method, url }) => method === "POST" && url.endsWith("/graphql"));
 
   test("writes the entry of a repo that only the catalog lists, with no topic and no hold", async () => {
     const responses = { ...base(), ...listed(["example/listed"]), [GRAPHQL]: found(["example/listed", "2026-10-20T00:00:00Z"]) };
@@ -542,6 +554,123 @@ describe("the catalog", () => {
   });
 });
 
+describe("the code search", () => {
+  const codeUrl = (query: string) => `https://api.github.com/search/code?${new URLSearchParams({ q: query, per_page: "100" })}`;
+  // One code search page whose items lie in the repos named.
+  const codePage = (repos: string[]) => ({
+    json: {
+      total_count: repos.length,
+      incomplete_results: false,
+      items: repos.map((name) => ({ name: "manifest.json", path: "addon/manifest.json", repository: { full_name: name, html_url: `https://github.com/${name}` } })),
+    },
+  });
+  const searchedCode = (pages: Record<string, string[]>): Responses =>
+    Object.fromEntries(Object.entries(pages).map(([query, repos]) => [codeUrl(query), codePage(repos)]));
+  // example/alpha carries a topic; example/coded carries none and is pushed later.
+  const base = (): Responses => ({
+    ...searched([["example/alpha", "2026-10-01T00:00:00Z"]]),
+    ...pluginRepo("example/alpha", "alpha@example.org"),
+    ...pluginRepo("example/coded", "coded@example.org", { topics: [] }),
+  });
+  const withCode = { codeSearch: ["q1", "q2"] };
+
+  test("runs the five queries and writes the entry of a repo that only code search finds, with no topic and no hold", async () => {
+    const pages = Object.fromEntries(CODE_SEARCHES.map((query, i) => [query, i === 2 ? ["example/coded"] : []]));
+    const responses = { ...base(), ...searchedCode(pages), [GRAPHQL]: found(["example/coded", "2026-10-20T00:00:00Z"]) };
+    const { result, requests } = await runResult(responses, { codeSearch: CODE_SEARCHES });
+    if (!result.ok) throw new Error(result.message);
+    expect(requests.filter(({ url }) => url.includes("/search/code?")).map(({ url }) => url)).toEqual(CODE_SEARCHES.map(codeUrl));
+    expect(result.report.read).toContainEqual(
+      expect.objectContaining({ repo: "example/coded", source: "code-search", outcome: "written", id: "coded@example.org", holds: [] }),
+    );
+    expect(result.report.warnings).toEqual([]);
+  });
+
+  test.each([
+    ["the catalog and code search both name it", ["example/coded"], ["example/coded"], [found(["example/coded", "2026-10-20T00:00:00Z"])], "catalog", 1],
+    [
+      "the catalog names its old name and code search its new name",
+      ["example/old-coded"],
+      ["example/coded"],
+      [found(["example/coded", "2026-10-20T00:00:00Z"])],
+      "catalog",
+      1,
+    ],
+    [
+      "code search names its old name and the catalog its new name",
+      ["example/coded"],
+      ["example/old-coded"],
+      [found(["example/coded", "2026-10-20T00:00:00Z"]), found(["example/coded", "2026-10-20T00:00:00Z"])],
+      "catalog",
+      2,
+    ],
+    ["a topic search returns it and code search names it in other letter case", [], ["Example/ALPHA"], [], "topic", 0],
+    ["a topic search returns the name the code search lookup gives", [], ["example/old-alpha"], [found(["example/alpha", "2026-10-01T00:00:00Z"])], "topic", 1],
+    ["two queries name it in other letter case", [], ["example/coded", "Example/Coded"], [found(["example/coded", "2026-10-20T00:00:00Z"])], "code-search", 1],
+  ])("reads a repo once, with the source of the first source in the order, when %s", async (_name, catalogNames, codeNames, answers, source, lookupCount) => {
+    const responses: Responses = { ...base(), ...listed(catalogNames), ...searchedCode({ q1: codeNames.slice(0, 1), q2: codeNames.slice(1) }) };
+    for (const [i, answer] of answers.entries()) responses[`${GRAPHQL} #${i + 1}`] = answer;
+    const { result, requests } = await runResult(responses, { ...withCode, catalog: CATALOG });
+    if (!result.ok) throw new Error(result.message);
+    const repo = source === "topic" ? "example/alpha" : "example/coded";
+    expect(requests.filter(({ url }) => url === `https://api.github.com/repos/${repo}`)).toHaveLength(1);
+    expect(result.report.read.filter((item) => item.repo === repo)).toEqual([expect.objectContaining({ source })]);
+    expect(lookups(requests)).toHaveLength(lookupCount);
+    expect(result.report.warnings).toEqual([]);
+  });
+
+  describe("a code-search-only repo", () => {
+    const refusedCoded = pluginRepo("example/coded", "coded@example.org", { noRelease: true, topics: [] });
+    const responses = (pushedAt = "2026-10-20T00:00:00Z") => ({
+      ...base(),
+      ...refusedCoded,
+      ...searchedCode({ q1: ["example/coded"], q2: [] }),
+      [GRAPHQL]: found(["example/coded", pushedAt]),
+    });
+
+    test("is read before an older topic repo", async () => {
+      const { reads } = await run(responses(), withCode);
+      expect(reads).toEqual(["example/coded", "example/alpha"]);
+    });
+
+    test("is skipped as in-index, with no lookup, when an entry names it", async () => {
+      const root = tempDir();
+      mkdirSync(join(root, "coded@example.org"));
+      writeFileSync(join(root, "coded@example.org/meta.json"), JSON.stringify({ repoUrl: "https://github.com/Example/Coded" }));
+      const { result, requests } = await runResult(responses(), { ...withCode, root });
+      if (!result.ok) throw new Error(result.message);
+      expect(requests.map(({ url }) => url)).not.toContain("https://api.github.com/repos/example/coded");
+      expect(lookups(requests)).toEqual([]);
+      expect(result.report.skipped).toContainEqual({ repo: "example/coded", reason: "in-index" });
+    });
+
+    test("is skipped as in-skip-set, with no lookup, when the skip set names it", async () => {
+      const { result, requests } = await runResult(responses(), { ...withCode, skip: new Set(["example/coded"]) });
+      if (!result.ok) throw new Error(result.message);
+      expect(requests.map(({ url }) => url)).not.toContain("https://api.github.com/repos/example/coded");
+      expect(lookups(requests)).toEqual([]);
+      expect(result.report.skipped).toContainEqual({ repo: "example/coded", reason: "in-skip-set" });
+    });
+
+    test("is skipped as refused-before while its pushed_at is unchanged and its refusal is under 30 days old", async () => {
+      const first = await run(responses(), withCode);
+      expect(first.report.read).toContainEqual(expect.objectContaining({ repo: "example/coded", outcome: "refused", failure: "no-release", source: "code-search" }));
+      expect(first.state["example/coded"]).toMatchObject({ pushedAt: "2026-10-20T00:00:00Z", failure: "no-release" });
+      const later = { ...withCode, state: first.state, now: new Date(NOW.getTime() + DAY) };
+      const same = await run(responses(), later);
+      expect(same.report.skipped).toContainEqual({ repo: "example/coded", reason: "refused-before" });
+      const pushed = await run(responses("2026-10-26T00:00:00Z"), later);
+      expect(pushed.reads).toContain("example/coded");
+    });
+
+    test("is not read, with a warning, when its lookup fails", async () => {
+      const { reads, report } = await run({ ...responses(), [GRAPHQL]: { status: 502, text: "bad gateway" } }, withCode);
+      expect(report.warnings).toEqual([expect.stringMatching(/^the run reads none of 1 code-search repos from example\/coded on, since their lookup failed: .*HTTP 502/)]);
+      expect(reads).toEqual(["example/alpha"]);
+    });
+  });
+});
+
 describe("the limit and the budget", () => {
   // Seven passing repos, listed oldest first: example/p1 was pushed on day 1, example/p7 on day 7.
   const repos = [1, 2, 3, 4, 5, 6, 7].map((n): [string, string] => [`example/p${n}`, `2026-10-0${n}T00:00:00Z`]);
@@ -691,19 +820,25 @@ describe("pnpm discover", () => {
     expect(JSON.parse(readFileSync(join(cwd, "state.json"), "utf8"))).toEqual({});
   });
 
-  test("reads the zotero-chinese catalog", () => {
+  test("reads the zotero-chinese catalog and runs the five code searches", () => {
     const cwd = tempDir();
-    const listed = { nameWithOwner: "example/listed", url: "https://github.com/example/listed", pushedAt: "2026-10-20T00:00:00Z" };
+    const codeUrl = (query: string) => `https://api.github.com/search/code?${new URLSearchParams({ q: query, per_page: "100" })}`;
     const responses: Responses = {
       ...searched([]),
       ...pluginRepo("example/listed", "listed@example.org", { topics: [] }),
+      ...pluginRepo("example/coded", "coded@example.org", { topics: [] }),
       [CATALOG_URL]: { json: [{ repo: "example/listed" }] },
-      "POST https://api.github.com/graphql": { json: { data: { r0: listed } } },
+      [`${GRAPHQL} #1`]: found(["example/listed", "2026-10-20T00:00:00Z"]),
+      [`${GRAPHQL} #2`]: found(["example/coded", "2026-10-21T00:00:00Z"]),
+      ...Object.fromEntries(CODE_SEARCHES.map((query, i) => [codeUrl(query), { json: { total_count: i, items: i === 4 ? [{ repository: { full_name: "example/coded" } }] : [] } }])),
     };
     const result = pnpmDiscover(["--out", "out", "--state", "state.json"], responses, cwd);
     expect(result.status).toBe(0);
     const report = JSON.parse(result.stdout);
-    expect(report.read).toEqual([expect.objectContaining({ repo: "example/listed", outcome: "written", source: "catalog" })]);
+    expect(report.read).toEqual([
+      expect.objectContaining({ repo: "example/coded", outcome: "written", source: "code-search" }),
+      expect.objectContaining({ repo: "example/listed", outcome: "written", source: "catalog" }),
+    ]);
     expect(report.warnings).toEqual([]);
   });
 

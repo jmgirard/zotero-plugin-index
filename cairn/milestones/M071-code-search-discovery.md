@@ -1,13 +1,13 @@
 # M071: Find plugins by GitHub code search
 
-- **Status:** planned
+- **Status:** in-progress
 - **Priority:** normal
 - **Depends on:** M070
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the index's plugin list and the bot's pull request text change
-- **Branch/PR:** —
+- **Branch/PR:** m071-code-search-discovery
 
 ## Goal
 
@@ -70,7 +70,7 @@
 
 ## Tasks
 
-- [ ] T1: In `src/discover/discover.ts`, add the five queries and send their names through M070's lookup and join. Add tests for AC1 and AC4.
+- [x] T1: In `src/discover/discover.ts`, add the five queries and send their names through M070's lookup and join. Add tests for AC1 and AC4.
 - [ ] T2: Add the pacing (an injected clock), the 8-minute search cutoff, and the failure handling. Add tests for AC2 and AC3.
 - [ ] T3: Add `code-search` to `entrySchema` and to `body()`. Add the `twoStep` test of AC5.
 - [ ] T4: Add the `budget` input to `.github/workflows/discover.yml` as `${BUDGET:+--budget "$BUDGET"}`. Add the test of AC6, anchored on the run line.
@@ -88,6 +88,11 @@
 - 2026-10-31: criteria audit (full, fresh Opus reader): 10 findings on M071 taken. Join after the lookup, pacing within one run with failed requests counted and the search counted toward `runMs`, a closed failure-probe list, earlier pages kept, the lookup and order rules shared with M070, the closing line, the README section for dispatch inputs, the Known issues line, and the token wiring scoped to the discover step.
 - 2026-10-31: on 2026-10-31 the five queries returned 1,053 repos: 158 of the 273 indexed ones, 76 of the 132 that the catalog alone listed, and PMCID Fetcher. A sample of 80 of the 776 repos that neither the index nor the catalog had held 36 that passed `pnpm add-plugin`.
 - 2026-10-31: M070's catalog backfill ran after its merge: discover runs 41217007751, 41218104935, 41218886852, and 41219300884 (`limit` 100; the last wrote nothing and left 0 unread, 13 `request-failed` reads not recorded) and merge runs 41217663565, 41218591124, and 41219146743 (`wait_hours` 0) wrote 149 entries (147 from the catalog) and merged 132. The index went from 273 to 405 entries (`pnpm check` 0 problems). 35 bot pull requests stay held (name-match 17, update-host 14, new-account 3, new-account and update-host 1), and #103 has no Hold line. M071's backfill starts from this state.
+- 2026-10-31: implement started; branch m071-code-search-discovery cut from main at daafed1.
+- 2026-10-31: choice: code search runs only when `discover()` gets a `codeSearch` list (`CODE_SEARCHES`, passed by `pnpm discover`), as the catalog runs only with `catalog`, so older tests send no code search request.
+- 2026-10-31: choice: one `Clock` option (`now`, `sleep`) drives the pacing and every `runMs` check, default `performance.now()` and `setTimeout`, so the search time counts toward `runMs`; `githubClient().get` takes an optional time limit for `codeSearchMs` (default 60 s).
+- 2026-10-31: choice: a failed code search request warns and ends only its own query; the next query still runs. A name that a lookup gave is also known, so a later source's same name gets no second lookup.
+- 2026-10-31: T1 done: five queries, lookup and join, tests for AC1 and AC4 (join order shown red with two planted defects). The commit also carries T2's pacing, cutoff, and failure code and the `code-search` value in `SOURCES`, which the `Source` type needs; T2 and T3 add their tests. `pnpm test` 1713 passed, `pnpm check` 0 problems.
 
 ## Decisions
 

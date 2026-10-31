@@ -373,10 +373,11 @@ export function githubClient(fetch: Fetch) {
   const token = process.env.GITHUB_TOKEN;
   if (token) headers.authorization = `Bearer ${token}`;
 
-  // The token goes only to the API host, so a URL on another origin is refused.
-  async function get(url: string): Promise<{ body: unknown; link: string | null }> {
+  // The token goes only to the API host, so a URL on another origin is refused. The
+  // request, the body included, stops at `ms`.
+  async function get(url: string, ms = FETCH_TIMEOUT_MS): Promise<{ body: unknown; link: string | null }> {
     if (!URL.canParse(url) || new URL(url).origin !== API) fail("request-failed", `${url} is not on ${API}`);
-    const response = await request(fetch, url, { headers });
+    const response = await request(fetch, url, { headers }, ms);
     if (!response.ok) {
       fail("github-http-error", `GET ${url} returned HTTP ${response.status}`, buildLevelStatus(response.status, "github-api"));
     }
@@ -465,9 +466,9 @@ export function githubClient(fetch: Fetch) {
   };
 }
 
-async function request(fetch: Fetch, url: string, init: RequestInit = {}): Promise<Response> {
+async function request(fetch: Fetch, url: string, init: RequestInit = {}, ms = FETCH_TIMEOUT_MS): Promise<Response> {
   try {
-    return await fetch(url, { ...init, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    return await fetch(url, { ...init, signal: AbortSignal.timeout(ms) });
   } catch (error) {
     fail("request-failed", `GET ${url} failed: ${(error as Error).message}`, true);
   }
