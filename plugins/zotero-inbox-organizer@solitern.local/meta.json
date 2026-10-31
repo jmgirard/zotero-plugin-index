@@ -1,0 +1,8 @@
+{
+  "id": "zotero-inbox-organizer@solitern.local",
+  "name": "Zotero Inbox Organizer",
+  "description": "AI-assisted, preview-first organizer for the 00-Inbox collection.",
+  "homepage": "https://github.com/solitern/zotero-inbox-organizer",
+  "repoUrl": "https://github.com/solitern/zotero-inbox-organizer",
+  "updateUrl": "https://raw.githubusercontent.com/solitern/zotero-inbox-organizer/main/update.json"
+}
