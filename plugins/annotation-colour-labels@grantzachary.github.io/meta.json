@@ -1,0 +1,8 @@
+{
+  "id": "annotation-colour-labels@grantzachary.github.io",
+  "name": "Annotation Colour Labels",
+  "description": "Rename the highlight colours in the Zotero reader (e.g. Yellow → Key finding, Blue → Method). Display-only: it never alters your annotations or data.",
+  "homepage": "https://github.com/grantzachary/Zotero-highlighter",
+  "repoUrl": "https://github.com/grantzachary/Zotero-highlighter",
+  "updateUrl": "https://raw.githubusercontent.com/grantzachary/Zotero-highlighter/main/updates.json"
+}
