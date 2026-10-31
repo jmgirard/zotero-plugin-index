@@ -1,0 +1,7 @@
+{
+  "id": "citation-phoenix@michaelrisch.com",
+  "name": "citation-phoenix",
+  "description": "CSL-M module loading + Juris-M-style abbreviations for  legal citations.",
+  "repoUrl": "https://github.com/rischconsulting/citation-phoenix",
+  "updateUrl": "https://raw.githubusercontent.com/rischconsulting/citation-phoenix/main/updates.json"
+}
