@@ -1,0 +1,8 @@
+{
+  "id": "zotero-tab-manager@rg4sun.dev",
+  "name": "Zotero Tab Manager",
+  "description": "Organise Zotero reader tabs into named, coloured, collapsible groups.",
+  "homepage": "https://github.com/rg4sun/zotero-tab-manager",
+  "repoUrl": "https://github.com/rg4sun/zotero-tab-manager",
+  "updateUrl": "https://raw.githubusercontent.com/rg4sun/zotero-tab-manager/main/updates.json"
+}
