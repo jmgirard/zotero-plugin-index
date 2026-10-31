@@ -1,0 +1,8 @@
+{
+  "id": "zoteroinspire@itp.ac.cn",
+  "name": "zotero-inspire",
+  "description": "Zotero plugin with a Zotero-tailored arXiv browser and deep integration of INSPIRE-HEP",
+  "homepage": "https://github.com/fkguo/zotero-inspire#readme",
+  "repoUrl": "https://github.com/fkguo/zotero-inspire",
+  "updateUrl": "https://raw.githubusercontent.com/fkguo/zotero-inspire/main/update.json"
+}
