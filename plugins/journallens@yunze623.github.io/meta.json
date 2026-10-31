@@ -1,0 +1,8 @@
+{
+  "id": "journallens@yunze623.github.io",
+  "name": "JournalLens",
+  "description": "Follow journals inside Zotero: browse configurable recent papers, search title/abstract, recover missing abstracts, validate body/extended figures, and import by DOI.",
+  "homepage": "https://github.com/Lyz-623/JournalLens",
+  "repoUrl": "https://github.com/Lyz-623/JournalLens",
+  "updateUrl": "https://raw.githubusercontent.com/Lyz-623/JournalLens/main/updates.json"
+}
