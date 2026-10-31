@@ -1,0 +1,8 @@
+{
+  "id": "zotero-local-speech@Echo-Lian",
+  "name": "Zotero Local Speech Mode",
+  "description": "Local speech synthesis for Zotero 7+ reader with Microsoft Edge neural voices. Read PDFs aloud with natural, expressive speech.",
+  "homepage": "https://github.com/Echo-Lian/Zotero-TTS-Plugin",
+  "repoUrl": "https://github.com/Echo-Lian/Zotero-TTS-Plugin",
+  "updateUrl": "https://raw.githubusercontent.com/Echo-Lian/Zotero-TTS-Plugin/main/updates.json"
+}
