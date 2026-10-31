@@ -1,0 +1,8 @@
+{
+  "id": "causalmap@causalmap.app",
+  "name": "Causal Map for Zotero",
+  "description": "Turn a Zotero item into a Causal Map project.",
+  "homepage": "https://causalmap.app",
+  "repoUrl": "https://github.com/stevepowell99/causalmap-zotero",
+  "updateUrl": "https://github.com/stevepowell99/causalmap-zotero/releases/latest/download/update.json"
+}
