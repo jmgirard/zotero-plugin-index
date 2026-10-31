@@ -1,7 +1,7 @@
 ---
 import { knownRelease, ZOTERO_MAJORS } from "../../../src/site/version.ts";
 import Base from "../layouts/Base.astro";
-import { loadData, SUPPORT_MARKS as MARKS } from "../data.ts";
+import { BASE, CATEGORIES, loadData, SUPPORT_MARKS as MARKS } from "../data.ts";
 
 const { zoteroRelease } = loadData();
 ---
@@ -135,6 +135,23 @@ const { zoteroRelease } = loadData();
       over one for every version. The declared range uses the <code>strict_min_version</code> and{" "}
       <code>strict_max_version</code> overrides marked "yes".
     </p>
+  </section>
+  <section class="card" id="categories" data-about="categories">
+    <h2>Categories</h2>
+    <p>
+      The index sorts plugins into categories of its own, so that you can find plugins of one kind. It assigns them from
+      words in a plugin's name and descriptions, and it adds or removes some by hand. A plugin can have several
+      categories. A category can be wrong or missing, and plugin authors do not choose them.
+    </p>
+    <ul class="about-list" data-category-list>
+      {
+        CATEGORIES.map((category) => (
+          <li>
+            <a href={`${BASE}?category=${category.slug}`}>{category.name}</a>: {category.about}
+          </li>
+        ))
+      }
+    </ul>
   </section>
   <section class="card" id="not-vetted" data-about="not-vetted">
     <h2>What the index does not do</h2>

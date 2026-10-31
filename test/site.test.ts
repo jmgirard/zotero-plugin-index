@@ -425,6 +425,14 @@ describe("the plugin page", () => {
     const { upstream } = record;
     const repoUrl = upstream?.repoUrl ?? record.repoUrl;
     const github = githubRepo(repoUrl);
+    const shownCategories = CATEGORIES.filter(({ slug }) => categories(record).includes(slug)).map(
+      ({ slug, name }) => `<a href="/zotero-plugin-index/?category=${slug}" data-category="${slug}">${escaped(name)}</a>`,
+    );
+    const categoryLine =
+      shownCategories.length > 0
+        ? `<p class="categories" data-categories><a href="/zotero-plugin-index/about/#categories" data-categories-about>Index categories</a>: ` +
+          `${shownCategories.join(", ")}</p>`
+        : "";
     const stars =
       upstream?.stars !== undefined
         ? `<span aria-hidden="true">·</span><span data-repo-stars><span aria-hidden="true" title="${starsText(upstream.stars)}"><svg> ` +
@@ -436,7 +444,8 @@ describe("the plugin page", () => {
           ? `<p class="repo-line" data-repo-line>By <a href="https://github.com/${escaped(github.owner)}" data-repo-owner>${escaped(github.owner)}</a>` +
             `<span aria-hidden="true">·</span><a href="${escaped(repoUrl)}" data-repo-name>${escaped(github.repo)}</a>${stars}</p>`
           : "") +
-        (description ? `<p class="description" data-description>${escaped(description)}</p>` : ""),
+        (description ? `<p class="description" data-description>${escaped(description)}</p>` : "") +
+        categoryLine,
     );
     const repo = safeHref(repoUrl) !== undefined;
     expect(headLinks(head![2]!)).toEqual([
@@ -449,6 +458,15 @@ describe("the plugin page", () => {
         : []),
     ]);
     expect(main).not.toMatch(/<header[\s>]/);
+  });
+
+  test("lists a page's categories in list order, which need not be the order of their names, and shows no list for a plugin with none", () => {
+    const line = (id: string) => /<p class="categories" data-categories>(.*?)<\/p>/s.exec(page(id))?.[1];
+    const names = [...line("locale-plugin@example.org")!.matchAll(/data-category="[^"]*">([^<]*)</g)].map(([, name]) => name);
+    expect(names).toEqual(["Translation and dictionaries", "PDF reading"]);
+    expect(names.toSorted()).not.toEqual(names);
+    expect(line("first-plugin@example.org")).toBeUndefined();
+    expect(page("first-plugin@example.org")).not.toContain("data-categories");
   });
 
   test.each<[string, string, string, string, string, string | undefined]>([
@@ -671,8 +689,19 @@ describe("the About page", () => {
       ["reports", "User reports"],
       ["descriptions", "Descriptions"],
       ["overrides", "Overrides"],
+      ["categories", "Categories"],
       ["not-vetted", "What the index does not do"],
     ]);
+  });
+
+  test("lists every category, links each to the home page filtered by it, and says where categories come from", () => {
+    const section = /<section class="card" id="categories" data-about="categories">(.*?)<\/section>/s.exec(about());
+    expect(section).not.toBeNull();
+    const links = [...section![1]!.matchAll(/<li><a href="([^"]*)">([^<]*)<\/a>: ([^<]*)<\/li>/g)].map(([, href, name, text]) => [href, unescaped(name!), unescaped(text!)]);
+    expect(links).toEqual(CATEGORIES.map(({ slug, name, about }) => [`/zotero-plugin-index/?category=${slug}`, name, about]));
+    const text = mainText(about());
+    expect(text).toContain("It assigns them from words in a plugin's name and descriptions, and it adds or removes some by hand.");
+    expect(text).toContain("A category can be wrong or missing, and plugin authors do not choose them.");
   });
 
   test("names each declared mark and says that a range is not a test result", () => {
