@@ -1,0 +1,8 @@
+{
+  "id": "make-it-red@example.com",
+  "name": "Zotero Clock",
+  "description": "Zotero Clock & Timer",
+  "homepage": "https://github.com/xcjames/zotero_timer",
+  "repoUrl": "https://github.com/xcjames/zotero_timer",
+  "updateUrl": "https://zotero-download.s3.amazonaws.com/tmp/make-it-red/updates-2.0.json"
+}
