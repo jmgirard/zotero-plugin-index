@@ -846,7 +846,7 @@ describe("the code search", () => {
       expect(searchWarnings(result.report.warnings)).toEqual([`the code search for q1 read 0 pages and stopped, since its request failed: GET ${pageUrl("q1", 1)} returned HTTP ${status}`]);
     });
 
-    test("sends no request for a wait that would end 8 minutes or more after the run starts, then reads the candidates", async () => {
+    test("sends no request for a wait that holds the next request to 8 minutes or more after the run starts, then reads the candidates", async () => {
       const clock = fakeClock();
       const responses = {
         ...base(),

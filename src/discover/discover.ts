@@ -474,7 +474,8 @@ async function readCatalog(fetch: Fetch, url: string, max: number, ms: number, w
 
 // The owner/repo names that the code searches return, paging through each query. A request
 // waits until the last CODE_SEARCH_WINDOW_MS holds fewer than CODE_SEARCH_RATE of them. A
-// failed request, or a page with no list of items, warns and stops its query, and the run
+// failed request, or a page with no list of items, warns and stops its query, except that a
+// page refused with HTTP 403 or 429 and a named wait is sent once more first, and the run
 // keeps the names of its earlier pages and goes on to the next query. So does a request that
 // could not be sent before CODE_SEARCH_CUTOFF_MS after `startedAt`. Queries that all finish
 // with no item warn once, since a token that cannot see the code index can get empty pages.
@@ -487,8 +488,8 @@ async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings:
   const sent: number[] = [];
   let items = 0;
   let stopped = false;
-  // The wall time before which no query sends a request: 1 second after the end of the
-  // latest wait an answer named. GitHub's window ends at the second its reset names, which
+  // The wall time before which no query sends a request: 1 second after the latest end of
+  // any wait an answer named. GitHub's window ends at the second its reset names, which
   // can be later than 60 seconds after the window's first request.
   let holdUntil = 0;
   const hold = (rateLimit: RateLimit | undefined) => {
