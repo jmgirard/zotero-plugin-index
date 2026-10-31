@@ -1,0 +1,8 @@
+{
+  "id": "wo-yao-yan-pai@fish.com",
+  "name": "LLM-Gen JSON DOIs Importer",
+  "description": "Batch import DOIs from LLM-generated JSON and visually detect title hallucinations.",
+  "homepage": "https://github.com/SeanComeOn/zotero7_json_importer_checker",
+  "repoUrl": "https://github.com/SeanComeOn/zotero7_json_importer_checker",
+  "updateUrl": "https://seancomeon.github.io/zotero7_json_importer_checker/updates.json"
+}
