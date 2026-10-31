@@ -1,0 +1,7 @@
+{
+  "id": "zotero-storage-cleaner@grainrainandy.github.io",
+  "name": "Zotero Storage Cleaner",
+  "description": "Finds storage folders no longer referenced by the Zotero database and moves them to a recoverable quarantine.",
+  "repoUrl": "https://github.com/GrainRainAndy/zotero-storage-cleaner",
+  "updateUrl": "https://raw.githubusercontent.com/GrainRainAndy/zotero-storage-cleaner/main/updates.json"
+}
