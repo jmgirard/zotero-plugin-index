@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Runs actions on Zotero events or shortcuts: tags items automatically, or runs custom scripts such as replacing tags, copying item links, and writing a note when an item opens.",
+      "reason": "Condensed from the \"What is this?\" section of README.md. The manifest description, \"Action it, tag it, sorted.\", and the GitHub About text, \"Customize your Zotero workflow.\", are both in English and have fewer than six words."
+    }
+  ]
 }

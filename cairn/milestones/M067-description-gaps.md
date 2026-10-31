@@ -103,7 +103,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - [ ] T3: Run `pnpm description-gaps` over the shelf copy. Write `cairn/references/description-ledger.md` from the
       synthesis template, with an `INDEX.md` line, and read each listed plugin's README to set its disposition.
 - [x] T4: Overrides for the missing, CJK, and Portuguese rows, in the reason form of the M055 overrides.
-- [ ] T5: Overrides for the short rows. Zotgit and ZotMoov share one text, and each gets its own override.
+- [x] T5: Overrides for the short rows. Zotgit and ZotMoov share one text, and each gets its own override.
 - [x] T6: Docs: DESIGN item 3 and the description paragraph, README, the About page, both schema prose spots, and
       CHANGELOG. Find split phrases with a joined copy, and keep added lines within 80 columns.
 - [ ] T7: Run `pnpm description-gaps` over the shelf copy again and check its output against the ledger's kept
@@ -133,6 +133,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 - 2026-10-31: T6 done ahead of T3 to T5, while two Opus subagents drafted overrides from the READMEs: DESIGN item 3, the description paragraph, and the site-build bullet; README's description rule, override bullet and reason, and a new "Finding description gaps" section; About Descriptions and Overrides; both schema prose spots; one CHANGELOG entry. A joined-copy grep finds the short case and the rule in each named doc. pnpm test and pnpm check pass.
 - 2026-10-31: delegation: two Opus subagents read the READMEs of the 31 ledger rows (28 gap lines plus 3 Portuguese) and drafted value, source, and reason for each; all 31 override, none kept. Checked here: each quoted upstream text against the shelf copy, each case, and each value's word count (27 to 37). Reworded 3 values (zoterotag's "Automates your workflow", two semicolon joins).
 - 2026-10-31: T4 done: 14 `description` overrides with no `version` (1 missing, 10 cjk, 3 Portuguese), each file byte-equal to the checked draft.
+- 2026-10-31: T5 done: 17 short-case overrides, each byte-equal to the checked draft; zotgit and zotmoov each have their own text. `pnpm description-gaps` over the shelf copy now prints 0 gaps, and pnpm check passes. T3's ledger comes next, written from the T2 run and these dispositions.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->

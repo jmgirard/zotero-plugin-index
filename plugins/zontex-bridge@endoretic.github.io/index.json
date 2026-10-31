@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Companion to the Zontex plugin for Codex that adds Zotero features the Local API lacks: colored tags, CSL style management, Reader context and navigation, item merging, and experimental PDF annotations.",
+      "reason": "Condensed from the English section (What is Zontex?, Architecture) of README.md. The manifest description, \"Support component for Zontex.\", is in English and has fewer than six words, and the GitHub About text is in English and not shown."
+    }
+  ]
 }

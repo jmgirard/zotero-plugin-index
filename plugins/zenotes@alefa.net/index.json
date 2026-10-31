@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Shows notes and annotations in editable tables for literature reviews: one table per collection with tags as columns, plus translation, AI prompts, Tesseract OCR, and export to DOCX, XLSX, HTML, or Markdown.",
+      "reason": "Condensed from the \"What is Ze Notes?\" section of README.md. The manifest description, \"Advanced notes manager\", is in English and has fewer than six words, and the GitHub About text is in English and not shown."
+    }
+  ]
 }

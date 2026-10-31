@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Shows PDFs in the Zotero reader in bionic reading mode, which bolds the first letters of each word to guide the eye. The View menu turns the mode on and off.",
+      "reason": "Condensed from the \"What is this?\" and \"Quick start\" sections of README.md. The manifest description and the GitHub About text, both \"Bionic reading experience with Zotero.\", are in English and have fewer than six words."
+    }
+  ]
 }

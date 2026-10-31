@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Manages attachments: moves or copies imported attachments into a custom folder automatically or by right-click, deletes linked files when items are deleted, and attaches the last modified file in a folder to an item.",
+      "reason": "Condensed from the feature list of README.md. The manifest description, \"Mooves attachments and links them\", is in English and has fewer than six words, and the GitHub About text, \"Zotero plugin to automatically move attachments and link them\", is in English and not shown."
+    }
+  ]
 }

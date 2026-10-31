@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Fetches citation counts from Crossref, INSPIRE-HEP, and Semantic Scholar, automatically for new items or on demand from the right-click menu, and shows them in a sortable Citations column.",
+      "reason": "Condensed from the opening paragraph and feature list of README.md. The manifest description, \"Fetch and display citation counts\", is in English and has fewer than six words, and the GitHub About text, \"A Zotero plugin to fetch and display citation counts.\", is in English and not shown."
+    }
+  ]
 }

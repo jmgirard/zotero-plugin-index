@@ -1,3 +1,10 @@
 {
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "field": "description",
+      "value": "Keeps Zotero from closing by accident: the close button and the Ctrl/Command+W, Ctrl+Q, and Alt+F4 shortcuts minimize Zotero instead, with an optional confirmation dialog before exit.",
+      "reason": "Condensed from the opening paragraph and Usage section of README.md. The manifest description, \"Keep Zotero from accidental close\", is in English and has fewer than six words, and the GitHub About text is in English and not shown."
+    }
+  ]
 }
