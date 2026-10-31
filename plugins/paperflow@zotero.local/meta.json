@@ -1,0 +1,8 @@
+{
+  "id": "paperflow@zotero.local",
+  "name": "Paper Flow",
+  "description": "Zotero plugin for automatically pushing papers through Paper Flow into Notion reading guides.",
+  "homepage": "https://github.com/LockFaiz/paper-notion-flow#readme",
+  "repoUrl": "https://github.com/LockFaiz/paper-notion-flow",
+  "updateUrl": "https://github.com/LockFaiz/paper-notion-flow/releases/latest/download/update.json"
+}
