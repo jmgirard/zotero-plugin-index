@@ -1,0 +1,7 @@
+{
+  "id": "babeldoc-for-zotero@veiluna.github.io",
+  "name": "BabelDOC for Zotero",
+  "description": "Translate PDF attachments into Simplified Chinese while preserving layout.",
+  "repoUrl": "https://github.com/Veiluna/babeldoc-for-zotero",
+  "updateUrl": "https://github.com/Veiluna/babeldoc-for-zotero/releases/download/release/updates.json"
+}
