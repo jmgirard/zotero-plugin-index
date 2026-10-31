@@ -3,6 +3,10 @@ import { type Fetch, githubClient } from "../upstream/reader.ts";
 // The GitHub topics that discovery searches.
 export const TOPICS = ["zotero-plugin", "zotero-addon"];
 
+// How discover found a repo. A repo that several sources name takes the first in this order.
+export const SOURCES = ["topic", "catalog"] as const;
+export type Source = (typeof SOURCES)[number];
+
 // Why the bot holds a pull request for the maintainer instead of letting
 // `pnpm merge-discover` merge it, in the order a `holds` list gives them.
 export const HOLD_REASONS = ["name-match", "owner-unread", "new-account", "update-host", "issue-no-topic"] as const;

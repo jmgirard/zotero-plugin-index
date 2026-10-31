@@ -566,13 +566,39 @@ pnpm discover
 ```
 
 The command searches for repositories with the topic `zotero-plugin` or
-`zotero-addon`. It leaves out each repository that an entry already names. It
-reads the other repositories in the same way as `pnpm add-plugin`, the newest
-pushed first. It writes the entries of at most 5 repositories that pass the
-inclusion bar under `plugins/`, and it reads at most 100 repositories. To
+`zotero-addon`. It also reads the
+[zotero-chinese plugin catalog](https://github.com/zotero-chinese/zotero-plugins),
+a list of plugins that its maintainers add by hand. It reads the list from
+the file `plugins.json` on the catalog's `gh-pages` branch, through the
+GitHub API. Some repositories in the catalog are not in the topic search.
+For each of them, the command asks the GitHub GraphQL API for the current
+name and the time of the last push. One request asks about at most 100
+repositories. This lookup needs the `GITHUB_TOKEN` environment variable.
+The command leaves out each repository that an entry already names. It
+reads the other repositories in the same way as `pnpm add-plugin`, the
+newest pushed first. It writes the entries of at most 5 repositories that
+pass the inclusion bar under `plugins/`, and it reads at most 100
+repositories. To
 change these numbers, add `--limit <n>` or `--budget <n>`. To write the
 entries in another directory, add `--out <dir>`. The command prints a JSON
 report that names each repository that it wrote, refused, or skipped.
+
+If the read of the catalog fails, the report gets a warning, and the
+command reads the repositories of the topic search. These cause the read to
+fail:
+
+- a failed connection or an HTTP error answer
+- a body that is not a JSON list, or a body larger than 8 MiB
+- a read longer than 60 seconds
+
+A catalog item whose `repo` is not an owner/repo name gets a warning, and
+the command skips it. The report names at most 10 such items and counts
+the rest. If a lookup request fails, the report gets one warning. The
+command then looks up no more repositories, and it reads none of the
+repositories that it did not look up. Without `GITHUB_TOKEN`, the first lookup request fails, so the
+command reads no repository that only the catalog names. A repository that GitHub does not have, or that has no last
+push, also gets a warning, and the command does not read it. A failed topic
+search still ends the run before any read.
 
 The command also refuses a plugin that the bot cannot propose, with the
 failure name `not-proposable`. Some examples:
@@ -590,8 +616,10 @@ error, such as a rate limit, or a failed request. It also does not record an
 HTTP 429 or 5xx answer to the download of the XPI or the `update.json`, after
 any redirects. Nor does it record a 403 answer to a download that requested
 a GitHub release download URL, as "Building the data" defines it. Such a
-repository is read again on the next run. To use
-another file, add `--state <file>`.
+repository is read again on the next run. If a run does not find a refused
+repository, the file still keeps its record until 30 days after the
+refusal. So a failed catalog read loses no record that makes a run skip a
+repository. To use another file, add `--state <file>`.
 
 The command gives each repository read 3 minutes, as `pnpm build` does. If a
 read takes longer, the command stops it and refuses the repository with
@@ -652,7 +680,8 @@ exit status and the output of `pnpm check` on the new entry. If the output
 is longer than 10,000 characters, the body quotes only its first 10,000
 characters and says that the output is cut. The body also gives the
 repository URL, the plugin version, and the declared range of Zotero
-versions.
+versions. Its first sentence says how the bot found the repository: by its
+GitHub topic, in the zotero-chinese plugin catalog, or from an issue.
 
 The body also has a Hold line. The read job reads the hold reasons of each
 entry, and the line names them, or says `Hold: none`. An entry has these
@@ -670,7 +699,9 @@ reasons, in this order:
 - `update-host`: the host of the manifest's `update_url`, with any port other
   than the default one, is not `github.com` or `raw.githubusercontent.com`.
 - `issue-no-topic`: an issue proposed the repository, and it has neither the
-  topic `zotero-plugin` nor `zotero-addon`.
+  topic `zotero-plugin` nor `zotero-addon`. A repository that
+  `pnpm discover` finds in the catalog never gets this hold, since no issue
+  proposed it.
 
 A held pull request also gets the label `hold`, and the maintainer merges or
 closes it. If the label request fails, `pnpm propose` names the pull request

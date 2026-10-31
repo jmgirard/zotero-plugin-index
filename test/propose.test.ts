@@ -81,7 +81,7 @@ function logged(path: string): { method: string; url: string; body?: string }[] 
 
 // Runs the read step and then the write step in-process against `responses`, through a
 // handoff written to disk, with a check that always passes unless one is given.
-async function twoStep(responses: Responses, gitDir = tempDir(), check?: CheckRunner, root = tempDir(), gitMs?: number) {
+async function twoStep(responses: Responses, gitDir = tempDir(), check?: CheckRunner, root = tempDir(), gitMs?: number, catalog?: string) {
   const { fetch, requests } = fixtureFetch(responses);
   const handoff = tempDir();
   const read = await discoverRead({
@@ -94,6 +94,7 @@ async function twoStep(responses: Responses, gitDir = tempDir(), check?: CheckRu
     budget: 100,
     now: NOW,
     indexRepo: "example/index",
+    catalog,
   });
   if (!read.ok) return { read, posts: requests.filter(({ method }) => method === "POST"), requests };
   const written = read.report.read.filter((item): item is Written => item.outcome === "written");
@@ -215,6 +216,21 @@ describe("proposing pull requests", () => {
     expect(sent).toContain(`\`\`\`\`\n${output}\`\`\`\``);
   });
 
+  test("the body names how the bot found the repo, and every body closes with the same line", () => {
+    const entry: Written = { repo: "example/x", repoUrl: "https://github.com/example/x", outcome: "written", id: "x@example.org", dir: "/tmp/x", version: "2.0", holds: [] };
+    const checked = { status: 0, output: "checked 1 entries in /tmp/x, 0 problems\n" };
+    const closing = "If this pull request is closed without a merge, the bot does not propose this repo again, from discovery or from an issue.";
+    const bodies = {
+      topic: body({ ...entry, source: "topic" }, checked),
+      catalog: body({ ...entry, source: "catalog" }, checked),
+      issue: body(entry, checked, 7),
+    };
+    expect(bodies.topic).toMatch(/^The discovery bot found https:\/\/github\.com\/example\/x by its GitHub topic and drafted/);
+    expect(bodies.catalog).toMatch(/^The discovery bot found https:\/\/github\.com\/example\/x in the \[zotero-chinese plugin catalog\]/);
+    expect(bodies.issue).toMatch(/^The discovery bot read https:\/\/github\.com\/example\/x from issue #7 and drafted/);
+    for (const sent of Object.values(bodies)) expect(sent.endsWith(`\n${closing}`)).toBe(true);
+  });
+
   test("the body keeps a manifest value with a blank line inside one code span", () => {
     const sent = body(
       { repo: "example/x", repoUrl: "https://github.com/example/x", outcome: "written", id: "x@example.org", dir: "/tmp/x", version: "2.0\n\n@someone", holds: [] },
@@ -269,6 +285,26 @@ describe("the Hold line and the hold label", () => {
     ...pluginRepo("example/held", "held@example.org", { ownerCreatedAt: "2026-10-20T12:00:00Z", updateHost: "updates.example.org" }),
     [`POST ${PULLS}`]: created,
   };
+
+  test("a catalog entry's body says the bot found the repo in the catalog", async () => {
+    const catalog = "https://api.github.com/repos/example/catalog/contents/plugins.json?ref=gh-pages";
+    const listed = { nameWithOwner: "example/listed", url: "https://github.com/example/listed", pushedAt: "2026-10-20T00:00:00Z" };
+    const responses: Responses = {
+      ...indexRepo,
+      ...searched([]),
+      ...pluginRepo("example/listed", "listed@example.org", { topics: [] }),
+      [catalog]: { json: [{ repo: "example/listed" }] },
+      "POST https://api.github.com/graphql": { json: { data: { r0: listed } } },
+      [`POST ${PULLS}`]: created,
+    };
+    const { result, posts } = await twoStep(responses, checkout().work, undefined, undefined, undefined, catalog);
+    if (!result?.ok) throw new Error(JSON.stringify(result));
+    const sent = JSON.parse(posts.find(({ url }) => url === PULLS)!.body!).body as string;
+    expect(sent).toMatch(
+      /^The discovery bot found https:\/\/github\.com\/example\/listed in the \[zotero-chinese plugin catalog\]\(https:\/\/github\.com\/zotero-chinese\/zotero-plugins\) and drafted/,
+    );
+    expect(sent).toContain("\nHold: none\n");
+  });
 
   test("an entry with no hold reason gets Hold: none and the merge sentence, and no label request", async () => {
     const { result, posts } = await twoStep({ ...indexRepo, ...passing(["alpha"]), [`POST ${PULLS}`]: created }, checkout().work);

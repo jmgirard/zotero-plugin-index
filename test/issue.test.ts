@@ -477,7 +477,7 @@ describe("pnpm discover-issue --handoff then pnpm propose", () => {
     expect(writes(requestLog)).toEqual([{ method: "POST", url: COMMENTS, body: expect.stringMatching(/git push failed: .*refused by the test hook/s) }]);
   });
 
-  test("the read step writes the entry's hold reasons in the plan", () => {
+  test("the read step writes the entry's hold reasons in the plan, and no source", () => {
     const responses = {
       ...indexRepo,
       ...pluginRepo("example/alpha", "alpha@example.org", { topics: [] }),
@@ -488,6 +488,7 @@ describe("pnpm discover-issue --handoff then pnpm propose", () => {
     expect(read.status).toBe(0);
     const plan = JSON.parse(readFileSync(join(handoff, "plan.json"), "utf8"));
     expect([plan.outcome, plan.entry.holds]).toEqual(["entry", ["issue-no-topic"]]);
+    expect(plan.entry).not.toHaveProperty("source");
   });
 
   test("comments that the bot could not finish, leaves the issue open, and exits 1 when the read step left no handoff", () => {

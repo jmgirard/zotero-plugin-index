@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- `pnpm discover` also reads the repositories that the zotero-chinese plugin
+  catalog lists, so a plugin whose repository has neither topic can reach
+  the index. It looks up each such repository's current name and last push
+  with the GitHub GraphQL API, which needs `GITHUB_TOKEN`. A failed catalog
+  read or lookup adds a warning to the report, and the run reads the other
+  repositories. A bot pull request says how the bot found the repository,
+  and a repository that the bot finds in the catalog gets no
+  `issue-no-topic` hold. If a run does not find a refused repository, the
+  state file still keeps its record until 30 days after the refusal.
 - If the data that the daily build's site job downloads differs from the
   data that the build job wrote, the daily build deploys nothing. The site
   job compares the two with the new `pnpm data-digest` command, as the

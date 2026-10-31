@@ -6,7 +6,7 @@ import type { Lookup } from "../upstream/host-guard.ts";
 import { type Failure, type Fetch, githubClient, ReadFailure, readUpstream } from "../upstream/reader.ts";
 import { duration, READ_LIMIT_MS, withinLimit } from "../upstream/time-limit.ts";
 import { plannedProblem } from "./handoff.ts";
-import { type HoldReason, holdReasons, type IndexedName, ownerCreatedAt, TOPICS } from "./holds.ts";
+import { type HoldReason, holdReasons, type IndexedName, ownerCreatedAt, type Source, TOPICS } from "./holds.ts";
 
 const API = "https://api.github.com";
 // GitHub's repository search returns at most this many results for one query.
@@ -16,6 +16,21 @@ const RECHECK_MS = 30 * 24 * 60 * 60 * 1000;
 // The time after which a run starts no repo read. The discover job stops at 30 minutes,
 // so this leaves time to write the state and for the steps around it.
 export const RUN_LIMIT_MS = 18 * 60 * 1000;
+
+// The zotero-chinese plugin catalog, a JSON list of objects whose `repo` is owner/repo.
+// Its maintainers add plugins by hand. It is read from the contents API, so the token
+// goes only to the API host.
+export const CATALOG_URL = `${API}/repos/zotero-chinese/zotero-plugins/contents/plugins.json?ref=gh-pages`;
+export const CATALOG_MAX_BYTES = 8 * 1024 * 1024;
+export const CATALOG_MS = 60 * 1000;
+// A repo name that GitHub allows. A catalog item whose `repo` does not match is skipped.
+const REPO_NAME = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+// A state key: a lowercase owner/repo. A record under any other key is dropped.
+const STATE_KEY = /^[a-z0-9_.-]+\/[a-z0-9_.-]+$/;
+// The most catalog items with no usable name that the report names; it counts the rest.
+const ITEM_WARNINGS_MAX = 10;
+// The most repos that one GraphQL lookup request names.
+const LOOKUP_BATCH = 100;
 
 export type DiscoveryFailure = Failure | Extract<WriteResult, { ok: false }>["failure"] | "not-proposable" | "unexpected-error";
 
@@ -40,6 +55,8 @@ export type ReadItem =
   | {
       repo: string;
       repoUrl: string;
+      // Set by discover. An issue run's entry has none.
+      source?: Source;
       outcome: "written";
       id: string;
       dir: string;
@@ -48,7 +65,7 @@ export type ReadItem =
       strictMaxVersion?: string;
       holds: HoldReason[];
     }
-  | { repo: string; repoUrl: string; outcome: "refused"; failure: DiscoveryFailure; message: string };
+  | { repo: string; repoUrl: string; source: Source; outcome: "refused"; failure: DiscoveryFailure; message: string };
 
 export interface SkippedItem {
   repo: string;
@@ -88,6 +105,11 @@ export interface DiscoverOptions {
   startedAt?: number;
   // The longest the branch-name check of a drafted entry may take.
   refCheckMs?: number;
+  // The catalog to read beside the topic searches, such as CATALOG_URL; none when unset.
+  // Its read stops at `catalogMs` and at `catalogMaxBytes`.
+  catalog?: string;
+  catalogMs?: number;
+  catalogMaxBytes?: number;
 }
 
 export type DiscoverResult = { ok: true; state: DiscoveryState; report: Report } | { ok: false; message: string };
@@ -96,13 +118,16 @@ interface Candidate {
   repo: string;
   repoUrl: string;
   pushedAt: string;
+  source: Source;
 }
 
-// Searches both topics and reads each repo the index does not have, newest pushed first,
-// until it has written `limit` entries, read `budget` repos, or passed `runMs`. A failed
-// search ends the run before any read. The input state is not changed; the result carries
-// the new one, which keeps records only for repos that the search found and the index
-// lacks.
+// Searches both topics, adds the repos of the catalog when `catalog` is set, and reads
+// each repo the index does not have, newest pushed first, until it has written `limit`
+// entries, read `budget` repos, or passed `runMs`. A failed topic search ends the run
+// before any read; a failed catalog read or lookup only warns. The input state is not
+// changed; the result carries the new one, which keeps each record whose repo the index
+// lacks and that the run found or whose refusal is under 30 days old, so a repo that one
+// run does not find, such as one whose source failed, keeps its record.
 export async function discover(options: DiscoverOptions): Promise<DiscoverResult> {
   const { root, outDir, fetch, lookup, skip, limit, budget, now = new Date() } = options;
   const { readMs = READ_LIMIT_MS, runMs = RUN_LIMIT_MS, startedAt = 0, refCheckMs } = options;
@@ -120,14 +145,35 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
   } catch (error) {
     return { ok: false, message: `cannot read ${root}: ${(error as Error).message}` };
   }
-  const state: DiscoveryState = {};
-  for (const { repo } of candidates) {
-    if (options.state[repo] && !index.repos.has(repo)) state[repo] = options.state[repo];
+  const skipped: SkippedItem[] = [];
+  if (options.catalog !== undefined) {
+    const { catalog, catalogMs = CATALOG_MS, catalogMaxBytes = CATALOG_MAX_BYTES } = options;
+    // A name that a topic search returned needs no lookup, nor does one that an entry or
+    // the skip set names, which the run skips.
+    const known = new Set(candidates.map(({ repo }) => repo));
+    const names: string[] = [];
+    for (const name of await readCatalog(fetch, catalog, catalogMaxBytes, catalogMs, warnings)) {
+      const repo = name.toLowerCase();
+      if (known.has(repo)) continue;
+      known.add(repo);
+      if (index.repos.has(repo)) skipped.push({ repo, reason: "in-index" });
+      else if (skip.has(repo)) skipped.push({ repo, reason: "in-skip-set" });
+      else names.push(name);
+    }
+    candidates = joinCandidates(candidates, await lookUp(fetch, names, "catalog", warnings, { runMs, startedAt }));
   }
-  const report: Report = { read: [], skipped: [], unread: 0, warnings };
+  // No prototype, so a key such as `__proto__` from the state file stays an own key.
+  const state: DiscoveryState = Object.create(null);
+  const found = new Set(candidates.map(({ repo }) => repo));
+  for (const [repo, record] of Object.entries(options.state)) {
+    if (!STATE_KEY.test(repo) || typeof record !== "object" || record === null) continue;
+    const age = now.getTime() - Date.parse(record.checkedAt);
+    if (!index.repos.has(repo) && (found.has(repo) || (age >= 0 && age < RECHECK_MS))) state[repo] = record;
+  }
+  const report: Report = { read: [], skipped, unread: 0, warnings };
   let written = 0;
 
-  for (const [at, { repo, repoUrl, pushedAt }] of candidates.entries()) {
+  for (const [at, { repo, repoUrl, pushedAt, source }] of candidates.entries()) {
     if (written >= limit || report.read.length >= budget) {
       report.unread = candidates.length - at;
       break;
@@ -166,7 +212,7 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
     if (!drafted.ok) {
       const { failure, message } = drafted;
       if (drafted.recorded) state[repo] = { pushedAt, failure, checkedAt: now.toISOString() };
-      report.read.push({ repo, repoUrl, outcome: "refused", failure, message });
+      report.read.push({ repo, repoUrl, source, outcome: "refused", failure, message });
       continue;
     }
     const { id, dir, version, strictMinVersion, strictMaxVersion, holds } = drafted;
@@ -176,7 +222,7 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
     // The name and URL that draftEntry checked, which can differ from the search
     // result's after a rename.
     const read = { repo: repoName(drafted.repoUrl) ?? repo, repoUrl: drafted.repoUrl };
-    report.read.push({ ...read, outcome: "written", id, dir, version, strictMinVersion, strictMaxVersion, holds });
+    report.read.push({ ...read, source, outcome: "written", id, dir, version, strictMinVersion, strictMaxVersion, holds });
   }
   return { ok: true, state, report };
 }
@@ -321,12 +367,128 @@ async function search(fetch: Fetch, warnings: string[]): Promise<Candidate[]> {
           continue;
         }
         const repo = name.toLowerCase();
-        if (!found.has(repo)) found.set(repo, { repo, repoUrl, pushedAt });
+        if (!found.has(repo)) found.set(repo, { repo, repoUrl, pushedAt, source: "topic" });
       }
       next = /<([^>]+)>;\s*rel="next"/.exec(link ?? "")?.[1];
     }
   }
-  return [...found.values()].sort((a, b) => Date.parse(b.pushedAt) - Date.parse(a.pushedAt) || a.repo.localeCompare(b.repo));
+  return newestFirst([...found.values()]);
+}
+
+function newestFirst(candidates: Candidate[]): Candidate[] {
+  return candidates.sort((a, b) => Date.parse(b.pushedAt) - Date.parse(a.pushedAt) || a.repo.localeCompare(b.repo));
+}
+
+// Adds the repos that another source found to `candidates`, keyed by the lowercase name
+// that the lookup returned, so a repo that a source earlier in the order names keeps that
+// source.
+function joinCandidates(candidates: Candidate[], found: Candidate[]): Candidate[] {
+  const joined = new Map(candidates.map((candidate) => [candidate.repo, candidate]));
+  for (const candidate of found) if (!joined.has(candidate.repo)) joined.set(candidate.repo, candidate);
+  return newestFirst([...joined.values()]);
+}
+
+// The owner/repo names that the catalog lists. A failed read warns and gives no names, and
+// an item with no usable name warns and is skipped.
+async function readCatalog(fetch: Fetch, url: string, max: number, ms: number, warnings: string[]): Promise<string[]> {
+  let items: unknown;
+  try {
+    const text = await githubClient(fetch).raw(url, max, ms);
+    try {
+      items = JSON.parse(text);
+    } catch (error) {
+      throw new ReadFailure("request-failed", `GET ${url} returned a body that is not JSON: ${(error as Error).message}`);
+    }
+    if (!Array.isArray(items)) throw new ReadFailure("request-failed", `GET ${url} returned a body that is not a list`);
+  } catch (error) {
+    if (!(error instanceof ReadFailure)) throw error;
+    warnings.push(`the run reads no repo from the catalog, since its read failed: ${error.message}`);
+    return [];
+  }
+  const names: string[] = [];
+  let unnamed = 0;
+  for (const [at, item] of items.entries()) {
+    const repo = typeof item === "object" && item !== null ? (item as { repo?: unknown }).repo : undefined;
+    if (typeof repo === "string" && REPO_NAME.test(repo)) {
+      names.push(repo);
+    } else if (++unnamed <= ITEM_WARNINGS_MAX) {
+      warnings.push(`catalog item ${at} has no owner/repo name, so the run skips it: ${JSON.stringify(item)?.slice(0, 200)}`);
+    }
+  }
+  if (unnamed > ITEM_WARNINGS_MAX) {
+    warnings.push(`${unnamed - ITEM_WARNINGS_MAX} more catalog items have no owner/repo name, so the run skips them`);
+  }
+  return names;
+}
+
+interface LookupAnswer {
+  data?: Record<string, { nameWithOwner?: unknown; url?: unknown; pushedAt?: unknown } | null> | null;
+  errors?: { type?: unknown; path?: unknown; message?: unknown }[];
+}
+
+// Asks GitHub's GraphQL API for the current name, URL, and pushed_at of each repo named,
+// LOOKUP_BATCH repos to a request. The names go in as variables, so no name changes the
+// query. A repo that GitHub does not have, one with no pushed_at, and each repo of a
+// failed request get no candidate. A failed request gets one warning for all its repos,
+// and each other such repo one warning.
+async function lookUp(fetch: Fetch, names: string[], source: Source, warnings: string[], limit: { runMs: number; startedAt: number }): Promise<Candidate[]> {
+  const github = githubClient(fetch);
+  const unique = [...new Map(names.map((name) => [name.toLowerCase(), name])).values()];
+  const found: Candidate[] = [];
+  for (let start = 0; start < unique.length; start += LOOKUP_BATCH) {
+    // The run's time limit also ends the lookups, so the run still saves its state in time.
+    if (performance.now() - limit.startedAt >= limit.runMs) {
+      warnings.push(`the run looks up no ${source} repo after ${duration(limit.runMs)}, its time limit, so it does not read ${unique.length - start} of them`);
+      break;
+    }
+    const batch = unique.slice(start, start + LOOKUP_BATCH);
+    const variables: Record<string, string> = {};
+    const fields = batch.map((name, i) => {
+      [variables[`o${i}`], variables[`n${i}`]] = name.split("/");
+      return `r${i}: repository(owner: $o${i}, name: $n${i}) { nameWithOwner url pushedAt }`;
+    });
+    const declared = batch.map((_, i) => `$o${i}: String!, $n${i}: String!`).join(", ");
+    const query = `query(${declared}) { ${fields.join(" ")} }`;
+    // A failed request, such as one with no token or past a rate limit, ends the lookups,
+    // since the next request would most likely fail the same way.
+    const failed = (why: string) =>
+      warnings.push(`the run reads none of ${unique.length - start} ${source} repos from ${batch[0]} on, since their lookup failed: ${why}`);
+    let answer: LookupAnswer;
+    try {
+      answer = (await github.post(`${API}/graphql`, { query, variables })) as LookupAnswer;
+    } catch (error) {
+      if (!(error instanceof ReadFailure)) throw error;
+      failed(error.message);
+      break;
+    }
+    const errors = Array.isArray(answer?.errors) ? answer.errors : [];
+    const data = answer?.data;
+    if (typeof data !== "object" || data === null) {
+      failed(`the answer has no data${errors.length ? `: ${errors.map((error) => String(error?.message)).join("; ")}` : ""}`);
+      break;
+    }
+    for (const [i, name] of batch.entries()) {
+      const repo = data[`r${i}`];
+      if (repo === null || repo === undefined) {
+        // An error with no path names no repo, so its message goes to each repo with no answer.
+        const unplaced = errors.filter((each) => !Array.isArray(each?.path)).map((each) => String(each?.message));
+        const error = errors.find((each) => Array.isArray(each?.path) && each.path[0] === `r${i}`) ?? (unplaced.length ? { message: unplaced.join("; ") } : undefined);
+        warnings.push(
+          error?.type === "NOT_FOUND"
+            ? `GitHub has no repo ${name}, which the ${source} names, so the run does not read it`
+            : `the lookup of ${name} failed, so the run does not read it: ${error ? String(error.message) : "no answer"}`,
+        );
+        continue;
+      }
+      const { nameWithOwner, url, pushedAt } = repo;
+      if (typeof nameWithOwner !== "string" || typeof url !== "string" || typeof pushedAt !== "string" || Number.isNaN(Date.parse(pushedAt))) {
+        warnings.push(`the lookup of ${name} gave no name, URL, or valid pushed_at, so the run does not read it`);
+        continue;
+      }
+      found.push({ repo: nameWithOwner.toLowerCase(), repoUrl: url, pushedAt, source });
+    }
+  }
+  return found;
 }
 
 // The plugin ids of the entries under root by their lowercase owner/repo names, the

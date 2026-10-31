@@ -1,13 +1,13 @@
 # M070: Find plugins in the zotero-chinese catalog
 
-- **Status:** planned
+- **Status:** review
 - **Priority:** normal
 - **Depends on:** —
 - **Driving RR:** —
 - **Principles touched:** —
 - **Resolves:** —
 - **Surface tier:** user-facing — the index's plugin list and the bot's pull request text change
-- **Branch/PR:** —
+- **Branch/PR:** m070-catalog-discovery
 
 ## Goal
 
@@ -51,13 +51,13 @@
 
 ## Acceptance criteria
 
-- [ ] AC1: `discover()` writes the entry of a repo that only the catalog lists, that has neither topic, and that passes the inclusion bar. Its report item has `source: "catalog"`, and its `holds` lack `issue-no-topic`. A catalog-only repo is keyed by the lowercase `nameWithOwner` that the lookup returns. Tests show one read in each of these cases: the topic search returns `Example/Alpha` and the catalog lists `example/ALPHA` (`source: "topic"`); the topic search returns the looked-up new name; the catalog lists the old and new names; the catalog lists one repo twice in different case. A test shows that the run skips a renamed catalog repo as `in-index` when an entry names the new name. All tests are in `test/discover.test.ts`.
-- [ ] AC2: A failed catalog read does not end the run. Tests cover an HTTP 5xx answer, a fetch that rejects, a fetch that passes 60 s, a body over 8 MiB, a body that is not JSON, and a JSON body that is not an array. In each test, the report gets a warning that names the catalog, the run still reads the topic candidates, and the state rule of AC4 holds. Tests also cover bad items: an item that is not an object, an item with no `repo`, a `repo` that is not a string, and a `repo` that fails the pattern (no slash, three parts, an empty part, a `"`). In each test, the report gets a warning that names the item, and the run still reads the other catalog items.
-- [ ] AC3: A lookup alias that is null with a `NOT_FOUND` error adds a warning that names the repo, and the run does not read that repo. An answer with no valid `pushedAt` for a repo has the same result. The other cases fail the lookup request for its repos: a 401, 403, 429, or 5xx answer, a fetch that rejects, a body that is not JSON, a body with no `data` object, and a null alias with any other error type. In each of these, the report gets a warning, the run still reads the other candidates, and the state rule of AC4 holds. A test shows each case.
-- [ ] AC4: The run reads catalog-only repos newest pushed first among all candidates. It skips a catalog-only repo as `in-index` when an entry names it, as `in-skip-set` when the skip set names it, and as `refused-before` on a later run while its `pushedAt` is unchanged and its refusal is under 30 days old. After any run, the new state keeps each input record whose repo the index lacks and whose refusal is under 30 days old. A test shows each of these five rules for a catalog-only repo.
-- [ ] AC5: `planned()` keeps `source`, and `entrySchema` in `src/discover/handoff.ts` accepts an optional `source` of `topic` or `catalog`. The issue read step writes no `source`. A `twoStep` test with a catalog-only repo runs `discoverRead`, `planned()`, `readHandoff`, and `proposeHandoff`. It asserts that the body says the bot found the repo in the zotero-chinese plugin catalog. Tests of `body()` assert that a topic body keeps "by its GitHub topic" and that an issue-run body keeps "from issue #N". They also assert that the closing line of all three bodies says that the bot does not propose the repo again, from discovery or from an issue.
-- [ ] AC6: README's "Finding new plugins" and "Pull requests from the bot" sections, `cairn/DESIGN.md`'s "Data sources and contribution" item 1 and its Known issues line on topic search, and CHANGELOG.md name the catalog as a second source. They say what a failed catalog read and a failed lookup do. README also says that the lookup needs `GITHUB_TOKEN`, and that without it the run skips the catalog-only repos with a warning.
-- [ ] AC7: The verify slot is clean: `pnpm test` and `pnpm check` pass.
+- [x] AC1: `discover()` writes the entry of a repo that only the catalog lists, that has neither topic, and that passes the inclusion bar. Its report item has `source: "catalog"`, and its `holds` lack `issue-no-topic`. A catalog-only repo is keyed by the lowercase `nameWithOwner` that the lookup returns. Tests show one read in each of these cases: the topic search returns `Example/Alpha` and the catalog lists `example/ALPHA` (`source: "topic"`); the topic search returns the looked-up new name; the catalog lists the old and new names; the catalog lists one repo twice in different case. A test shows that the run skips a renamed catalog repo as `in-index` when an entry names the new name. All tests are in `test/discover.test.ts`.
+- [x] AC2: A failed catalog read does not end the run. Tests cover an HTTP 5xx answer, a fetch that rejects, a fetch that passes 60 s, a body over 8 MiB, a body that is not JSON, and a JSON body that is not an array. In each test, the report gets a warning that names the catalog, the run still reads the topic candidates, and the state rule of AC4 holds. Tests also cover bad items: an item that is not an object, an item with no `repo`, a `repo` that is not a string, and a `repo` that fails the pattern (no slash, three parts, an empty part, a `"`). In each test, the report gets a warning that names the item, and the run still reads the other catalog items.
+- [x] AC3: A lookup alias that is null with a `NOT_FOUND` error adds a warning that names the repo, and the run does not read that repo. An answer with no valid `pushedAt` for a repo has the same result. The other cases fail the lookup request for its repos: a 401, 403, 429, or 5xx answer, a fetch that rejects, a body that is not JSON, a body with no `data` object, and a null alias with any other error type. In each of these, the report gets a warning, the run still reads the other candidates, and the state rule of AC4 holds. A test shows each case.
+- [x] AC4: The run reads catalog-only repos newest pushed first among all candidates. It skips a catalog-only repo as `in-index` when an entry names it, as `in-skip-set` when the skip set names it, and as `refused-before` on a later run while its `pushedAt` is unchanged and its refusal is under 30 days old. After any run, the new state keeps each input record whose repo the index lacks and whose refusal is under 30 days old. A test shows each of these five rules for a catalog-only repo.
+- [x] AC5: `planned()` keeps `source`, and `entrySchema` in `src/discover/handoff.ts` accepts an optional `source` of `topic` or `catalog`. The issue read step writes no `source`. A `twoStep` test with a catalog-only repo runs `discoverRead`, `planned()`, `readHandoff`, and `proposeHandoff`. It asserts that the body says the bot found the repo in the zotero-chinese plugin catalog. Tests of `body()` assert that a topic body keeps "by its GitHub topic" and that an issue-run body keeps "from issue #N". They also assert that the closing line of all three bodies says that the bot does not propose the repo again, from discovery or from an issue.
+- [x] AC6: README's "Finding new plugins" and "Pull requests from the bot" sections, `cairn/DESIGN.md`'s "Data sources and contribution" item 1 and its Known issues line on topic search, and CHANGELOG.md name the catalog as a second source. They say what a failed catalog read and a failed lookup do. README also says that the lookup needs `GITHUB_TOKEN`, and that without it the run skips the catalog-only repos with a warning.
+- [x] AC7: The verify slot is clean: `pnpm test` and `pnpm check` pass.
 
 ## Coverage
 
@@ -71,12 +71,12 @@
 
 ## Tasks
 
-- [ ] T1: In `src/discover/discover.ts`, add the catalog read (contents API, raw media type, 60 s, 8 MiB) and the item check. Add tests for AC2 and for the catalog part of AC1.
-- [ ] T2: Add the GraphQL lookup (batches of 100, names as variables, POST to the API host only) and the join by the looked-up name. Add tests for AC3 and for the join cases of AC1.
-- [ ] T3: Change the state rule in `discover()` and the ordering of the joined candidates. Add tests for AC4.
-- [ ] T4: Add `source` to `ReadItem`, `PlannedEntry`, `planned()`, and `entrySchema`. Change `body()` in `src/discover/propose.ts` and its closing line. Add the `twoStep` test and the `body()` tests of AC5.
-- [ ] T5: Write the README, DESIGN, and CHANGELOG text of AC6, and wrap it near 76 columns.
-- [ ] T6: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
+- [x] T1: In `src/discover/discover.ts`, add the catalog read (contents API, raw media type, 60 s, 8 MiB) and the item check. Add tests for AC2 and for the catalog part of AC1.
+- [x] T2: Add the GraphQL lookup (batches of 100, names as variables, POST to the API host only) and the join by the looked-up name. Add tests for AC3 and for the join cases of AC1.
+- [x] T3: Change the state rule in `discover()` and the ordering of the joined candidates. Add tests for AC4.
+- [x] T4: Add `source` to `ReadItem`, `PlannedEntry`, `planned()`, and `entrySchema`. Change `body()` in `src/discover/propose.ts` and its closing line. Add the `twoStep` test and the `body()` tests of AC5.
+- [x] T5: Write the README, DESIGN, and CHANGELOG text of AC6, and wrap it near 76 columns.
+- [x] T6: Run `npx -y pnpm@12.15.0 test` and `npx -y pnpm@12.15.0 check`.
 
 ## Work log
 
@@ -92,7 +92,62 @@
 - 2026-10-31: plan chose one GraphQL request for each 100 names over a REST `GET /repos` for each name because the Actions token allows 1,000 REST requests an hour and M071 adds about 1,000 names; falsified by a run where batched lookups cost more requests or fail more often than single ones.
 - 2026-10-31: plan chose the contents API over the catalog's GitHub Pages URL because `githubClient` sends requests only to the API host; falsified by the contents API refusing or truncating the file.
 - 2026-10-31: plan chose to keep refusal records of repos a run did not find, for 30 days, over dropping them because code-search results shift between runs; falsified by a state file that grows past the size the cache step can save.
+- 2026-10-31: started on branch m070-catalog-discovery.
+- 2026-10-31: T1-T4 landed in one commit, since a catalog repo needs the lookup's pushed_at before the run can read it (minor amendment).
+- 2026-10-31: implementation choices: `discover()` reads the catalog only when its new `catalog` option is set, and `pnpm discover` sets it to `CATALOG_URL`, so tests without a catalog need no catalog fixture; `githubClient` gains `raw(url, max, ms)`; `SOURCES` lives in `holds.ts` beside `TOPICS`, since `handoff.ts` cannot import `discover.ts` without a cycle; a catalog name that a topic search returned is not looked up.
+- 2026-10-31: the state rule also keeps a record of a repo the run found whatever its age, as before, since an old record never causes a skip; two time-limit tests rely on it.
+- 2026-10-31: check discrimination: a planted `planned()` that drops `source` turned the catalog `twoStep` test red; restored from a copy.
+- 2026-10-31: verify: `pnpm test` 1691 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
+- 2026-10-31: T5: README "Finding new plugins" (catalog, lookup, token, failures, state), "Pull requests from the bot" (first sentence, catalog repos get no `issue-no-topic` hold); DESIGN Data sources item 1, architecture bullet, and Known issues line (corrected M070); CHANGELOG entry. The simple-english hook still flags 3 README and 8 CHANGELOG sentences that this milestone does not touch.
+- 2026-10-31: T6: `pnpm test` 1691 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
+- 2026-10-31: claim audit: 80 claims read, 5 corrected — README.md (hold wording, 30-day state wording, at most 100 per request, failed connection), CHANGELOG.md (hold and state wording), src/discover/discover.ts (`lookUp` warning comment). Not changed: `raw()` checks only the first URL's origin, as `get` does, so after a redirect the token relies on fetch dropping it across origins.
+- 2026-10-31: implement done; status review.
+- 2026-10-31: review stopped before the merge question at the feature PR cap of 1: PR #353 (`add/retorquere-zotero-pmcid-fetcher`, the PMCID Fetcher entry, CI green) is open; no branch pushed, no PR opened.
+- 2026-10-31: PR #353 merged at the user's request; main merged into the branch (5c05855).
+- 2026-10-31: step-7 approval: m070-catalog-discovery approved for merge
 
 ## Decisions
 
 ## Review
+
+- AC1 evidence (2026-10-31, branch at 9676146): `test/discover.test.ts` "the catalog" passed: "writes the entry of a repo that only the catalog lists, with no topic and no hold" (`source: "catalog"`, `holds: []`, names sent as GraphQL variables), the four "reads a repo once when …" cases (topic in other case gives `source: "topic"`; topic returns the looked-up name; catalog lists old and new names; catalog lists one repo twice in other case), and "skips a renamed catalog repo as in-index when an entry names its new name".
+- AC2 evidence: six "warns and reads the topic repos when the catalog read fails with …" cases passed (HTTP 5xx, a fetch that rejects, a fetch that passes its time limit, a body over its size limit, a body that is not JSON, a JSON body that is not a list); each asserts one warning naming the catalog, a read of the topic repo, and the input state kept. The limit cases inject 50 ms and 100 bytes; the defaults are `CATALOG_MS` 60 s and `CATALOG_MAX_BYTES` 8 MiB (`src/discover/discover.ts:24-25`), taken at `:139` when `catalogMs` and `catalogMaxBytes` are unset, as `pnpm discover` leaves them (`src/discover/cli.ts:57`). "warns about each catalog item with no usable owner/repo name and reads the others" passed for all eight bad items (not an object twice, no `repo`, non-string, no slash, three parts, empty part, a `"`).
+- AC3 evidence: "warns about and does not read a repo that GitHub does not have or that has no pushed_at" passed (NOT_FOUND alias and a null `pushedAt`); seven "warns, reads the other repos, and keeps the state when the lookup fails with …" cases passed (401, 403, 429, 5xx, a fetch that rejects, a body that is not JSON, an answer with no data); "warns about a repo whose lookup failed with another error type, and reads the others" passed (a FORBIDDEN alias, state kept).
+- AC4 evidence: "a catalog-only repo" passed all five: "is read before an older topic repo", "is skipped as in-index when an entry names it", "is skipped as in-skip-set when the skip set names it", "is skipped as refused-before while its pushed_at is unchanged and its refusal is under 30 days old" (a new push is read again), and "keeps its record under 30 days old when a run does not find it" (dropped at 30 days). "the discovery state > keeps records under 30 days old of repos the run did not find, and drops old ones and those the index now has" passed.
+- AC5 evidence: `test/propose.test.ts` "a catalog entry's body says the bot found the repo in the catalog" passed, a `twoStep` run through `discoverRead`, `planned()`, `readHandoff`, and `proposeHandoff`; with `planned()` planted to drop `source` it failed (work log). "the body names how the bot found the repo, and every body closes with the same line" passed for topic, catalog, and issue bodies. `test/issue.test.ts` "the read step writes the entry's hold reasons in the plan, and no source" passed. `entrySchema` takes `source: { enum: [...SOURCES] }` (`src/discover/handoff.ts`).
+- AC6 evidence (read at 9676146): README "Finding new plugins" names the catalog (line 570), the lookup and its need for `GITHUB_TOKEN` (576), a failed catalog read (586-592), a bad item and a failed lookup (593-596), and that without `GITHUB_TOKEN` no catalog-only repo is read (596-597). "Pull requests from the bot" names the catalog in the body's first sentence (683) and under `issue-no-topic`. DESIGN item 1 (204-207) names the catalog and both failures; the architecture bullet (593) and the Known issues line (868) are marked `corrected M070`. CHANGELOG "Unreleased" opens with the catalog entry (line 5), which says a failed read or lookup warns.
+- AC7 evidence: `npx -y pnpm@12.15.0 test` (type check, then Vitest): 28 files passed, 1 skipped; 1691 tests passed, 6 skipped. `npx -y pnpm@12.15.0 check`: 272 entries, 0 problems.
+- Consistency gate: `cairn_validate.py` all checks passed; the `generic` profile names no toolchain checks; no principle changed, so no `cairn_impact` run.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- ripple #1: DESIGN Function Families "Discovery" bullet named only the topic search — fix now
+- ripple #2: the candidate row "Find plugins whose repos carry no topic" still says discover "searches only" the topics — fix now at step 9 hygiene, which narrows the row to the code-search remainder
+- ripple #3: CHANGELOG "A bot finds new plugins" bullet names only the topic search — reject (false): that bullet records the change that added discovery, and the new top bullet records this one
+- ripple #4: DESIGN "A failed search ends the run" now reads as covering the catalog — fix now
+- ripple #5: DESIGN Data sources item 1's first sentence names only the topics — reject (false): the sentences the diff adds right after it name the catalog
+- ripple #6: DESIGN `holds.ts` line omits `SOURCES` — fix now
+- ripple #7: a forged state entry can now hide a repo that a run does not find — follow-up: absorbed into "Check the restored discovery state" (low, unchanged rung: the same job-takeover premise)
+- prior-review #1: the GraphQL lookups run before any check of `runMs`, against M030's goal of saving state before the job's limit — fix now (a time check before each lookup request, with a test)
+- prior-review #2: `raw` follows redirects and checks only the first host, unlike M002's per-hop check — follow-up: new row "Check each redirect of GitHub API reads" (parked, promote when a GitHub API answer redirects off api.github.com; `get` has the same pattern and no answer has redirected)
+- prior-review #3: the catalog stall test used 50 ms, where M030 and M050 settled on 1000 ms — fix now
+- blame-history #1: the state rule reverses M008's "only for repos that the search found" — reject (planned change): AC4 and Scope In call for it
+- blame-history #2: `raw` keeps the token across redirects, unlike `send` — follow-up: same row as prior-review #2
+- blame-history #3: the closing line reworded from "from its topic" — reject (planned change): AC5 calls for it
+- blame-history #4: a local `pnpm discover` without `--handoff` skips no closed bot pull request, and the catalog widens that set — follow-up: new row "Skip closed bot pull requests in local discover runs" (parked, promote when a maintainer drafts such a repo by hand; pre-existing since M008)
+- blame-history #5: catalog names that an entry already names are looked up every run, and a failing lookup of one warns daily — fix now (filtered before the lookup and reported `in-index`; the AC4 in-index test now also asserts no lookup)
+- blame-history #6: `DiscoveryFailure =Failure` lost its space in the branch — fix now
+- diff-bug #1: the README paragraph after the new list rendered inside its last bullet — fix now
+- diff-bug #2: a lookup request that fails with 401, 403, 429, or no data does not stop the later batches, so a run without a token sends about 4 failing requests — fix now (a failed request ends the lookups with one warning for every repo left; test with 101 names and a 401)
+- diff-bug #3: the new state copy keeps any key and value, so a `__proto__` key sets the state's prototype and hides a repo, and a `null` record is written back — fix now (`Object.create(null)`, lowercase owner/repo keys and object records only; the test failed against the old copy)
+- diff-bug #4: DESIGN's lookup sentence omits the pre-lookup skips and the `runMs` stop — fix now
+- diff-bug #5: an alias with no answer and an error that names no path gets "no answer" — fix now (it takes that error's message; test)
+- diff-bug #6: skip-set names are still looked up each run — fix now (skipped before the lookup as `in-skip-set`; the AC4 skip-set test now also asserts no lookup)
+- diff-bug #7: `raw` follows redirects with only the first host checked — follow-up: the row "Check each redirect of GitHub API reads" (parked)
+- diff-bug #8: catalog item warnings have no cap — fix now (at most 10, then one count line; test)
+- diff-bug #9: pre-lookup `in-index` items come first in `report.skipped` and include repos the loop never reached — reject (false): each item is a true skip, and the report promises no order
+- diff-bug #10: the AC1 letter-case test has the topic search return lowercase `example/alpha` — fix now (a test with the topic search returning `Example/Alpha` and the catalog `example/ALPHA`)
+- diff-bug #11: no test stalls the catalog body — fix now (a `stall: "body"` case)
+- diff-bug #12: no test covers the CLI's `catalog: CATALOG_URL` — fix now (`pnpm discover` "reads the zotero-chinese catalog")
+- diff-bug #13: no test asserts `source` on a refused item or refuses a bad `source` in a handoff — fix now (both added)
+- diff-bug (c): the lookup-failure, bad-item, and failed-read cases repeat one code path — reject (planned change): AC2 and AC3 name each input
+- Re-verified after the fix-now work: `pnpm test` 1701 passed, 6 skipped (the AC1 to AC5 tests above among them, the AC3 lookup-failure regex now matching "… on, since their lookup failed"); `pnpm check` 272 entries, 0 problems; `cairn_validate.py` all checks passed.
+- Re-verified after merging main at 5c05855 (PR #353): `pnpm test` 1701 passed, 6 skipped; `pnpm check` 273 entries, 0 problems; `cairn_validate.py` all checks passed. Changed snapshot files: none. Feature PR cap: 0 open PRs.
