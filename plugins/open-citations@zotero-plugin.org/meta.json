@@ -1,0 +1,8 @@
+{
+  "id": "open-citations@zotero-plugin.org",
+  "name": "Zotero Open Citations",
+  "description": "Adds a sortable Citation column to Zotero using open citation data from OpenAlex and Semantic Scholar. Paced, captcha-free, with an optional once-a-day background refresh.",
+  "homepage": "https://github.com/josesiqueira/zotero-open-citations",
+  "repoUrl": "https://github.com/josesiqueira/zotero-open-citations",
+  "updateUrl": "https://github.com/josesiqueira/zotero-open-citations/releases/latest/download/update.json"
+}
