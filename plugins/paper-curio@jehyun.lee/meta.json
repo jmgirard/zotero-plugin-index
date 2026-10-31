@@ -1,0 +1,8 @@
+{
+  "id": "paper-curio@jehyun.lee",
+  "name": "Paper Curio",
+  "description": "Chat with papers and generate Sonnet reviews through the shared paper-curation engine",
+  "homepage": "git+https://github.com/jehyunlee/paper-curio.git",
+  "repoUrl": "https://github.com/jehyunlee/paper-curio",
+  "updateUrl": "https://github.com/jehyunlee/paper-curio/releases/download/release/update.json"
+}
