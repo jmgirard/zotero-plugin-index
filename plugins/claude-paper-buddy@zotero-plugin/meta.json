@@ -1,0 +1,8 @@
+{
+  "id": "claude-paper-buddy@zotero-plugin",
+  "name": "Paper Buddy for Zotero",
+  "description": "Ask Claude or another AI model about passages you highlight. The answer appears in the reader sidebar.",
+  "homepage": "https://github.com/GronuJ/zotero-paper-buddy",
+  "repoUrl": "https://github.com/GronuJ/zotero-paper-buddy",
+  "updateUrl": "https://github.com/GronuJ/zotero-paper-buddy/releases/latest/download/update.json"
+}
