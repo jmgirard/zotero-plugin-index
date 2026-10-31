@@ -1,0 +1,8 @@
+{
+  "id": "pdf-to-md@local",
+  "name": "PDF to Markdown",
+  "description": "Export Zotero PDF attachments to Markdown.",
+  "homepage": "https://github.com/LuckYang1/PDF-to-md#readme",
+  "repoUrl": "https://github.com/LuckYang1/PDF-to-md",
+  "updateUrl": "https://github.com/LuckYang1/PDF-to-md/releases/download/release/update.json"
+}
