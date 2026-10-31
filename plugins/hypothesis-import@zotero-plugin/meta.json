@@ -1,0 +1,7 @@
+{
+  "id": "hypothesis-import@zotero-plugin",
+  "name": "Hypothesis2Zotero",
+  "description": "Importe les annotations Hypothesis (privées de votre compte et publiques) dans Zotero",
+  "repoUrl": "https://github.com/core-hn/hypothesis2zotero",
+  "updateUrl": "https://raw.githubusercontent.com/core-hn/hypothesis2zotero/main/update.json"
+}
