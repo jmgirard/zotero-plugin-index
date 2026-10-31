@@ -1,0 +1,8 @@
+{
+  "id": "zotero-feishu@wu-uk.github.io",
+  "name": "Zotero Feishu Sync",
+  "description": "Sync Zotero literature and notes to Feishu documents",
+  "homepage": "https://github.com/wu-uk/zotero-feishu#readme",
+  "repoUrl": "https://github.com/wu-uk/zotero-feishu",
+  "updateUrl": "https://github.com/wu-uk/zotero-feishu/releases/download/release/update.json"
+}
