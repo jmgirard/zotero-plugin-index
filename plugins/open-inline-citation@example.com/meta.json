@@ -1,0 +1,8 @@
+{
+  "id": "open-inline-citation@example.com",
+  "name": "Open Inline Citation",
+  "description": "CMD-click any inline citation to read it in a new tab",
+  "homepage": "https://github.com/andrew-healey/open-inline-citation",
+  "repoUrl": "https://github.com/andrew-healey/open-inline-citation",
+  "updateUrl": "https://raw.githubusercontent.com/andrew-healey/open-inline-citation/main/updates.json"
+}
