@@ -1,0 +1,8 @@
+{
+  "id": "opendata-cite@mfranchi.net",
+  "name": "OpenData Cite",
+  "description": "Save open data portal datasets (Socrata, CKAN) as Zotero dataset items",
+  "homepage": "https://github.com/pendulating/zotero-opendata-cite",
+  "repoUrl": "https://github.com/pendulating/zotero-opendata-cite",
+  "updateUrl": "https://raw.githubusercontent.com/pendulating/zotero-opendata-cite/main/updates.json"
+}
