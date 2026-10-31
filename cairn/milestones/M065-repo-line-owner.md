@@ -67,6 +67,7 @@ Bot branch names and addresses written `<owner>/<repo>` elsewhere in README and 
 - 2026-10-30: T3 done: built the site from the deployed data and served it as `m064-look`. At 375 px in the dark scheme, the Abbreviation Helper page's line reads "By Cydoimos · zotero-abbreviation-helper · 3" (visible text) on one row; the owner links `https://github.com/Cydoimos`, the repo name `https://github.com/Cydoimos/zotero-abbreviation-helper`; page width 375.
 - 2026-10-30: status review; all tasks checked, `pnpm test` and `pnpm check` clean.
 - 2026-10-30: claim audit: 14 claims read, 0 corrected — README.md, CHANGELOG.md, cairn/DESIGN.md, the plugin page template, test/site.test.ts.
+- 2026-10-31: step-7 approval: m065-repo-line-owner approved for merge
 
 ## Decisions
 
@@ -78,7 +79,7 @@ Bot branch names and addresses written `<owner>/<repo>` elsewhere in README and 
 - AC3: `pnpm test` 25 files, 1547 passed, 6 skipped; `pnpm check` 272 entries, 0 problems.
 - Consistency gate: `cairn_validate.py` all checks passed; no principle changed; the generic profile names no toolchain checks.
 - spawned: diff-bug, blame-history, prior-review, ripple
-- blame-history #1: part (8) of the candidate row "Close small gaps on the site pages" says `https://github.com/a/b.git` shows "a/b.git"; it now shows "b.git" — fix now (the row says "b.git")
+- blame-history #1: part (8) of the candidate row "Close small gaps on the site pages" says `https://github.com/a/b.git` shows "a/b.git"; it now shows "b.git" — fix now (the row says "b.git"), fixed 2bc3375
 - blame-history #2: the repo link no longer names the owner, so a links list or copied text reads only the repo name — reject, planned change: the question set chose "By owner · repo", and the link is clear in context
 - diff-bug #1: the five repo line rows run one rendering path, and the two no-stars rows repeat each other — reject, false: the rows exist for the star cases (1,234, 1, 0, none) and predate this change, which only updates their expected text
 - diff-bug #2: no fixture repo name needs escaping or differs from its slug — reject, false: GitHub repo names hold only letters, digits, `.`, `-`, and `_`, and Astro escapes text expressions
