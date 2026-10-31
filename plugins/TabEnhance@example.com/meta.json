@@ -1,0 +1,8 @@
+{
+  "id": "TabEnhance@example.com",
+  "name": "Tab Enhance",
+  "description": "Tab Enhance is a Zotero add-on that add some useful features to the tab pane.",
+  "homepage": "https://github.com/Rphone/zotero-tab-enhance#readme",
+  "repoUrl": "https://github.com/Rphone/zotero-tab-enhance",
+  "updateUrl": "https://github.com/Rphone/zotero-tab-enhance/releases/download/release/update.json"
+}
