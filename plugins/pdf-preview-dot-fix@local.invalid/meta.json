@@ -1,0 +1,8 @@
+{
+  "id": "pdf-preview-dot-fix@local.invalid",
+  "name": "Reference Marker Fix",
+  "description": "Fixes misplaced reference markers in Zotero’s citation hover popups.",
+  "homepage": "https://github.com/Suwueng/zotero-reference-marker-fix",
+  "repoUrl": "https://github.com/Suwueng/zotero-reference-marker-fix",
+  "updateUrl": "https://raw.githubusercontent.com/Suwueng/zotero-reference-marker-fix/main/updates.json"
+}
