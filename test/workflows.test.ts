@@ -371,8 +371,11 @@ describe("discover.yml", () => {
     // The run step: its run line and the lines indented under it.
     expect(read.match(/^ {6}- run: pnpm discover .*\n(?: {8,}\S.*\n)*/gm)).toEqual([
       '      - run: pnpm discover --handoff handoff ${LIMIT:+--limit "$LIMIT"} ${BUDGET:+--budget "$BUDGET"}\n        env:\n' +
-        "          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n          LIMIT: ${{ inputs.limit }}\n          BUDGET: ${{ inputs.budget }}\n",
+        "          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n          CODE_SEARCH_TOKEN: ${{ secrets.CODE_SEARCH_TOKEN }}\n" +
+        "          LIMIT: ${{ inputs.limit }}\n          BUDGET: ${{ inputs.budget }}\n",
     ]);
+    // The personal token reaches the pnpm discover step and no other step or job.
+    expect(discover.match(/secrets\.CODE_SEARCH_TOKEN/g)).toEqual(["secrets.CODE_SEARCH_TOKEN"]);
     // The input's one expression is the env line, with no `||` default, so a scheduled run passes no --budget.
     const expressions = [...discover.matchAll(/\$\{\{[^}]*\}\}/g)].map(([use]) => use);
     expect(expressions.filter((use) => use.includes("budget"))).toEqual(["${{ inputs.budget }}"]);

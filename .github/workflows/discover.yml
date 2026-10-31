@@ -63,10 +63,12 @@ jobs:
           restore-keys: discovery-state-
       # Scheduled runs have no inputs, so LIMIT and BUDGET are empty and the command's
       # defaults of 5 and 100 apply. A dispatched value reaches the command as given, so 0
-      # is refused.
+      # is refused. The Actions token gets HTTP 429 from GitHub code search, so the code
+      # search requests alone use CODE_SEARCH_TOKEN, a read-only personal token.
       - run: pnpm discover --handoff handoff ${LIMIT:+--limit "$LIMIT"} ${BUDGET:+--budget "$BUDGET"}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CODE_SEARCH_TOKEN: ${{ secrets.CODE_SEARCH_TOKEN }}
           LIMIT: ${{ inputs.limit }}
           BUDGET: ${{ inputs.budget }}
       # Saved after a failed run too: the state records repos that were refused.

@@ -363,14 +363,13 @@ function parseRepoUrl(url: string): { owner: string; repo: string } {
   return { owner, repo: repo.replace(/\.git$/, "") };
 }
 
-// Requests to the GitHub API. Each failure throws a ReadFailure.
-export function githubClient(fetch: Fetch) {
+// Requests to the GitHub API, sent with `token`. Each failure throws a ReadFailure.
+export function githubClient(fetch: Fetch, token = process.env.GITHUB_TOKEN) {
   const headers: Record<string, string> = {
     accept: "application/vnd.github+json",
     "x-github-api-version": "2022-11-28",
     "user-agent": "zotero-plugin-index",
   };
-  const token = process.env.GITHUB_TOKEN;
   if (token) headers.authorization = `Bearer ${token}`;
 
   // The token goes only to the API host, so a URL on another origin is refused. The

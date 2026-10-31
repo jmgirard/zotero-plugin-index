@@ -814,6 +814,28 @@ describe("the code search", () => {
     expect(report.warnings).toEqual(["the code search for q1 returned incomplete results on page 1, so the run may miss some repos"]);
   });
 
+  test("sends CODE_SEARCH_TOKEN with code search requests only, and GITHUB_TOKEN when it is unset", async () => {
+    const saved = { code: process.env.CODE_SEARCH_TOKEN, github: process.env.GITHUB_TOKEN };
+    const responses = { ...base(), ...searchedCode({ q1: ["example/coded"] }), [GRAPHQL]: found(["example/coded", "2026-10-20T00:00:00Z"]) };
+    const auth = (requests: SeenRequest[], match: (url: string) => boolean) =>
+      [...new Set(requests.filter(({ url }) => match(url)).map(({ headers }) => headers.get("authorization")))];
+    try {
+      process.env.GITHUB_TOKEN = "actions-token";
+      process.env.CODE_SEARCH_TOKEN = "search-token";
+      const both = await runResult(responses, { codeSearch: ["q1"] });
+      expect(auth(both.requests, (url) => url.includes("/search/code?"))).toEqual(["Bearer search-token"]);
+      expect(auth(both.requests, (url) => url.startsWith("https://api.github.com/") && !url.includes("/search/code?"))).toEqual(["Bearer actions-token"]);
+      delete process.env.CODE_SEARCH_TOKEN;
+      const fallback = await runResult(responses, { codeSearch: ["q1"] });
+      expect(auth(fallback.requests, (url) => url.includes("/search/code?"))).toEqual(["Bearer actions-token"]);
+    } finally {
+      for (const [key, value] of [["CODE_SEARCH_TOKEN", saved.code], ["GITHUB_TOKEN", saved.github]] as const) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
+  });
+
   test("looks up through code search a name whose catalog lookup failed", async () => {
     const responses = {
       ...base(),

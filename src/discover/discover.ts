@@ -475,8 +475,10 @@ async function readCatalog(fetch: Fetch, url: string, max: number, ms: number, w
 // keeps the names of its earlier pages and goes on to the next query. So does a request that
 // could not be sent before CODE_SEARCH_CUTOFF_MS after `startedAt`. Queries that all finish
 // with no item warn once, since a token that cannot see the code index can get empty pages.
+// The requests carry CODE_SEARCH_TOKEN when it is set, else GITHUB_TOKEN: the GitHub Actions
+// token got HTTP 429 on every code search request (discover run 41224882790, 2026-10-31).
 async function searchCode(fetch: Fetch, queries: string[], ms: number, warnings: string[], time: { startedAt: number; clock: Clock }): Promise<string[]> {
-  const github = githubClient(fetch);
+  const github = githubClient(fetch, process.env.CODE_SEARCH_TOKEN || process.env.GITHUB_TOKEN);
   const { startedAt, clock } = time;
   const names: string[] = [];
   const sent: number[] = [];
