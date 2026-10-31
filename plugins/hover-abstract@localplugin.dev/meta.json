@@ -1,0 +1,7 @@
+{
+  "id": "hover-abstract@localplugin.dev",
+  "name": "Zotero Hover Abstract",
+  "description": "Shows fetched abstracts in Zotero's native citation hover popup",
+  "repoUrl": "https://github.com/edouardArmit/zotero-hover-abstract",
+  "updateUrl": "https://github.com/edouardArmit/zotero-hover-abstract/releases/download/release/update.json"
+}
