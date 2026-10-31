@@ -1,0 +1,8 @@
+{
+  "id": "protpeek-zotero@momisback.github.io",
+  "name": "ProtPeek for Zotero",
+  "description": "Inspect protein structures while reading papers in Zotero. Local scanning, bundled Mol* viewer.",
+  "homepage": "https://github.com/MOMISBACK/ProtPeek",
+  "repoUrl": "https://github.com/MOMISBACK/ProtPeek",
+  "updateUrl": "https://raw.githubusercontent.com/MOMISBACK/ProtPeek/main/zotero/updates.json"
+}
