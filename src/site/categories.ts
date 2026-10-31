@@ -228,3 +228,13 @@ export function categories(record: DescriptionRecord): string[] {
       (category.include.includes(record.id) || all.some((text) => category.pattern.test(text))),
   ).map((category) => category.slug);
 }
+
+// The home page's category menu options: one for each category that at least one record has,
+// as "Name (N)" with N its records, most records first and ties in CATEGORIES order.
+export function categoryOptions(records: DescriptionRecord[]): { value: string; text: string }[] {
+  const counts = new Map<string, number>();
+  for (const record of records) for (const slug of categories(record)) counts.set(slug, (counts.get(slug) ?? 0) + 1);
+  return CATEGORIES.filter((category) => counts.has(category.slug))
+    .toSorted((a, b) => counts.get(b.slug)! - counts.get(a.slug)!)
+    .map((category) => ({ value: category.slug, text: `${category.name} (${counts.get(category.slug)})` }));
+}

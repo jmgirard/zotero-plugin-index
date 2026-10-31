@@ -124,16 +124,16 @@ deployed data.
       `cairn/references/category-ledger.md` as a synthesis note with its
       Provenance block and `INDEX.md` line: date, record count, each record's
       id and categories with a right/wrong mark, and the three rates.
-- [ ] T3: Add `data-categories` (through `attributeValue`, so an empty value
+- [x] T3: Add `data-categories` (through `attributeValue`, so an empty value
       still prints) and the hidden "Category" menu with a `categoryOptions`
       helper to `site/src/pages/index.astro`; add fixture records for the
       counts, the tie, and the empty category, also to the three hand-kept
       id lists in `test/site.test.ts` (lessons M061); HTML tests.
-- [ ] T4: Add the category filter to `rowShows`, the count's `filtering`,
+- [x] T4: Add the category filter to `rowShows`, the count's `filtering`,
       the address, and `popstate` in the home script; extend the `homeScript`
       harness (row attribute regex, options per select, selector stand-ins,
       a menu-missing case, categories on `generatedRow`); `node:vm` tests.
-- [ ] T5: Add `category` to `prePaintStyle`, update its comment's sentence
+- [x] T5: Add `category` to `prePaintStyle`, update its comment's sentence
       on which menus offer each row value, and add the cases to
       `test/support/pre-paint.ts`.
 - [ ] T6: Add the plugin page's category list and the About page's
@@ -162,6 +162,8 @@ deployed data.
 - 2026-10-31: T1 done: `src/site/categories.ts` holds `CATEGORIES` (slug, name, an `about` phrase for the About page, pattern, include, exclude) and `categories`; the texts are read through `appliedValue` and `shownDescription`, since `displayName` lives in `site/src/data.ts`, which `src/site/` does not import; `test/categories.test.ts` has 25 tests; planting a dropped GitHub text and an ignored exclude list each failed its one test; `pnpm test` (1572 passed) and `pnpm check` clean.
 - 2026-10-31: implementation choice: the translation pattern leaves out "translators" (Zotero's import translators, as Tara's text says) but keeps "Translator", so a plugin named "Paper Translator" still matches.
 - 2026-10-31: T2 done: the tuning, committed with T1, used the deployed data of `generatedAt` 2026-10-30T21:13:54.875Z (272 records); `cairn/references/category-ledger.md` records 363 assignments, 0 wrong by the agent's read, 20 of 272 records with none, 8 of 363 from an include alone, and 66 exclude entries; on the 19 open bot pull requests, which the tuning never read, 2 of 27 assignments are wrong and 3 of 19 records get none.
+- 2026-10-31: T3, T4, T5 done in one checkpoint, since the menu, the script, and `prePaintStyle` share the harness changes: `categoryOptions` in `categories.ts`, `rowCategoriesAttribute` in `data.ts`, a hidden "Category" menu after the search box, `rowShows` takes the category filter as its fifth argument, and `prePaintStyle` reads `category`; the site fixture's locale-plugin description now also names a single-page reading mode, so the fixture gives counts of 2 and 1, a three-way tie at 1, and categories with no row; planting a count that ignores the category, an address that drops it, and a `prePaintStyle` without it failed 1, 3, and 8 tests; `pnpm test` (1608 passed) and `pnpm check` clean.
+- 2026-10-31: implementation choices: the menu sits after the search box, since it is the broadest filter; the address writes `category` after `q` and before `language`; the script needs the category menu as it needs the language menu, and the harness's menu-missing cases cover both.
 - 2026-10-31: the simple-english hook flags the ledger's `— observed` stamps and `Pagination: —.`; they stay, since the synthesis-note template and the references check read them.
 
 ## Decisions

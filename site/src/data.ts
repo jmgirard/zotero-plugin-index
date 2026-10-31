@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import type { Override, PluginRecord, PluginsFile, StartTestRecord } from "../../src/build/build.ts";
+import { CATEGORIES, categories, categoryOptions } from "../../src/site/categories.ts";
 import { shownDescription } from "../../src/site/description.ts";
 import { appliedLanguages, languageName, languageOptions, listedSubtags, rowLanguages } from "../../src/site/languages.ts";
 import {
@@ -13,7 +14,7 @@ import {
 } from "../../src/site/version.ts";
 import { BASE } from "./base.ts";
 
-export { BASE, declaredRange, languageName, languageOptions, shownDescription };
+export { BASE, CATEGORIES, categories, categoryOptions, declaredRange, languageName, languageOptions, shownDescription };
 export type { Override, PluginRecord };
 
 let loaded: { path: string; data: PluginsFile } | undefined;
@@ -95,6 +96,11 @@ function attributeValue(value: string): string | String {
 // The row's data-languages value (see rowLanguages).
 export function rowLanguagesAttribute(record: PluginRecord): string | String {
   return attributeValue(rowLanguages(record));
+}
+
+// The row's data-categories value: its categories' slugs joined by spaces (see categories).
+export function rowCategoriesAttribute(record: PluginRecord): string | String {
+  return attributeValue(categories(record).join(" "));
 }
 
 // The row's data-zotero value (see rowMajors), with the data's current Zotero release.
