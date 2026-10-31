@@ -1,0 +1,8 @@
+{
+  "id": "scihub@example.com",
+  "name": "Sci-Hub Plugin for Zotero",
+  "description": "Download papers and books by DOI from Sci-Hub",
+  "homepage": "https://github.com/ethanwillis/zotero-scihub",
+  "repoUrl": "https://github.com/ethanwillis/zotero-scihub",
+  "updateUrl": "https://github.com/ethanwillis/zotero-scihub/releases/latest/download/update.json"
+}
