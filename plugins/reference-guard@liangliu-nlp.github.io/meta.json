@@ -1,0 +1,8 @@
+{
+  "id": "reference-guard@liangliu-nlp.github.io",
+  "name": "Reference Guard",
+  "description": "Maps native PDF links to exact Zotero Reader destinations and highlights the target.",
+  "homepage": "https://github.com/liangliu-nlp/reference-guard",
+  "repoUrl": "https://github.com/liangliu-nlp/reference-guard",
+  "updateUrl": "https://raw.githubusercontent.com/liangliu-nlp/reference-guard/main/updates.json"
+}
