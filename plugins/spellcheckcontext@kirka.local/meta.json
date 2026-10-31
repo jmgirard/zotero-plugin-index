@@ -1,0 +1,8 @@
+{
+  "id": "spellcheckcontext@kirka.local",
+  "name": "Zotero Spell Check Context Menu",
+  "description": "Adds spell check suggestions and dictionary options to Zotero note editor context menu",
+  "homepage": "https://github.com/akirk20-code/zotero-spellcheck-plugin#readme",
+  "repoUrl": "https://github.com/akirk20-code/zotero-spellcheck-plugin",
+  "updateUrl": "https://github.com/akirk20-code/zotero-spellcheck-plugin/releases/download/release/update.json"
+}
