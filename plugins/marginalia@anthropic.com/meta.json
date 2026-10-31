@@ -1,0 +1,8 @@
+{
+  "id": "marginalia@anthropic.com",
+  "name": "Marginalia AI Chat",
+  "description": "Zotero AI 聊天助手，支持与论文和批注进行智能对话",
+  "homepage": "https://github.com/sheny-bio/marginalia#readme",
+  "repoUrl": "https://github.com/sheny-bio/marginalia",
+  "updateUrl": "https://github.com/sheny-bio/marginalia/releases/download/release/update.json"
+}
