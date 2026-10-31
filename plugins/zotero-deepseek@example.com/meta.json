@@ -1,0 +1,8 @@
+{
+  "id": "zotero-deepseek@example.com",
+  "name": "Zotero DeepSeek 助手",
+  "description": "接入 DeepSeek 大模型的 Zotero 9 插件：文献智能总结、论文全文问答、多篇对比、阅读笔记整理、划词翻译与请教。",
+  "homepage": "https://platform.deepseek.com",
+  "repoUrl": "https://github.com/Loooookk/zotero-deepseek",
+  "updateUrl": "https://raw.githubusercontent.com/Loooookk/zotero-deepseek/master/update.json"
+}
