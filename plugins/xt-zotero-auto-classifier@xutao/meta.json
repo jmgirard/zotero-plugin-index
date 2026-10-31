@@ -1,0 +1,8 @@
+{
+  "id": "xt-zotero-auto-classifier@xutao",
+  "name": "XT Zotero Auto Classifier",
+  "description": "Classify papers with an OpenAI-compatible model and create Zotero tags and collections.",
+  "homepage": "https://github.com/peekabooXT/Zotero_Paper_Classification_XT",
+  "repoUrl": "https://github.com/peekabooXT/Zotero_Paper_Classification_XT",
+  "updateUrl": "https://raw.githubusercontent.com/peekabooXT/Zotero_Paper_Classification_XT/main/update.json"
+}
