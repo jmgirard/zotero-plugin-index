@@ -1,0 +1,8 @@
+{
+  "id": "cesi-collection-dedup-en@guotuanwang.github.io",
+  "name": "Collection De-dup (CESI)",
+  "description": "Find duplicates in the selected collection scope and process them safely.",
+  "homepage": "https://github.com/GuotuanWang/cesi",
+  "repoUrl": "https://github.com/GuotuanWang/cesi",
+  "updateUrl": "https://raw.githubusercontent.com/GuotuanWang/cesi/master/updates.json"
+}
