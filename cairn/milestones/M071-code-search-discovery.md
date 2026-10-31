@@ -119,3 +119,39 @@
 - AC6: test/workflows.test.ts "takes a budget input on dispatch, which reaches pnpm discover as --budget only through env" asserts the `budget` dispatch input (number, default 100), the read job's run step `${BUDGET:+--budget "$BUDGET"}` with `BUDGET: ${{ inputs.budget }}`, and that this is the input's one expression, with no `||` default; a scheduled run has empty inputs, so no `--budget` is passed and `src/discover/cli.ts` line 28's default of 100 applies. Pass.
 - AC7: README "Finding new plugins" names code search after the topic search and catalog, lists the five queries (lines 576-580), and says a failed request warns by query, keeps earlier pages, and runs the next query (617-633); "Pull requests from the bot" names the `budget` input (674-677) and the code-search body sentence (719). DESIGN "Data sources and contribution" item 1 names the five queries, the failed-request rule, and `budget` (205-215); its Known issues line names code search (corrected M071). CHANGELOG's first Unreleased entry names code search, points to the README for the queries, gives the failure rule, and names `budget`. Read with "They" as the set of these texts, as the criterion's mix of a Known issues line and a sections pair implies. Verify slot clean (base line). Pass.
 - Consistency gate: `cairn_validate.py` exit 0, every check PASS or OK; no DESIGN principle changed, so no `cairn_impact` run; the generic profile's consistency-gate slot names no toolchain checks.
+- spawned: diff-bug, blame-history, prior-review, ripple
+- diff-bug #1: a token that runs code search but sees nothing gets empty pages and no warning, so the after-merge token check could miss it — fix now: one warning when every query finishes with no item and no failure, fixed eb6a3df
+- diff-bug #2: a 403 or 429 ends the whole query with no retry on `retry-after` — follow-up: new row "Harden code search against limits", parked until a report shows a code search 403 or 429
+- diff-bug #3: the fixed query order lets the 8-minute cutoff starve the last queries — follow-up: same row
+- diff-bug #4: a name is marked known before its lookup, so a failed catalog lookup keeps code search from looking up the same name — fix now: `lookUp` returns the names it did not look up, and they stay unknown, fixed eb6a3df
+- diff-bug #5: the search can take about 9 of the 18 run minutes, so a large-`budget` backfill can end at the time limit — fix now: README rounds advice names `budget` and the time limit, fixed eb6a3df; follow-up: absorbed into "Bound the whole discover workflow's time"
+- diff-bug #6: the item warning has no cap, unlike the catalog's — fix now: at most 10 a query plus a count, fixed eb6a3df
+- diff-bug #7: best-match pages can shift while paced pages are read — follow-up: "Harden code search against limits"
+- diff-bug #8: anyone can flood a query with matching repos and push them daily — follow-up: "Harden code search against limits" (D-042's falsifier)
+- diff-bug #9: no test for the code search's off-origin next link, repeated next link, or incomplete results — fix now: three tests, fixed eb6a3df
+- diff-bug #10: tests without an injected clock start the run at 0, so a worker older than 8 minutes hits the cutoff — fix now: `runResult` starts the run at `performance.now()` unless a test sets it, fixed eb6a3df
+- diff-bug (a): no await race found — noted
+- diff-bug (c) #1: the 401, 403, 429, and 502 cases share one path — reject (planned change: AC3 names each)
+- diff-bug (c) #2: two partial checks on one warning could be one `stringMatching` — reject (style)
+- diff-bug (c) #3: three "reads a repo once" cases take one path — fix now: dropped the "two queries" case, which no criterion names; the other two are AC1's named cases, fixed eb6a3df
+- diff-bug (c) #4: the body sentence is asserted in a unit test and in the twoStep test — reject (planned change: AC5 asks for the twoStep test)
+- blame-history #1: D-042's falsifier (non-plugin repos merged) is unverified — reject (planned change: the user chose no hold in the question set, D-042 names its own falsifier; the backfill rounds will show it)
+- blame-history #2: code-search finds share the 100 daily reads with older topic repos — reject (planned change: AC4 orders them as catalog repos)
+- blame-history #3: no body-stall test for a code search request — fix now: added to the AC3 failure table, fixed eb6a3df
+- blame-history #4: lookup warnings use "code-search repos" and "a code search" — reject (style)
+- prior-review #1: a failed request should end all queries, as for lookups (M070) — reject (planned change: AC3 asks that the run still read the other queries' repos)
+- prior-review #2: uncapped item warnings (M070 review's cap) — fix now: same as diff-bug #6, fixed eb6a3df
+- prior-review #3: code search pages go through `get`, which follows redirects — follow-up: absorbed into parked "Check each redirect of GitHub API reads"
+- prior-review #4: a local run's empty skip set now also widens through code search — follow-up: absorbed into parked "Skip closed bot pull requests in local discover runs"
+- prior-review #5: the search checks the cutoff, not the run limit; no overrun found — follow-up: absorbed into parked "Bound the whole discover workflow's time"
+- prior-review #6: code search adds more untrusted repos to the read job — reject (planned change: D-042; the trust boundary is the same as for topics)
+- ripple #1: ROADMAP row "Find plugins whose repos carry no topic" says M071 adds code search — reject (planned change: step 9 hygiene graduates the row)
+- ripple #2: DESIGN says `discover.yml` has a `limit` input only — fix now, fixed eb6a3df
+- ripple #3: DESIGN says names that no topic search returned are looked up — fix now, fixed eb6a3df
+- ripple #4: test/handoff.test.ts title says "not topic or catalog" — fix now, fixed eb6a3df
+- ripple #5: discover.ts REPO_NAME comment names only catalog items — fix now, fixed eb6a3df
+- ripple #6: README and DESIGN say the run starts no read after 18 minutes, but lookups also stop there — fix now, fixed eb6a3df
+- ripple #7: README rounds advice does not name `budget` — fix now, fixed eb6a3df
+- ripple #8: discover.ts says `startedAt` is a performance.now() time — fix now: a `clock` time, performance.now() by default, fixed eb6a3df
+- ripple #9: ROADMAP "Bound the whole discover workflow's time" omits the code search time — follow-up: absorbed, as prior-review #5
+- After the fixes: `pnpm test` 1732 passed, `pnpm check` 0 problems; the lookup-failure and no-items tests went red with their fixes planted out.
