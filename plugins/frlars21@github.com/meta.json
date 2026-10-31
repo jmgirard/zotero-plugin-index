@@ -1,0 +1,8 @@
+{
+  "id": "frlars21@github.com",
+  "name": "Zotero Citation Counts Manager",
+  "description": "Enhanced Citation Counts Manager for Zotero (7.0 – 10.*)",
+  "homepage": "https://github.com/karwanoa/ZoteroCitationCountsManager",
+  "repoUrl": "https://github.com/karwanoa/ZoteroCitationCountsManager",
+  "updateUrl": "https://raw.githubusercontent.com/karwanoa/ZoteroCitationCountsManager/main/updates.json"
+}
