@@ -1,0 +1,8 @@
+{
+  "id": "zotldr@menyoung.github.io",
+  "name": "zoTLDR",
+  "description": "Chat with AI about papers in Zotero",
+  "homepage": "https://github.com/menyoung/zoTLDR#readme",
+  "repoUrl": "https://github.com/menyoung/zoTLDR",
+  "updateUrl": "https://github.com/menyoung/zoTLDR/releases/download/release/update.json"
+}
