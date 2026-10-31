@@ -1,0 +1,7 @@
+{
+  "id": "close-to-tray@zotero-exit.local",
+  "name": "Zotero Close to Tray",
+  "description": "点击关闭按钮时将 Zotero 隐藏到 Windows 系统托盘。",
+  "repoUrl": "https://github.com/p1aintiff/zotero-close-to-tray",
+  "updateUrl": "https://raw.githubusercontent.com/p1aintiff/zotero-close-to-tray/main/updates.json"
+}
