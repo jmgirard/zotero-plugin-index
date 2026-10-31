@@ -1,0 +1,7 @@
+{
+  "id": "annotation-filter@zhongrubo.github.io",
+  "name": "批注筛选 Annotation Filter",
+  "description": "在 Zotero 阅读器左侧侧栏的“注释”列表底部添加工具栏，按批注类型（高亮/下划线/笔记/文本/选区/手写）筛选批注。Filter reader annotations by type.",
+  "repoUrl": "https://github.com/zhongrubo/zotero-annotation-filter",
+  "updateUrl": "https://raw.githubusercontent.com/zhongrubo/zotero-annotation-filter/main/update.json"
+}
