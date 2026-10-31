@@ -35,7 +35,7 @@ export const CATEGORIES: readonly Category[] = [
     name: "AI assistants",
     about: "chat with papers, AI summaries and explanations, and AI agents inside Zotero",
     pattern:
-      /\bai\b|\bai\d|\bllms?\b|\bgpt|chatgpt|claude|codex|deepseek|gemini|openai|ollama|copilot|\bagents?\b|\brag\b|retrieval-augmented|\bkimi\b|notebooklm|\bhermes\b|opencode|antigravity|\bchat\b|large language|大模型|人工智能|智能对话/iu,
+      /\bai\b|\bai\d|\bllms?\b|\bgpt|chatgpt|claude|codex|deepseek|gemini|openai|ollama|copilot|(?<!user-)\bagents?\b|\brag\b|retrieval-augmented|\bkimi\b|notebooklm|\bhermes\b|opencode|antigravity|\bchat\b|large language|大模型|人工智能|智能对话/iu,
     include: [],
     exclude: [...BRIDGES, "arxiv-marker@lele.dev", "weavero@mjthoraval", "zontex-bridge@endoretic.github.io"],
   },
@@ -43,7 +43,7 @@ export const CATEGORIES: readonly Category[] = [
     slug: "translation",
     name: "Translation and dictionaries",
     about: "translated text and PDFs, bilingual reading, dictionaries, and vocabulary",
-    pattern: /translat(?!ors\b)|翻译|译|bilingual|双语|dictionar|词典|查词|vocabular|单词/iu,
+    pattern: /translat(?!ors\b)|(?<!编)译|bilingual|双语|dictionar|词典|查词|vocabular|单词/iu,
     include: [],
     exclude: ["zotdupe@hostiuc.com"],
   },
@@ -208,11 +208,13 @@ export const CATEGORIES: readonly Category[] = [
 ];
 
 // The texts a pattern runs over: the name shown on the site, the shown description, and the
-// manifest and GitHub descriptions.
+// manifest and GitHub descriptions. A record with no upstream facts has none, since its
+// shown name is its id, whose domain says nothing about what the plugin does.
 function texts(record: DescriptionRecord): string[] {
-  const name = appliedValue(record, "name", record.upstream?.name) ?? record.id;
+  if (!record.upstream) return [];
+  const name = appliedValue(record, "name", record.upstream.name) ?? record.id;
   const shown = shownDescription(record);
-  return [name, shown, record.upstream?.description, record.upstream?.repoDescription].filter(
+  return [name, shown, record.upstream.description, record.upstream.repoDescription].filter(
     (text): text is string => text !== undefined,
   );
 }

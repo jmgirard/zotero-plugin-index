@@ -169,7 +169,9 @@ ends with a gold star icon and the count, such as "★ 8,400". A tooltip
 gives the count with its label, such as "8,400 GitHub Stars", or
 "1 GitHub Star" for a count of 1. Screen readers skip the icon and the
 number and read hidden text with the same words. For any other address,
-the page has no repository line. Then come up to
+the page has no repository line. If the plugin has categories, a line
+after the description lists them after the words "Index categories". Each
+category links to the home page filtered by it. Then come up to
 three links, each with an icon and text: "Download <version> (.xpi)" to the `.xpi`
 file that the index read, "Source" to the repository, and "Releases" to
 the repository's releases page. If the download address does not start

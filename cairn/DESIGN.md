@@ -62,7 +62,7 @@ goes back to page 1 (M058). Without JavaScript every row shows. A classic
 script before the table runs before the rows parse. In a browser that runs
 module scripts, it adds a style that `prePaintStyle` writes from the
 address. The style hides the rows outside the asked page of the rows that
-`?language=` and `?zotero=` pass. So in a browser that reads
+`?language=`, `?zotero=`, and `?category=` pass (M066). So in a browser that reads
 `:nth-child(… of S)`, no row that the script hides paints while the page
 loads (see Known issues). A value that the script drops, or a page past the
 last one, also hides rows that the script then shows. For an address with
@@ -76,7 +76,7 @@ languages with the most plugins first, and languages with the same number
 of plugins in code-unit order of their English names (M035). The home
 page's "Declares Zotero" buttons, "Any" and one per major of
 `ZOTERO_MAJORS`, filter the table to the plugins whose mark for the pressed
-major is all or part, one major at a time, together with the menu; the
+major is all or part, one major at a time, together with the language menu; the
 same script runs them and keeps the choice in `?zotero=` (D-019, M037).
 A search box filters the table to the rows whose name or description holds
 the query, both lowercased, and keeps it in `?q=` (M053). A "Category" menu
@@ -866,7 +866,7 @@ reused._
   deployed data stays until the entry's re-test day, or longer if that
   day's build deploys nothing, and plugin code can forge it again on that
   day (D-035).
-- If a language or Zotero filter is on, a browser that cannot read the
+- If a language, Zotero, or category filter is on (category since M066), a browser that cannot read the
   `of <selector>` form of `:nth-child()` paints every row that the filter
   passes, on every page, until the home page's script runs. Chrome and Edge
   before 111, Firefox before 113, and Opera before 97 cannot read it; Safari

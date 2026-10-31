@@ -694,11 +694,21 @@ describe("the About page", () => {
     ]);
   });
 
-  test("lists every category, links each to the home page filtered by it, and says where categories come from", () => {
+  test("lists every category, links each that the home menu offers to the home page filtered by it, and says where categories come from", () => {
     const section = /<section class="card" id="categories" data-about="categories">(.*?)<\/section>/s.exec(about());
     expect(section).not.toBeNull();
-    const links = [...section![1]!.matchAll(/<li><a href="([^"]*)">([^<]*)<\/a>: ([^<]*)<\/li>/g)].map(([, href, name, text]) => [href, unescaped(name!), unescaped(text!)]);
-    expect(links).toEqual(CATEGORIES.map(({ slug, name, about }) => [`/zotero-plugin-index/?category=${slug}`, name, about]));
+    expect(section![1]).toContain('<ul class="about-list" role="list" data-category-list>');
+    const items = [...section![1]!.matchAll(/<li>(?:<a href="([^"]*)">)?([^<:]*)(?:<\/a>)?: ([^<]*)<\/li>/g)].map(([, href, name, text]) => [
+      href,
+      unescaped(name!),
+      unescaped(text!),
+    ]);
+    // The fixture's records have 4 of the categories, so the others name no link.
+    const offered = new Set((fixture.plugins as PluginRecord[]).flatMap((record) => categories(record)));
+    expect(offered.size).toBe(4);
+    expect(items).toEqual(
+      CATEGORIES.map(({ slug, name, about }) => [offered.has(slug) ? `/zotero-plugin-index/?category=${slug}` : undefined, name, about]),
+    );
     const text = mainText(about());
     expect(text).toContain("It assigns them from words in a plugin's name and descriptions, and it adds or removes some by hand.");
     expect(text).toContain("A category can be wrong or missing, and plugin authors do not choose them.");

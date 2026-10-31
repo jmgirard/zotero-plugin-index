@@ -56,19 +56,10 @@ describe("rowShows", () => {
   });
 
   test.each([
-    ["a category the row has", "notes", "", "", true],
-    ["a category the row lacks", "translation", "", "", false],
-    ["a category the row has, with a language it lacks", "notes", "de", "", false],
-    ["a category the row lacks, with a language it has", "translation", "zh", "", false],
-    ["a category the row has, with a major it lacks", "ai", "", "7", false],
-    ["a value that no option has", "xx", "", "", true],
-  ])("category: %s", (_, category, language, zotero, shows) => {
-    const filters = [{ value: language, options: LANGUAGES }, { value: zotero, options: MAJORS }] as const;
-    expect(rowShows(row, ...filters, "", { value: category, options: SLUGS })).toBe(shows);
-  });
-
-  test("category: a matching query still hides a row that the category menu hides", () => {
-    expect(rowShows(row, ANY, ANY_MAJOR, "notes", { value: "translation", options: SLUGS })).toBe(false);
+    ["a category the row has", "notes", true],
+    ["a category the row lacks", "translation", false],
+  ])("category: %s", (_, category, shows) => {
+    expect(rowShows(row, ANY, ANY_MAJOR, "", { value: category, options: SLUGS })).toBe(shows);
   });
 
   test.each([

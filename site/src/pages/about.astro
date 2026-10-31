@@ -1,9 +1,11 @@
 ---
 import { knownRelease, ZOTERO_MAJORS } from "../../../src/site/version.ts";
 import Base from "../layouts/Base.astro";
-import { BASE, CATEGORIES, loadData, SUPPORT_MARKS as MARKS } from "../data.ts";
+import { BASE, CATEGORIES, categoryOptions, loadData, SUPPORT_MARKS as MARKS } from "../data.ts";
 
-const { zoteroRelease } = loadData();
+const { plugins, zoteroRelease } = loadData();
+// The categories that the home page's menu offers, the only ones a link can filter by.
+const offered = new Set(categoryOptions(plugins).map(({ value }) => value));
 ---
 
 <Base title="About: Zotero plugin index">
@@ -143,11 +145,12 @@ const { zoteroRelease } = loadData();
       words in a plugin's name and descriptions, and it adds or removes some by hand. A plugin can have several
       categories. A category can be wrong or missing, and plugin authors do not choose them.
     </p>
-    <ul class="about-list" data-category-list>
+    <ul class="about-list" role="list" data-category-list>
       {
         CATEGORIES.map((category) => (
           <li>
-            <a href={`${BASE}?category=${category.slug}`}>{category.name}</a>: {category.about}
+            {offered.has(category.slug) ? <a href={`${BASE}?category=${category.slug}`}>{category.name}</a> : category.name}:{" "}
+            {category.about}
           </li>
         ))
       }

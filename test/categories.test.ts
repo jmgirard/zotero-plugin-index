@@ -73,6 +73,19 @@ describe("categories", () => {
     expect(categories(record("Helper", "Keeps the window open."))).toEqual([]);
   });
 
+  test.each([
+    ["the User-Agent header for AI assistants", "Sets the User-Agent header.", "ai"],
+    ["编译 (compile) for translation", "一键编译文档", "translation"],
+  ])("leaves out %s", (_, description, slug) => {
+    expect(categories(record("Helper", description))).not.toContain(slug);
+  });
+
+  test("gives a record with no upstream facts no category from its id", () => {
+    const failed = { id: "zotero-gpt@notes.app", failure: { name: "not-read" }, overrides: [] };
+    expect(categories(failed)).toEqual([]);
+    expect(categories({ ...failed, id: "condense-info-view@example.com" })).toEqual(["appearance"]);
+  });
+
   test("lists the categories in CATEGORIES order", () => {
     expect(categories(record("Helper", "Translates notes in the single-page reading mode with AI."))).toEqual([
       "ai",
