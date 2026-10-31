@@ -1,0 +1,8 @@
+{
+  "id": "paperlink@local.research",
+  "name": "PaperLink",
+  "description": "When the Zotero Connector saves a paper, link the PDF you already downloaded instead of storing a second copy, then check for duplicate entries.",
+  "homepage": "https://github.com/zhuzihan728/zotero-paperlink",
+  "repoUrl": "https://github.com/zhuzihan728/zotero-paperlink",
+  "updateUrl": "https://raw.githubusercontent.com/zhuzihan728/zotero-paperlink/main/updates.json"
+}
