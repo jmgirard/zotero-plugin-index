@@ -1,0 +1,8 @@
+{
+  "id": "tex-fetch@colefaraday",
+  "name": "tex-fetch",
+  "description": "Attach the arXiv LaTeX source of papers as a single flattened .tex file",
+  "homepage": "https://github.com/ColeFaraday/zotero-tex-fetch",
+  "repoUrl": "https://github.com/ColeFaraday/zotero-tex-fetch",
+  "updateUrl": "https://github.com/ColeFaraday/zotero-tex-fetch/releases/download/release/update.json"
+}
