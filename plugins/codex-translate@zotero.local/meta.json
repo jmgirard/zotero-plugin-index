@@ -1,0 +1,7 @@
+{
+  "id": "codex-translate@zotero.local",
+  "name": "Codex 文献翻译",
+  "description": "Translate academic PDFs through local Codex and read originals and Chinese translations side by side",
+  "repoUrl": "https://github.com/666666lyc/zotero-codex-translate",
+  "updateUrl": "https://raw.githubusercontent.com/666666lyc/zotero-codex-translate/main/updates.json"
+}
