@@ -1,0 +1,7 @@
+{
+  "id": "pdf-ai-bookmarks@edwintuan.com",
+  "name": "PDF AI Bookmarks",
+  "description": "Generate AI-powered bookmarks for PDFs using Gemini.",
+  "repoUrl": "https://github.com/edwintuan/pdf-ai-bookmarks",
+  "updateUrl": "https://raw.githubusercontent.com/edwintuan/pdf-ai-bookmarks/main/update.json"
+}
