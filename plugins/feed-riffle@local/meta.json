@@ -1,0 +1,8 @@
+{
+  "id": "feed-riffle@local",
+  "name": "Feed Riffle",
+  "description": "Deals unread RSS feed items out one card at a time: left arrow discards, right arrow files into a fuzzy-searched collection, with optional tags and a note. For clearing a feed backlog at speed.",
+  "homepage": "https://github.com/ievlevpn/zotero-feed-riffle",
+  "repoUrl": "https://github.com/ievlevpn/zotero-feed-riffle",
+  "updateUrl": "https://raw.githubusercontent.com/ievlevpn/zotero-feed-riffle/master/update.json"
+}
