@@ -1,0 +1,8 @@
+{
+  "id": "zotero-arxiv-html@oliverdudgeon.github.io",
+  "name": "arXiv HTML for Zotero",
+  "description": "Attach the arXiv HTML (experimental) version of a paper as a web page snapshot",
+  "homepage": "https://github.com/OliverDudgeon/zotero-arxiv-html#readme",
+  "repoUrl": "https://github.com/OliverDudgeon/zotero-arxiv-html",
+  "updateUrl": "https://github.com/OliverDudgeon/zotero-arxiv-html/releases/download/release/update.json"
+}
