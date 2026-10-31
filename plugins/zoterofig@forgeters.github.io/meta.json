@@ -1,0 +1,8 @@
+{
+  "id": "zoterofig@forgeters.github.io",
+  "name": "Zotero Fig",
+  "description": "Identify figures and tables in Zotero PDF reader and provide navigation and preview UI.",
+  "homepage": "https://github.com/forgeters/zotero-fig#readme",
+  "repoUrl": "https://github.com/forgeters/zotero-fig",
+  "updateUrl": "https://github.com/forgeters/zotero-fig/releases/download/release/update.json"
+}
