@@ -1,0 +1,7 @@
+{
+  "id": "readeck-import@zotero-plugin",
+  "name": "Readeck2Zotero",
+  "description": "Importe les annotations Readeck dans Zotero",
+  "repoUrl": "https://github.com/core-hn/readeck2zotero",
+  "updateUrl": "https://raw.githubusercontent.com/core-hn/readeck2zotero/main/update.json"
+}
