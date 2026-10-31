@@ -1,0 +1,7 @@
+{
+  "id": "zotero-book-splitter@juntaoyang.local",
+  "name": "Zotero Book Splitter",
+  "description": "Split PDF and EPUB books into independently citable chapters while preserving the complete original book.",
+  "repoUrl": "https://github.com/airalinknowledge/zotero-book-splitter",
+  "updateUrl": "https://raw.githubusercontent.com/airalinknowledge/zotero-book-splitter/main/updates.json"
+}
