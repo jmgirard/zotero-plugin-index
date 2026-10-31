@@ -1,0 +1,8 @@
+{
+  "id": "paper-lens@februarysea.github.io",
+  "name": "Paper Lens",
+  "description": "Translate selected passages with Codex models.",
+  "homepage": "https://github.com/februarysea/zotero-paper-lens",
+  "repoUrl": "https://github.com/februarysea/zotero-paper-lens",
+  "updateUrl": "https://raw.githubusercontent.com/februarysea/zotero-paper-lens/main/updates-beta.json"
+}
