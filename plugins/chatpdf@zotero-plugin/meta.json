@@ -1,0 +1,7 @@
+{
+  "id": "chatpdf@zotero-plugin",
+  "name": "ChatPDF",
+  "description": "Chat with your PDFs using LLMs in Zotero",
+  "repoUrl": "https://github.com/ruijie-xi/zotero-chat-pdf",
+  "updateUrl": "https://github.com/ruijie-xi/zotero-chat-pdf/releases/download/release/update.json"
+}
