@@ -1,0 +1,8 @@
+{
+  "id": "zotero-stylero@jose.local",
+  "name": "Zotero Stylero",
+  "description": "A lightweight, dependency-free Zotero styling plugin: styled item-table columns, collection counts, reading-time tracking, read/unread emphasis, and a light/dark toggle.",
+  "homepage": "https://github.com/josesiqueira/zotero-stylero#readme",
+  "repoUrl": "https://github.com/josesiqueira/zotero-stylero",
+  "updateUrl": "https://github.com/josesiqueira/zotero-stylero/releases/download/release/update.json"
+}
