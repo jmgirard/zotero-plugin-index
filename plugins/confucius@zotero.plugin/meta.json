@@ -1,0 +1,8 @@
+{
+  "id": "confucius@zotero.plugin",
+  "name": "Confucius",
+  "description": "A research assistant for Zotero: discover papers with OpenAlex, read, compare, and organize evidence.",
+  "homepage": "https://github.com/ZionDoki/confucius",
+  "repoUrl": "https://github.com/ZionDoki/confucius",
+  "updateUrl": "https://github.com/ZionDoki/confucius/releases/latest/download/update.json"
+}
