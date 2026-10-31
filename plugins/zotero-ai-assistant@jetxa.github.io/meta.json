@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ai-assistant@jetxa.github.io",
+  "name": "AI Assistant",
+  "description": "AI Assistant for Zotero",
+  "homepage": "https://github.com/jetxa/zotero-ai-assistant#readme",
+  "repoUrl": "https://github.com/jetxa/zotero-ai-assistant",
+  "updateUrl": "https://github.com/jetxa/zotero-ai-assistant/releases/download/release/update.json"
+}
