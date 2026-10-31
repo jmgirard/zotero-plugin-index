@@ -1,0 +1,8 @@
+{
+  "id": "scipdf@ytshen.com",
+  "name": "Sci-PDF",
+  "description": "Download PDF from Sci-Hub automatically For Zotero",
+  "homepage": "https://github.com/syt2/zotero-scipdf#readme",
+  "repoUrl": "https://github.com/syt2/zotero-scipdf",
+  "updateUrl": "https://github.com/syt2/zotero-scipdf/releases/download/release/update.json"
+}
