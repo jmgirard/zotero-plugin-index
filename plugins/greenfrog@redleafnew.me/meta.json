@@ -1,0 +1,8 @@
+{
+  "id": "greenfrog@redleafnew.me",
+  "name": "Green Frog",
+  "description": "Zotero plugin for update journal information from easyScholar",
+  "homepage": "https://github.com/redleafnew/zotero-updateifsE#readme",
+  "repoUrl": "https://github.com/redleafnew/zotero-updateifsE",
+  "updateUrl": "https://github.com/redleafnew/zotero-updateifsE/releases/download/release/update.json"
+}
