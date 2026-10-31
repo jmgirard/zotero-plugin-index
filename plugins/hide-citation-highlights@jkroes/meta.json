@@ -1,0 +1,7 @@
+{
+  "id": "hide-citation-highlights@jkroes",
+  "name": "Zotero Hide Citation Highlights",
+  "description": "Hides the blue boxes the Zotero PDF reader paints over detected citations and cross-reference links (e.g. LaTeX hyperref links). Links stay clickable; only the highlight box is removed.",
+  "repoUrl": "https://github.com/jkroes/zotero-hide-citation-highlights",
+  "updateUrl": "https://github.com/jkroes/zotero-hide-citation-highlights/releases/download/release/updates.json"
+}
