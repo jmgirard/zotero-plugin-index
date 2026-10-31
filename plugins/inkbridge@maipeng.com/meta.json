@@ -1,0 +1,8 @@
+{
+  "id": "inkbridge@maipeng.com",
+  "name": "墨桥·InkBridge",
+  "description": "Zotero PDF 阅读器内的中英学术互译：选词查词、含公式的截图翻译与朗读，模型全部在本地运行。",
+  "homepage": "https://github.com/MaiZiPiaoPiao/InkBridge",
+  "repoUrl": "https://github.com/MaiZiPiaoPiao/InkBridge",
+  "updateUrl": "https://github.com/MaiZiPiaoPiao/InkBridge/releases/latest/download/update.json"
+}
