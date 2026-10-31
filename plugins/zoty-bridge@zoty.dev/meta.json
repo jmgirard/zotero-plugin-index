@@ -1,0 +1,7 @@
+{
+  "id": "zoty-bridge@zoty.dev",
+  "name": "Zoty Bridge",
+  "description": "Activates the Gecko DevTools Server for remote JavaScript execution via RDP.",
+  "repoUrl": "https://github.com/eric-tramel/zoty",
+  "updateUrl": "https://github.com/eric-tramel/zoty/releases/latest/download/zoty-bridge-updates.json"
+}
