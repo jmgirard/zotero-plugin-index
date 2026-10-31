@@ -1,0 +1,8 @@
+{
+  "id": "zotero-remarkable-usb@sentient-codebot.github.io",
+  "name": "reMarkable USB Sync",
+  "description": "Send PDFs to a reMarkable over its USB web interface (no cloud) optionally cropped or split into columns for small screens, and pull highlights and handwriting back as native Zotero annotations.",
+  "homepage": "https://github.com/sentient-codebot/zotero-remarkable-usb",
+  "repoUrl": "https://github.com/sentient-codebot/zotero-remarkable-usb",
+  "updateUrl": "https://github.com/sentient-codebot/zotero-remarkable-usb/releases/latest/download/updates.json"
+}
