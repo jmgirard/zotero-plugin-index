@@ -1,0 +1,8 @@
+{
+  "id": "zotero-ai-companion@dennis-huangm.github.io",
+  "name": "Zotero AI Companion",
+  "description": "AI reading companion for Zotero with chat, translation, notes, tools, and conversation history.",
+  "homepage": "https://github.com/Dennis-Huangm/zotero-ai-companion#readme",
+  "repoUrl": "https://github.com/Dennis-Huangm/zotero-ai-companion",
+  "updateUrl": "https://github.com/Dennis-Huangm/zotero-ai-companion/releases/download/release/update.json"
+}
