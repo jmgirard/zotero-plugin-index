@@ -1,0 +1,7 @@
+{
+  "id": "drownfish19@gmail.com",
+  "name": "Zotero File Manager",
+  "description": "A Zotero 7 plugin to manage missing linked files, find duplicates, and merge items.",
+  "repoUrl": "https://github.com/DrownFish19/ZoteroFileManager",
+  "updateUrl": "https://raw.githubusercontent.com/drownfish19/ZoteroFileManager/main/updates.json"
+}
