@@ -1,0 +1,7 @@
+{
+  "id": "rssrch@solvesaint",
+  "name": "RSSrch",
+  "description": "Research-oriented Zotero feed filtering, relevance scoring, persistent Feed Value analytics, hierarchical RSSrch feed folders, AI setup/evaluation exports, rule actions/alerts, metadata/subject enrichment, Reader themes, provider icons, aggregate dedupe/provenance, and evidence triage",
+  "repoUrl": "https://github.com/SolveSaint/RSSrch-for-Zotero",
+  "updateUrl": "https://raw.githubusercontent.com/SolveSaint/RSSrch-for-Zotero/main/updates.json"
+}
