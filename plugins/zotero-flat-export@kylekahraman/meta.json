@@ -1,0 +1,7 @@
+{
+  "id": "zotero-flat-export@kylekahraman",
+  "name": "Zotero Flat Export",
+  "description": "Export all PDFs and notes from a collection flat into a folder with a clean BibTeX file",
+  "repoUrl": "https://github.com/kylekahraman/zotero-flat-export",
+  "updateUrl": "https://raw.githubusercontent.com/kylekahraman/zotero-flat-export/main/updates.json"
+}
