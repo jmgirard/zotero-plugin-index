@@ -1,0 +1,7 @@
+{
+  "id": "zotero-paper2speech@zotero.local",
+  "name": "Paper2Speech",
+  "description": "Read selected Zotero papers aloud with built-in macOS speech",
+  "repoUrl": "https://github.com/WeiCheng14159/zotero_paper2speech",
+  "updateUrl": "https://github.com/WeiCheng14159/zotero_paper2speech/releases/download/release/update.json"
+}
