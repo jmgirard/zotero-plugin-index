@@ -1,0 +1,7 @@
+{
+  "id": "zoterohelper@plugins4zotero",
+  "name": "ZoteroHelper",
+  "description": "Reader tools: Hebrew translation of selected text, local AI summary via Ollama, and \"Link instead of duplicate\" for newly added items.",
+  "repoUrl": "https://github.com/dviralsh/Plugins4Zotero",
+  "updateUrl": "https://github.com/dviralsh/Plugins4Zotero/releases/download/updates/zotero-helper.json"
+}
