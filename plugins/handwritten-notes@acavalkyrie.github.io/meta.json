@@ -1,0 +1,8 @@
+{
+  "id": "handwritten-notes@acavalkyrie.github.io",
+  "name": "Zotero Handwritten Notes",
+  "description": "Create handwritten-note PDFs (blank / 6 mm ruled / 5 mm grid) attached to Zotero items and append pages without touching existing pages.",
+  "homepage": "https://github.com/acaValkyrie/zotero-handwritten-notes",
+  "repoUrl": "https://github.com/acaValkyrie/zotero-handwritten-notes",
+  "updateUrl": "https://github.com/acaValkyrie/zotero-handwritten-notes/releases/latest/download/updates.json"
+}
