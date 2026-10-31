@@ -1,0 +1,8 @@
+{
+  "id": "ohm-zotero@openhistorymap.org",
+  "name": "OHM Data Index",
+  "description": "Manage Open History Map data descriptors (ohm:* tags) on Zotero items.",
+  "homepage": "https://openhistorymap.org",
+  "repoUrl": "https://github.com/openhistorymap/ohm-zotero",
+  "updateUrl": "https://github.com/openhistorymap/ohm-zotero/releases/latest/download/update.json"
+}
