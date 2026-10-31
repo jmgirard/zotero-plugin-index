@@ -1,0 +1,8 @@
+{
+  "id": "zotero-openreview@example.com",
+  "name": "Zotero OpenReview",
+  "description": "Import papers from OpenReview workshops and venues into Zotero",
+  "homepage": "https://github.com/Kevin65536/zotero-openreview-plugin#readme",
+  "repoUrl": "https://github.com/Kevin65536/zotero-openreview-plugin",
+  "updateUrl": "https://github.com/Kevin65536/zotero-openreview-plugin/releases/download/release/update.json"
+}
