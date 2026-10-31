@@ -1,0 +1,7 @@
+{
+  "id": "pdfhandcatcher@qifu04",
+  "name": "Zotero PDF Hand Catcher",
+  "description": "A Zotero plugin that finds items without PDFs, opens each in an isolated Edge browser, and auto-captures downloads back into Zotero.",
+  "repoUrl": "https://github.com/qifu04/zotero-pdf-hand-catcher",
+  "updateUrl": "https://github.com/qifu04/zotero-pdf-hand-catcher/releases/download/release/update.json"
+}
