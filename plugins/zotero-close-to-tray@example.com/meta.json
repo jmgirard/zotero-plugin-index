@@ -1,0 +1,8 @@
+{
+  "id": "zotero-close-to-tray@example.com",
+  "name": "CloseFlow",
+  "description": "控制 Zotero 关闭按钮行为：最小化到系统托盘或直接退出。",
+  "homepage": "https://github.com/LoveTheStar7/Zotero-CloseFlow",
+  "repoUrl": "https://github.com/LoveTheStar7/Zotero-CloseFlow",
+  "updateUrl": "https://raw.githubusercontent.com/LoveTheStar7/Zotero-CloseFlow/main/update.json"
+}
