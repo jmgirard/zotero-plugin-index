@@ -168,6 +168,7 @@ deployed data.
 - 2026-10-31: T7 done: DESIGN.md (Contract boundary: the menu, D-037's grouping, the plugin page line, the About list; Site build family: `categories.ts`), README (a "Category" menu paragraph, and the filters now four), and a CHANGELOG Unreleased entry; browser pane on the site built from the deployed data (port 4339, `.claude/launch.json` entry `m066-look`, excluded from git): `?category=translation` showed 38 of 272 with the menu restored and the pre-paint style gone, the menu listed 13 categories, Translate for Zotero's page linked its two categories, the About section listed all 13, and no page scrolled sideways at 375 or 1280 px; at 375 px the "Category" label wraps above its menu; `pnpm test` (1610 passed), `pnpm check`, and `cairn_validate` clean.
 - 2026-10-31: claim audit: 56 claims read, 3 corrected — CHANGELOG.md (the menu lists only categories that a plugin has), test/site.test.ts (two test names now say "the menus"); the reader re-read the three and found them true.
 - 2026-10-31: implement complete; status set to review.
+- 2026-10-31: step-7 approval: m066-plugin-categories approved for merge
 - 2026-10-31: the simple-english hook flags the ledger's `— observed` stamps and `Pagination: —.`; they stay, since the synthesis-note template and the references check read them.
 
 ## Decisions
