@@ -1,0 +1,7 @@
+{
+  "id": "auto-export@andriwild.github.io",
+  "name": "Zotero Auto-Export",
+  "description": "Automatically exports the Zotero library — or a single collection — to a bibliography file (BibTeX, BibLaTeX, RIS, CSV, EndNote XML, CSL JSON) whenever items are added.",
+  "repoUrl": "https://github.com/andriwild/zotero-auto-export",
+  "updateUrl": "https://raw.githubusercontent.com/andriwild/zotero-bibtex-auto-export/main/update.json"
+}
