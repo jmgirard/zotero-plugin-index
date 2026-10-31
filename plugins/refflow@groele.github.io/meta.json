@@ -1,0 +1,8 @@
+{
+  "id": "refflow@groele.github.io",
+  "name": "Zotero RefFlow",
+  "description": "Discover references, citing works, and related research; derived from Zotero Reference / Ethereal Reference by Polygon / MuiseDestiny.",
+  "homepage": "https://github.com/groele/Zotero-RefFlow",
+  "repoUrl": "https://github.com/groele/Zotero-RefFlow",
+  "updateUrl": "https://raw.githubusercontent.com/groele/Zotero-RefFlow/main/update.json"
+}
