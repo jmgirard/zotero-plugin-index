@@ -72,20 +72,6 @@ describe("treeDigest", () => {
     expect(await digest(first)).not.toBe(await digest(second));
   });
 
-  test.each<[string, (dir: string) => Promise<void> | void, string]>([
-    ["a symbolic link to a file", (dir) => symlinkSync(join(dir, "empty"), join(dir, "v1", "link")), "v1/link"],
-    ["a symbolic link to a directory", (dir) => symlinkSync("/", join(dir, "schemas", "root"), "dir"), "schemas/root"],
-    [
-      "a named pipe",
-      async (dir) => {
-        await run("mkfifo", [join(dir, "pipe")]);
-      },
-      "pipe",
-    ],
-  ])("refuses %s and names it", async (_name, plant, path) => {
-    await plant(tree);
-    expect(await treeDigest(tree)).toEqual({ ok: false, message: `not a file or directory: ${JSON.stringify(path)}` });
-  });
 });
 
 describe("pnpm data-digest", () => {
@@ -111,9 +97,23 @@ describe("pnpm data-digest", () => {
     });
   });
 
-  test("prints no digest and exits 1 for a tree with a symbolic link", async () => {
-    symlinkSync(join(tree, "empty"), join(tree, "link"));
-    await expect(cli(["--dir", tree])).rejects.toMatchObject({ code: 1, stdout: "", stderr: 'not a file or directory: "link"\n' });
+  test.each<[string, (dir: string) => Promise<void> | void, string]>([
+    ["a symbolic link to a file", (dir) => symlinkSync(join(dir, "empty"), join(dir, "v1", "link")), "v1/link"],
+    ["a symbolic link to a directory", (dir) => symlinkSync("/", join(dir, "schemas", "root"), "dir"), "schemas/root"],
+    [
+      "a named pipe",
+      async (dir) => {
+        await run("mkfifo", [join(dir, "pipe")]);
+      },
+      "pipe",
+    ],
+  ])("prints no digest and exits 1 naming %s", async (_name, plant, path) => {
+    await plant(tree);
+    await expect(cli(["--dir", tree])).rejects.toMatchObject({
+      code: 1,
+      stdout: "",
+      stderr: `not a file or directory: ${JSON.stringify(path)}\n`,
+    });
   });
 
   test.each<[string, string[], RegExp]>([

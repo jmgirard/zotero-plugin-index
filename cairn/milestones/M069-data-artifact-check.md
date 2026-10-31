@@ -43,7 +43,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 ## Coverage
 
 - AC1 → T2
-- AC2 → T2
+- AC2 → T2, T6
 - AC3 → T3
 - AC4 → T5
 - AC5 → T4
@@ -56,6 +56,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - [x] T3: In `build.yml`, add the `data-sha256` output and the digest step to the build job. Add the check step to the site job. Write comments for both. Extend `test/workflows.test.ts`.
 - [x] T4: Write the README command section, the README section "The daily build", the `build.yml` paragraph of DESIGN, and the CHANGELOG entry.
 - [x] T5: Run `pnpm test` and `pnpm check`. Push the branch and run `gh workflow run build.yml --ref <branch>`. Record the run id and the result of the data check step of the site job.
+- [x] T6: Review return 1: run each refused entry kind of AC2 through the command in `test/data-digest.test.ts`, asserting exit status 1, empty stdout, and the message.
 
 ## Work log
 
@@ -83,6 +84,7 @@ If the downloaded `plugins-data` tree differs from the build job's digest in an 
 - 2026-10-31: review return 1: AC2 — `test/data-digest.test.ts` asserts exit status 1 through the command only for a symbolic link to a file; the symbolic link to a directory and the named pipe assert `treeDigest`'s message but no exit status.
 - 2026-10-31: amendment routed: AC3 — both steps run `pnpm --silent data-digest …` (`--silent` keeps pnpm's banner out of the captured value), while the criterion quotes `pnpm data-digest --dir dist` and `pnpm data-digest --dir dist --expect`; the work is right and the quoted command text is wrong.
 - 2026-10-31: status in-progress for review return 1 and the AC3 amendment.
+- 2026-10-31: T6 added (minor amendment) and done: the three refusal cases now run through the command; 21 tests pass; a planted `return 0` on a refused tree failed all three.
 
 ## Decisions
 
