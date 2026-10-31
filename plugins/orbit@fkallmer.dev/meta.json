@@ -1,0 +1,8 @@
+{
+  "id": "orbit@fkallmer.dev",
+  "name": "Orbit",
+  "description": "Citation counts, context and a citation graph for Zotero items",
+  "homepage": "https://github.com/fkallmer/zotero-orbit#readme",
+  "repoUrl": "https://github.com/fkallmer/zotero-orbit",
+  "updateUrl": "https://github.com/fkallmer/zotero-orbit/releases/download/release/update.json"
+}
