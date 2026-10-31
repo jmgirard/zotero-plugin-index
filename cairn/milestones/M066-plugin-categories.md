@@ -119,7 +119,7 @@ deployed data.
 - [x] T1: Write `src/site/categories.ts` with `CATEGORIES` and `categories`,
       reading the texts through `displayName`, `shownDescription`, and the
       upstream fields, and `test/categories.test.ts`.
-- [ ] T2: Download the deployed data (lessons M035), tune the patterns and
+- [x] T2: Download the deployed data (lessons M035), tune the patterns and
       the `include`/`exclude` lists, and write
       `cairn/references/category-ledger.md` as a synthesis note with its
       Provenance block and `INDEX.md` line: date, record count, each record's
@@ -161,6 +161,8 @@ deployed data.
 - 2026-10-31: implement started on branch m066-plugin-categories, cut from main at f16d449.
 - 2026-10-31: T1 done: `src/site/categories.ts` holds `CATEGORIES` (slug, name, an `about` phrase for the About page, pattern, include, exclude) and `categories`; the texts are read through `appliedValue` and `shownDescription`, since `displayName` lives in `site/src/data.ts`, which `src/site/` does not import; `test/categories.test.ts` has 25 tests; planting a dropped GitHub text and an ignored exclude list each failed its one test; `pnpm test` (1572 passed) and `pnpm check` clean.
 - 2026-10-31: implementation choice: the translation pattern leaves out "translators" (Zotero's import translators, as Tara's text says) but keeps "Translator", so a plugin named "Paper Translator" still matches.
+- 2026-10-31: T2 done: the tuning, committed with T1, used the deployed data of `generatedAt` 2026-10-30T21:13:54.875Z (272 records); `cairn/references/category-ledger.md` records 363 assignments, 0 wrong by the agent's read, 20 of 272 records with none, 8 of 363 from an include alone, and 66 exclude entries; on the 19 open bot pull requests, which the tuning never read, 2 of 27 assignments are wrong and 3 of 19 records get none.
+- 2026-10-31: the simple-english hook flags the ledger's `— observed` stamps and `Pagination: —.`; they stay, since the synthesis-note template and the references check read them.
 
 ## Decisions
 
