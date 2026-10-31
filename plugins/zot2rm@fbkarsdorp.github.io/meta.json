@@ -1,0 +1,8 @@
+{
+  "id": "zot2rm@fbkarsdorp.github.io",
+  "name": "reMarkable Sync",
+  "description": "Push PDF attachments to a reMarkable tablet over its USB web interface and pull annotated versions back as sibling attachments.",
+  "homepage": "https://github.com/fbkarsdorp/zotero-remarkable",
+  "repoUrl": "https://github.com/fbkarsdorp/zotero-remarkable",
+  "updateUrl": "https://github.com/fbkarsdorp/zotero-remarkable/releases/download/release/updates.json"
+}
