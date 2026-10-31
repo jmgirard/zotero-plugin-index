@@ -1,0 +1,8 @@
+{
+  "id": "watch-folder-multiroot@local.zotero",
+  "name": "Watch Folder 多目录",
+  "description": "多个独立本地目录与 Zotero 分类双向映射；基于 Zotero Watch Folder 2.8.6。",
+  "homepage": "https://github.com/Li-Kangling/zotero-watch-folder-multiroot",
+  "repoUrl": "https://github.com/Li-Kangling/zotero-watch-folder-multiroot",
+  "updateUrl": "https://raw.githubusercontent.com/Li-Kangling/zotero-watch-folder-multiroot/main/update.json"
+}
