@@ -1,0 +1,8 @@
+{
+  "id": "docflow@egooose.local",
+  "name": "OCRFlow",
+  "description": "Manual document workflows: parent items, OCR, Markdown, metadata and academic summaries",
+  "homepage": "https://github.com/EEEEgoose/ocrflow#readme",
+  "repoUrl": "https://github.com/EEEEgoose/ocrflow",
+  "updateUrl": "https://github.com/EEEEgoose/ocrflow/releases/latest/download/updates.json"
+}
