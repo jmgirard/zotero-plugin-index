@@ -1,0 +1,7 @@
+{
+  "id": "paperview-query@local",
+  "name": "PaperView Query",
+  "description": "PaperView Zotero plugin with built-in service and LLM config",
+  "repoUrl": "https://github.com/j-cyoung/PaperViewZoteroPlugin",
+  "updateUrl": "https://github.com/j-cyoung/PaperViewZoteroPlugin/releases/download/release/updates.json"
+}
