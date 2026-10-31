@@ -1,0 +1,8 @@
+{
+  "id": "zotradar@poesein",
+  "name": "ZotRadar",
+  "description": "ZotRadar native Dashboard with papers, subscriptions, scoring, feedback, system diagnostics, and legacy migration.",
+  "homepage": "https://github.com/poesein/ZotRadar",
+  "repoUrl": "https://github.com/poesein/ZotRadar",
+  "updateUrl": "https://raw.githubusercontent.com/poesein/ZotRadar/main/updates.json"
+}
