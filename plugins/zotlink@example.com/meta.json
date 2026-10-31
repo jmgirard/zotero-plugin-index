@@ -1,0 +1,8 @@
+{
+  "id": "zotlink@example.com",
+  "name": "ZotLink",
+  "description": "Moves Zotero linked attachments, mirrors collections with shortcuts, and repairs links by Windows file ID.",
+  "homepage": "https://github.com/Yihtsy/ZotLink",
+  "repoUrl": "https://github.com/Yihtsy/ZotLink",
+  "updateUrl": "https://github.com/Yihtsy/ZotLink/releases/latest/download/updates.json"
+}
