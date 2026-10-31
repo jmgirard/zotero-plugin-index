@@ -1,0 +1,8 @@
+{
+  "id": "zotero-copilot@example.com",
+  "name": "Zotero Copilot",
+  "description": "Chat with Zotero items in a Copilot view inside the right item pane and persist synced conversations.",
+  "homepage": "https://github.com/lisontowind/zotero-copilot",
+  "repoUrl": "https://github.com/lisontowind/zotero-copilot",
+  "updateUrl": "https://raw.githubusercontent.com/lisontowind/zotero-copilot/main/updates.json"
+}
