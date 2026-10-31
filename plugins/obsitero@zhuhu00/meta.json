@@ -1,0 +1,8 @@
+{
+  "id": "obsitero@zhuhu00",
+  "name": "Obsitero",
+  "description": "Notero-style Zotero to Obsidian markdown sync plugin for research notes",
+  "homepage": "https://github.com/zhuhu00/Obsitero#readme",
+  "repoUrl": "https://github.com/zhuhu00/Obsitero",
+  "updateUrl": "https://github.com/zhuhu00/Obsitero/releases/download/release/update.json"
+}
