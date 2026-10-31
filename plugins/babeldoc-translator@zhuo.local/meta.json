@@ -1,0 +1,8 @@
+{
+  "id": "babeldoc-translator@zhuo.local",
+  "name": "Zotero BabelDOC",
+  "description": "Translate Zotero PDF attachments with an isolated BabelDOC installation.",
+  "homepage": "https://github.com/ZenanH/zotero-babeldoc",
+  "repoUrl": "https://github.com/ZenanH/zotero-babeldoc",
+  "updateUrl": "https://github.com/ZenanH/zotero-babeldoc/releases/download/release/update.json"
+}
