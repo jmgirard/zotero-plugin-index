@@ -590,12 +590,13 @@ fail:
 - a failed connection or an HTTP error answer
 - a body that is not a JSON list, or a body larger than 8 MiB
 - a read longer than 60 seconds
- A catalog item whose `repo` is
-not an owner/repo name gets a warning, and the command skips it. If a
-lookup request fails, the report gets a warning, and the command reads none
-of the catalog repositories of that request. Without `GITHUB_TOKEN`, each
-lookup request fails, so the command reads no repository that only the
-catalog names. A repository that GitHub does not have, or that has no last
+
+A catalog item whose `repo` is not an owner/repo name gets a warning, and
+the command skips it. The report names at most 10 such items and counts
+the rest. If a lookup request fails, the report gets one warning. The
+command then looks up no more repositories, and it reads none of the
+repositories that it did not look up. Without `GITHUB_TOKEN`, the first lookup request fails, so the
+command reads no repository that only the catalog names. A repository that GitHub does not have, or that has no last
 push, also gets a warning, and the command does not read it. A failed topic
 search still ends the run before any read.
 

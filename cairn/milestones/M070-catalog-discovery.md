@@ -132,3 +132,18 @@
 - blame-history #4: a local `pnpm discover` without `--handoff` skips no closed bot pull request, and the catalog widens that set — follow-up: new row "Skip closed bot pull requests in local discover runs" (parked, promote when a maintainer drafts such a repo by hand; pre-existing since M008)
 - blame-history #5: catalog names that an entry already names are looked up every run, and a failing lookup of one warns daily — fix now (filtered before the lookup and reported `in-index`; the AC4 in-index test now also asserts no lookup)
 - blame-history #6: `DiscoveryFailure =Failure` lost its space in the branch — fix now
+- diff-bug #1: the README paragraph after the new list rendered inside its last bullet — fix now
+- diff-bug #2: a lookup request that fails with 401, 403, 429, or no data does not stop the later batches, so a run without a token sends about 4 failing requests — fix now (a failed request ends the lookups with one warning for every repo left; test with 101 names and a 401)
+- diff-bug #3: the new state copy keeps any key and value, so a `__proto__` key sets the state's prototype and hides a repo, and a `null` record is written back — fix now (`Object.create(null)`, lowercase owner/repo keys and object records only; the test failed against the old copy)
+- diff-bug #4: DESIGN's lookup sentence omits the pre-lookup skips and the `runMs` stop — fix now
+- diff-bug #5: an alias with no answer and an error that names no path gets "no answer" — fix now (it takes that error's message; test)
+- diff-bug #6: skip-set names are still looked up each run — fix now (skipped before the lookup as `in-skip-set`; the AC4 skip-set test now also asserts no lookup)
+- diff-bug #7: `raw` follows redirects with only the first host checked — follow-up: the row "Check each redirect of GitHub API reads" (parked)
+- diff-bug #8: catalog item warnings have no cap — fix now (at most 10, then one count line; test)
+- diff-bug #9: pre-lookup `in-index` items come first in `report.skipped` and include repos the loop never reached — reject (false): each item is a true skip, and the report promises no order
+- diff-bug #10: the AC1 letter-case test has the topic search return lowercase `example/alpha` — fix now (a test with the topic search returning `Example/Alpha` and the catalog `example/ALPHA`)
+- diff-bug #11: no test stalls the catalog body — fix now (a `stall: "body"` case)
+- diff-bug #12: no test covers the CLI's `catalog: CATALOG_URL` — fix now (`pnpm discover` "reads the zotero-chinese catalog")
+- diff-bug #13: no test asserts `source` on a refused item or refuses a bad `source` in a handoff — fix now (both added)
+- diff-bug (c): the lookup-failure, bad-item, and failed-read cases repeat one code path — reject (planned change): AC2 and AC3 name each input
+- Re-verified after the fix-now work: `pnpm test` 1701 passed, 6 skipped (the AC1 to AC5 tests above among them, the AC3 lookup-failure regex now matching "… on, since their lookup failed"); `pnpm check` 272 entries, 0 problems; `cairn_validate.py` all checks passed.

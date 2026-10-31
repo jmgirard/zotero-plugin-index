@@ -25,6 +25,10 @@ export const CATALOG_MAX_BYTES = 8 * 1024 * 1024;
 export const CATALOG_MS = 60 * 1000;
 // A repo name that GitHub allows. A catalog item whose `repo` does not match is skipped.
 const REPO_NAME = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+// A state key: a lowercase owner/repo. A record under any other key is dropped.
+const STATE_KEY = /^[a-z0-9_.-]+\/[a-z0-9_.-]+$/;
+// The most catalog items with no usable name that the report names; it counts the rest.
+const ITEM_WARNINGS_MAX = 10;
 // The most repos that one GraphQL lookup request names.
 const LOOKUP_BATCH = 100;
 
@@ -144,8 +148,8 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
   const skipped: SkippedItem[] = [];
   if (options.catalog !== undefined) {
     const { catalog, catalogMs = CATALOG_MS, catalogMaxBytes = CATALOG_MAX_BYTES } = options;
-    // A name that a topic search returned needs no lookup, nor does one that an entry
-    // names, which the run skips.
+    // A name that a topic search returned needs no lookup, nor does one that an entry or
+    // the skip set names, which the run skips.
     const known = new Set(candidates.map(({ repo }) => repo));
     const names: string[] = [];
     for (const name of await readCatalog(fetch, catalog, catalogMaxBytes, catalogMs, warnings)) {
@@ -153,14 +157,17 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
       if (known.has(repo)) continue;
       known.add(repo);
       if (index.repos.has(repo)) skipped.push({ repo, reason: "in-index" });
+      else if (skip.has(repo)) skipped.push({ repo, reason: "in-skip-set" });
       else names.push(name);
     }
     candidates = joinCandidates(candidates, await lookUp(fetch, names, "catalog", warnings, { runMs, startedAt }));
   }
-  const state: DiscoveryState = {};
+  // No prototype, so a key such as `__proto__` from the state file stays an own key.
+  const state: DiscoveryState = Object.create(null);
   const found = new Set(candidates.map(({ repo }) => repo));
   for (const [repo, record] of Object.entries(options.state)) {
-    const age = now.getTime() - Date.parse(record?.checkedAt);
+    if (!STATE_KEY.test(repo) || typeof record !== "object" || record === null) continue;
+    const age = now.getTime() - Date.parse(record.checkedAt);
     if (!index.repos.has(repo) && (found.has(repo) || (age >= 0 && age < RECHECK_MS))) state[repo] = record;
   }
   const report: Report = { read: [], skipped, unread: 0, warnings };
@@ -399,13 +406,17 @@ async function readCatalog(fetch: Fetch, url: string, max: number, ms: number, w
     return [];
   }
   const names: string[] = [];
+  let unnamed = 0;
   for (const [at, item] of items.entries()) {
     const repo = typeof item === "object" && item !== null ? (item as { repo?: unknown }).repo : undefined;
     if (typeof repo === "string" && REPO_NAME.test(repo)) {
       names.push(repo);
-    } else {
+    } else if (++unnamed <= ITEM_WARNINGS_MAX) {
       warnings.push(`catalog item ${at} has no owner/repo name, so the run skips it: ${JSON.stringify(item)?.slice(0, 200)}`);
     }
+  }
+  if (unnamed > ITEM_WARNINGS_MAX) {
+    warnings.push(`${unnamed - ITEM_WARNINGS_MAX} more catalog items have no owner/repo name, so the run skips them`);
   }
   return names;
 }
@@ -438,26 +449,30 @@ async function lookUp(fetch: Fetch, names: string[], source: Source, warnings: s
     });
     const declared = batch.map((_, i) => `$o${i}: String!, $n${i}: String!`).join(", ");
     const query = `query(${declared}) { ${fields.join(" ")} }`;
+    // A failed request, such as one with no token or past a rate limit, ends the lookups,
+    // since the next request would most likely fail the same way.
     const failed = (why: string) =>
-      warnings.push(`the run reads none of ${batch.length} ${source} repos from ${batch[0]}, since their lookup failed: ${why}`);
+      warnings.push(`the run reads none of ${unique.length - start} ${source} repos from ${batch[0]} on, since their lookup failed: ${why}`);
     let answer: LookupAnswer;
     try {
       answer = (await github.post(`${API}/graphql`, { query, variables })) as LookupAnswer;
     } catch (error) {
       if (!(error instanceof ReadFailure)) throw error;
       failed(error.message);
-      continue;
+      break;
     }
     const errors = Array.isArray(answer?.errors) ? answer.errors : [];
     const data = answer?.data;
     if (typeof data !== "object" || data === null) {
       failed(`the answer has no data${errors.length ? `: ${errors.map((error) => String(error?.message)).join("; ")}` : ""}`);
-      continue;
+      break;
     }
     for (const [i, name] of batch.entries()) {
       const repo = data[`r${i}`];
       if (repo === null || repo === undefined) {
-        const error = errors.find((each) => Array.isArray(each?.path) && each.path[0] === `r${i}`);
+        // An error with no path names no repo, so its message goes to each repo with no answer.
+        const unplaced = errors.filter((each) => !Array.isArray(each?.path)).map((each) => String(each?.message));
+        const error = errors.find((each) => Array.isArray(each?.path) && each.path[0] === `r${i}`) ?? (unplaced.length ? { message: unplaced.join("; ") } : undefined);
         warnings.push(
           error?.type === "NOT_FOUND"
             ? `GitHub has no repo ${name}, which the ${source} names, so the run does not read it`

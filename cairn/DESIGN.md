@@ -592,9 +592,11 @@ reused._
   The search is sorted by last update, so pages do not shift between
   requests. With the `catalog` option, which `pnpm discover` sets to
   `CATALOG_URL`, it also reads the zotero-chinese catalog's `plugins.json`
-  through the contents API (`githubClient().raw`, 60 s, 8 MiB) and looks
-  up each catalog name that no topic search returned with one GraphQL
-  request for each 100 names, the names sent as variables (M070). It joins
+  through the contents API (`githubClient().raw`, 60 s, 8 MiB). A catalog
+  name that an entry or the skip set names is skipped there; each other
+  name that no topic search returned is looked up with one GraphQL request
+  for each 100 names, the names sent as variables. A failed request ends
+  the lookups, and so does `runMs` (M070). It joins
   the result lists by the lowercase owner/repo that the search or the
   lookup gives, a topic find before a catalog find, and reads the newest
   pushed repos first, at most `budget` (100 by default) per run. It leaves out
