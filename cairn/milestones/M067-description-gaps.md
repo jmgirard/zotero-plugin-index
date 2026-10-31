@@ -97,7 +97,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 
 - [x] T1: Tests first in `test/description.test.ts` for AC1's inputs, then the Latin-script part in
       `src/site/description.ts`, applied to the manifest and GitHub texts before `informative` and the pick.
-- [ ] T2: Tests first in `test/description-gaps.test.ts`, then the command in `src/site/` with a
+- [x] T2: Tests first in `test/description-gaps.test.ts`, then the command in `src/site/` with a
       `description-gaps` script in `package.json`. Reuse `shownDescription`, `cjkShare`, and the checker's entry and
       schema reads in `src/check/`.
 - [ ] T3: Run `pnpm description-gaps` over the shelf copy. Write `cairn/references/description-ledger.md` from the
@@ -129,6 +129,7 @@ A word in these criteria is a run of letters, marks, and digits. Repeats and fil
 
 - 2026-10-31: implement started on branch m067-description-gaps.
 - 2026-10-31: T1 done: `latinPart` in `src/site/description.ts` runs on each upstream text before `informative`, falling back to the whole text; 7 new cases in `test/description.test.ts`. Over the shelf copy it changes 5 shown descriptions (focus-note-column, papercompare, popfish, structured-tags, zotero-keep-window). pnpm test and pnpm check pass.
+- 2026-10-31: T2 done: `findGaps` and `gapOf` in `src/site/description-gaps.ts`, CLI `src/site/description-gaps-cli.ts`, script `description-gaps`. It reads `plugins/` in the package root and refuses an index.json that is unreadable, not JSON, or fails its schema (entry-* messages), beside the three data-* errors. Lines are `<id>\t<case>\t<shown>` plus a count line. A planted wrong case order turned 2 of 12 tests red. Over the shelf copy: 28 gaps (1 missing, 10 cjk, 17 short). pnpm test and pnpm check pass.
 
 ## Decisions
 <!-- owner: implement / review · append-only; milestone-local. -->
