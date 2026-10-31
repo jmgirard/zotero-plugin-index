@@ -1,0 +1,8 @@
+{
+  "id": "zotero-bibliometero@jose.local",
+  "name": "Zotero Bibliometero",
+  "description": "An Insights panel for Zotero with six interactive library visualizations: co-authorship and author/paper networks, publications per year, top sources, top authors, and type/collection composition. PNG/SVG export. Dependency-free.",
+  "homepage": "https://github.com/josesiqueira/zotero-bibliometero#readme",
+  "repoUrl": "https://github.com/josesiqueira/zotero-bibliometero",
+  "updateUrl": "https://github.com/josesiqueira/zotero-bibliometero/releases/download/release/update.json"
+}
