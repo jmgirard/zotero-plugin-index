@@ -1,0 +1,8 @@
+{
+  "id": "zemble@cosmik.network",
+  "name": "Zemble",
+  "description": "Zotero Plugin for Semble",
+  "homepage": "https://github.com/ChrisShank/zemble#readme",
+  "repoUrl": "https://github.com/ChrisShank/zemble",
+  "updateUrl": "https://github.com/ChrisShank/zemble/releases/download/release/update.json"
+}
