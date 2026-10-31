@@ -1,0 +1,8 @@
+{
+  "id": "zotero-arxiv-reader@theocuc",
+  "name": "arXiv Reader",
+  "description": "Zotero plugin for arXiv HTML fetch, cleanup, and bilingual translation.",
+  "homepage": "https://github.com/TheoCUC/zotero-arxiv-reader#readme",
+  "repoUrl": "https://github.com/TheoCUC/zotero-arxiv-reader",
+  "updateUrl": "https://github.com/TheoCUC/zotero-arxiv-reader/releases/download/release/update.json"
+}
