@@ -1,0 +1,8 @@
+{
+  "id": "zctr@zotero.plugin",
+  "name": "ZCTr",
+  "description": "ZCTr - Zotero click-on-translate: translate selected text in PDF reader with LLM (OpenAI-compatible APIs)",
+  "homepage": "https://github.com/MCXCC303/ZCTr#readme",
+  "repoUrl": "https://github.com/MCXCC303/ZCTr",
+  "updateUrl": "https://github.com/MCXCC303/ZCTr/releases/download/release/update.json"
+}
